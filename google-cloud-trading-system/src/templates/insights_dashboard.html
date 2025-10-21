@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Insights - AI Trading System</title>
+    
+    <!-- Bootstrap 5.3 for Toast Notifications -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Socket.IO for Real-time Toast Notifications -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0e1a 0%, #1a1f2e 100%);
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1a1f2e 0%, #252b3e 100%);
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border-left: 5px solid #00d4aa;
+        }
+        
+        h1 {
+            color: #00d4aa;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #8892a6;
+            font-size: 16px;
+        }
+        
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .insight-card {
+            background: #1a1f2e;
+            padding: 24px;
+            border-radius: 12px;
+            border-left: 4px solid #00d4aa;
+        }
+        
+        .insight-card.bullish {
+            border-left-color: #00d4aa;
+        }
+        
+        .insight-card.bearish {
+            border-left-color: #ff4757;
+        }
+        
+        .insight-card.neutral {
+            border-left-color: #ffa502;
+        }
+        
+        .insight-label {
+            color: #8892a6;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+        
+        .insight-value {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .insight-value.positive {
+            color: #00d4aa;
+        }
+        
+        .insight-value.negative {
+            color: #ff4757;
+        }
+        
+        .insight-value.neutral {
+            color: #ffa502;
+        }
+        
+        .insight-description {
+            color: #b0b6c3;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .section {
+            background: #1a1f2e;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            color: #00d4aa;
+            font-size: 24px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .news-item {
+            background: #252b3e;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 3px solid #00d4aa;
+        }
+        
+        .news-title {
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .news-meta {
+            display: flex;
+            gap: 20px;
+            color: #8892a6;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+        
+        .news-sentiment {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .sentiment-positive {
+            background: rgba(0, 212, 170, 0.2);
+            color: #00d4aa;
+        }
+        
+        .sentiment-negative {
+            background: rgba(255, 71, 87, 0.2);
+            color: #ff4757;
+        }
+        
+        .sentiment-neutral {
+            background: rgba(255, 165, 2, 0.2);
+            color: #ffa502;
+        }
+        
+        .recommendation-box {
+            background: linear-gradient(135deg, #00d4aa 0%, #00a88a 100%);
+            color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .recommendation-box.bearish {
+            background: linear-gradient(135deg, #ff4757 0%, #cc3a45 100%);
+        }
+        
+        .recommendation-box.neutral {
+            background: linear-gradient(135deg, #ffa502 0%, #cc8402 100%);
+        }
+        
+        .recommendation-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .recommendation-text {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 15px;
+        }
+        
+        .confidence-bar {
+            background: rgba(255, 255, 255, 0.3);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+        
+        .confidence-fill {
+            background: #ffffff;
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #8892a6;
+            font-size: 18px;
+        }
+        
+        .refresh-info {
+            text-align: center;
+            color: #8892a6;
+            font-size: 13px;
+            margin-top: 20px;
+        }
+        
+        .impact-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        .impact-high {
+            background: rgba(255, 71, 87, 0.3);
+            color: #ff4757;
+        }
+        
+        .impact-medium {
+            background: rgba(255, 165, 2, 0.3);
+            color: #ffa502;
+        }
+        
+        .impact-low {
+            background: rgba(136, 146, 166, 0.3);
+            color: #8892a6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧭 Market Insights & Sentiment</h1>
+            <p class="subtitle">AI-powered market analysis and trading recommendations</p>
+        </header>
+        
+        <div id="loading" class="loading">
+            Loading market insights...
+        </div>
+        
+        <div id="content" style="display: none;">
+            <div id="recommendation" class="recommendation-box">
+                <div class="recommendation-title">Market Recommendation</div>
+                <div class="recommendation-text" id="rec-text">Loading...</div>
+                <div class="insight-description" id="rec-desc">Analyzing market conditions...</div>
+                <div class="confidence-bar">
+                    <div class="confidence-fill" id="confidence-fill" style="width: 0%"></div>
+                </div>
+                <div style="margin-top: 10px; font-size: 14px;" id="confidence-text">Confidence: 0%</div>
+            </div>
+            
+            <div class="insights-grid">
+                <div class="insight-card" id="sentiment-card">
+                    <div class="insight-label">Overall Sentiment</div>
+                    <div class="insight-value" id="sentiment-value">0.00</div>
+                    <div class="insight-description" id="sentiment-desc">Market mood analysis</div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-label">Market Impact</div>
+                    <div class="insight-value neutral" id="impact-value">Low</div>
+                    <div class="insight-description">Current news impact level</div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-label">Key Events</div>
+                    <div class="insight-value neutral" id="events-count">0</div>
+                    <div class="insight-description">Significant market events</div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-label">Risk Factors</div>
+                    <div class="insight-value neutral" id="risks-count">0</div>
+                    <div class="insight-description">Identified risk factors</div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">📰 Key Market Events</div>
+                <div id="key-events"></div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">💡 Trading Opportunities</div>
+                <div id="opportunities"></div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">⚠️ Risk Factors</div>
+                <div id="risk-factors"></div>
+            </div>
+        </div>
+        
+        <div class="refresh-info" id="refresh-info">
+            Auto-refreshing every 60 seconds | Last update: <span id="last-update">Never</span>
+        </div>
+    </div>
+    
+    <script>
+        async function loadInsights() {
+            try {
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('content').style.display = 'none';
+                
+                const response = await fetch('/api/insights');
+                const data = await response.json();
+                
+                const insights = data.insights || {};
+                
+                // Update recommendation
+                const recommendation = insights.trading_recommendation || 'hold';
+                const confidence = insights.confidence || 0;
+                const sentiment = insights.overall_sentiment || 0;
+                
+                const recBox = document.getElementById('recommendation');
+                const recText = document.getElementById('rec-text');
+                
+                // Set recommendation styling
+                if (recommendation === 'buy' || recommendation === 'long') {
+                    recBox.className = 'recommendation-box bullish';
+                    recText.textContent = '📈 BUY / LONG';
+                    recText.style.color = '#ffffff';
+                } else if (recommendation === 'sell' || recommendation === 'short') {
+                    recBox.className = 'recommendation-box bearish';
+                    recText.textContent = '📉 SELL / SHORT';
+                    recText.style.color = '#ffffff';
+                } else {
+                    recBox.className = 'recommendation-box neutral';
+                    recText.textContent = '⚪ HOLD / NEUTRAL';
+                    recText.style.color = '#ffffff';
+                }
+                
+                document.getElementById('rec-desc').textContent = 
+                    `Based on ${Math.abs(sentiment).toFixed(2)} sentiment score and market analysis`;
+                
+                // Update confidence
+                document.getElementById('confidence-fill').style.width = (confidence * 100) + '%';
+                document.getElementById('confidence-text').textContent = 
+                    `Confidence: ${(confidence * 100).toFixed(0)}%`;
+                
+                // Update sentiment
+                const sentimentValue = document.getElementById('sentiment-value');
+                sentimentValue.textContent = sentiment >= 0 ? `+${sentiment.toFixed(2)}` : sentiment.toFixed(2);
+                
+                if (sentiment > 0.3) {
+                    sentimentValue.className = 'insight-value positive';
+                    document.getElementById('sentiment-desc').textContent = 'Strong bullish sentiment';
+                    document.getElementById('sentiment-card').className = 'insight-card bullish';
+                } else if (sentiment < -0.3) {
+                    sentimentValue.className = 'insight-value negative';
+                    document.getElementById('sentiment-desc').textContent = 'Strong bearish sentiment';
+                    document.getElementById('sentiment-card').className = 'insight-card bearish';
+                } else {
+                    sentimentValue.className = 'insight-value neutral';
+                    document.getElementById('sentiment-desc').textContent = 'Neutral market sentiment';
+                    document.getElementById('sentiment-card').className = 'insight-card neutral';
+                }
+                
+                // Update market impact
+                const impact = insights.market_impact || 'low';
+                document.getElementById('impact-value').textContent = impact.toUpperCase();
+                
+                // Update counts
+                document.getElementById('events-count').textContent = (insights.key_events || []).length;
+                document.getElementById('risks-count').textContent = (insights.risk_factors || []).length;
+                
+                // Update key events
+                const keyEvents = insights.key_events || [];
+                const eventsContainer = document.getElementById('key-events');
+                
+                if (keyEvents.length > 0) {
+                    eventsContainer.innerHTML = keyEvents.map(event => `
+                        <div class="news-item">
+                            <div class="news-title">${event.title || event}</div>
+                            ${event.description ? `<div class="insight-description">${event.description}</div>` : ''}
+                        </div>
+                    `).join('');
+                } else {
+                    eventsContainer.innerHTML = '<div class="insight-description">No significant events at this time</div>';
+                }
+                
+                // Update opportunities
+                const opportunities = insights.opportunities || [];
+                const oppsContainer = document.getElementById('opportunities');
+                
+                if (opportunities.length > 0) {
+                    oppsContainer.innerHTML = opportunities.map(opp => `
+                        <div class="news-item">
+                            <div class="news-title">💡 ${opp.title || opp}</div>
+                            ${opp.description ? `<div class="insight-description">${opp.description}</div>` : ''}
+                        </div>
+                    `).join('');
+                } else {
+                    oppsContainer.innerHTML = '<div class="insight-description">No specific opportunities identified</div>';
+                }
+                
+                // Update risk factors
+                const risks = insights.risk_factors || [];
+                const risksContainer = document.getElementById('risk-factors');
+                
+                if (risks.length > 0) {
+                    risksContainer.innerHTML = risks.map(risk => `
+                        <div class="news-item" style="border-left-color: #ff4757;">
+                            <div class="news-title">⚠️ ${risk.title || risk}</div>
+                            ${risk.description ? `<div class="insight-description">${risk.description}</div>` : ''}
+                        </div>
+                    `).join('');
+                } else {
+                    risksContainer.innerHTML = '<div class="insight-description">No significant risk factors identified</div>';
+                }
+                
+                // Update timestamp
+                document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+                
+                // Show content
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Failed to load insights:', error);
+                document.getElementById('loading').textContent = 'Error loading insights. Retrying...';
+                setTimeout(loadInsights, 5000);
+            }
+        }
+        
+        // Load on page load
+        loadInsights();
+        
+        // Auto-refresh every 60 seconds
+        setInterval(loadInsights, 60000);
+    </script>
+    
+    <!-- Toast Notification System -->
+    {% include 'components/toast_notifications.html' %}
+</body>
+</html>
+

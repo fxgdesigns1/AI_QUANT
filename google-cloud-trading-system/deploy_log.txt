@@ -1,0 +1,23 @@
+Services to deploy:
+
+descriptor:                  [/Users/mac/quant_system_clean/google-cloud-trading-system/app.yaml]
+source:                      [/Users/mac/quant_system_clean/google-cloud-trading-system]
+target project:              [ai-quant-trading]
+target service:              [default]
+target version:              [20251006t074423]
+target url:                  [https://ai-quant-trading.uc.r.appspot.com]
+target service account:      [ai-quant-trading@appspot.gserviceaccount.com]
+
+
+Beginning deployment of service [default]...
+Created .gcloudignore file. See `gcloud topic gcloudignore` for details.
+╔════════════════════════════════════════════════════════════╗
+╠═ Uploading 4 files to Google Cloud Storage                ═╣
+╚════════════════════════════════════════════════════════════╝
+File upload done.
+Updating service [default]...
+................................................................failed.
+ERROR: (gcloud.app.deploy) Error Response: [9] Cloud build 035ec8ab-5c0e-4a5d-a1fa-484824d77c0e status: FAILURE
+Failed to download at least one file. Cannot continue.
+
+Full build logs: https://console.cloud.google.com/cloud-build/builds;region=us-central1/035ec8ab-5c0e-4a5d-a1fa-484824d77c0e?project=779507790009

@@ -1,0 +1,88 @@
+# Google Cloud App Engine Configuration for Analytics Dashboard
+# Separate service for performance tracking
+# Service name: analytics
+
+runtime: python39
+
+# Service name (runs independently)
+service: analytics
+
+# Entry point  
+entrypoint: gunicorn -b :$PORT -w 2 app_simple:app --timeout 120
+
+# Instance configuration
+instance_class: F2
+
+# Automatic scaling
+automatic_scaling:
+  min_instances: 1
+  max_instances: 3
+  target_cpu_utilization: 0.65
+
+# Environment variables
+env_variables:
+  # OANDA API Configuration (READ-ONLY)
+  OANDA_API_KEY: "c01de9eb4d793c945ea0fcbb0620cc4e-d0c62eb93ed53e8db5a709089460794a"
+  OANDA_ENVIRONMENT: "practice"
+  OANDA_BASE_URL: "https://api-fxpractice.oanda.com"
+  
+  # Account Configuration
+  PRIMARY_ACCOUNT: "101-004-30719775-009"
+  GOLD_SCALP_ACCOUNT: "101-004-30719775-010"
+  STRATEGY_ALPHA_ACCOUNT: "101-004-30719775-011"
+  
+  # Strategy Mapping
+  PRIMARY_STRATEGY: "gold_scalping"
+  GOLD_SCALP_STRATEGY: "ultra_strict_forex"
+  STRATEGY_ALPHA_STRATEGY: "momentum_trading"
+  
+  # Flask Configuration
+  FLASK_SECRET_KEY: "analytics-dashboard-secret-key-2025"
+  ANALYTICS_PORT: "8080"
+  
+  # Mode
+  READ_ONLY_MODE: "true"
+  ANALYTICS_MODE: "true"
+  
+  # Telegram (optional for alerts)
+  TELEGRAM_TOKEN: "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
+  TELEGRAM_CHAT_ID: "6100678501"
+
+# Handlers
+handlers:
+  # Static files
+  - url: /static
+    static_dir: static
+    secure: always
+  
+  # All other routes
+  - url: /.*
+    script: auto
+    secure: always
+
+# Health check
+readiness_check:
+  path: "/health"
+  check_interval_sec: 5
+  timeout_sec: 4
+  failure_threshold: 2
+  success_threshold: 2
+  app_start_timeout_sec: 300
+
+liveness_check:
+  path: "/health"
+  check_interval_sec: 30
+  timeout_sec: 4
+  failure_threshold: 4
+  success_threshold: 2
+
+# Resources
+resources:
+  cpu: 1
+  memory_gb: 1
+  disk_size_gb: 10
+
+# Network
+network:
+  session_affinity: true
+

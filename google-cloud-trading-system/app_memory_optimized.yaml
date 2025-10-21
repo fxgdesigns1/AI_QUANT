@@ -1,0 +1,90 @@
+# Memory-Optimized Trading System - F1 FREE TIER
+# Optimized for additional strategies with reduced memory usage
+runtime: python311
+service: default
+entrypoint: python main.py
+
+# =============================================================================
+# F1 FREE TIER OPTIMIZATION
+# =============================================================================
+automatic_scaling:
+  # FREE TIER: 28 instance-hours per day (F1 only)
+  min_instances: 1
+  max_instances: 1
+  
+  # Optimized for F1 efficiency and memory usage
+  target_cpu_utilization: 0.85
+  target_throughput_utilization: 0.85
+
+# =============================================================================
+# Instance Configuration - F1 FREE TIER
+# =============================================================================
+instance_class: F1
+
+# =============================================================================
+# Environment Variables - MEMORY OPTIMIZED
+# =============================================================================
+env_variables:
+  # Memory Optimization
+  MEMORY_OPTIMIZATION_ENABLED: 'true'
+  STRATEGY_MEMORY_LIMIT: '30'
+  BASE_SYSTEM_MEMORY: '150'
+  MAX_CONCURRENT_STRATEGIES: '10'
+  ENABLE_GARBAGE_COLLECTION: 'true'
+  MEMORY_CLEANUP_INTERVAL: '300'
+  
+  # F1 Optimization
+  F1_FREE_TIER_MODE: 'true'
+  ULTRA_OPTIMIZED_RESOURCE_USAGE: 'true'
+  MINIMAL_MEMORY_USAGE: 'true'
+  
+  # Trading Configuration
+  PRIMARY_ACCOUNT: 101-004-30719775-009
+  GOLD_SCALP_ACCOUNT: 101-004-30719775-010
+  STRATEGY_ALPHA_ACCOUNT: 101-004-30719775-011
+  OANDA_API_KEY: c01de9eb4d793c945ea0fcbb0620cc4e-d0c62eb93ed53e8db5a709089460794a
+  OANDA_BASE_URL: https://api-fxpractice.oanda.com
+  OANDA_ENVIRONMENT: practice
+  
+  # Telegram Configuration
+  TELEGRAM_CHAT_ID: '6100678501'
+  TELEGRAM_TOKEN: 7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU
+  
+  # Flask Configuration
+  FLASK_SECRET_KEY: optimized-trading-system-2025
+  FLASK_ENV: production
+  
+  # Update Intervals (Optimized for F1)
+  DASHBOARD_UPDATE_INTERVAL: '60'
+  MARKET_DATA_UPDATE_INTERVAL: '30'
+  SYSTEM_STATUS_CHECK_INTERVAL: '120'
+  
+  # Strategy Configuration
+  READ_ONLY_MODE: 'true'
+  PRIMARY_STRATEGY: gold_scalping
+  GOLD_SCALP_STRATEGY: ultra_strict_forex
+  STRATEGY_ALPHA_STRATEGY: momentum_trading
+
+# =============================================================================
+# Handlers Configuration
+# =============================================================================
+handlers:
+  - url: /static
+    static_dir: static
+    secure: always
+  - url: /.*
+    script: auto
+    secure: always
+
+# =============================================================================
+# Network Configuration
+# =============================================================================
+network:
+  session_affinity: true
+
+# =============================================================================
+# Resource Optimization
+# =============================================================================
+# Note: F1 instances have 600MB memory, 1 CPU core
+# Optimized for 10 strategies with 30MB each + 150MB base = 450MB total
+# Leaving 150MB buffer for system operations

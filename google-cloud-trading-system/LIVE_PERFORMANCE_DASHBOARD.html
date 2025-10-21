@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Performance Dashboard - Google Cloud</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #fff;
+            padding: 20px;
+        }
+        .container { max-width: 1600px; margin: 0 auto; }
+        .header {
+            background: rgba(255,255,255,0.05);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            font-size: 2.8em;
+            background: linear-gradient(90deg, #00ff88, #00ddff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+        .cloud-badge {
+            background: linear-gradient(135deg, #00c853, #00e676);
+            padding: 10px 30px;
+            border-radius: 25px;
+            display: inline-block;
+            font-weight: bold;
+            margin: 10px;
+        }
+        .pulse {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #fff;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        .summary-card {
+            background: rgba(255,255,255,0.05);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .summary-value {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        .summary-label {
+            opacity: 0.7;
+            font-size: 1em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .accounts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 25px;
+        }
+        .account-card {
+            background: rgba(255,255,255,0.05);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.3s ease;
+        }
+        .account-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0, 255, 136, 0.2);
+        }
+        .account-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255,255,255,0.15);
+        }
+        .account-name {
+            font-size: 1.6em;
+            font-weight: bold;
+        }
+        .account-pl {
+            font-size: 2em;
+            font-weight: bold;
+        }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            font-size: 1.1em;
+        }
+        .metric-label { opacity: 0.8; }
+        .metric-value { font-weight: 600; }
+        .positive { color: #00ff88; }
+        .negative { color: #ff5252; }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Live Performance Dashboard</h1>
+            <p style="font-size: 1.3em; opacity: 0.9; margin: 15px 0;">
+                100% LIVE Data from Google Cloud Trading System
+            </p>
+            <div>
+                <div class="cloud-badge">
+                    <span class="pulse"></span>
+                    Connected to Google Cloud
+                </div>
+                <div class="cloud-badge" id="update-badge">
+                    Last Update: Loading...
+                </div>
+            </div>
+        </div>
+
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-label">Total Balance</div>
+                <div class="summary-value" id="total-balance">Loading...</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Unrealized P&L</div>
+                <div class="summary-value" id="total-pl">Loading...</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Open Trades</div>
+                <div class="summary-value" id="total-trades">Loading...</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Active Accounts</div>
+                <div class="summary-value">3</div>
+            </div>
+        </div>
+
+        <div class="accounts-grid" id="accounts-container"></div>
+
+        <div class="footer">
+            <p>🌐 Data Source: https://ai-quant-trading.uc.r.appspot.com</p>
+            <p>🔄 Auto-refresh every 5 seconds | 100% LIVE OANDA Data</p>
+        </div>
+    </div>
+
+    <script>
+        const CLOUD_URL = 'https://ai-quant-trading.uc.r.appspot.com';
+
+        async function loadLiveData() {
+            try {
+                const response = await fetch(`${CLOUD_URL}/api/accounts`);
+                const data = await response.json();
+                
+                updateDashboard(data);
+                
+                document.getElementById('update-badge').textContent = 
+                    'Updated: ' + new Date().toLocaleTimeString();
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('update-badge').textContent = 'Error loading data';
+            }
+        }
+
+        function updateDashboard(data) {
+            if (data.status !== 'success' || !data.accounts) return;
+            
+            let totalBalance = 0;
+            let totalPL = 0;
+            let totalTrades = 0;
+            
+            const container = document.getElementById('accounts-container');
+            container.innerHTML = '';
+            
+            Object.entries(data.accounts).forEach(([id, account]) => {
+                totalBalance += account.balance || 0;
+                totalPL += account.unrealized_pl || 0;
+                totalTrades += account.open_trades || 0;
+                
+                const card = document.createElement('div');
+                card.className = 'account-card';
+                
+                const plClass = (account.unrealized_pl || 0) >= 0 ? 'positive' : 'negative';
+                const plSign = (account.unrealized_pl || 0) >= 0 ? '+' : '';
+                
+                card.innerHTML = `
+                    <div class="account-header">
+                        <div class="account-name">${account.display_name || account.account_name}</div>
+                        <div class="account-pl ${plClass}">${plSign}$${(account.unrealized_pl || 0).toFixed(2)}</div>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">💰 Balance:</span>
+                        <span class="metric-value">$${(account.balance || 0).toFixed(2)}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">📊 Open Trades:</span>
+                        <span class="metric-value">${account.open_trades || 0}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">📈 Open Positions:</span>
+                        <span class="metric-value">${account.open_positions || 0}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">🎯 Strategy:</span>
+                        <span class="metric-value">${account.strategy || 'N/A'}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">💵 Realized P&L:</span>
+                        <span class="metric-value ${(account.realized_pl || 0) >= 0 ? 'positive' : 'negative'}">
+                            ${(account.realized_pl || 0) >= 0 ? '+' : ''}$${(account.realized_pl || 0).toFixed(2)}
+                        </span>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+            
+            document.getElementById('total-balance').textContent = '$' + totalBalance.toFixed(2);
+            document.getElementById('total-pl').textContent = 
+                (totalPL >= 0 ? '+' : '') + '$' + totalPL.toFixed(2);
+            document.getElementById('total-pl').className = 
+                'summary-value ' + (totalPL >= 0 ? 'positive' : 'negative');
+            document.getElementById('total-trades').textContent = totalTrades;
+        }
+
+        // Load immediately and every 5 seconds
+        loadLiveData();
+        setInterval(loadLiveData, 5000);
+    </script>
+</body>
+</html>

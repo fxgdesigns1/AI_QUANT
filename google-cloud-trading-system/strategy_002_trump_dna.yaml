@@ -1,0 +1,55 @@
+# ═══════════════════════════════════════════════════════════════
+# ALL-WEATHER 70WR (Account 002) - TRUMP DNA
+# 70% Win Rate Strategy - All Market Conditions
+# ═══════════════════════════════════════════════════════════════
+
+account: "101-004-30719775-002"
+name: "All-Weather 70% WR"
+balance: 100000
+
+# TRUMP DNA - TOP DOWN
+monthly_target: 48000      # $48k/month (70% WR conservative)
+weekly_target: 12000       # $12k/week
+daily_target: 1714         # $1.7k/day
+weekly_trades_target: 5    # 5 quality trades
+daily_trade_limit: 2       # MAX 2 per day
+
+# ALL-WEATHER ZONES (Multiple Pairs)
+
+eur_usd_zones:
+  - {price: 1.1600, type: "SUPPORT", confidence: 0.95, tp: 0.0024, sl: 0.0008}
+  - {price: 1.1640, type: "MID", confidence: 0.85, tp: 0.0024, sl: 0.0008}
+  - {price: 1.1680, type: "RESISTANCE", confidence: 0.95, tp: 0.0024, sl: 0.0008}
+
+gbp_usd_zones:
+  - {price: 1.3300, type: "SUPPORT", confidence: 0.95, tp: 0.0024, sl: 0.0008}
+  - {price: 1.3350, type: "MID", confidence: 0.85, tp: 0.0024, sl: 0.0008}
+  - {price: 1.3400, type: "RESISTANCE", confidence: 0.95, tp: 0.0024, sl: 0.0008}
+
+usd_jpy_zones:
+  - {price: 151.00, type: "SUPPORT", confidence: 0.95, tp: 0.30, sl: 0.10}
+  - {price: 151.50, type: "MID", confidence: 0.85, tp: 0.30, sl: 0.10}
+  - {price: 152.00, type: "RESISTANCE", confidence: 0.95, tp: 0.30, sl: 0.10}
+
+aud_usd_zones:
+  - {price: 0.6500, type: "SUPPORT", confidence: 0.95, tp: 0.0024, sl: 0.0008}
+  - {price: 0.6520, type: "MID", confidence: 0.85, tp: 0.0024, sl: 0.0008}
+  - {price: 0.6550, type: "RESISTANCE", confidence: 0.95, tp: 0.0024, sl: 0.0008}
+
+# ALL-WEATHER PHILOSOPHY
+strategy_philosophy: "Works in trending AND ranging markets - 70% win rate target"
+
+entry_criteria:
+  - Price at zone +/- 10 pips
+  - EMA alignment OR ranging (works both ways)
+  - Momentum 0.03%+ OR consolidation bounce
+  - No major conflicting news
+  - Clean S/R level
+
+risk_reward:
+  rr_ratio: 3.0          # 3:1 for all
+  major_pairs_tp: 0.0024 # 24 pips
+  major_pairs_sl: 0.0008 # 8 pips
+  jpy_pairs_tp: 0.30
+  jpy_pairs_sl: 0.10
+

@@ -1,0 +1,55 @@
+# AUTOMATED TRADING SCHEDULE - LONDON TIME
+# Deploy this to Google Cloud App Engine for automatic notifications
+
+cron:
+# ============================================================================
+# 6:00 AM - PRE-MARKET BRIEFING
+# ============================================================================
+- description: "Pre-Market Briefing (News + Overnight Moves)"
+  url: /cron/pre-market-briefing
+  schedule: every day 06:00
+  timezone: Europe/London
+  
+# ============================================================================
+# 8:00 AM - LONDON OPEN SCANNER (PRIME TIME #1)
+# ============================================================================
+- description: "London Open - Morning Opportunity Scanner"
+  url: /cron/morning-scan
+  schedule: every day 08:00
+  timezone: Europe/London
+
+# ============================================================================
+# 1:00 PM - LONDON/NY OVERLAP (PRIME TIME #2 - BEST LIQUIDITY)
+# ============================================================================
+- description: "London/NY Overlap - Peak Opportunity Scanner"
+  url: /cron/peak-scan
+  schedule: every day 13:00
+  timezone: Europe/London
+
+# ============================================================================
+# 5:00 PM - END OF DAY REVIEW
+# ============================================================================
+- description: "End of Day Performance Summary"
+  url: /cron/eod-summary
+  schedule: every day 17:00
+  timezone: Europe/London
+
+# ============================================================================
+# 9:00 PM - ASIAN SESSION PREVIEW
+# ============================================================================
+- description: "Asian Session Preview & Alerts Setup"
+  url: /cron/asian-preview
+  schedule: every day 21:00
+  timezone: Europe/London
+
+# ============================================================================
+# CONTINUOUS MONITORING (Every 15 minutes during trading hours)
+# ============================================================================
+- description: "Continuous market monitoring (8 AM - 5 PM London)"
+  url: /cron/continuous-monitor
+  schedule: every 15 minutes from 08:00 to 17:00
+  timezone: Europe/London
+
+
+
+

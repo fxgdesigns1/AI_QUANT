@@ -1,0 +1,93 @@
+# Sensitive credentials and API keys
+google-cloud-credentials/
+*.json
+!package.json
+!package-lock.json
+*credentials*.yaml
+*api_keys*.txt
+*.env
+.env.*
+
+# Exclude actual accounts file but keep template
+accounts.yaml
+**/accounts.yaml
+!accounts.yaml.template
+!**/accounts.yaml.template
+oanda_config.env
+news_api_config.env
+
+# Exclude any symlinks to credentials
+google-cloud-trading-system/accounts.yaml
+google-cloud-trading-system/oanda_config.env
+google-cloud-trading-system/news_api_config.env
+
+# Logs and temporary files
+logs/
+*.log
+temp_backup/
+backups/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+venv/
+ENV/
+env/
+
+# Test results
+test-results/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Backups and archives
+*.zip
+*.tar.gz
+*.bak
+*_backup_*/
+AI_Trading_System_Backup_*/
+AI_Trading_System_SavePoint_*/
+DESKTOP_HANDOFF_PACKAGE/
+autonomous-trading-system/
+
+# IDE and OS files
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Database files (if any)
+*.db
+*.sqlite
+*.sqlite3
+
+# Large data files
+*.csv
+*.parquet
+
+# Configuration files with sensitive data
+# (Keep template versions, ignore production configs)
+*_production.yaml
+*_prod.yaml
+
+*.bak*

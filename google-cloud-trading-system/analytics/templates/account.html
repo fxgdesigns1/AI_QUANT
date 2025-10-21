@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Account: {{ account_name }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0a0e1a; color: #e0e0e0; padding: 20px; }
+        h1 { color: #00d4aa; margin-bottom: 20px; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .metric-card { background: #1a1f2e; padding: 20px; border-radius: 8px; }
+        .metric-label { color: #8892a6; font-size: 14px; }
+        .metric-value { color: #ffffff; font-size: 24px; font-weight: 600; margin-top: 8px; }
+        .loading { text-align: center; padding: 40px; }
+    </style>
+</head>
+<body>
+    <h1>Account: {{ account_name }}</h1>
+    <div id="account-data" class="loading">Loading account data...</div>
+    
+    <script>
+        const accountName = "{{ account_name }}";
+        
+        async function loadAccountData() {
+            try {
+                const response = await fetch(`/api/account/${accountName}/data`);
+                const data = await response.json();
+                
+                const container = document.getElementById('account-data');
+                container.innerHTML = `
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-label">Balance</div>
+                            <div class="metric-value">$${(data.snapshot?.balance || 0).toLocaleString()}</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Win Rate</div>
+                            <div class="metric-value">${(data.metrics?.win_rate || 0).toFixed(1)}%</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Sharpe Ratio</div>
+                            <div class="metric-value">${(data.metrics?.sharpe_ratio || 0).toFixed(2)}</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Total Trades</div>
+                            <div class="metric-value">${data.metrics?.total_trades || 0}</div>
+                        </div>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Failed to load account data:', error);
+                document.getElementById('account-data').innerHTML = '<div class="loading">Error loading data</div>';
+            }
+        }
+        
+        loadAccountData();
+        setInterval(loadAccountData, 30000);
+    </script>
+</body>
+</html>
+
+

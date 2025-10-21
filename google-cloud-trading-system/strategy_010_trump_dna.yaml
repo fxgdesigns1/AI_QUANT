@@ -1,0 +1,68 @@
+# ═══════════════════════════════════════════════════════════════
+# ULTRA STRICT FOREX (Account 010) - TRUMP DNA
+# Multi-Pair Strategy - Ultra Selective
+# ═══════════════════════════════════════════════════════════════
+
+account: "101-004-30719775-010"
+name: "Ultra Strict Forex"
+balance: 100000
+
+# TRUMP DNA - TOP DOWN PLANNING
+monthly_target: 50000      # $50k/month (slightly lower - multi-pair)
+weekly_target: 12500       # $12.5k/week
+daily_target: 1785         # $1.8k/day
+weekly_trades_target: 6    # 6 QUALITY trades across pairs
+daily_trade_limit: 2       # MAX 2 per day
+
+# MULTI-PAIR ZONES
+
+# GBP/USD ZONES (Current: 1.3354)
+gbp_usd_zones:
+  - {price: 1.3300, type: "SUPPORT", confidence: 0.95, size: 500000}
+  - {price: 1.3350, type: "CONSOLIDATION", confidence: 0.85, size: 500000}
+  - {price: 1.3400, type: "RESISTANCE", confidence: 0.90, size: 500000}
+
+# EUR/USD ZONES (Current: 1.1638)
+eur_usd_zones:
+  - {price: 1.1600, type: "SUPPORT", confidence: 0.95, size: 500000}
+  - {price: 1.1640, type: "CONSOLIDATION", confidence: 0.85, size: 500000}
+  - {price: 1.1680, type: "RESISTANCE", confidence: 0.90, size: 500000}
+
+# USD/JPY ZONES (Current: 151.37)
+usd_jpy_zones:
+  - {price: 151.00, type: "SUPPORT", confidence: 0.95, size: 500000}
+  - {price: 151.50, type: "CONSOLIDATION", confidence: 0.85, size: 500000}
+  - {price: 152.00, type: "RESISTANCE", confidence: 0.90, size: 500000}
+
+# AUD/USD ZONES (Current: 0.6516)
+aud_usd_zones:
+  - {price: 0.6500, type: "SUPPORT", confidence: 0.95, size: 500000}
+  - {price: 0.6520, type: "CONSOLIDATION", confidence: 0.85, size: 500000}
+  - {price: 0.6550, type: "RESISTANCE", confidence: 0.90, size: 500000}
+
+# HIGH RR SETTINGS (3:1)
+risk_reward:
+  major_pairs:
+    tp_distance: 0.0024    # 24 pips
+    sl_distance: 0.0008    # 8 pips
+    rr_ratio: 3.0
+  jpy_pairs:
+    tp_distance: 0.30      # 30 pips
+    sl_distance: 0.10      # 10 pips
+    rr_ratio: 3.0
+
+# ECONOMIC CALENDAR - MULTI-CURRENCY
+economic_events:
+  this_week:
+    - {date: "2025-10-15", time: "13:30", event: "US CPI", impact: "HIGH", pairs: ["EUR_USD", "GBP_USD", "USD_JPY", "AUD_USD"]}
+    - {date: "2025-10-16", time: "07:00", event: "UK CPI", impact: "HIGH", pairs: ["GBP_USD"]}
+    - {date: "2025-10-16", time: "13:30", event: "US Retail Sales", impact: "MEDIUM", pairs: ["EUR_USD", "USD_JPY"]}
+
+# QUALITY CRITERIA (95%+)
+entry_criteria:
+  - Price within 15 pips of identified zone
+  - Triple EMA alignment
+  - Strong momentum (0.04%+)
+  - No conflicting news
+  - Clean S/R level
+

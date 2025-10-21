@@ -1,0 +1,68 @@
+# Analytics Service - F1 FREE TIER Optimization
+# Optimized for maximum cost savings using Google Cloud Free Tier
+
+runtime: python39
+service: analytics
+entrypoint: python app.py
+
+# =============================================================================
+# F1 FREE TIER OPTIMIZATION
+# =============================================================================
+automatic_scaling:
+  # FREE TIER: 28 instance-hours per day (F1 only)
+  min_instances: 1
+  max_instances: 1
+  
+  # Optimized for F1 efficiency
+  target_cpu_utilization: 0.9
+
+# =============================================================================
+# Instance Configuration - F1 FREE TIER
+# =============================================================================
+instance_class: F1
+
+# =============================================================================
+# Environment Variables - F1 OPTIMIZED
+# =============================================================================
+env_variables:
+  ANALYTICS_MODE: 'true'
+  ANALYTICS_PORT: '8080'
+  FLASK_SECRET_KEY: analytics-dashboard-secret-key-2025
+  GOLD_SCALP_ACCOUNT: 101-004-30719775-010
+  GOLD_SCALP_STRATEGY: ultra_strict_forex
+  OANDA_API_KEY: c01de9eb4d793c945ea0fcbb0620cc4e-d0c62eb93ed53e8db5a709089460794a
+  OANDA_BASE_URL: https://api-fxpractice.oanda.com
+  OANDA_ENVIRONMENT: practice
+  PRIMARY_ACCOUNT: 101-004-30719775-009
+  PRIMARY_STRATEGY: gold_scalping
+  READ_ONLY_MODE: 'true'
+  STRATEGY_ALPHA_ACCOUNT: 101-004-30719775-011
+  STRATEGY_ALPHA_STRATEGY: momentum_trading
+  TELEGRAM_CHAT_ID: '6100678501'
+  TELEGRAM_TOKEN: 7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU
+  
+  # F1 OPTIMIZATION
+  F1_FREE_TIER_MODE: 'true'
+  ULTRA_OPTIMIZED_RESOURCE_USAGE: 'true'
+  MINIMAL_MEMORY_USAGE: 'true'
+
+# =============================================================================
+# Handlers Configuration
+# =============================================================================
+handlers:
+  - url: /static
+    static_dir: static
+    secure: always
+  - url: /.*
+    script: auto
+    secure: always
+
+# =============================================================================
+# Network Configuration
+# =============================================================================
+network:
+  session_affinity: true
+
+
+
+

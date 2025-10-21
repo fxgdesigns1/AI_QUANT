@@ -1,0 +1,103 @@
+# ═══════════════════════════════════════════════════════════════
+# TRADING ACCOUNTS CONFIGURATION - TEMPLATE
+# ═══════════════════════════════════════════════════════════════
+#
+# SETUP INSTRUCTIONS:
+#  1. Copy this file to accounts.yaml
+#  2. Replace placeholder values with your actual OANDA credentials
+#  3. Configure your trading strategies and instruments
+#  4. Adjust risk settings according to your preferences
+#
+# ═══════════════════════════════════════════════════════════════
+
+# Trading Accounts (edit/add as needed)
+accounts:
+  
+  # ─────────────────────────────────────────────────────────────
+  # Account 1: Example Gold Trading Account
+  # ─────────────────────────────────────────────────────────────
+  - id: "YOUR-OANDA-ACCOUNT-ID-1"
+    name: "Gold Primary 5M"
+    display_name: "🥇 Gold Scalping"
+    strategy: "gold_scalping"
+    description: "High-frequency gold scalping with economic indicators"
+    
+    # Instruments to trade
+    instruments:
+      - XAU_USD
+    
+    # Risk management settings
+    risk_settings:
+      max_risk_per_trade: 0.01      # 1% MAX per trade
+      max_portfolio_risk: 0.75       # 75% total portfolio risk
+      max_positions: 3               # Max concurrent positions
+      daily_trade_limit: 100         # Max trades per day
+    
+    # Account status
+    active: true                     # Set false to disable
+    priority: 1                      # Display order (1=highest)
+  
+  # ─────────────────────────────────────────────────────────────
+  # Account 2: Example Forex Trading Account
+  # ─────────────────────────────────────────────────────────────
+  - id: "YOUR-OANDA-ACCOUNT-ID-2"
+    name: "Forex Scalper 15M"
+    display_name: "💱 Forex Trader"
+    strategy: "adaptive_momentum"
+    description: "Multi-pair forex trading"
+    
+    # Instruments to trade
+    instruments:
+      - EUR_USD
+      - GBP_USD
+      - USD_JPY
+    
+    # Risk management settings
+    risk_settings:
+      max_risk_per_trade: 0.02      # 2% per trade
+      max_portfolio_risk: 0.10       # 10% total portfolio risk
+      max_positions: 5               # Max concurrent positions
+      daily_trade_limit: 50          # Max trades per day
+    
+    # Account status
+    active: true
+    priority: 2
+
+# ═══════════════════════════════════════════════════════════════
+# AVAILABLE STRATEGIES:
+# ═══════════════════════════════════════════════════════════════
+#
+# - gold_scalping: High-frequency gold trading
+# - adaptive_momentum: EMA-based momentum trading
+# - champion_strategy: High win-rate stable returns
+# - gold_dna: Specialized gold trading
+# - hybrid_manual: Semi-automated trading
+#
+# ═══════════════════════════════════════════════════════════════
+
+# API Configuration
+api:
+  oanda:
+    practice_url: "https://api-fxpractice.oanda.com"
+    live_url: "https://api-fxtrade.oanda.com"
+    api_key: "YOUR-OANDA-API-KEY-HERE"
+    account_id: "YOUR-DEFAULT-ACCOUNT-ID"
+    environment: "practice"  # or "live" for real trading
+
+# Global Settings
+global_settings:
+  timezone: "Europe/London"
+  trading_hours:
+    start: "08:00"  # London session start
+    end: "17:00"    # London session end
+  
+  # Risk limits (global overrides)
+  max_total_exposure: 0.10  # 10% max total portfolio exposure
+  max_concurrent_positions: 5
+  
+  # Telegram notifications (optional)
+  telegram:
+    enabled: false
+    bot_token: "YOUR-TELEGRAM-BOT-TOKEN"
+    chat_id: "YOUR-TELEGRAM-CHAT-ID"
+

@@ -1,0 +1,43 @@
+# ═══════════════════════════════════════════════════════════════
+# STRATEGY RANK #3 (Account 006) - TRUMP DNA
+# Sharpe 35.18 - GBP Specialist + Cross Pairs
+# ═══════════════════════════════════════════════════════════════
+
+account: "101-004-30719775-006"
+name: "Strategy Rank #3"
+balance: 100000
+
+# TRUMP DNA
+monthly_target: 56000
+weekly_target: 14000
+daily_target: 2000
+weekly_trades_target: 7
+daily_trade_limit: 2
+
+# GBP SPECIALIST ZONES
+gbp_usd_zones:
+  - {price: 1.3300, type: "SUPPORT", confidence: 0.95}
+  - {price: 1.3350, type: "MID", confidence: 0.85}
+  - {price: 1.3400, type: "RESISTANCE", confidence: 0.95}
+  - {price: 1.3450, type: "BREAKOUT", confidence: 0.80}
+
+# CROSS PAIR: GBP/JPY
+gbp_jpy_zones:
+  - {price: 201.00, type: "SUPPORT", confidence: 0.90}
+  - {price: 202.00, type: "MID", confidence: 0.85}
+  - {price: 203.00, type: "RESISTANCE", confidence: 0.90}
+
+entry_criteria:
+  - GBP specialist (focus on GBP movements)
+  - Zone entry +/- 10 pips
+  - UK news awareness
+  - 0.04%+ momentum
+  - Clean GBP trend
+
+risk_reward:
+  rr_ratio: 3.0
+  gbp_usd_tp: 0.0024
+  gbp_usd_sl: 0.0008
+  gbp_jpy_tp: 0.30
+  gbp_jpy_sl: 0.10
+

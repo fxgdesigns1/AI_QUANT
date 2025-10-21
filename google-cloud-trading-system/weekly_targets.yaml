@@ -1,0 +1,245 @@
+# ═══════════════════════════════════════════════════════════════
+# WEEKLY PROFIT TARGETS & LOSS LIMITS
+# ═══════════════════════════════════════════════════════════════
+
+# Week: October 6-12, 2025
+current_week:
+  start_date: "2025-10-06"
+  end_date: "2025-10-12"
+  
+  # Account Targets
+  accounts:
+    
+    "101-004-30719775-006":
+      name: "GBP Strategy #3"
+      balance: 97815               # ~$98K
+      weekly_target_min: 1956.30   # 2% minimum ($98K * 0.02)
+      weekly_target_goal: 5868.90  # 6% goal ($98K * 0.06)
+      daily_drawdown_max: -2934.45 # 3% max daily loss ($98K * 0.03)
+      current_pl: -4293.00         # After USD/CAD closure
+      trades_this_week: 11
+      status: "TESTING"            # Demo - competing for live deployment
+      rank: "TBD"
+    
+    "101-004-30719775-007":
+      name: "GBP Strategy #2"
+      balance: 90537               # ~$91K
+      weekly_target_min: 1810.74   # 2% minimum
+      weekly_target_goal: 5432.22  # 6% goal
+      daily_drawdown_max: -2716.12 # 3% max daily loss
+      current_pl: 0.00
+      trades_this_week: 0
+      status: "TESTING"
+      rank: "TBD"
+    
+    "101-004-30719775-008":
+      name: "GBP Strategy #1"
+      balance: 94263               # ~$94K
+      weekly_target_min: 1885.26   # 2% minimum
+      weekly_target_goal: 5655.76  # 6% goal
+      daily_drawdown_max: -2827.88 # 3% max daily loss
+      current_pl: 0.00
+      trades_this_week: 0
+      status: "TESTING"
+      rank: "TBD"
+    
+    "101-004-30719775-010":
+      name: "Ultra Strict Forex"
+      balance: 79027               # ~$79K
+      weekly_target_min: 1580.55   # 2% minimum
+      weekly_target_goal: 4741.64  # 6% goal
+      daily_drawdown_max: -2370.82 # 3% max daily loss
+      current_pl: -29.00
+      trades_this_week: 1
+      status: "TESTING"
+      rank: "TBD"
+    
+    "101-004-30719775-009":
+      name: "Gold Scalping (Trump Week)"
+      balance: 86148               # ~$86K
+      weekly_target_min: 1722.96   # 2% minimum
+      weekly_target_goal: 5168.90  # 6% goal
+      daily_drawdown_max: -2584.45 # 3% max daily loss
+      current_pl: 0.00
+      trades_this_week: 0
+      status: "CHAMPION"           # Best performer - Gold standard
+      rank: 1                      # Current leader
+      notes: "Excellent sniper entries - model for all other strategies"
+    
+    "101-004-30719775-011":
+      name: "Momentum Trading"
+      balance: 119536              # After -$3,690 loss
+      weekly_target_min: 0.00      # DISABLED
+      weekly_target_goal: 0.00
+      daily_drawdown_max: 0.00
+      current_pl: -3689.69
+      trades_this_week: 25
+      status: "ELIMINATED"         # Failed test - do not use for live
+      rank: 6
+      notes: "FAILED - Fighting trends. Broken logic. Do not deploy to live."
+
+  # Overall Portfolio Targets
+  portfolio:
+    weekly_target_min: 10955.81     # 2% minimum across all accounts
+    weekly_target_goal: 32867.42    # 6% goal across all accounts
+    daily_drawdown_max: -16433.71   # 3% max daily loss (portfolio-wide)
+    current_week_pl: -7982.69       # After USD/CAD disaster (011 + 006)
+    status: "STRATEGY COMPETITION"
+    notes: "Demo accounts testing which strategy deserves live money"
+    
+  # Strategy Competition Rankings (Updated Daily)
+  competition:
+    purpose: "Find the BEST strategy to deploy with real money"
+    evaluation_criteria:
+      - "Weekly return 2-6% (higher is better)"
+      - "Max drawdown <3% (lower is better)"
+      - "Win rate 75%+ (higher is better)"
+      - "Sniper entry quality (Gold standard)"
+      - "Consistency (steady growth, not spiky)"
+    
+    current_leader: "101-004-30719775-009"  # Gold Scalping
+    reason: "Best entry quality, consistent profits, proven performer"
+    
+    eliminated:
+      - "101-004-30719775-011"  # Momentum - Failed (fighting trends, -$3.7K)
+      - "101-004-30719775-006"  # GBP #3 - Failed (fighting trends, -$4.3K)
+
+# ═══════════════════════════════════════════════════════════════
+# SAFETY RULES
+# ═══════════════════════════════════════════════════════════════
+
+safety_rules:
+  
+  # Daily Limits (Per Account)
+  daily_loss_limit_default: -150.00     # Stop trading if lose this in one day
+  daily_profit_target: 50.00            # Reduce risk if hit this in one day
+  max_consecutive_losses: 3             # Review strategy after 3 straight losses
+  
+  # Weekly Limits (Portfolio)
+  weekly_portfolio_stop: -1500.00       # Emergency stop all trading
+  weekly_profit_ceiling: 3000.00        # If hit this, reduce risk significantly
+  
+  # Per-Trade Limits
+  max_loss_per_trade: -150.00           # Hard stop at this level
+  max_positions_per_instrument: 3       # No more than 3 trades per pair
+  max_same_direction: 3                 # No more than 3 BUY or 3 SELL on same instrument
+  
+  # Concentration Risk
+  max_portfolio_in_one_pair: 0.30       # Max 30% of portfolio in any one instrument
+  max_correlated_exposure: 0.50         # Max 50% in correlated pairs
+  
+  # Time-Based
+  max_hours_per_trade: 6.0              # Close after 6 hours max
+  review_strategy_if_losing_days: 3     # Review if 3 losing days in a row
+
+# ═══════════════════════════════════════════════════════════════
+# TELEGRAM REPORTING SCHEDULE
+# ═══════════════════════════════════════════════════════════════
+
+telegram_reporting:
+  
+  morning_briefing:
+    time: "06:00"                       # 6:00 AM London
+    timezone: "Europe/London"
+    include:
+      - portfolio_summary
+      - overnight_changes
+      - weekly_target_progress
+      - today_news_calendar
+      - key_levels_to_watch
+  
+  evening_results:
+    time: "21:30"                       # 9:30 PM London
+    timezone: "Europe/London"
+    include:
+      - daily_pl_by_account
+      - winning_losing_trades
+      - weekly_progress
+      - profit_protections_activated
+      - news_events_impact
+      - tomorrow_outlook
+  
+  weekly_summary:
+    day: "Sunday"
+    time: "20:00"                       # 8:00 PM London
+    include:
+      - weekly_pl_all_accounts
+      - target_achievement
+      - best_worst_performers
+      - lessons_learned
+      - next_week_plan
+      - strategy_adjustments_needed
+  
+  real_time_alerts:
+    - daily_loss_limit_hit
+    - weekly_stop_loss_approaching
+    - large_loss_single_trade (>$200)
+    - concentration_limit_approaching
+    - news_blocking_trade
+    - profit_protection_activated
+    - strategy_disabled_emergency
+
+# ═══════════════════════════════════════════════════════════════
+# NEWS AWARENESS SETTINGS
+# ═══════════════════════════════════════════════════════════════
+
+news_awareness:
+  enabled: true
+  
+  # High-impact events to watch
+  block_trading_events:
+    - NFP (US Non-Farm Payrolls)
+    - FOMC meetings
+    - ECB decisions
+    - BOE decisions
+    - BOJ decisions
+    - GDP releases (major economies)
+    - CPI / Inflation data (major economies)
+  
+  # Sentiment scoring
+  check_before_each_trade: true
+  block_if_sentiment_against: true      # Don't fight major news
+  reduce_size_if_mixed_sentiment: true
+  
+  # News sources
+  sources:
+    - forexfactory
+    - investing_com
+    - reuters
+    - bloomberg
+    - twitter_forex_accounts
+
+# ═══════════════════════════════════════════════════════════════
+# LESSONS FROM ACCOUNT 011 DISASTER
+# ═══════════════════════════════════════════════════════════════
+
+lessons_learned:
+  
+  account_011_failure:
+    date: "2025-10-09"
+    issue: "Fighting USD/CAD uptrend with 25 SELL positions"
+    loss: -3689.69
+    root_cause: "Broken trend detection in momentum strategy"
+    
+    fixes_implemented:
+      - "Disabled account until strategy fixed"
+      - "USD_CAD removed from trading instruments"
+      - "Risk limits drastically reduced (100→10 trades/day)"
+      - "Position limits cut (7→3 max positions)"
+      - "Daily loss limits added (-$150)"
+      - "Concentration limits enforced (max 3 per instrument)"
+    
+    prevention_measures:
+      - "Trend must be confirmed before entry"
+      - "Max 3 trades in same direction on same instrument"
+      - "Daily loss limit auto-stops trading"
+      - "Real-time Telegram alerts on losses >$200"
+      - "News sentiment must align with trade direction"
+    
+    accountability:
+      - "Daily Telegram reports (9:30 PM London)"
+      - "Weekly performance summaries (Sundays)"
+      - "Transparent: Show ALL results good and bad"
+      - "Measurable: Weekly targets to hit"
+      - "Actionable: Disable strategies that consistently lose"
+
