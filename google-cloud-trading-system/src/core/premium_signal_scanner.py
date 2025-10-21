@@ -59,7 +59,7 @@ class PremiumSignalScanner:
     def __init__(self, oanda_client, data_feed):
         self.oanda = oanda_client
         self.data_feed = data_feed
-        self.min_quality_score = 70  # Only premium signals
+        self.min_quality_score = 40  # AGGRESSIVE: Lower threshold for more signals
         self.max_signals_per_day = 10
         self.pending_signals = []
         

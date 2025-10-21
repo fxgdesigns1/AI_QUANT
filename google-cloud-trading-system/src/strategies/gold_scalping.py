@@ -75,7 +75,7 @@ class GoldScalpingStrategy:
         # OPTIMIZED QUALITY FILTERS
         # ===============================================
         self.max_daily_quality_trades = 5    # Top 5 quality trades per day
-        self.quality_score_threshold = 0.90  # Very high quality threshold
+        self.quality_score_threshold = 0.40  # AGGRESSIVE: Lower for more trades (was 0.90)
         self.daily_trade_ranking = True      # Rank and select best
         self.require_multiple_confirmations = True
         self.min_confirmations = 3           # At least 3 confirmations
