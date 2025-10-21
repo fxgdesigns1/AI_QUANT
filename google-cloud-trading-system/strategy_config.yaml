@@ -4,7 +4,7 @@ ultra_strict_forex:
   account: '010'
   parameters:
     max_trades_per_day: 999
-    min_trades_today: 10
+    min_trades_today: 0
     max_positions: 50
     lot_size: 25000
   entry:
@@ -29,7 +29,7 @@ gold_scalping:
   account: 009
   parameters:
     max_trades_per_day: 20
-    min_trades_today: 2
+    min_trades_today: 0
     max_positions: 3
     lot_size: 10000
     min_warmup_prices: 2
@@ -94,4 +94,15 @@ system:
   telegram_alerts: true
   log_all_changes: true
   deployment: google-cloud
+  
+  # LEARNING & HONESTY SYSTEM
+  learning_enabled: true
+  loss_tracking: true
+  early_trend_detection: true
+  brutal_honesty: true
+  daily_outlook_alerts: true
+  win_probability_estimates: true
+  
+  # CRITICAL: NO FORCED TRADES
+  enforce_zero_minimums: true
 
