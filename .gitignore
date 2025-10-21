@@ -58,6 +58,10 @@ test-results/
 .coverage
 htmlcov/
 
+# Node modules (should never be committed)
+node_modules/
+**/node_modules/
+
 # Backups and archives
 *.zip
 *.tar.gz
@@ -67,6 +71,8 @@ AI_Trading_System_Backup_*/
 AI_Trading_System_SavePoint_*/
 DESKTOP_HANDOFF_PACKAGE/
 autonomous-trading-system/
+ai-trading-copilot-starter/
+ai_trading_copilot_starter_*.zip
 
 # IDE and OS files
 .DS_Store
