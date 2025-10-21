@@ -14,6 +14,25 @@ import threading
 from datetime import datetime, timedelta
 import random
 from flask import Flask, render_template, jsonify, request, Response
+import json
+
+# Custom JSON encoder to fix serialization issues
+class SafeJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, set):
+            return list(obj)
+        elif isinstance(obj, (list, tuple)):
+            return [self.default(item) for item in obj]
+        elif isinstance(obj, dict):
+            return {str(k): self.default(v) for k, v in obj.items()}
+        elif hasattr(obj, '__dict__'):
+            return {k: self.default(v) for k, v in obj.__dict__.items()}
+        elif hasattr(obj, '_asdict'):  # namedtuple
+            return self.default(obj._asdict())
+        elif hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes)):
+            return [self.default(item) for item in obj]
+        else:
+            return str(obj)
 from flask_socketio import SocketIO, emit
 from typing import Dict, List, Any, Optional
 import logging
@@ -77,6 +96,7 @@ app = Flask(
     static_folder=STATIC_DIR
 )
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'your-secret-key-here')
+app.json_encoder = SafeJSONEncoder
 socketio = SocketIO(
     app,
     cors_allowed_origins="*",
@@ -488,9 +508,9 @@ class AdvancedDashboardManager:
                     'timestamp': self._safe_timestamp(datetime.now()),
                     'system_status': 'online',
                     'live_data_mode': self.use_live_data,
-                    'active_accounts': len(self.active_accounts),
+                    'active_accounts': len(list(self.active_accounts)),
                     'account_statuses': account_statuses,
-                    'trading_systems': self.trading_systems,
+                    'trading_systems': {k: {kk: (list(vv) if isinstance(vv, set) else vv) for kk, vv in v.items()} for k, v in self.trading_systems.items()},
                     'market_data': market_data,
                     'trading_metrics': trading_metrics,
                     'news_data': news_data,
@@ -791,7 +811,7 @@ class AdvancedDashboardManager:
                     'margin_available': account_status.get('margin_available', 0),
                     'open_positions': account_status.get('open_positions', 0),
                     'risk_settings': account_status.get('risk_settings', {}),
-                    'instruments': account_status.get('instruments', []),
+                    'instruments': list(account_status.get('instruments', [])),
                     'status': account_status.get('status', 'unknown')
                 }
             
@@ -998,12 +1018,55 @@ def index():
 @app.route('/api/status')
 def api_status():
     """Get system status"""
-    return jsonify(dashboard_manager.get_system_status())
+    try:
+        status = dashboard_manager.get_system_status()
+        # Manual conversion to ensure JSON serialization
+        if isinstance(status, dict):
+            # Convert any sets to lists
+            def convert_sets(obj):
+                if isinstance(obj, set):
+                    return list(obj)
+                elif isinstance(obj, dict):
+                    return {k: convert_sets(v) for k, v in obj.items()}
+                elif isinstance(obj, list):
+                    return [convert_sets(item) for item in obj]
+                else:
+                    return obj
+            status = convert_sets(status)
+        return jsonify(status)
+    except Exception as e:
+        logger.error(f"❌ API Status error: {e}")
+        return jsonify({
+            'error': str(e),
+            'status': 'error',
+            'timestamp': datetime.now().isoformat()
+        })
 
 @app.route('/api/overview')
 def api_overview():
     """Get account overview"""
-    return jsonify(dashboard_manager.get_account_overview())
+    try:
+        overview = dashboard_manager.get_account_overview()
+        # Manual conversion to ensure JSON serialization
+        if isinstance(overview, dict):
+            def convert_sets(obj):
+                if isinstance(obj, set):
+                    return list(obj)
+                elif isinstance(obj, dict):
+                    return {k: convert_sets(v) for k, v in obj.items()}
+                elif isinstance(obj, list):
+                    return [convert_sets(item) for item in obj]
+                else:
+                    return obj
+            overview = convert_sets(overview)
+        return jsonify(overview)
+    except Exception as e:
+        logger.error(f"❌ API Overview error: {e}")
+        return jsonify({
+            'error': str(e),
+            'status': 'error',
+            'timestamp': datetime.now().isoformat()
+        })
 
 @app.route('/api/execute_signals', methods=['POST'])
 def api_execute_signals():

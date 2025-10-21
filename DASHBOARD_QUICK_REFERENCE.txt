@@ -1,0 +1,39 @@
+==========================================
+  WORKING DASHBOARD - QUICK REFERENCE
+==========================================
+
+✅ DASHBOARD URL:
+   http://localhost:8080/dashboard
+
+✅ WHAT'S WORKING:
+   - Beautiful original dark design
+   - 3 Trading signals showing:
+     • EUR/USD BUY (85 quality, 2.1 R:R)
+     • XAU_USD SELL (72 quality, 1.6 R:R)  
+     • GBP_USD BUY (91 quality, 2.8 R:R)
+   - 3 Accounts with $300K+ total balance
+   - Live market data and prices
+   - Readable text (fixed gray colors)
+
+✅ TO START DASHBOARD:
+   cd /Users/mac/quant_system_clean
+   python3 working_beautiful_dashboard.py
+
+✅ TO STOP DASHBOARD:
+   kill $(lsof -ti:8080)
+
+✅ TO CHECK IF RUNNING:
+   lsof -ti:8080
+
+✅ VIEW LOGS:
+   tail -f logs/beautiful_dashboard.log
+
+✅ TEST APIs:
+   curl http://localhost:8080/api/opportunities
+   curl http://localhost:8080/api/accounts
+   curl http://localhost:8080/api/status
+
+==========================================
+STATUS: ALL FIXED AND VERIFIED ✅
+==========================================
+
