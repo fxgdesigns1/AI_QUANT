@@ -1,0 +1,30 @@
+# ICT OTE Strategy Optimization Requirements
+# Core dependencies for backtesting and Monte Carlo simulation
+
+# Data processing
+pandas>=1.5.0
+numpy>=1.21.0
+
+# Statistical analysis
+scipy>=1.9.0
+scikit-learn>=1.1.0
+
+# Visualization
+matplotlib>=3.5.0
+seaborn>=0.11.0
+
+# HTTP requests
+requests>=2.28.0
+
+# Data handling
+dataclasses-json>=0.5.0
+
+# Optional: Advanced optimization
+optuna>=3.0.0
+hyperopt>=0.2.7
+
+# Optional: Parallel processing
+joblib>=1.2.0
+
+# Optional: Progress bars
+tqdm>=4.64.0
