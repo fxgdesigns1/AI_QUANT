@@ -88,7 +88,7 @@ class UltraStrictForexStrategy:
         # REALISTIC QUALITY FILTERS (FIXED OCT 16, 2025)
         # ===============================================
         self.max_daily_quality_trades = 5    # Top 5 quality trades per day
-        self.quality_score_threshold = 0.50  # LOWERED FOR REAL MARKET (was 0.60)
+        self.quality_score_threshold = 0.30  # AGGRESSIVE: Lower for more trades (was 0.50)
         self.daily_trade_ranking = True      # Rank and select best
         self.require_multiple_confirmations = True
         self.min_confirmations = 2           # 2 confirmations (was 3)

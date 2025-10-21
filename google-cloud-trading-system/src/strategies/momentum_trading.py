@@ -101,7 +101,7 @@ class MomentumTradingStrategy:
         self.london_session_end = 16         # 16:00 UTC
         self.ny_session_start = 13           # 13:00 UTC
         self.ny_session_end = 21             # 21:00 UTC
-        self.min_time_between_trades_minutes = 15  # REDUCED: 15 min gap (was 60 - way too long!)
+        self.min_time_between_trades_minutes = 0  # AGGRESSIVE: NO GAP - Trade anytime!
         self.require_trend_continuation = False    # DISABLED: Too strict, already have 100-bar trend filter
         self.trend_continuation_periods = 5        # Last 5 periods must show continuation
         
@@ -181,7 +181,7 @@ class MomentumTradingStrategy:
         self.target_trades_per_day = 5           # Soft target (~5 trades/day)
         
         # Base thresholds (will be adjusted by regime) - LOWERED FOR REAL MARKET
-        self.base_quality_threshold = 40     # Optimized for better win rate
+        self.base_quality_threshold = 20     # AGGRESSIVE: Lower for more entries (was 40)
         self.base_confidence = 0.50          # Was 0.65, too strict
         self.base_momentum = 0.0010          # Optimized: 0.10% for stronger signals
         
