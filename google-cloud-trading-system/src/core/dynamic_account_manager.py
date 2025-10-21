@@ -1,0 +1,276 @@
+#!/usr/bin/env python3
+"""
+Dynamic Account Manager - Config-Driven
+Automatically discovers and manages accounts from accounts.yaml
+NO CODE CHANGES needed to add/remove/modify accounts!
+"""
+
+import os
+import logging
+from typing import Dict, List, Optional, Any
+from dataclasses import dataclass
+
+from .oanda_client import OandaClient, OandaAccount
+from .config_loader import get_config_loader, AccountConfig as YAMLAccountConfig
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class AccountConfig:
+    """Runtime account configuration"""
+    account_id: str
+    account_name: str
+    display_name: str
+    api_key: str
+    environment: str
+    strategy_name: str
+    risk_settings: Dict[str, Any]
+    instruments: List[str]
+    active: bool
+    priority: int
+
+
+class DynamicAccountManager:
+    """Production multi-account manager - FULLY AUTOMATIC"""
+    
+    def __init__(self):
+        """Initialize account manager from YAML configuration"""
+        self.accounts: Dict[str, OandaClient] = {}
+        self.account_configs: Dict[str, AccountConfig] = {}
+        self.strategy_mappings: Dict[str, str] = {}
+        
+        # Load from YAML
+        self._load_from_yaml()
+        
+        # Initialize accounts
+        self._initialize_accounts()
+        
+        logger.info("✅ Dynamic Account Manager initialized")
+        logger.info(f"📊 Active accounts: {len(self.accounts)}")
+        for account_id, config in self.account_configs.items():
+            logger.info(f"   • {config.display_name}: {account_id[-3:]} - {config.strategy_name}")
+    
+    def _load_from_yaml(self):
+        """Load ALL accounts directly from accounts.yaml - FIXED OCT 13, 2025"""
+        import yaml
+        
+        try:
+            # Get API credentials from environment
+            api_key = os.getenv('OANDA_API_KEY')
+            environment = os.getenv('OANDA_ENVIRONMENT', 'practice')
+            
+            # Load accounts.yaml DIRECTLY (no config_loader middleman)
+            config_path = os.path.join(os.path.dirname(__file__), '../../accounts.yaml')
+            logger.info(f"📂 Loading accounts from: {config_path}")
+            
+            with open(config_path, 'r') as f:
+                config_data = yaml.safe_load(f)
+            
+            accounts_list = config_data.get('accounts', [])
+            logger.info(f"📋 Found {len(accounts_list)} accounts in accounts.yaml")
+            
+            for account_data in accounts_list:
+                # Only load active accounts
+                if not account_data.get('active', False):
+                    logger.info(f"⏭️  Skipping inactive: {account_data.get('name', 'Unknown')}")
+                    continue
+                
+                account_id = account_data.get('id')
+                if not account_id:
+                    logger.warning(f"⚠️  Skipping account without ID")
+                    continue
+                
+                config = AccountConfig(
+                    account_id=account_id,
+                    account_name=account_data.get('name', f'Account_{account_id[-3:]}'),
+                    display_name=account_data.get('display_name', account_data.get('name', 'Unknown')),
+                    api_key=api_key,
+                    environment=environment,
+                    strategy_name=account_data.get('strategy', 'unknown'),
+                    risk_settings=account_data.get('risk_settings', {}),
+                    instruments=account_data.get('instruments', []),
+                    active=account_data.get('active', True),
+                    priority=account_data.get('priority', 99)
+                )
+                
+                self.account_configs[account_id] = config
+                self.strategy_mappings[account_id] = account_data.get('strategy', 'unknown')
+                
+                logger.info(f"✅ Configured: {config.display_name} ({account_id[-3:]}) → {config.strategy_name}")
+            
+            logger.info(f"✅ Successfully loaded {len(self.account_configs)} active accounts from YAML")
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to load accounts.yaml: {e}")
+            logger.exception("Full traceback:")
+            # NO FALLBACK - if YAML fails, we should know about it
+            raise Exception(f"CRITICAL: Cannot load accounts.yaml - system cannot start. Error: {e}")
+    
+    def _load_from_env_fallback(self):
+        """Fallback: load from environment variables (backwards compatible)"""
+        api_key = os.getenv('OANDA_API_KEY')
+        environment = os.getenv('OANDA_ENVIRONMENT', 'practice')
+        
+        # Account 1: Primary
+        if os.getenv('PRIMARY_ACCOUNT'):
+            config = AccountConfig(
+                account_id=os.getenv('PRIMARY_ACCOUNT'),
+                account_name="PRIMARY",
+                display_name="🥇 Gold Scalping",
+                api_key=api_key,
+                environment=environment,
+                strategy_name="gold_scalping",
+                risk_settings={
+                    'max_risk_per_trade': 0.02,
+                    'max_portfolio_risk': 0.75,
+                    'max_positions': 3,
+                    'daily_trade_limit': 100
+                },
+                instruments=['XAU_USD'],
+                active=True,
+                priority=1
+            )
+            self.account_configs[config.account_id] = config
+            self.strategy_mappings[config.account_id] = config.strategy_name
+        
+        # Account 2: Gold Scalp
+        if os.getenv('GOLD_SCALP_ACCOUNT'):
+            config = AccountConfig(
+                account_id=os.getenv('GOLD_SCALP_ACCOUNT'),
+                account_name="GOLD_SCALP",
+                display_name="💱 Ultra Strict Fx",
+                api_key=api_key,
+                environment=environment,
+                strategy_name="ultra_strict_forex",
+                risk_settings={
+                    'max_risk_per_trade': 0.015,
+                    'max_portfolio_risk': 0.75,
+                    'max_positions': 5,
+                    'daily_trade_limit': 50
+                },
+                instruments=['GBP_USD', 'EUR_USD'],
+                active=True,
+                priority=2
+            )
+            self.account_configs[config.account_id] = config
+            self.strategy_mappings[config.account_id] = config.strategy_name
+        
+        # Account 3: Strategy Alpha
+        if os.getenv('STRATEGY_ALPHA_ACCOUNT'):
+            config = AccountConfig(
+                account_id=os.getenv('STRATEGY_ALPHA_ACCOUNT'),
+                account_name="STRATEGY_ALPHA",
+                display_name="📈 Momentum Trading",
+                api_key=api_key,
+                environment=environment,
+                strategy_name="momentum_trading",
+                risk_settings={
+                    'max_risk_per_trade': 0.025,
+                    'max_portfolio_risk': 0.75,
+                    'max_positions': 7,
+                    'daily_trade_limit': 100
+                },
+                instruments=['USD_JPY', 'USD_CAD', 'NZD_USD', 'GBP_USD'],
+                active=True,
+                priority=3
+            )
+            self.account_configs[config.account_id] = config
+            self.strategy_mappings[config.account_id] = config.strategy_name
+        
+        logger.info(f"✅ Loaded {len(self.account_configs)} accounts from environment variables")
+    
+    def _initialize_accounts(self):
+        """Initialize OANDA clients for each account"""
+        for account_id, config in self.account_configs.items():
+            try:
+                client = OandaClient(
+                    api_key=config.api_key,
+                    account_id=account_id,
+                    environment=config.environment
+                )
+                
+                # Test connection
+                account_info = client.get_account_info()
+                
+                self.accounts[account_id] = client
+                
+                logger.info(f"✅ Connected: {config.display_name} - Balance: {account_info.balance} {account_info.currency}")
+                
+            except Exception as e:
+                logger.error(f"❌ Failed to initialize account {account_id}: {e}")
+    
+    def get_account_client(self, account_id: str) -> Optional[OandaClient]:
+        """Get OANDA client for specific account"""
+        return self.accounts.get(account_id)
+    
+    def get_account_config(self, account_id: str) -> Optional[AccountConfig]:
+        """Get configuration for specific account"""
+        return self.account_configs.get(account_id)
+    
+    def get_strategy_name(self, account_id: str) -> Optional[str]:
+        """Get strategy name for specific account"""
+        return self.strategy_mappings.get(account_id)
+    
+    def get_active_accounts(self) -> List[str]:
+        """Get list of active account IDs"""
+        return list(self.accounts.keys())
+    
+    def get_account_status(self, account_id: str) -> Dict[str, Any]:
+        """Get current status of specific account"""
+        try:
+            client = self.get_account_client(account_id)
+            config = self.get_account_config(account_id)
+            
+            if not client or not config:
+                return {
+                    'account_id': account_id,
+                    'status': 'inactive',
+                    'error': 'Account not initialized'
+                }
+            
+            # Get account info
+            account_info = client.get_account_info()
+            
+            return {
+                'account_id': account_id,
+                'account_name': config.account_name,
+                'display_name': config.display_name,
+                'strategy': config.strategy_name,
+                'status': 'active',
+                'balance': account_info.balance,
+                'currency': account_info.currency,
+                'unrealized_pl': account_info.unrealized_pl,
+                'realized_pl': account_info.realized_pl,
+                'open_trades': account_info.open_trade_count,
+                'open_positions': account_info.open_position_count,
+                'instruments': config.instruments,
+                'risk_settings': config.risk_settings,
+                'priority': config.priority
+            }
+        except Exception as e:
+            logger.error(f"❌ Failed to get account status for {account_id}: {e}")
+            return {
+                'account_id': account_id,
+                'status': 'error',
+                'error': str(e)
+            }
+
+
+# Global instance
+_dynamic_account_manager = None
+
+
+def get_dynamic_account_manager() -> DynamicAccountManager:
+    """Get global dynamic account manager instance"""
+    global _dynamic_account_manager
+    if _dynamic_account_manager is None:
+        _dynamic_account_manager = DynamicAccountManager()
+    return _dynamic_account_manager
+
+
+# Alias for compatibility
+def get_account_manager():
+    """Get account manager (uses dynamic version)"""
+    return get_dynamic_account_manager()
+

@@ -1,0 +1,14 @@
+[Unit]
+Description=Adaptive Trading System
+After=network.target
+
+[Service]
+Type=simple
+User=$USER
+WorkingDirectory=/Users/mac/quant_system_clean/google-cloud-trading-system
+ExecStart=/usr/bin/python3 /Users/mac/quant_system_clean/google-cloud-trading-system/scripts/start_adaptive_system.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

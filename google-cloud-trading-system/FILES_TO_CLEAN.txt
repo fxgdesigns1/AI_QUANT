@@ -1,0 +1,18 @@
+# DUPLICATE/CONFUSING FILES TO REMOVE
+
+## Duplicate Account Manager (CAUSING TODAY'S DISASTER):
+src/core/account_manager.py - DELETE (old hardcoded version)
+✅ KEEP: src/core/dynamic_account_manager.py (YAML loader - WORKING NOW)
+
+## Old Backup Directories (Confusing):
+clean_deploy/ - DELETE (old backup, not used)
+cloud_run_deploy/ - DELETE (old backup, not used)
+minimal_deploy/ - DELETE (old backup, not used)
+
+## Will NOT delete these (keep for analysis):
+analytics/ - Keep (separate analytics system)
+temp_backup/ - Keep (actual backups)
+logs/ - Keep (logs for debugging)
+
+Total removal: ~3 duplicate directories + 1 duplicate file
+Result: Crystal clear single account manager system

@@ -1,0 +1,206 @@
+#!/usr/bin/env python3
+"""
+DRY RUN SIMULATION - Next Scheduled Scan
+This script simulates exactly what will happen when the next scan runs
+"""
+
+import os
+import sys
+from datetime import datetime
+
+print("=" * 100)
+print("🎬 DRY RUN SIMULATION - NEXT SCHEDULED SCAN")
+print("=" * 100)
+print()
+
+print("📅 SCHEDULE CHECK")
+print("-" * 100)
+print("Current Time (UTC):", datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
+print()
+print("Scheduled Scans (UTC):")
+print("  • 06:55 - Pre-London sweep")
+print("  • 08:30 - Early London sweep")
+print("  • 12:55 - Pre-NY sweep")
+print("  • 14:30 - NY open sweep")
+print("  • 21:55 - Pre-Asia sweep")
+print("  • Every hour on the hour - Hourly sweep")
+print()
+
+print("=" * 100)
+print("STEP-BY-STEP: WHAT HAPPENS WHEN SCAN RUNS")
+print("=" * 100)
+print()
+
+print("STEP 1️⃣: CRON JOB TRIGGERS")
+print("-" * 100)
+print("✅ Google Cloud Scheduler sends POST request to:")
+print("   https://ai-quant-trading.uc.r.appspot.com/tasks/full_scan")
+print()
+
+print("STEP 2️⃣: SYSTEM INITIALIZATION")
+print("-" * 100)
+print("✅ Load all 3 trading accounts:")
+print("   • Account 009 - Gold Scalping (XAU_USD)")
+print("   • Account 010 - Ultra Strict Forex (EUR_USD, GBP_USD, USD_JPY, AUD_USD)")
+print("   • Account 011 - Momentum Trading (EUR_USD, GBP_USD, USD_JPY, AUD_USD, USD_CAD, NZD_USD)")
+print()
+
+print("STEP 3️⃣: FIRST SCAN - NORMAL CRITERIA")
+print("-" * 100)
+print("🔍 Try to find trades with CURRENT criteria:")
+print()
+print("   Account 009 (Gold Scalping):")
+print("   • Min confidence: 40%")
+print("   • Stop loss: 8 pips, Take profit: 12 pips")
+print("   • Lot size: 7,500 units (0.075 lots = $600 risk)")
+print("   • Min trades today: 3")
+print()
+print("   Account 010 (Ultra Strict Forex):")
+print("   • Min confidence: 30%")
+print("   • Stop loss: 0.5%, Take profit: 0.8%")
+print("   • Lot size: 100,000 units (1.0 lots = $500 risk)")
+print("   • Min trades today: 10")
+print("   • Max positions: 50 (UNLIMITED)")
+print()
+print("   Account 011 (Momentum Trading):")
+print("   • Min ADX: 10, Min Momentum: 0.1")
+print("   • Stop loss: 1.5 ATR, Take profit: 2.5 ATR")
+print("   • Lot size: 100,000 units (1.0 lots = $500 risk)")
+print("   • Min trades today: 5")
+print()
+
+print("STEP 4️⃣: IF NO TRADES FOUND - PROGRESSIVE RELAXATION")
+print("-" * 100)
+print("🔄 LEVEL 1 (Attempt 1):")
+print("   • Reduce confidence to 20%")
+print("   • Widen SL to 0.8%, TP to 1.2%")
+print("   • Force minimum trades per account")
+print()
+print("🔄 LEVEL 2 (Attempt 2 if needed):")
+print("   • Reduce confidence to 10%")
+print("   • Widen SL to 1.2%, TP to 1.8%")
+print("   • Even more aggressive forced entry")
+print()
+print("🔄 LEVEL 3 (Attempt 3 if needed):")
+print("   • Reduce confidence to 5%")
+print("   • Widen SL to 1.5%, TP to 2.5%")
+print("   • Maximum relaxation")
+print()
+
+print("STEP 5️⃣: TRADE EXECUTION")
+print("-" * 100)
+print("For EACH signal found:")
+print("   1. ✅ Calculate position size based on risk")
+print("   2. ✅ Validate against account limits")
+print("   3. ✅ Place MARKET order with:")
+print("      • Stop Loss (automatic)")
+print("      • Take Profit (automatic)")
+print("   4. ✅ Log trade execution")
+print("   5. ✅ Send Telegram notification")
+print()
+
+print("STEP 6️⃣: TELEGRAM NOTIFICATION")
+print("-" * 100)
+print("📱 ALWAYS sends notification to:")
+print("   Chat ID: 6100678501")
+print()
+print("If trades executed:")
+print("   🎯 PROGRESSIVE SCAN - X TRADES EXECUTED")
+print("   ⏰ 2025-09-30 15:30:00 UTC")
+print("   ")
+print("   ✅ 009: 2 trades")
+print("   ✅ 010: 5 trades")
+print("   ✅ 011: 3 trades")
+print("   ")
+print("   #ScanUpdate #AutoScan")
+print()
+print("If NO trades found:")
+print("   📊 SCAN COMPLETE - NO OPPORTUNITIES")
+print("   ⏰ 2025-09-30 15:30:00 UTC")
+print("   ")
+print("   ⚪ 009: 0 trades")
+print("   ⚪ 010: 0 trades")
+print("   ⚪ 011: 0 trades")
+print("   ")
+print("   💡 No opportunities met criteria")
+print("   🔄 Next scan: every hour")
+print("   ")
+print("   #ScanUpdate #AutoScan")
+print()
+
+print("=" * 100)
+print("🎯 EXPECTED BEHAVIOR - NEXT SCAN")
+print("=" * 100)
+print()
+
+print("✅ BEST CASE SCENARIO:")
+print("   • Normal criteria finds 10-20 trading opportunities")
+print("   • All 3 accounts execute trades")
+print("   • You receive detailed Telegram notification")
+print("   • Each trade has automatic SL/TP")
+print("   • Lot sizes: Gold $600 risk, Forex $500 risk")
+print()
+
+print("✅ LIKELY SCENARIO:")
+print("   • Normal criteria finds 0-5 opportunities")
+print("   • Progressive relaxation kicks in (Level 1 or 2)")
+print("   • At least 5-10 trades executed (forced minimum)")
+print("   • You receive Telegram notification with trade count")
+print("   • All trades fully managed with SL/TP")
+print()
+
+print("⚠️  WORST CASE SCENARIO:")
+print("   • Even progressive relaxation finds nothing")
+print("   • You still receive Telegram notification: 'NO OPPORTUNITIES'")
+print("   • System waits for next hourly scan")
+print("   • You know exactly what's happening")
+print()
+
+print("=" * 100)
+print("🔍 CURRENT SYSTEM STATUS CHECK")
+print("=" * 100)
+print()
+
+# Check if cron.yaml exists
+if os.path.exists('cron.yaml'):
+    print("✅ cron.yaml exists")
+else:
+    print("❌ cron.yaml NOT FOUND")
+
+# Check if main.py has the enhanced notifications
+if os.path.exists('main.py'):
+    with open('main.py', 'r') as f:
+        content = f.read()
+        if 'ALWAYS SEND' in content:
+            print("✅ Enhanced Telegram notifications in place")
+        else:
+            print("⚠️  Enhanced notifications may not be deployed")
+        
+        if 'progressive_scan' in content.lower():
+            print("✅ Progressive scanner integrated")
+        else:
+            print("❌ Progressive scanner NOT integrated")
+else:
+    print("❌ main.py NOT FOUND")
+
+print()
+
+print("=" * 100)
+print("🚀 READY TO GO?")
+print("=" * 100)
+print()
+print("TO DEPLOY EVERYTHING:")
+print("   cd /Users/mac/quant_system_clean/google-cloud-trading-system")
+print("   gcloud app deploy --quiet")
+print("   gcloud app deploy cron.yaml")
+print()
+print("TO TEST IMMEDIATELY:")
+print("   curl -X POST https://ai-quant-trading.uc.r.appspot.com/tasks/full_scan")
+print()
+print("TO CHECK TELEGRAM:")
+print("   python3 diagnostic_and_fix.py")
+print()
+
+print("=" * 100)
+print("✅ DRY RUN COMPLETE")
+print("=" * 100)

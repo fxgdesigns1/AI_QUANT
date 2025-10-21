@@ -1,0 +1,79 @@
+# ═══════════════════════════════════════════════════════════════
+# MOMENTUM MULTI-PAIR (Account 011) - TRUMP DNA
+# 6 Major Pairs - Momentum Strategy
+# ═══════════════════════════════════════════════════════════════
+
+account: "101-004-30719775-011"
+name: "Momentum Multi-Pair"
+balance: 100000
+
+# TRUMP DNA - TOP DOWN PLANNING
+monthly_target: 55000      # $55k/month
+weekly_target: 13750       # $13.75k/week
+daily_target: 1964         # $2k/day
+weekly_trades_target: 8    # 8 QUALITY momentum trades
+daily_trade_limit: 3       # MAX 3 per day (momentum opportunities)
+
+# MOMENTUM PAIR ZONES
+
+# EUR/USD MOMENTUM ZONES
+eur_usd_zones:
+  - {price: 1.1600, type: "MOMENTUM_SUPPORT", confidence: 0.90, momentum_min: 0.05}
+  - {price: 1.1640, type: "MOMENTUM_ZONE", confidence: 0.85, momentum_min: 0.04}
+  - {price: 1.1680, type: "MOMENTUM_RESISTANCE", confidence: 0.90, momentum_min: 0.05}
+
+# GBP/USD MOMENTUM ZONES
+gbp_usd_zones:
+  - {price: 1.3300, type: "MOMENTUM_SUPPORT", confidence: 0.90, momentum_min: 0.05}
+  - {price: 1.3350, type: "MOMENTUM_ZONE", confidence: 0.85, momentum_min: 0.04}
+  - {price: 1.3400, type: "MOMENTUM_RESISTANCE", confidence: 0.90, momentum_min: 0.05}
+
+# USD/JPY MOMENTUM ZONES
+usd_jpy_zones:
+  - {price: 151.00, type: "MOMENTUM_SUPPORT", confidence: 0.90, momentum_min: 0.06}
+  - {price: 151.50, type: "MOMENTUM_ZONE", confidence: 0.85, momentum_min: 0.05}
+  - {price: 152.00, type: "MOMENTUM_RESISTANCE", confidence: 0.90, momentum_min: 0.06}
+
+# AUD/USD, NZD/USD, USD/CAD ZONES
+aud_usd_zones:
+  - {price: 0.6500, momentum_min: 0.05}
+  - {price: 0.6550, momentum_min: 0.05}
+
+nzd_usd_zones:
+  - {price: 0.5700, momentum_min: 0.05}
+  - {price: 0.5750, momentum_min: 0.05}
+
+usd_cad_zones:
+  - {price: 1.3700, momentum_min: 0.05}
+  - {price: 1.3750, momentum_min: 0.05}
+
+# HIGH RR (3:1) FOR MOMENTUM
+risk_reward:
+  all_pairs:
+    tp_distance: 0.0024    # 24 pips
+    sl_distance: 0.0008    # 8 pips
+    rr_ratio: 3.0
+  jpy_pairs:
+    tp_distance: 0.30      # 30 pips
+    sl_distance: 0.10      # 10 pips
+    rr_ratio: 3.0
+
+# MOMENTUM ENTRY CRITERIA (95%+)
+entry_criteria:
+  - 5m momentum > 0.05%
+  - 10m momentum > 0.08%
+  - 20m momentum > 0.10%
+  - Price near zone OR strong breakout
+  - EMA alignment with momentum
+  - Volume confirmation
+
+# ECONOMIC CALENDAR AWARENESS
+economic_events:
+  high_momentum_events:
+    - US CPI
+    - NFP
+    - FOMC
+    - Retail Sales
+    - GDP
+  strategy: "Enter AFTER initial move, ride momentum"
+

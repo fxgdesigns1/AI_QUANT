@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strategy Performance Dashboard</title>
+    
+    <!-- Bootstrap 5.3 for Toast Notifications -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Socket.IO for Real-time Toast Notifications -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid #475569;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+
+        .header-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            font-size: 0.95rem;
+            color: #94a3b8;
+        }
+
+        .auto-refresh {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .refresh-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Overview Section */
+        .overview-section {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid #475569;
+        }
+
+        .overview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .overview-header h2 {
+            font-size: 1.5rem;
+            color: #60a5fa;
+        }
+
+        .view-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid #475569;
+            background: #1e293b;
+            color: #e2e8f0;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #334155;
+            border-color: #60a5fa;
+        }
+
+        .btn.active {
+            background: #60a5fa;
+            border-color: #60a5fa;
+            color: #0f172a;
+        }
+
+        /* Strategies Table */
+        .strategies-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .strategies-table th {
+            background: #0f172a;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #94a3b8;
+            border-bottom: 2px solid #475569;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .strategies-table th:hover {
+            color: #60a5fa;
+        }
+
+        .strategies-table td {
+            padding: 12px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .strategies-table tr:hover {
+            background: rgba(96, 165, 250, 0.1);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-excellent {
+            background: #065f46;
+            color: #10b981;
+        }
+
+        .status-good {
+            background: #134e4a;
+            color: #34d399;
+        }
+
+        .status-neutral {
+            background: #1e293b;
+            color: #94a3b8;
+        }
+
+        .status-warning {
+            background: #78350f;
+            color: #fbbf24;
+        }
+
+        .status-critical {
+            background: #7f1d1d;
+            color: #f87171;
+        }
+
+        .trend-up {
+            color: #10b981;
+        }
+
+        .trend-down {
+            color: #f87171;
+        }
+
+        .trend-neutral {
+            color: #94a3b8;
+        }
+
+        /* Performance Cards Grid */
+        .performance-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .performance-card {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #475569;
+        }
+
+        .performance-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #60a5fa;
+        }
+
+        .performers-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .performer-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+
+        .performer-name {
+            font-weight: 500;
+        }
+
+        .performer-value {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .recommendation-badge {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 8px;
+            display: inline-block;
+        }
+
+        .rec-disable {
+            background: #7f1d1d;
+            color: #f87171;
+        }
+
+        .rec-scale {
+            background: #065f46;
+            color: #10b981;
+        }
+
+        .rec-monitor {
+            background: #78350f;
+            color: #fbbf24;
+        }
+
+        .rec-fix {
+            background: #1e293b;
+            color: #94a3b8;
+        }
+
+        /* Strategy Details Cards */
+        .strategy-cards {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .strategy-card {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #475569;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .strategy-card:hover {
+            border-color: #60a5fa;
+            box-shadow: 0 4px 20px rgba(96, 165, 250, 0.2);
+        }
+
+        .strategy-card.expanded {
+            border-color: #60a5fa;
+        }
+
+        .strategy-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .strategy-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .strategy-icon {
+            font-size: 1.5rem;
+        }
+
+        .strategy-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .strategy-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .strategy-details {
+            display: none;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #475569;
+        }
+
+        .strategy-card.expanded .strategy-details {
+            display: block;
+        }
+
+        .expand-icon {
+            transition: transform 0.3s;
+        }
+
+        .strategy-card.expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 250px;
+            margin: 20px 0;
+        }
+
+        .strategy-pairs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .pair-badge {
+            padding: 4px 10px;
+            background: rgba(96, 165, 250, 0.1);
+            border: 1px solid #60a5fa;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #60a5fa;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #334155;
+            border-top-color: #60a5fa;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn-primary {
+            background: #60a5fa;
+            color: #0f172a;
+        }
+
+        .action-btn-primary:hover {
+            background: #3b82f6;
+        }
+
+        .action-btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .action-btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .action-btn-secondary {
+            background: #334155;
+            color: #e2e8f0;
+        }
+
+        .action-btn-secondary:hover {
+            background: #475569;
+        }
+
+        /* Portfolio Summary */
+        .portfolio-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #475569;
+            text-align: center;
+        }
+
+        .summary-label {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .summary-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .summary-value.positive {
+            color: #10b981;
+        }
+
+        .summary-value.negative {
+            color: #f87171;
+        }
+
+        .summary-value.neutral {
+            color: #60a5fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📊 Strategy Performance Dashboard</h1>
+            <div class="header-meta">
+                <div id="lastUpdated">Last Updated: Loading...</div>
+                <div class="auto-refresh">
+                    <span class="refresh-indicator"></span>
+                    <span>Auto-refresh: 2 minutes</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Portfolio Summary -->
+        <div class="portfolio-summary" id="portfolioSummary">
+            <div class="summary-card">
+                <div class="summary-label">Total P/L</div>
+                <div class="summary-value" id="totalPL">$0</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Winners</div>
+                <div class="summary-value neutral" id="winnersCount">0</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Losers</div>
+                <div class="summary-value neutral" id="losersCount">0</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Efficiency Score</div>
+                <div class="summary-value neutral" id="efficiencyScore">0</div>
+            </div>
+        </div>
+
+        <!-- Overview Table Section -->
+        <div class="overview-section">
+            <div class="overview-header">
+                <h2>All Strategies Overview</h2>
+                <div class="view-controls">
+                    <button class="btn active" onclick="sortTable('pl')">Sort by P/L</button>
+                    <button class="btn" onclick="sortTable('status')">Sort by Status</button>
+                    <button class="btn" onclick="sortTable('name')">Sort by Name</button>
+                </div>
+            </div>
+
+            <table class="strategies-table" id="strategiesTable">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable('name')">Strategy</th>
+                        <th onclick="sortTable('pl')">P/L</th>
+                        <th onclick="sortTable('unrealized')">Unrealized</th>
+                        <th onclick="sortTable('trades')">Trades</th>
+                        <th onclick="sortTable('positions')">Open</th>
+                        <th onclick="sortTable('status')">Status</th>
+                        <th onclick="sortTable('trend')">Trend</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td colspan="8" class="loading">
+                            <div class="loading-spinner"></div>
+                            <p>Loading strategies...</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Top Performers & Underperformers -->
+        <div class="performance-grid">
+            <div class="performance-card">
+                <h3>🏆 Top Performers</h3>
+                <div class="performers-list" id="topPerformers">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+            <div class="performance-card">
+                <h3>⚠️ Underperformers</h3>
+                <div class="performers-list" id="underperformers">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Strategy Cards -->
+        <div class="strategy-cards" id="strategyCards">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p>Loading strategy details...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let strategiesData = [];
+        let sortColumn = 'pl';
+        let sortDirection = 'desc';
+
+        // Fetch and update data
+        async function fetchStrategiesData() {
+            try {
+                const response = await fetch('/api/strategies/overview');
+                const data = await response.json();
+                
+                if (data.success) {
+                    strategiesData = data.strategies;
+                    updatePortfolioSummary(data.portfolio);
+                    updateOverviewTable();
+                    updateTopPerformers();
+                    updateStrategyCards();
+                    updateLastUpdated();
+                }
+            } catch (error) {
+                console.error('Failed to fetch strategies:', error);
+            }
+        }
+
+        function updatePortfolioSummary(portfolio) {
+            document.getElementById('totalPL').textContent = `$${portfolio.total_pl.toLocaleString('en-US', {maximumFractionDigits: 0})}`;
+            document.getElementById('totalPL').className = 'summary-value ' + (portfolio.total_pl > 0 ? 'positive' : portfolio.total_pl < 0 ? 'negative' : 'neutral');
+            
+            document.getElementById('winnersCount').textContent = portfolio.winners_count;
+            document.getElementById('losersCount').textContent = portfolio.losers_count;
+            document.getElementById('efficiencyScore').textContent = portfolio.total_efficiency;
+        }
+
+        function updateOverviewTable() {
+            const tbody = document.getElementById('tableBody');
+            const sorted = [...strategiesData].sort((a, b) => {
+                if (sortColumn === 'pl') return sortDirection === 'desc' ? b.pl - a.pl : a.pl - b.pl;
+                if (sortColumn === 'name') return sortDirection === 'desc' ? b.display_name.localeCompare(a.display_name) : a.display_name.localeCompare(b.display_name);
+                if (sortColumn === 'status') return sortDirection === 'desc' ? b.status.localeCompare(a.status) : a.status.localeCompare(b.status);
+                return 0;
+            });
+
+            tbody.innerHTML = sorted.map(strategy => `
+                <tr onclick="toggleStrategy('${strategy.account_id}')">
+                    <td><strong>${strategy.display_name}</strong></td>
+                    <td class="${strategy.pl > 0 ? 'trend-up' : strategy.pl < 0 ? 'trend-down' : 'trend-neutral'}">
+                        <strong>$${strategy.pl.toLocaleString('en-US', {maximumFractionDigits: 0})}</strong>
+                    </td>
+                    <td class="${strategy.unrealized_pl > 0 ? 'trend-up' : strategy.unrealized_pl < 0 ? 'trend-down' : 'trend-neutral'}">
+                        $${strategy.unrealized_pl.toLocaleString('en-US', {maximumFractionDigits: 0})}
+                    </td>
+                    <td>${strategy.trade_count}</td>
+                    <td>${strategy.open_positions}</td>
+                    <td><span class="status-badge status-${strategy.status}">${strategy.status.toUpperCase()}</span></td>
+                    <td><span class="trend-${strategy.trend}">${getTrendIcon(strategy.trend)}</span></td>
+                    <td><span class="recommendation-badge rec-${getRecClass(strategy.recommendation.action)}">${strategy.recommendation.action.replace('_', ' ').toUpperCase()}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function updateTopPerformers() {
+            const sorted = [...strategiesData].sort((a, b) => b.pl - a.pl);
+            const topPerformersEl = document.getElementById('topPerformers');
+            const underperformersEl = document.getElementById('underperformers');
+
+            topPerformersEl.innerHTML = sorted.slice(0, 3).map(s => `
+                <div class="performer-item">
+                    <div>
+                        <div class="performer-name">${s.display_name}</div>
+                        <div class="recommendation-badge rec-${getRecClass(s.recommendation.action)}">
+                            ${s.recommendation.icon} ${s.recommendation.reason}
+                        </div>
+                    </div>
+                    <div class="performer-value trend-up">+$${s.pl.toLocaleString('en-US', {maximumFractionDigits: 0})}</div>
+                </div>
+            `).join('');
+
+            underperformersEl.innerHTML = sorted.slice(-3).reverse().map(s => `
+                <div class="performer-item">
+                    <div>
+                        <div class="performer-name">${s.display_name}</div>
+                        <div class="recommendation-badge rec-${getRecClass(s.recommendation.action)}">
+                            ${s.recommendation.icon} ${s.recommendation.detail}
+                        </div>
+                    </div>
+                    <div class="performer-value trend-down">$${s.pl.toLocaleString('en-US', {maximumFractionDigits: 0})}</div>
+                </div>
+            `).join('');
+        }
+
+        function updateStrategyCards() {
+            const cardsContainer = document.getElementById('strategyCards');
+            
+            cardsContainer.innerHTML = strategiesData.map(strategy => `
+                <div class="strategy-card" id="card-${strategy.account_id}">
+                    <div class="strategy-card-header" onclick="toggleCard('${strategy.account_id}')">
+                        <div class="strategy-title">
+                            <span class="strategy-icon">${getStrategyIcon(strategy.status)}</span>
+                            <div>
+                                <div class="strategy-name">${strategy.display_name}</div>
+                                <span class="status-badge status-${strategy.status}">${strategy.status.toUpperCase()}</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 20px;">
+                            <div style="text-align: right;">
+                                <div class="stat-label">Current P/L</div>
+                                <div class="stat-value ${strategy.pl > 0 ? 'trend-up' : strategy.pl < 0 ? 'trend-down' : 'trend-neutral'}">
+                                    $${strategy.pl.toLocaleString('en-US', {maximumFractionDigits: 0})}
+                                </div>
+                            </div>
+                            <div class="expand-icon">▼</div>
+                        </div>
+                    </div>
+
+                    <div class="strategy-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">Unrealized P/L</div>
+                            <div class="stat-value ${strategy.unrealized_pl > 0 ? 'trend-up' : strategy.unrealized_pl < 0 ? 'trend-down' : 'trend-neutral'}">
+                                $${strategy.unrealized_pl.toLocaleString('en-US', {maximumFractionDigits: 0})}
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Efficiency</div>
+                            <div class="stat-value">${strategy.efficiency_score}/100</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Trades</div>
+                            <div class="stat-value">${strategy.trade_count}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Daily Limit</div>
+                            <div class="stat-value">${strategy.daily_limit}</div>
+                        </div>
+                    </div>
+
+                    <div class="strategy-details">
+                        <h4 style="margin-bottom: 15px; color: #60a5fa;">Trading Configuration</h4>
+                        <div class="strategy-stats">
+                            <div class="stat-item">
+                                <div class="stat-label">Timeframe</div>
+                                <div class="stat-value">${strategy.timeframe}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Risk Level</div>
+                                <div class="stat-value">${strategy.risk_level.toUpperCase()}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Trend</div>
+                                <div class="stat-value trend-${strategy.trend}">${getTrendIcon(strategy.trend)} ${strategy.trend.toUpperCase()}</div>
+                            </div>
+                        </div>
+
+                        <h4 style="margin: 20px 0 10px; color: #60a5fa;">Trading Pairs</h4>
+                        <div class="strategy-pairs">
+                            ${strategy.pairs.split(', ').map(pair => `<span class="pair-badge">${pair}</span>`).join('')}
+                        </div>
+
+                        <h4 style="margin: 20px 0 10px; color: #60a5fa;">Recommendation</h4>
+                        <div class="recommendation-badge rec-${getRecClass(strategy.recommendation.action)}" style="display: block; padding: 15px;">
+                            <strong>${strategy.recommendation.icon} ${strategy.recommendation.reason}</strong>
+                            <p style="margin-top: 8px; font-weight: normal;">${strategy.recommendation.detail}</p>
+                        </div>
+
+                        <div class="chart-container">
+                            <canvas id="chart-${strategy.account_id}"></canvas>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="action-btn action-btn-primary" onclick="viewTrades('${strategy.account_id}')">
+                                📊 View Trades
+                            </button>
+                            ${strategy.recommendation.action === 'disable' ? `
+                                <button class="action-btn action-btn-danger" onclick="disableStrategy('${strategy.account_id}')">
+                                    🔴 Disable Strategy
+                                </button>
+                            ` : ''}
+                            ${strategy.recommendation.action === 'scale_up' ? `
+                                <button class="action-btn action-btn-primary" onclick="scaleUp('${strategy.account_id}')">
+                                    📈 Scale Up 2x
+                                </button>
+                            ` : ''}
+                            <button class="action-btn action-btn-secondary" onclick="viewHistory('${strategy.account_id}')">
+                                📈 Full History
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Initialize charts for expanded cards
+            strategiesData.forEach(strategy => {
+                if (strategy.history && strategy.history.length > 0) {
+                    initializeChart(strategy.account_id, strategy.history);
+                }
+            });
+        }
+
+        function toggleCard(accountId) {
+            const card = document.getElementById(`card-${accountId}`);
+            card.classList.toggle('expanded');
+            
+            // Load history data if expanding
+            if (card.classList.contains('expanded')) {
+                loadStrategyHistory(accountId);
+            }
+        }
+
+        async function loadStrategyHistory(accountId) {
+            try {
+                const response = await fetch(`/api/strategies/${accountId}/history?days=7`);
+                const data = await response.json();
+                
+                if (data.success && data.history.length > 0) {
+                    initializeChart(accountId, data.history);
+                }
+            } catch (error) {
+                console.error('Failed to load history:', error);
+            }
+        }
+
+        function initializeChart(accountId, history) {
+            const canvas = document.getElementById(`chart-${accountId}`);
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (canvas.chart) {
+                canvas.chart.destroy();
+            }
+
+            canvas.chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: history.map(h => new Date(h.timestamp).toLocaleDateString()),
+                    datasets: [{
+                        label: 'P/L',
+                        data: history.map(h => h.pl),
+                        borderColor: '#60a5fa',
+                        backgroundColor: 'rgba(96, 165, 250, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: value => '$' + value.toLocaleString()
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function sortTable(column) {
+            if (sortColumn === column) {
+                sortDirection = sortDirection === 'desc' ? 'asc' : 'desc';
+            } else {
+                sortColumn = column;
+                sortDirection = 'desc';
+            }
+            updateOverviewTable();
+        }
+
+        function getTrendIcon(trend) {
+            if (trend === 'improving') return '📈';
+            if (trend === 'declining') return '📉';
+            return '➡️';
+        }
+
+        function getStrategyIcon(status) {
+            if (status === 'excellent') return '🌟';
+            if (status === 'good') return '✅';
+            if (status === 'warning') return '⚠️';
+            if (status === 'critical') return '🔴';
+            return '⚪';
+        }
+
+        function getRecClass(action) {
+            if (action === 'disable') return 'disable';
+            if (action === 'scale_up') return 'scale';
+            if (action === 'monitor') return 'monitor';
+            return 'fix';
+        }
+
+        function toggleStrategy(accountId) {
+            toggleCard(accountId);
+        }
+
+        function viewTrades(accountId) {
+            alert(`View trades for ${accountId} - Feature coming soon`);
+        }
+
+        function disableStrategy(accountId) {
+            if (confirm('Are you sure you want to disable this strategy?')) {
+                alert(`Disabling strategy ${accountId} - Feature coming soon`);
+            }
+        }
+
+        function scaleUp(accountId) {
+            if (confirm('Scale up position sizes by 2x?')) {
+                alert(`Scaling up strategy ${accountId} - Feature coming soon`);
+            }
+        }
+
+        function viewHistory(accountId) {
+            alert(`View full history for ${accountId} - Feature coming soon`);
+        }
+
+        function updateLastUpdated() {
+            const now = new Date();
+            document.getElementById('lastUpdated').textContent = 
+                `Last Updated: ${now.toLocaleTimeString()}`;
+        }
+
+        // Initial load
+        fetchStrategiesData();
+
+        // Auto-refresh every 2 minutes
+        setInterval(fetchStrategiesData, 120000);
+    </script>
+    
+    <!-- Toast Notification System -->
+    {% include 'components/toast_notifications.html' %}
+</body>
+</html>
+

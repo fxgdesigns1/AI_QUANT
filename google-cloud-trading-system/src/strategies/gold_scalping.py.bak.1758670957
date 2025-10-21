@@ -1,0 +1,274 @@
+#!/usr/bin/env python3
+"""
+Gold Scalping Strategy
+Production-ready gold scalping strategy for Google Cloud deployment
+"""
+
+import logging
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Tuple
+from dataclasses import dataclass
+import numpy as np
+import pandas as pd
+
+from ..core.order_manager import TradeSignal, OrderSide, get_order_manager
+from ..core.data_feed import MarketData, get_data_feed
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+@dataclass
+class ScalpingSignal:
+    """Gold scalping signal"""
+    instrument: str
+    signal: str  # 'BUY', 'SELL', 'HOLD'
+    strength: float  # 0-1
+    timestamp: datetime
+    price_level: float
+    volatility: float
+    spread: float
+
+class GoldScalpingStrategy:
+    """Production Gold Scalping Strategy"""
+    
+    def __init__(self):
+        """Initialize strategy"""
+        self.name = "Gold Scalping"
+        self.instruments = ['XAU_USD']
+        
+        # Strategy parameters - OPTIMIZED FOR TODAY'S TRADING
+        self.min_volatility = 0.00005  # Reduced minimum volatility (was 0.0001)
+        self.max_spread = 1.0  # Increased max spread (was 0.50)
+        self.stop_loss_pips = 8  # Slightly wider stop loss (was 5)
+        self.take_profit_pips = 12  # Better risk/reward (was 8)
+        self.min_signal_strength = 0.5  # Lower signal strength requirement (was 0.7)
+        self.max_trades_per_day = 100
+        self.min_trades_today = 2  # Force at least 2 trades today
+        
+        # Price data storage
+        self.price_history: Dict[str, List[float]] = {inst: [] for inst in self.instruments}
+        self.volatility_history: Dict[str, List[float]] = {inst: [] for inst in self.instruments}
+        
+        # Performance tracking
+        self.daily_trade_count = 0
+        self.last_reset_date = datetime.now().date()
+        
+        logger.info(f"✅ {self.name} strategy initialized")
+        logger.info(f"📊 Instruments: {self.instruments}")
+        logger.info(f"📊 Stop loss: {self.stop_loss_pips} pips, Take profit: {self.take_profit_pips} pips")
+    
+    def _reset_daily_counters(self):
+        """Reset daily counters if new day"""
+        current_date = datetime.now().date()
+        if current_date != self.last_reset_date:
+            self.daily_trade_count = 0
+            self.last_reset_date = current_date
+            logger.info("🔄 Daily trade counters reset")
+    
+    def _calculate_volatility(self, prices: List[float], period: int = 20) -> float:
+        """Calculate price volatility"""
+        if len(prices) < period:
+            return 0.0
+        
+        returns = pd.Series(prices).pct_change().dropna()
+        return float(returns.std() * np.sqrt(252 * 1440))  # Annualized volatility
+    
+    def _calculate_support_resistance(self, prices: List[float], lookback: int = 100) -> Tuple[float, float]:
+        """Calculate support and resistance levels"""
+        if len(prices) < lookback:
+            return prices[-1], prices[-1]
+        
+        recent_prices = prices[-lookback:]
+        support = min(recent_prices)
+        resistance = max(recent_prices)
+        
+        return support, resistance
+    
+    def _update_price_history(self, market_data: Dict[str, MarketData]):
+        """Update price history for gold"""
+        for instrument, data in market_data.items():
+            if instrument in self.instruments:
+                # Use mid price
+                mid_price = (data.bid + data.ask) / 2
+                self.price_history[instrument].append(mid_price)
+                
+                # Keep only last 1000 prices for efficiency
+                if len(self.price_history[instrument]) > 1000:
+                    self.price_history[instrument] = self.price_history[instrument][-1000:]
+                
+                # Calculate and store volatility
+                volatility = self._calculate_volatility(self.price_history[instrument])
+                self.volatility_history[instrument].append(volatility)
+                
+                if len(self.volatility_history[instrument]) > 100:
+                    self.volatility_history[instrument] = self.volatility_history[instrument][-100:]
+    
+    def _generate_scalping_signals(self, market_data: Dict[str, MarketData]) -> Dict[str, ScalpingSignal]:
+        """Generate scalping signals for gold"""
+        signals = {}
+        
+        for instrument in self.instruments:
+            if instrument not in market_data:
+                continue
+            
+            data = market_data[instrument]
+            prices = self.price_history[instrument]
+            
+            if len(prices) < 100:
+                continue
+            
+            # Calculate current volatility
+            volatility = self._calculate_volatility(prices)
+            
+            # Calculate support/resistance
+            support, resistance = self._calculate_support_resistance(prices)
+            
+            # Current price and spread
+            current_price = (data.bid + data.ask) / 2
+            current_spread = data.ask - data.bid
+            
+            # Initialize signal
+            signal = 'HOLD'
+            strength = 0.0
+            
+            # Check if spread is acceptable
+            if current_spread <= self.max_spread:
+                # Near support - potential buy
+                if abs(current_price - support) / support < 0.0005:  # Within 0.05% of support
+                    signal = 'BUY'
+                    strength = 1 - (current_price - support) / support
+                
+                # Near resistance - potential sell
+                elif abs(resistance - current_price) / resistance < 0.0005:  # Within 0.05% of resistance
+                    signal = 'SELL'
+                    strength = 1 - (resistance - current_price) / resistance
+            
+            signals[instrument] = ScalpingSignal(
+                instrument=instrument,
+                signal=signal,
+                strength=min(1.0, strength),
+                timestamp=datetime.now(),
+                price_level=current_price,
+                volatility=volatility,
+                spread=current_spread
+            )
+        
+        return signals
+    
+    def _generate_trade_signals(self, market_data: Dict[str, MarketData]) -> List[TradeSignal]:
+        """Generate trading signals based on scalping strategy - FORCE TRADES TODAY"""
+        self._reset_daily_counters()
+        
+        # Check daily trade limit
+        if self.daily_trade_count >= self.max_trades_per_day:
+            return []
+        
+        # Update price history
+        self._update_price_history(market_data)
+        
+        # Generate scalping signals
+        scalping_signals = self._generate_scalping_signals(market_data)
+        
+        trade_signals = []
+        
+        # FORCE TRADES IF WE HAVEN'T HIT MINIMUM TODAY
+        force_trade = self.daily_trade_count < self.min_trades_today
+        
+        for instrument, signal in scalping_signals.items():
+            # If we need to force trades, be more lenient
+            if force_trade:
+                # Force a trade with relaxed conditions
+                if signal.signal == 'HOLD' and len(self.price_history[instrument]) > 10:
+                    # Force a BUY signal
+                    signal.signal = 'BUY'
+                    signal.strength = 0.6  # Set minimum strength
+                    logger.info(f"🚀 FORCING TRADE: {instrument} BUY (trade #{self.daily_trade_count + 1})")
+                elif signal.signal == 'HOLD' and len(self.price_history[instrument]) > 20:
+                    # Force a SELL signal
+                    signal.signal = 'SELL'
+                    signal.strength = 0.6
+                    logger.info(f"🚀 FORCING TRADE: {instrument} SELL (trade #{self.daily_trade_count + 1})")
+            
+            # Skip if signal strength is too low (unless forcing)
+            if not force_trade and signal.strength < self.min_signal_strength:
+                continue
+            
+            # Skip if volatility is too low (unless forcing)
+            if not force_trade and signal.volatility < self.min_volatility:
+                continue
+            
+            # Skip if spread is too high (unless forcing)
+            if not force_trade and signal.spread > self.max_spread:
+                continue
+            
+            if signal.signal in ['BUY', 'SELL']:
+                # Calculate stop loss and take profit
+                if signal.signal == 'BUY':
+                    stop_loss = signal.price_level * (1 - self.stop_loss_pips/10000)
+                    take_profit = signal.price_level * (1 + self.take_profit_pips/10000)
+                    side = OrderSide.BUY
+                else:
+                    stop_loss = signal.price_level * (1 + self.stop_loss_pips/10000)
+                    take_profit = signal.price_level * (1 - self.take_profit_pips/10000)
+                    side = OrderSide.SELL
+                
+                trade_signal = TradeSignal(
+                    instrument=instrument,
+                    side=side,
+                    units=10000,  # Standard lot size
+                    stop_loss=stop_loss,
+                    take_profit=take_profit,
+                    strategy_name=self.name,
+                    confidence=signal.strength
+                )
+                
+                trade_signals.append(trade_signal)
+                self.daily_trade_count += 1
+                
+                logger.info(f"✅ {self.name} generated {signal.signal} signal for {instrument} (confidence: {signal.strength:.2f})")
+        
+        return trade_signals
+    
+    def analyze_market(self, market_data: Dict[str, MarketData]) -> List[TradeSignal]:
+        """Analyze market and generate trading signals"""
+        try:
+            signals = self._generate_trade_signals(market_data)
+            
+            if signals:
+                logger.info(f"🎯 {self.name} generated {len(signals)} signals")
+                for signal in signals:
+                    logger.info(f"   📈 {signal.instrument} {signal.side.value} - Confidence: {signal.confidence:.2f}")
+            
+            return signals
+            
+        except Exception as e:
+            logger.error(f"❌ {self.name} analysis error: {e}")
+            return []
+    
+    def get_strategy_status(self) -> Dict:
+        """Get current strategy status"""
+        self._reset_daily_counters()
+        
+        return {
+            'name': self.name,
+            'instruments': self.instruments,
+            'daily_trades': self.daily_trade_count,
+            'max_daily_trades': self.max_trades_per_day,
+            'trades_remaining': self.max_trades_per_day - self.daily_trade_count,
+            'parameters': {
+                'min_volatility': self.min_volatility,
+                'max_spread': self.max_spread,
+                'stop_loss_pips': self.stop_loss_pips,
+                'take_profit_pips': self.take_profit_pips,
+                'min_signal_strength': self.min_signal_strength
+            },
+            'last_update': datetime.now().isoformat()
+        }
+
+# Global strategy instance
+gold_scalping = GoldScalpingStrategy()
+
+def get_gold_scalping_strategy() -> GoldScalpingStrategy:
+    """Get the global Gold Scalping strategy instance"""
+    return gold_scalping
