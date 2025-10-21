@@ -1,43 +1,10 @@
-# Quant Strategy AI - Essential Dependencies
-# Core trading system requirements
-
-# FastAPI and server
-fastapi==0.109.0
-uvicorn==0.27.0
-
-# HTTP and async
-aiohttp==3.9.3
+Flask==2.3.3
+Flask-SocketIO==5.3.6
+Flask-APScheduler==1.13.0
 requests==2.31.0
-
-# Data processing
-pandas==2.2.0
-numpy==1.26.3
-
-# Configuration and utilities
-python-dotenv==1.0.0
-pyyaml==6.0.1
-python-dateutil==2.8.2
-pytz==2024.1
-schedule==1.2.0
-
-# OANDA trading API
-v20==3.0.25.0
-
-# Technical analysis
-ta==0.10.2
-
-# Logging and monitoring
-structlog==23.2.0
-
-# Web framework and WebSocket
-flask==3.0.0
-flask-socketio==5.3.6
+pandas==2.0.3
+numpy==1.24.3
+python-socketio==5.8.0
 eventlet==0.33.3
-python-engineio==4.8.0
-python-socketio==5.10.0
-# News API Integration
-# asyncio is built-in, removed from requirements (OCT 14, 2025)
-# PyYAML already listed above (OCT 14, 2025)
-websocket-client==1.6.4
-Flask-APScheduler==1.13.1
-feedparser==6.0.10
+PyYAML==6.0.1
+python-dotenv==1.0.0
