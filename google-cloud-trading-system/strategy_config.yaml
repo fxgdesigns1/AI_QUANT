@@ -4,7 +4,7 @@ ultra_strict_forex:
   account: '010'
   parameters:
     max_trades_per_day: 999
-    min_trades_today: 10
+    min_trades_today: 0
     max_positions: 50
     lot_size: 25000
   entry:
@@ -17,6 +17,7 @@ ultra_strict_forex:
     take_profit_pct: 0.008
     max_risk_per_trade: 0.015
   instruments:
+  - XAU_USD
   - EUR_USD
   - GBP_USD
   - USD_JPY
@@ -29,7 +30,7 @@ gold_scalping:
   account: 009
   parameters:
     max_trades_per_day: 20
-    min_trades_today: 2
+    min_trades_today: 0
     max_positions: 3
     lot_size: 10000
     min_warmup_prices: 2
@@ -83,6 +84,7 @@ momentum_trading:
     take_profit_pct: 0.024         # 3:1 R:R ratio (+2.4%)
     max_risk_per_trade: 0.02       # 2% max risk per trade
   instruments:
+  - XAU_USD
   - EUR_USD
   - GBP_USD
   - USD_JPY
