@@ -1,0 +1,320 @@
+<!-- Toast Notification System Component -->
+<!-- Integrate into any dashboard by including this file at the end of <body> -->
+
+<style>
+    /* Toast Container - Top Right Corner */
+    #toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        max-width: 400px;
+    }
+
+    /* Custom Toast Styling - Purple/Dark Theme */
+    .custom-toast {
+        background: linear-gradient(135deg, rgba(45, 27, 105, 0.95) 0%, rgba(26, 13, 46, 0.95) 100%);
+        border: 1px solid #5b21b6;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(91, 33, 182, 0.4);
+        color: #e2e8f0;
+        margin-bottom: 12px;
+        min-width: 300px;
+        animation: slideInRight 0.3s ease-out;
+        backdrop-filter: blur(10px);
+    }
+
+    .custom-toast.hiding {
+        animation: slideOutRight 0.3s ease-in;
+    }
+
+    /* Toast Header Styling */
+    .custom-toast .toast-header {
+        background: rgba(0, 0, 0, 0.3);
+        border-bottom: 1px solid rgba(91, 33, 182, 0.5);
+        color: #e2e8f0;
+        border-radius: 12px 12px 0 0;
+        padding: 10px 16px;
+        font-weight: 600;
+    }
+
+    /* Toast Body Styling */
+    .custom-toast .toast-body {
+        padding: 16px;
+        font-size: 14px;
+        line-height: 1.5;
+        color: #e2e8f0;
+    }
+
+    /* Toast Type Indicators */
+    .custom-toast.toast-success {
+        border-left: 4px solid #10b981;
+    }
+
+    .custom-toast.toast-success .toast-header {
+        background: rgba(16, 185, 129, 0.2);
+    }
+
+    .custom-toast.toast-error {
+        border-left: 4px solid #ef4444;
+    }
+
+    .custom-toast.toast-error .toast-header {
+        background: rgba(239, 68, 68, 0.2);
+    }
+
+    .custom-toast.toast-warning {
+        border-left: 4px solid #f59e0b;
+    }
+
+    .custom-toast.toast-warning .toast-header {
+        background: rgba(245, 158, 11, 0.2);
+    }
+
+    .custom-toast.toast-info {
+        border-left: 4px solid #3b82f6;
+    }
+
+    .custom-toast.toast-info .toast-header {
+        background: rgba(59, 130, 246, 0.2);
+    }
+
+    /* Close Button Styling */
+    .custom-toast .btn-close {
+        filter: invert(1) brightness(2);
+        opacity: 0.8;
+    }
+
+    .custom-toast .btn-close:hover {
+        opacity: 1;
+    }
+
+    /* Toast Icon Styling */
+    .toast-icon {
+        font-size: 18px;
+        margin-right: 8px;
+        display: inline-block;
+    }
+
+    /* Animations */
+    @keyframes slideInRight {
+        from {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+        #toast-container {
+            right: 10px;
+            left: 10px;
+            max-width: none;
+        }
+
+        .custom-toast {
+            min-width: auto;
+        }
+    }
+</style>
+
+<!-- Toast Container -->
+<div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;"></div>
+
+<script>
+    /**
+     * Toast Notification System
+     * Provides instant visual feedback for user actions and system events
+     */
+
+    // Toast type configurations
+    const TOAST_CONFIGS = {
+        success: {
+            icon: '✅',
+            title: 'Success',
+            bgClass: 'toast-success'
+        },
+        error: {
+            icon: '❌',
+            title: 'Error',
+            bgClass: 'toast-error'
+        },
+        warning: {
+            icon: '⚠️',
+            title: 'Warning',
+            bgClass: 'toast-warning'
+        },
+        info: {
+            icon: 'ℹ️',
+            title: 'Info',
+            bgClass: 'toast-info'
+        }
+    };
+
+    /**
+     * Show a toast notification
+     * @param {string} message - The message to display
+     * @param {string} type - Toast type: 'success', 'error', 'warning', 'info' (default: 'info')
+     * @param {number} duration - Display duration in milliseconds (default: 3000, 0 = no auto-dismiss)
+     */
+    function showToast(message, type = 'info', duration = 3000) {
+        // Validate type
+        if (!TOAST_CONFIGS[type]) {
+            console.warn(`Invalid toast type: ${type}. Using 'info' instead.`);
+            type = 'info';
+        }
+
+        const config = TOAST_CONFIGS[type];
+        const toastId = 'toast-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+
+        // Create toast element
+        const toastElement = document.createElement('div');
+        toastElement.id = toastId;
+        toastElement.className = `toast custom-toast ${config.bgClass}`;
+        toastElement.setAttribute('role', 'alert');
+        toastElement.setAttribute('aria-live', 'assertive');
+        toastElement.setAttribute('aria-atomic', 'true');
+
+        // Build toast HTML
+        toastElement.innerHTML = `
+            <div class="toast-header">
+                <span class="toast-icon">${config.icon}</span>
+                <strong class="me-auto">${config.title}</strong>
+                <small class="text-muted">just now</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                ${message}
+            </div>
+        `;
+
+        // Get or create toast container
+        let container = document.getElementById('toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toast-container';
+            container.className = 'toast-container position-fixed top-0 end-0 p-3';
+            container.style.zIndex = '9999';
+            document.body.appendChild(container);
+        }
+
+        // Add toast to container
+        container.appendChild(toastElement);
+
+        // Initialize Bootstrap Toast
+        const bsToast = new bootstrap.Toast(toastElement, {
+            autohide: duration > 0,
+            delay: duration
+        });
+
+        // Show the toast
+        bsToast.show();
+
+        // Add hiding animation class before removal
+        toastElement.addEventListener('hide.bs.toast', function() {
+            toastElement.classList.add('hiding');
+        });
+
+        // Remove from DOM after hidden
+        toastElement.addEventListener('hidden.bs.toast', function() {
+            toastElement.remove();
+        });
+
+        // Return toast instance for manual control if needed
+        return bsToast;
+    }
+
+    /**
+     * Convenience methods for specific toast types
+     */
+    function showSuccessToast(message, duration = 3000) {
+        return showToast(message, 'success', duration);
+    }
+
+    function showErrorToast(message, duration = 5000) {
+        return showToast(message, 'error', duration);
+    }
+
+    function showWarningToast(message, duration = 4000) {
+        return showToast(message, 'warning', duration);
+    }
+
+    function showInfoToast(message, duration = 3000) {
+        return showToast(message, 'info', duration);
+    }
+
+    /**
+     * Test function - shows all toast types
+     * Call this from browser console: testToasts()
+     */
+    function testToasts() {
+        showSuccessToast('✅ Trade executed successfully!');
+        setTimeout(() => showErrorToast('❌ Connection error occurred'), 500);
+        setTimeout(() => showWarningToast('⚠️ Approaching risk limit'), 1000);
+        setTimeout(() => showInfoToast('ℹ️ Market scanner started'), 1500);
+    }
+
+    // Make functions globally available
+    window.showToast = showToast;
+    window.showSuccessToast = showSuccessToast;
+    window.showErrorToast = showErrorToast;
+    window.showWarningToast = showWarningToast;
+    window.showInfoToast = showInfoToast;
+    window.testToasts = testToasts;
+
+    console.log('✅ Toast notification system loaded');
+    console.log('💡 Test toasts: call testToasts() in console');
+
+    /**
+     * WebSocket Integration for Backend Toast Notifications
+     * Connects to backend and listens for toast_notification events
+     */
+    (function initializeWebSocketToasts() {
+        // Check if Socket.IO is available
+        if (typeof io === 'undefined') {
+            console.log('ℹ️ Socket.IO not loaded - toast system will work with manual calls only');
+            return;
+        }
+
+        try {
+            // Use existing socket if available, otherwise create new connection
+            const socket = window.socket || io();
+            
+            // Store socket globally if it's new
+            if (!window.socket) {
+                window.socket = socket;
+            }
+
+            // Listen for toast notifications from backend
+            socket.on('toast_notification', function(data) {
+                console.log('📢 Received toast from backend:', data);
+                
+                const message = data.message || 'Notification';
+                const type = data.type || 'info';
+                const duration = data.duration || 3000;
+                
+                showToast(message, type, duration);
+            });
+
+            console.log('✅ WebSocket toast listener initialized');
+        } catch (error) {
+            console.warn('⚠️ Failed to initialize WebSocket toast listener:', error);
+        }
+    })();
+</script>
+

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Working Trading Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff; 
+            min-height: 100vh;
+        }
+        .header {
+            background: rgba(0,0,0,0.3);
+            padding: 1rem;
+            text-align: center;
+            border-bottom: 2px solid #4CAF50;
+        }
+        .header h1 { color: #4CAF50; margin-bottom: 0.5rem; }
+        .status { 
+            display: inline-block; 
+            background: #4CAF50; 
+            padding: 0.3rem 0.8rem; 
+            border-radius: 20px; 
+            font-size: 0.9rem;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            padding: 1rem;
+        }
+        .card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 1rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .card h3 {
+            color: #4CAF50;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 0.5rem;
+        }
+        .account {
+            background: rgba(0,0,0,0.2);
+            margin: 0.5rem 0;
+            padding: 0.8rem;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+        .market-pair {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            background: rgba(0,0,0,0.2);
+            margin: 0.3rem 0;
+            border-radius: 5px;
+        }
+        .opportunity {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid #4CAF50;
+            margin: 0.5rem 0;
+            padding: 0.8rem;
+            border-radius: 8px;
+        }
+        .signal-buy { color: #4CAF50; }
+        .signal-sell { color: #f44336; }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            margin: 0.5rem 0;
+        }
+        .update-time {
+            text-align: center;
+            margin: 1rem;
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 Working Trading Dashboard</h1>
+        <div class="status">🟢 Live Trading Active</div>
+        <div class="update-time">Last Update: {{ data.last_update }}</div>
+    </div>
+
+    <div class="container">
+        <!-- Accounts -->
+        <div class="card">
+            <h3>📊 Trading Accounts</h3>
+            {% for account in data.accounts %}
+            <div class="account">
+                <strong>{{ account.name }}</strong><br>
+                <small>ID: {{ account.id }}</small><br>
+                Balance: ${{ "%.2f"|format(account.balance) }} {{ account.currency }}<br>
+                Status: <span style="color: #4CAF50;">{{ account.status|upper }}</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Market Data -->
+        <div class="card">
+            <h3>📈 Live Market Data</h3>
+            {% for pair, data in data.market_data.items() %}
+            <div class="market-pair">
+                <strong>{{ pair }}</strong>
+                <div>
+                    {{ data.bid }} / {{ data.ask }}
+                    <span style="color: {{ '#4CAF50' if data.change.startswith('+') else '#f44336' }};">
+                        {{ data.change }}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Trading Opportunities -->
+        <div class="card">
+            <h3>🎯 Trading Opportunities</h3>
+            {% for opp in data.opportunities %}
+            <div class="opportunity">
+                <strong class="signal-{{ opp.signal.lower() }}">{{ opp.signal }} {{ opp.pair }}</strong><br>
+                Confidence: {{ (opp.confidence * 100)|round }}%<br>
+                <small>{{ opp.reason }}</small>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Trading Metrics -->
+        <div class="card">
+            <h3>📊 Performance Metrics</h3>
+            <div class="metric">
+                <span>Win Rate:</span>
+                <span style="color: #4CAF50;">{{ (data.trading_metrics.win_rate * 100)|round }}%</span>
+            </div>
+            <div class="metric">
+                <span>Total Trades:</span>
+                <span>{{ data.trading_metrics.total_trades }}</span>
+            </div>
+            <div class="metric">
+                <span>Profit Today:</span>
+                <span style="color: #4CAF50;">${{ "%.2f"|format(data.trading_metrics.profit_today) }}</span>
+            </div>
+            <div class="metric">
+                <span>Drawdown:</span>
+                <span style="color: #f44336;">{{ (data.trading_metrics.drawdown * 100)|round }}%</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        const socket = io();
+        
+        socket.on('connect', function() {
+            console.log('Connected to dashboard');
+        });
+        
+        socket.on('dashboard_data', function(data) {
+            console.log('Received dashboard data:', data);
+            // Auto-refresh page with new data
+            location.reload();
+        });
+        
+        // Request data every 30 seconds
+        setInterval(() => {
+            socket.emit('request_data');
+        }, 30000);
+    </script>
+</body>
+</html>
+
