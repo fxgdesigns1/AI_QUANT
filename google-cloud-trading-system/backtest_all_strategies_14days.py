@@ -36,6 +36,7 @@ except Exception as e:
 from src.core.oanda_client import OandaClient
 from src.strategies.momentum_trading import MomentumTradingStrategy
 from src.strategies.gold_scalping import GoldScalpingStrategy
+from src.strategies.ict_ote_strategy import ICTOTEStrategy
 from src.core.data_feed import MarketData
 
 def run_strategy_backtest(strategy, instruments, days=14):
@@ -258,6 +259,11 @@ def main():
             'name': 'Gold Scalping',
             'strategy': GoldScalpingStrategy(),
             'instruments': ['XAU_USD']
+        },
+        {
+            'name': 'ICT OTE Strategy',
+            'strategy': ICTOTEStrategy(),
+            'instruments': ['XAU_USD', 'EUR_USD', 'GBP_USD', 'USD_JPY']
         }
     ]
     
