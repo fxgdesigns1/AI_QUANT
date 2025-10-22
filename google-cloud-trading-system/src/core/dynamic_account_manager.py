@@ -62,7 +62,54 @@ class DynamicAccountManager:
             
             # Load accounts.yaml DIRECTLY (no config_loader middleman)
             config_path = os.path.join(os.path.dirname(__file__), '../../accounts.yaml')
+            # Resolve the absolute path
+            config_path = os.path.abspath(config_path)
             logger.info(f"📂 Loading accounts from: {config_path}")
+            
+            # Check if file exists, if not try alternative paths
+            if not os.path.exists(config_path):
+                logger.warning(f"⚠️  File not found at {config_path}")
+                # Debug: List files in /app directory
+                try:
+                    app_files = os.listdir('/app')
+                    logger.info(f"📁 Files in /app: {app_files}")
+                except Exception as e:
+                    logger.warning(f"Could not list /app directory: {e}")
+                
+                # Try alternative paths
+                alternative_paths = [
+                    '/app/accounts.yaml',
+                    os.path.join('/app', 'accounts.yaml'),
+                    os.path.join(os.getcwd(), 'accounts.yaml')
+                ]
+                for alt_path in alternative_paths:
+                    logger.info(f"🔍 Checking path: {alt_path}")
+                    if os.path.exists(alt_path):
+                        config_path = alt_path
+                        logger.info(f"✅ Found accounts.yaml at: {config_path}")
+                        break
+                else:
+                    logger.error(f"❌ accounts.yaml not found in any of the expected locations")
+                    # List all files in current directory and /app
+                    try:
+                        cwd_files = os.listdir(os.getcwd())
+                        logger.info(f"📁 Files in current directory ({os.getcwd()}): {cwd_files}")
+                        # Check if accounts.yaml is in the list but not accessible
+                        if 'accounts.yaml' in cwd_files:
+                            logger.info("🔍 accounts.yaml exists in current directory, trying direct access")
+                            config_path = 'accounts.yaml'
+                        else:
+                            # Try /app directory
+                            app_files = os.listdir('/app')
+                            logger.info(f"📁 Files in /app: {app_files}")
+                            if 'accounts.yaml' in app_files:
+                                logger.info("🔍 accounts.yaml exists in /app directory, trying direct access")
+                                config_path = '/app/accounts.yaml'
+                            else:
+                                raise FileNotFoundError("accounts.yaml not found")
+                    except Exception as e:
+                        logger.warning(f"Could not list directories: {e}")
+                        raise FileNotFoundError("accounts.yaml not found")
             
             with open(config_path, 'r') as f:
                 config_data = yaml.safe_load(f)

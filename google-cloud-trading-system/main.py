@@ -142,6 +142,17 @@ def get_dashboard_manager():
             from src.dashboard.advanced_dashboard import AdvancedDashboardManager
             app.config['dashboard_manager'] = AdvancedDashboardManager()
             logger.info("✅ Dashboard manager initialized")
+        except ImportError as e:
+            logger.error(f"❌ Missing dependencies for dashboard: {e}")
+            logger.info("🔄 Attempting to initialize basic dashboard...")
+            try:
+                # Try to initialize without new modules
+                from src.dashboard.advanced_dashboard import AdvancedDashboardManager
+                app.config['dashboard_manager'] = AdvancedDashboardManager()
+                logger.info("✅ Basic dashboard manager initialized")
+            except Exception as e2:
+                logger.error(f"❌ Failed to initialize basic dashboard: {e2}")
+                app.config['dashboard_manager'] = None
         except Exception as e:
             logger.error(f"❌ Failed to initialize dashboard: {e}")
             logger.exception("Full traceback:")
@@ -3802,6 +3813,16 @@ def api_bulletin_morning():
             'timestamp': datetime.now().isoformat()
         })
         
+    except ImportError as e:
+        logger.warning(f"⚠️ Bulletin modules not available: {e}")
+        return jsonify({
+            'success': True,
+            'bulletin': {
+                'title': 'Market Status',
+                'summary': 'Trading system operational - Bulletin system not available',
+                'timestamp': datetime.now().isoformat()
+            }
+        })
     except Exception as e:
         logger.error(f"❌ Error generating morning bulletin: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500

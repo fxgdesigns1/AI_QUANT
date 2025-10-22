@@ -157,8 +157,6 @@ env_variables:
   # Grade-A Trading Assistant Performance Optimizations
   ENABLE_RESPONSE_CACHE: "true"
   CACHE_TTL_SECONDS: "15"
-  DASHBOARD_UPDATE_INTERVAL: "30"
-  MARKET_DATA_UPDATE_INTERVAL: "10"
   
   # Security Settings
   API_RATE_LIMIT: "50"

@@ -56,14 +56,22 @@ def start_analytics_dashboard_cloud():
         
         # Register analytics routes with the main app
         for rule in analytics.app.url_map.iter_rules():
+            # Skip static routes to avoid conflicts
+            if rule.endpoint == 'static':
+                continue
+                
             # Add /analytics prefix to avoid conflicts
             new_rule = f"/analytics{rule.rule}"
-            app.add_url_rule(
-                new_rule,
-                endpoint=rule.endpoint,
-                view_func=analytics.app.view_functions[rule.endpoint],
-                methods=rule.methods
-            )
+            try:
+                app.add_url_rule(
+                    new_rule,
+                    endpoint=f"analytics_{rule.endpoint}",
+                    view_func=analytics.app.view_functions[rule.endpoint],
+                    methods=rule.methods
+                )
+            except Exception as e:
+                logger.warning(f"⚠️  Could not register route {new_rule}: {e}")
+                continue
         
         logger.info("✅ Analytics dashboard integrated into main app at /analytics/*")
         return analytics
