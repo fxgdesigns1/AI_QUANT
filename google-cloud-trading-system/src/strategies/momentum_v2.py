@@ -27,6 +27,9 @@ class MomentumV2Improved:
     def __init__(self, config: Dict = None):
         self.config = config or {}
         
+        # INSTRUMENTS
+        self.instruments = ['EUR_USD', 'GBP_USD', 'USD_JPY', 'AUD_USD', 'XAU_USD']
+        
         # IMPROVED: Wider ATR multiples (was 1.0-2.0, now 1.5-3.0)
         self.sl_atr_mult = self.config.get('sl_atr', 2.0)  # +50% wider
         self.tp_atr_mult = self.config.get('tp_atr', 3.0)  # +50% wider

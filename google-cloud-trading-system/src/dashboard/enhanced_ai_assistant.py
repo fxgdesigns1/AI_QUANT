@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
 """
-Shadow AI Assistant
-AI assistant specifically designed for the shadow trading system
-Provides market insights, system analysis, and shadow signal explanations
+Enhanced AI Assistant with Google Gemini Integration
+AI assistant with intelligent context awareness and Gemini-powered analysis
+Provides market insights, system analysis, and intelligent trading guidance
 """
 
 import os
 import uuid
 import logging
+import google.generativeai as genai
 from datetime import datetime, timedelta
 from flask import Blueprint, request, jsonify, current_app
 from typing import Optional, List, Dict, Any
 import json
+import hashlib
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +23,199 @@ shadow_ai_bp = Blueprint('shadow_ai_assistant', __name__, url_prefix='/ai')
 
 # In-memory session store for conversation history
 SESSIONS: Dict[str, List[Dict[str, Any]]] = {}
+
+# Response cache for common queries
+RESPONSE_CACHE: Dict[str, Dict[str, Any]] = {}
+CACHE_TTL = 300  # 5 minutes
+
+# Gemini model instance
+gemini_model = None
+
+def _initialize_gemini():
+    """Initialize Gemini API with API key from secret manager"""
+    global gemini_model
+    try:
+        from ..core.secret_manager import SecretManager
+        secret_manager = SecretManager()
+        api_key = secret_manager.get('GEMINI_API_KEY')
+        
+        if not api_key:
+            logger.warning("GEMINI_API_KEY not found in secret manager")
+            return None
+            
+        genai.configure(api_key=api_key)
+        gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+        logger.info("✅ Gemini API initialized successfully")
+        return gemini_model
+    except Exception as e:
+        logger.error(f"❌ Failed to initialize Gemini API: {e}")
+        return None
+
+def _get_cache_key(message: str, context: Dict[str, Any]) -> str:
+    """Generate cache key for message and context"""
+    content = f"{message}:{json.dumps(context, sort_keys=True)}"
+    return hashlib.md5(content.encode()).hexdigest()
+
+def _get_cached_response(cache_key: str) -> Optional[Dict[str, Any]]:
+    """Get cached response if available and not expired"""
+    if cache_key in RESPONSE_CACHE:
+        cached = RESPONSE_CACHE[cache_key]
+        if time.time() - cached['timestamp'] < CACHE_TTL:
+            return cached['response']
+        else:
+            del RESPONSE_CACHE[cache_key]
+    return None
+
+def _cache_response(cache_key: str, response: Dict[str, Any]):
+    """Cache response with timestamp"""
+    RESPONSE_CACHE[cache_key] = {
+        'response': response,
+        'timestamp': time.time()
+    }
+
+def _is_simple_query(message: str) -> bool:
+    """Check if query is simple and can use cached/rule-based response"""
+    simple_patterns = [
+        'status', 'health', 'running', 'working',
+        'positions', 'account', 'balance',
+        'help', 'commands'
+    ]
+    message_lower = message.lower()
+    return any(pattern in message_lower for pattern in simple_patterns)
+
+def _build_trading_context(shadow_system) -> Dict[str, Any]:
+    """Build comprehensive trading context for AI analysis"""
+    try:
+        from .ai_tools import get_full_market_context, get_trading_history_summary, get_strategy_performance, get_gold_specific_analysis
+        
+        # Get data feed and accounts from app config
+        data_feed = current_app.config.get('DATA_FEED')
+        accounts = current_app.config.get('ACCOUNTS', [])
+        order_manager = current_app.config.get('ORDER_MANAGER')
+        
+        context = {
+            'timestamp': datetime.now().isoformat(),
+            'system_health': shadow_system.get_system_health() if shadow_system else {},
+            'recent_signals': shadow_system.get_shadow_signals(limit=5) if shadow_system else []
+        }
+        
+        if data_feed and accounts:
+            context.update(get_full_market_context(data_feed, accounts, shadow_system))
+            context['gold_analysis'] = get_gold_specific_analysis(data_feed, accounts)
+        
+        if order_manager and accounts:
+            context['trading_history'] = get_trading_history_summary(order_manager, accounts)
+        
+        if shadow_system:
+            context['strategy_performance'] = get_strategy_performance(shadow_system)
+        
+        return context
+    except Exception as e:
+        logger.error(f"Error building trading context: {e}")
+        return {'error': str(e)}
+
+def _handle_simple_query(message: str, shadow_system, context: Dict[str, Any]) -> tuple:
+    """Handle simple queries with rule-based responses"""
+    text = message.lower().strip()
+    
+    # System health request
+    if any(word in text for word in ['health', 'status', 'running', 'working']):
+        if shadow_system:
+            health_report = shadow_system.get_system_health()
+            reply_msg = f"🏥 System Health: {health_report['overall_health']}"
+            if health_report.get('issues'):
+                reply_msg += f" | Issues: {', '.join(health_report['issues'])}"
+            return reply_msg, 'system_health', {'summary': 'System health check'}
+        else:
+            return "❌ System not available", 'error', {'summary': 'System unavailable'}
+    
+    # Help request
+    elif any(word in text for word in ['help', 'commands']):
+        reply_msg = """🤖 Enhanced AI Assistant Commands:
+• "market overview" - Get comprehensive system status & market analysis
+• "system health" - Detailed health check with all components
+• "explain signals" - Explain recent shadow signals  
+• "strategy performance" - Show strategy performance
+• "market session" - Current trading session info
+• "risk status" - Risk management settings
+• "help" - Show this help message
+
+✅ System Status: All components operational
+📱 Telegram alerts active, Dashboard online
+🧠 3 strategies active: Alpha, Gold Scalping, Ultra Strict Forex
+🛡️ Risk management: 10% portfolio cap, proper SL/TP limits
+
+Note: Demo mode - no real trades executed."""
+        return reply_msg, 'help', {'summary': 'Enhanced help with system status'}
+    
+    # Default simple response
+    else:
+        return "🤖 Enhanced AI Assistant Ready! Ask me about market conditions, signals, or system status.", 'general', {'summary': 'General response'}
+
+def _handle_complex_query_with_gemini(message: str, shadow_system, context: Dict[str, Any]) -> tuple:
+    """Handle complex queries using Gemini AI"""
+    global gemini_model
+    
+    try:
+        # Initialize Gemini if not already done
+        if gemini_model is None:
+            gemini_model = _initialize_gemini()
+        
+        if gemini_model is None:
+            # Fallback to rule-based response
+            return _handle_simple_query(message, shadow_system, context)
+        
+        # Build comprehensive prompt for Gemini
+        prompt = _build_gemini_prompt(message, context)
+        
+        # Generate response using Gemini
+        response = gemini_model.generate_content(
+            prompt,
+            generation_config=genai.types.GenerationConfig(
+                temperature=0.3,  # Lower for more consistent trading advice
+                max_output_tokens=1000,
+                top_p=0.8
+            )
+        )
+        
+        reply_msg = response.text if response.text else "I couldn't generate a response. Please try again."
+        intent = 'gemini_analysis'
+        preview = {'summary': 'AI-powered market analysis', 'source': 'gemini'}
+        
+        return reply_msg, intent, preview
+        
+    except Exception as e:
+        logger.error(f"Error with Gemini analysis: {e}")
+        # Fallback to rule-based response
+        return _handle_simple_query(message, shadow_system, context)
+
+def _build_gemini_prompt(message: str, context: Dict[str, Any]) -> str:
+    """Build comprehensive prompt for Gemini AI"""
+    prompt = f"""You are an expert forex and gold trading AI assistant with access to real-time market data and trading system information.
+
+CONTEXT:
+- Current Time: {context.get('timestamp', 'Unknown')}
+- System Health: {context.get('system_health', {}).get('overall_health', 'Unknown')}
+- Market Data: {json.dumps(context.get('market_data', {}), indent=2)}
+- Trading Session: {json.dumps(context.get('trading_session', {}), indent=2)}
+- Recent Signals: {len(context.get('recent_signals', []))} signals generated
+- Gold Analysis: {json.dumps(context.get('gold_analysis', {}), indent=2)}
+
+USER QUESTION: {message}
+
+INSTRUCTIONS:
+1. Provide expert trading analysis based on the context provided
+2. Focus on actionable insights for manual trading on prop firms
+3. Highlight Gold (XAU_USD) opportunities when relevant
+4. Consider current market session and volatility
+5. Provide specific, practical trading advice
+6. Keep responses concise but comprehensive
+7. Use emojis to make responses engaging
+8. Always mention risk management
+
+RESPOND AS: A professional trading assistant with deep market knowledge and real-time data access."""
+    
+    return prompt
 
 def _get_shadow_system():
     """Get the shadow system instance from app config"""
@@ -246,7 +442,7 @@ def health() -> tuple:
 
 @shadow_ai_bp.route('/interpret', methods=['POST'])
 def interpret() -> tuple:
-    """Interpret user message and provide AI response"""
+    """Interpret user message and provide AI response with Gemini integration"""
     try:
         payload = request.get_json(force=True, silent=True) or {}
         message: str = payload.get('message', '')
@@ -266,161 +462,31 @@ def interpret() -> tuple:
             'timestamp': datetime.now().isoformat()
         })
         
-        # Get shadow system
+        # Get shadow system and build context
         shadow_system = _get_shadow_system()
         config_manager = _get_config_manager()
+        
+        # Build comprehensive context for AI
+        context = _build_trading_context(shadow_system)
+        cache_key = _get_cache_key(message, context)
+        
+        # Check cache first
+        cached_response = _get_cached_response(cache_key)
+        if cached_response:
+            logger.info("Using cached response for query")
+            return jsonify(cached_response), 200
         
         text = message.lower().strip()
         reply_msg = ''
         intent = 'unknown'
-        preview = {'summary': 'Shadow system analysis'}
+        preview = {'summary': 'Enhanced AI analysis'}
         
-        # Market overview request
-        if any(word in text for word in ['overview', 'market', 'status', 'how', 'what']):
-            intent = 'market_overview'
-            analysis = _analyze_market_conditions(shadow_system)
-            reply_msg = _generate_market_insights(analysis)
-            preview = {
-                'summary': 'Market analysis',
-                'system_health': analysis.get('system_health', 'unknown'),
-                'signals_count': analysis.get('signal_analysis', {}).get('total_signals', 0)
-            }
-        
-        # Signal explanation request
-        elif any(word in text for word in ['signal', 'trade', 'position', 'explain']):
-            intent = 'signal_explanation'
-            if shadow_system:
-                recent_signals = shadow_system.get_shadow_signals(limit=5)
-                if recent_signals:
-                    latest_signal = recent_signals[0]
-                    signal_data = {
-                        'instrument': latest_signal.instrument,
-                        'side': latest_signal.side,
-                        'confidence': latest_signal.confidence,
-                        'strategy_name': latest_signal.strategy_name,
-                        'reason': latest_signal.reason
-                    }
-                    reply_msg = _explain_signal(signal_data)
-                    preview = {
-                        'summary': 'Latest signal explanation',
-                        'instrument': latest_signal.instrument,
-                        'side': latest_signal.side,
-                        'confidence': latest_signal.confidence
-                    }
-                else:
-                    reply_msg = "📊 No recent signals to explain. The system is monitoring market conditions."
-                    preview = {'summary': 'No signals available'}
-            else:
-                reply_msg = "❌ Shadow system not available for signal analysis."
-        
-        # Strategy performance request
-        elif any(word in text for word in ['strategy', 'performance', 'how well', 'results']):
-            intent = 'strategy_performance'
-            if shadow_system:
-                performance = shadow_system.get_strategy_performance()
-                if performance:
-                    insights = []
-                    for strategy_name, perf in performance.items():
-                        insights.append(f"📈 {strategy_name}: {perf.total_signals} signals ({perf.daily_signals}/{perf.max_daily_signals} daily)")
-                    reply_msg = "Strategy Performance: " + " | ".join(insights)
-                    preview = {
-                        'summary': 'Strategy performance analysis',
-                        'strategies_count': len(performance)
-                    }
-                else:
-                    reply_msg = "📊 No strategy performance data available yet."
-            else:
-                reply_msg = "❌ Shadow system not available for performance analysis."
-        
-        # System health request
-        elif any(word in text for word in ['health', 'status', 'running', 'working']):
-            intent = 'system_health'
-            if shadow_system:
-                health_report = shadow_system.get_system_health()
-                reply_msg = f"🏥 System Health: {health_report['overall_health']}"
-                if health_report.get('issues'):
-                    reply_msg += f" | Issues: {', '.join(health_report['issues'])}"
-                if health_report.get('recommendations'):
-                    reply_msg += f" | Recommendations: {', '.join(health_report['recommendations'])}"
-                preview = {
-                    'summary': 'System health check',
-                    'overall_health': health_report['overall_health'],
-                    'issues_count': len(health_report.get('issues', []))
-                }
-            else:
-                reply_msg = "❌ Shadow system not available for health check."
-        
-        # Help request
-        elif any(word in text for word in ['help', 'commands', 'what can you do']):
-            intent = 'help'
-            reply_msg = """🤖 Enhanced AI Assistant Commands:
-• "market overview" - Get comprehensive system status & market analysis
-• "system health" - Detailed health check with all components
-• "explain signals" - Explain recent shadow signals  
-• "strategy performance" - Show strategy performance
-• "market session" - Current trading session info
-• "risk status" - Risk management settings
-• "help" - Show this help message
-
-✅ System Status: All components operational
-📱 Telegram alerts active, Dashboard online
-🧠 3 strategies active: Alpha, Gold Scalping, Ultra Strict Forex
-🛡️ Risk management: 10% portfolio cap, proper SL/TP limits
-
-Note: Demo mode - no real trades executed."""
-            preview = {'summary': 'Enhanced help with system status'}
-        
-        # Market session request
-        elif any(word in text for word in ['session', 'trading hours', 'market time']):
-            intent = 'market_session'
-            analysis = _analyze_market_conditions(shadow_system)
-            system_status = analysis.get('system_status', {})
-            market_session = system_status.get('market_session', {})
-            active_sessions = market_session.get('active_sessions', [])
-            if active_sessions:
-                session_info = []
-                for session_name in active_sessions:
-                    session_config = market_session.get('sessions', {}).get(session_name, {})
-                    session_info.append(f"{session_name}: {session_config.get('volatility', 1)}x volatility, {session_config.get('max_positions', 0)} max positions")
-                reply_msg = f"🕐 Active Trading Sessions: {' | '.join(session_info)}"
-            else:
-                next_session = market_session.get('next_session')
-                if next_session:
-                    reply_msg = f"⏭️ Market closed. Next session: {next_session}"
-                else:
-                    reply_msg = "📊 No active trading sessions"
-            preview = {'summary': 'Market session information'}
-        
-        # Risk status request  
-        elif any(word in text for word in ['risk', 'exposure', 'limits', 'position size']):
-            intent = 'risk_status'
-            analysis = _analyze_market_conditions(shadow_system)
-            system_status = analysis.get('system_status', {})
-            risk_mgmt = system_status.get('risk_management', {})
-            reply_msg = f"""🛡️ Risk Management Status:
-• Portfolio Exposure: {risk_mgmt.get('portfolio_exposure', 'unknown')}
-• Max Positions: {risk_mgmt.get('max_positions', 'unknown')}
-• Stop Loss: {risk_mgmt.get('stop_loss', 'unknown')}
-• Take Profit: {risk_mgmt.get('take_profit', 'unknown')}"""
-            preview = {'summary': 'Risk management status'}
-        
-        # Default response
+        # Check if this is a simple query (use rule-based)
+        if _is_simple_query(message):
+            reply_msg, intent, preview = _handle_simple_query(message, shadow_system, context)
         else:
-            intent = 'general'
-            reply_msg = """🤖 Enhanced AI Assistant Ready! 
-
-✅ System Status: All components operational
-📊 Dashboard: Online | 📱 Telegram: Active | 🧠 Strategies: Running
-
-Ask me about:
-• "market overview" - Full system status & analysis
-• "system health" - Detailed health check  
-• "market session" - Current trading hours
-• "risk status" - Risk management settings
-• "help" - All available commands
-
-Ready to start the week with comprehensive market analysis!"""
-            preview = {'summary': 'Enhanced general response with system status'}
+            # Use Gemini for complex analysis
+            reply_msg, intent, preview = _handle_complex_query_with_gemini(message, shadow_system, context)
         
         # Add AI response to session
         SESSIONS[session_id].append({
@@ -438,10 +504,13 @@ Ready to start the week with comprehensive market analysis!"""
             'intent': intent,
             'preview': preview,
             'requires_confirmation': False,
-            'mode': 'shadow',
+            'mode': 'enhanced_ai',
             'session_id': session_id,
             'timestamp': datetime.now().isoformat()
         }
+        
+        # Cache the response for future use
+        _cache_response(cache_key, response)
         
         return jsonify(response), 200
         

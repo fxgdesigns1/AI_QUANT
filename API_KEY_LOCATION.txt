@@ -1,0 +1,36 @@
+═══════════════════════════════════════════════════════════════
+🔑 OANDA API KEY - PERMANENT LOCATION REFERENCE
+═══════════════════════════════════════════════════════════════
+Updated: October 21, 2025, 17:55 BST
+
+CURRENT API KEY:
+a3699a9d6b6d94d4e2c4c59748e73e2d-b6cbc64f16bcfb920e40f9117e66111a
+
+STORED IN THESE FILES (ALL UPDATED):
+───────────────────────────────────────────────────────────────
+
+1. PRIMARY LOCATION (Google Drive - SYNCED):
+   /Users/mac/Library/CloudStorage/GoogleDrive-fxgdesigns1@gmail.com/My Drive/AI Trading/Gits/AI_QUANT_credentials/oanda_config.env
+
+2. LOCAL PROJECT (Main):
+   /Users/mac/quant_system_clean/google-cloud-trading-system/oanda_config.env
+
+3. LOCAL PROJECT (Analytics):
+   /Users/mac/quant_system_clean/google-cloud-trading-system/analytics/oanda_config.env
+
+ACCOUNT IDS:
+───────────────────────────────────────────────────────────────
+PRIMARY_ACCOUNT=101-004-30719775-008
+GOLD_SCALP_ACCOUNT=101-004-30719775-007
+STRATEGY_ALPHA_ACCOUNT=101-004-30719775-006
+
+All other accounts (002-011) use the same API key.
+
+OLD KEY REMOVED:
+───────────────────────────────────────────────────────────────
+c01de9eb4d793c945ea0fcbb0620cc4e-d0c62eb93ed53e8db5a709089460794a
+Status: REPLACED EVERYWHERE
+
+DO NOT LOSE THIS FILE
+═══════════════════════════════════════════════════════════════
+

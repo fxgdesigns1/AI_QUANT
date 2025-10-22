@@ -43,7 +43,7 @@ env_variables:
   PORT: "8080"
   
   # OANDA API Configuration
-  OANDA_API_KEY: "c01de9eb4d793c945ea0fcbb0620cc4e-d0c62eb93ed53e8db5a709089460794a"
+  OANDA_API_KEY: "a3699a9d6b6d94d4e2c4c59748e73e2d-b6cbc64f16bcfb920e40f9117e66111a"
   OANDA_ENVIRONMENT: "practice"
   OANDA_BASE_URL: "https://api-fxpractice.oanda.com"
   
@@ -150,9 +150,15 @@ env_variables:
   ENABLE_STRUCTURED_LOGGING: "False"
   
   # F1 OPTIMIZED Performance Settings
-  DASHBOARD_UPDATE_INTERVAL: "60"
-  MARKET_DATA_UPDATE_INTERVAL: "30"
+  DASHBOARD_UPDATE_INTERVAL: "30"
+  MARKET_DATA_UPDATE_INTERVAL: "10"
   SYSTEM_STATUS_CHECK_INTERVAL: "120"
+  
+  # Grade-A Trading Assistant Performance Optimizations
+  ENABLE_RESPONSE_CACHE: "true"
+  CACHE_TTL_SECONDS: "15"
+  DASHBOARD_UPDATE_INTERVAL: "30"
+  MARKET_DATA_UPDATE_INTERVAL: "10"
   
   # Security Settings
   API_RATE_LIMIT: "50"

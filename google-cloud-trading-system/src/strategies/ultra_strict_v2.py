@@ -35,6 +35,9 @@ class UltraStrictV2RegimeAware:
     def __init__(self, config: Dict = None):
         self.config = config or {}
         
+        # INSTRUMENTS
+        self.instruments = ['EUR_USD', 'GBP_USD', 'USD_JPY', 'AUD_USD', 'USD_CAD', 'XAU_USD']
+        
         # Base parameters (FIXED OCT 16, 2025 - lowered for real trading)
         self.base_signal_strength = self.config.get('min_signal_strength', 0.25)  # 25% (was 40%)
         

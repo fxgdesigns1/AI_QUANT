@@ -21,6 +21,16 @@ try:
 except ImportError:
     NEWS_AVAILABLE = False
 
+# Learning & Honesty System (NEW OCT 21, 2025)
+try:
+    from ..core.loss_learner import get_loss_learner
+    from ..core.early_trend_detector import get_early_trend_detector
+    from ..core.honesty_reporter import get_honesty_reporter
+    LEARNING_AVAILABLE = True
+except ImportError:
+    LEARNING_AVAILABLE = False
+    logger.warning("⚠️ Learning system not available")
+
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -123,6 +133,29 @@ class GoldScalpingStrategy:
             logger.info("✅ News integration enabled for quality filtering")
         else:
             logger.info("ℹ️  Trading without news integration (technical signals only)")
+        
+        # ===============================================
+        # LEARNING & HONESTY SYSTEM (NEW OCT 21, 2025)
+        # ===============================================
+        self.learning_enabled = False
+        if LEARNING_AVAILABLE:
+            try:
+                self.loss_learner = get_loss_learner(strategy_name=self.name)
+                self.early_trend = get_early_trend_detector()
+                self.honesty = get_honesty_reporter(strategy_name=self.name)
+                self.learning_enabled = True
+                logger.info("✅ Loss learning ENABLED - Learns from mistakes")
+                logger.info("✅ Early trend detection ENABLED - Catches moves early")
+                logger.info("✅ Brutal honesty reporting ENABLED - No sugar-coating")
+            except Exception as e:
+                logger.warning(f"⚠️ Could not initialize learning system: {e}")
+                self.loss_learner = None
+                self.early_trend = None
+                self.honesty = None
+        else:
+            self.loss_learner = None
+            self.early_trend = None
+            self.honesty = None
         
         logger.info(f"✅ {self.name} strategy initialized")
         logger.info(f"📊 Instruments: {self.instruments}")
@@ -419,6 +452,36 @@ class GoldScalpingStrategy:
             },
             'last_update': datetime.now().isoformat()
         }
+
+
+    def record_trade_result(self, trade_info: Dict, result: str, pnl: float):
+        """Record trade result for learning system (NEW OCT 21, 2025)"""
+        if not self.learning_enabled or not self.loss_learner:
+            return
+        
+        if result == 'LOSS':
+            self.loss_learner.record_loss(
+                instrument=trade_info.get('instrument', 'UNKNOWN'),
+                regime=trade_info.get('regime', 'UNKNOWN'),
+                adx=trade_info.get('adx', 0.0),
+                momentum=trade_info.get('momentum', 0.0),
+                volume=trade_info.get('volume', 0.0),
+                pnl=pnl,
+                conditions=trade_info.get('conditions', {})
+            )
+        else:
+            self.loss_learner.record_win(trade_info.get('instrument', 'UNKNOWN'), pnl)
+    
+    def get_learning_summary(self) -> Dict:
+        """Get learning system performance summary"""
+        if not self.learning_enabled or not self.loss_learner:
+            return {'enabled': False}
+        return {
+            'enabled': True,
+            'performance': self.loss_learner.get_performance_summary(),
+            'avoidance_patterns': self.loss_learner.get_avoidance_list()
+        }
+
 
 # Global strategy instance
 gold_scalping = GoldScalpingStrategy()

@@ -1004,6 +1004,167 @@
         .tp-stage-item:last-child {
             border-bottom: none;
         }
+        
+        /* Daily Bulletin Styles */
+        .daily-bulletin-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 1px solid #374151;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .bulletin-header {
+            background: linear-gradient(90deg, #3a86ff 0%, #8338ec 100%);
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .bulletin-header h2 {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .bulletin-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .bulletin-controls .btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .bulletin-controls .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .bulletin-content {
+            padding: 25px;
+        }
+        
+        .bulletin-sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .bulletin-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .bulletin-section:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: #3a86ff;
+            transform: translateY(-2px);
+        }
+        
+        .bulletin-section h3 {
+            color: #3a86ff;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .section-content {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        
+        .loading-placeholder {
+            color: #666;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .bulletin-summary {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .summary-content h4 {
+            color: #60a5fa;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .summary-content p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin: 0;
+        }
+        
+        /* Gold Focus Special Styling */
+        .bulletin-section.gold-focus {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%);
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+        
+        .bulletin-section.gold-focus h3 {
+            color: #ffd700;
+        }
+        
+        /* Hot Pairs Special Styling */
+        .bulletin-section.hot-pairs {
+            background: linear-gradient(135deg, rgba(239, 71, 111, 0.1) 0%, rgba(255, 107, 107, 0.05) 100%);
+            border-color: rgba(239, 71, 111, 0.3);
+        }
+        
+        .bulletin-section.hot-pairs h3 {
+            color: #ef476f;
+        }
+        
+        /* AI Insights Special Styling */
+        .bulletin-section.ai-insights {
+            background: linear-gradient(135deg, rgba(58, 134, 255, 0.1) 0%, rgba(131, 56, 236, 0.05) 100%);
+            border-color: rgba(58, 134, 255, 0.3);
+        }
+        
+        .bulletin-section.ai-insights h3 {
+            color: #3a86ff;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .bulletin-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .bulletin-sections {
+                grid-template-columns: 1fr;
+            }
+            
+            .bulletin-header h2 {
+                font-size: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1148,6 +1309,69 @@
                                 📊 Strategy Performance
                             </a>
                             <span>Last Update: <span id="lastUpdate">Loading...</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daily Market Bulletin Section -->
+                <div class="daily-bulletin-card" id="dailyBulletin">
+                    <div class="bulletin-header">
+                        <h2>📊 Daily Market Bulletin - <span id="bulletinDate">Loading...</span> <span id="bulletinTime">Loading...</span></h2>
+                        <div class="bulletin-controls">
+                            <button class="btn btn-sm btn-outline-primary" onclick="refreshBulletin()">🔄 Refresh</button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="toggleBulletin()">📋 Toggle Details</button>
+                        </div>
+                    </div>
+                    
+                    <div class="bulletin-content" id="bulletinContent">
+                        <div class="bulletin-sections">
+                            <!-- Market Overview Section -->
+                            <div class="bulletin-section market-overview">
+                                <h3>🌍 Market Overview</h3>
+                                <div class="section-content" id="marketOverview">
+                                    <div class="loading-placeholder">Loading market conditions...</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Hot Pairs Section -->
+                            <div class="bulletin-section hot-pairs">
+                                <h3>🔥 Hot Pairs Today</h3>
+                                <div class="section-content" id="hotPairs">
+                                    <div class="loading-placeholder">Analyzing opportunities...</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Gold Focus Section -->
+                            <div class="bulletin-section gold-focus">
+                                <h3>🥇 Gold (XAU/USD) Focus</h3>
+                                <div class="section-content" id="goldFocus">
+                                    <div class="loading-placeholder">Loading Gold analysis...</div>
+                                </div>
+                            </div>
+                            
+                            <!-- AI Insights Section -->
+                            <div class="bulletin-section ai-insights">
+                                <h3>🤖 AI Insights & Hot Tips</h3>
+                                <div class="section-content" id="aiInsights">
+                                    <div class="loading-placeholder">Generating AI insights...</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Countdown Timers Section -->
+                            <div class="bulletin-section countdown-timers">
+                                <h3>⏰ Upcoming Events</h3>
+                                <div class="section-content" id="countdownTimers">
+                                    <div class="loading-placeholder">Loading economic events...</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- AI Summary -->
+                        <div class="bulletin-summary" id="bulletinSummary">
+                            <div class="summary-content">
+                                <h4>📋 AI Summary</h4>
+                                <p id="aiSummary">Generating comprehensive market analysis...</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -4026,6 +4250,218 @@
         // Load opportunities every 10 seconds
         setInterval(loadTradeOpportunities, 10000);
         setTimeout(loadTradeOpportunities, 2000);  // Initial load
+        
+        // Daily Bulletin Functions
+        function refreshBulletin() {
+            console.log('Refreshing daily bulletin...');
+            loadBulletin();
+        }
+        
+        function toggleBulletin() {
+            const content = document.getElementById('bulletinContent');
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+            } else {
+                content.style.display = 'none';
+            }
+        }
+        
+        async function loadBulletin() {
+            try {
+                console.log('Loading daily bulletin...');
+                
+                // Update date and time
+                const now = new Date();
+                document.getElementById('bulletinDate').textContent = now.toLocaleDateString();
+                document.getElementById('bulletinTime').textContent = now.toLocaleTimeString();
+                
+                // Load morning bulletin
+                const response = await fetch('/api/bulletin/morning');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const bulletin = await response.json();
+                console.log('Bulletin loaded:', bulletin);
+                
+                // Update sections
+                updateMarketOverview(bulletin.sections?.market_overview);
+                updateHotPairs(bulletin.sections?.hot_pairs);
+                updateGoldFocus(bulletin.sections?.gold_focus);
+                updateAIInsights(bulletin.sections?.ai_insights);
+                updateCountdownTimers(bulletin.sections?.countdown_timers);
+                updateAISummary(bulletin.ai_summary);
+                
+            } catch (error) {
+                console.error('Error loading bulletin:', error);
+                showBulletinError();
+            }
+        }
+        
+        function updateMarketOverview(data) {
+            const container = document.getElementById('marketOverview');
+            if (!data) {
+                container.innerHTML = '<div class="loading-placeholder">Market data unavailable</div>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="market-overview-content">
+                    <div class="overview-item">
+                        <strong>Overall Trend:</strong> <span class="trend-${data.overall_trend}">${data.overall_trend}</span>
+                    </div>
+                    <div class="overview-item">
+                        <strong>Volatility:</strong> <span class="volatility-${data.volatility}">${data.volatility}</span>
+                    </div>
+                    <div class="overview-item">
+                        <strong>Session Activity:</strong> ${data.session_activity}
+                    </div>
+                    <div class="pairs-analysis">
+                        <strong>Key Pairs:</strong>
+                        ${Object.entries(data.pairs_analysis || {}).map(([pair, analysis]) => 
+                            `<div class="pair-item">${pair}: ${analysis.trend} (${analysis.volatility})</div>`
+                        ).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        function updateHotPairs(data) {
+            const container = document.getElementById('hotPairs');
+            if (!data || !Array.isArray(data)) {
+                container.innerHTML = '<div class="loading-placeholder">No hot pairs data available</div>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="hot-pairs-content">
+                    ${data.map((pair, index) => `
+                        <div class="pair-card">
+                            <div class="pair-header">
+                                <strong>${pair.instrument}</strong>
+                                <span class="opportunity-score">Score: ${(pair.opportunity_score * 100).toFixed(1)}%</span>
+                            </div>
+                            <div class="pair-details">
+                                <div>Trend: <span class="trend-${pair.trend}">${pair.trend}</span></div>
+                                <div>Volatility: ${(pair.volatility * 100).toFixed(1)}%</div>
+                                <div>Spread: ${(pair.spread * 10000).toFixed(1)} pips</div>
+                                <div>Session: ${pair.session}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        function updateGoldFocus(data) {
+            const container = document.getElementById('goldFocus');
+            if (!data) {
+                container.innerHTML = '<div class="loading-placeholder">Gold data unavailable</div>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="gold-focus-content">
+                    <div class="gold-price">
+                        <strong>Current Price:</strong> $${data.current_price?.toFixed(2) || 'N/A'}
+                    </div>
+                    <div class="gold-details">
+                        <div>Bid: $${data.bid?.toFixed(2) || 'N/A'}</div>
+                        <div>Ask: $${data.ask?.toFixed(2) || 'N/A'}</div>
+                        <div>Spread: ${data.spread?.toFixed(4) || 'N/A'}</div>
+                        <div>Volatility: ${(data.volatility * 100)?.toFixed(1) || 'N/A'}%</div>
+                    </div>
+                    <div class="gold-recommendation">
+                        <strong>Recommendation:</strong> <span class="rec-${data.trading_recommendation}">${data.trading_recommendation}</span>
+                    </div>
+                    <div class="gold-session">
+                        <strong>Session:</strong> ${data.session_analysis?.session || 'N/A'} (${data.session_analysis?.volatility || 'N/A'} volatility)
+                    </div>
+                </div>
+            `;
+        }
+        
+        function updateAIInsights(data) {
+            const container = document.getElementById('aiInsights');
+            if (!data) {
+                container.innerHTML = '<div class="loading-placeholder">AI insights unavailable</div>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="ai-insights-content">
+                    <div class="insight-item">
+                        <strong>Market Outlook:</strong> ${data.market_outlook || 'Neutral'}
+                    </div>
+                    <div class="opportunities">
+                        <strong>Key Opportunities:</strong>
+                        <ul>
+                            ${(data.key_opportunities || []).map(opp => `<li>${opp}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="risk-factors">
+                        <strong>Risk Factors:</strong>
+                        <ul>
+                            ${(data.risk_factors || []).map(risk => `<li>${risk}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="recommendations">
+                        <strong>Trading Recommendations:</strong>
+                        <ul>
+                            ${(data.trading_recommendations || []).map(rec => `<li>${rec}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function updateCountdownTimers(data) {
+            const container = document.getElementById('countdownTimers');
+            if (!data || !Array.isArray(data)) {
+                container.innerHTML = '<div class="loading-placeholder">No upcoming events</div>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="countdown-content">
+                    ${data.map(event => `
+                        <div class="event-item">
+                            <div class="event-name">${event.event}</div>
+                            <div class="event-time">${event.time_remaining}</div>
+                            <div class="event-impact impact-${event.impact}">${event.impact} impact</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        function updateAISummary(summary) {
+            const container = document.getElementById('aiSummary');
+            if (!summary) {
+                container.textContent = 'AI summary unavailable';
+                return;
+            }
+            
+            container.textContent = summary;
+        }
+        
+        function showBulletinError() {
+            const sections = ['marketOverview', 'hotPairs', 'goldFocus', 'aiInsights', 'countdownTimers'];
+            sections.forEach(sectionId => {
+                const container = document.getElementById(sectionId);
+                container.innerHTML = '<div class="loading-placeholder">Error loading data</div>';
+            });
+            
+            document.getElementById('aiSummary').textContent = 'Error loading bulletin data';
+        }
+        
+        // Load bulletin on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBulletin();
+            
+            // Refresh bulletin every 5 minutes
+            setInterval(loadBulletin, 300000);
+        });
         
     </script>
 

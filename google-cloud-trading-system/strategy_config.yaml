@@ -4,7 +4,7 @@ ultra_strict_forex:
   account: '010'
   parameters:
     max_trades_per_day: 999
-    min_trades_today: 10
+    min_trades_today: 0  # NO forced trades - quality over quantity
     max_positions: 50
     lot_size: 25000
   entry:
@@ -17,6 +17,7 @@ ultra_strict_forex:
     take_profit_pct: 0.008
     max_risk_per_trade: 0.015
   instruments:
+  - XAU_USD
   - EUR_USD
   - GBP_USD
   - USD_JPY
@@ -29,7 +30,7 @@ gold_scalping:
   account: 009
   parameters:
     max_trades_per_day: 20
-    min_trades_today: 2
+    min_trades_today: 0  # NO forced trades - quality over quantity
     max_positions: 3
     lot_size: 10000
     min_warmup_prices: 2
@@ -83,6 +84,7 @@ momentum_trading:
     take_profit_pct: 0.024         # 3:1 R:R ratio (+2.4%)
     max_risk_per_trade: 0.02       # 2% max risk per trade
   instruments:
+  - XAU_USD
   - EUR_USD
   - GBP_USD
   - USD_JPY
@@ -94,4 +96,25 @@ system:
   telegram_alerts: true
   log_all_changes: true
   deployment: google-cloud
+  
+  # LEARNING & HONESTY SYSTEM (NEW OCT 21, 2025)
+  learning_enabled: true
+  loss_tracking: true
+  early_trend_detection: true
+  brutal_honesty: true
+  daily_outlook_alerts: true
+  win_probability_estimates: true
+  
+  # CRITICAL: NO FORCED TRADES
+  enforce_zero_minimums: true  # Fail if any strategy has min_trades_today > 0
+  
+  # MINIMUM TRADE SIZE ENFORCEMENT (NEW OCT 21, 2025)
+  min_trade_size: 10000  # Minimum 10,000 units (no micro trades)
+  enforce_minimum_size: true  # Reject any trade below minimum
+  micro_trade_alert: true  # Alert on any micro trade attempts
+  
+  # MINIMUM PROFIT REQUIREMENTS (NEW OCT 21, 2025)
+  min_profit_target: 1000  # Minimum $1,000 profit per win
+  enforce_minimum_profit: true  # Reject trades below minimum profit
+  profit_scaling_enabled: true  # Allow scaling higher than minimum
 

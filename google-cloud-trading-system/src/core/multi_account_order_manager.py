@@ -18,6 +18,16 @@ from .dynamic_account_manager import get_account_manager, AccountConfig
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Import trade logger for analytics
+try:
+    from ..analytics.trade_logger import get_trade_logger
+    TRADE_LOGGING_ENABLED = True
+    logger.info("✅ Trade logging enabled for analytics")
+except ImportError:
+    get_trade_logger = None
+    TRADE_LOGGING_ENABLED = False
+    logger.warning("⚠️ Trade logging not available - analytics disabled")
+
 class MultiAccountOrderManager:
     """Production multi-account order management system - FIXED"""
     
@@ -71,7 +81,20 @@ class MultiAccountOrderManager:
                     error_message=f"No order manager found for account {account_id}"
                 )
             
-            return order_manager.execute_trade(signal)
+            # Execute trade
+            execution = order_manager.execute_trade(signal)
+            
+            # Log trade for analytics (if successful)
+            if execution.success and TRADE_LOGGING_ENABLED:
+                try:
+                    trade_logger = get_trade_logger()
+                    strategy_id = getattr(signal, 'strategy_name', 'unknown')
+                    trade_logger.log_trade_entry(account_id, strategy_id, signal, execution)
+                except Exception as log_error:
+                    logger.error(f"❌ Failed to log trade for analytics: {log_error}")
+                    # Don't fail the trade if logging fails
+            
+            return execution
             
         except Exception as e:
             logger.error(f"❌ Trade execution error for {account_id}: {e}")
