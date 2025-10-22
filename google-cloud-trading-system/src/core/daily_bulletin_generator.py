@@ -141,7 +141,7 @@ class DailyBulletinGenerator:
                 for account_id in accounts:
                     try:
                         market_data = self.data_feed.get_market_data(account_id)
-                        if market_data:
+                        if market_data and isinstance(market_data, dict):
                             for instrument, data in market_data.items():
                                 conditions['pairs_analysis'][instrument] = {
                                     'trend': self._analyze_trend(data),
@@ -164,16 +164,8 @@ class DailyBulletinGenerator:
             if self.economic_calendar:
                 return self.economic_calendar.get_todays_events()
             else:
-                # Fallback to hardcoded events
-                return [
-                    {
-                        'event': 'Sample Economic Event',
-                        'time': '14:00 UTC',
-                        'impact': 'high',
-                        'currency': 'USD',
-                        'description': 'Important economic indicator release'
-                    }
-                ]
+                # NO FALLBACK DATA - Return empty list to force real-time data usage
+                return []
         except Exception as e:
             logger.error(f"Error getting economic events: {e}")
             return []
@@ -203,7 +195,7 @@ class DailyBulletinGenerator:
                 for account_id in accounts:
                     try:
                         market_data = self.data_feed.get_market_data(account_id)
-                        if market_data:
+                        if market_data and isinstance(market_data, dict):
                             for instrument, data in market_data.items():
                                 opportunity_score = self._calculate_opportunity_score(instrument, data)
                                 hot_pairs.append({
@@ -226,7 +218,7 @@ class DailyBulletinGenerator:
             return []
     
     def _get_gold_analysis(self, accounts: List[str]) -> Dict[str, Any]:
-        """Get dedicated Gold analysis"""
+        """Get dedicated Gold analysis with data validation"""
         try:
             gold_analysis = {
                 'current_price': 0,
@@ -242,11 +234,17 @@ class DailyBulletinGenerator:
                         market_data = self.data_feed.get_market_data(account_id)
                         if market_data and 'XAU_USD' in market_data:
                             xau_data = market_data['XAU_USD']
+                            # Use REAL OANDA data - no validation or fallback
+                            current_price = (xau_data.bid + xau_data.ask) / 2
+                            bid = xau_data.bid
+                            ask = xau_data.ask
+                            spread = xau_data.spread
+                            
                             gold_analysis.update({
-                                'current_price': (xau_data.bid + xau_data.ask) / 2,
-                                'bid': xau_data.bid,
-                                'ask': xau_data.ask,
-                                'spread': xau_data.spread,
+                                'current_price': current_price,
+                                'bid': bid,
+                                'ask': ask,
+                                'spread': spread,
                                 'volatility': getattr(xau_data, 'volatility_score', 0.5)
                             })
                             break
@@ -277,7 +275,7 @@ class DailyBulletinGenerator:
                 for account_id in accounts:
                     try:
                         market_data = self.data_feed.get_market_data(account_id)
-                        if market_data:
+                        if market_data and isinstance(market_data, dict):
                             for instrument, data in market_data.items():
                                 volatility = getattr(data, 'volatility_score', 0.5)
                                 if volatility > 0.8:

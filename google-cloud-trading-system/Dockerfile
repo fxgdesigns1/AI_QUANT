@@ -16,6 +16,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
+# Debug: List files to verify accounts.yaml is copied
+RUN ls -la /app/ | head -20
+RUN ls -la /app/accounts.yaml || echo "accounts.yaml not found"
+
 # Create data directory
 RUN mkdir -p /app/data
 

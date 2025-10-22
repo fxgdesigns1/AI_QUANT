@@ -34,8 +34,29 @@ class AnalyticsDashboard:
         self.archiver = get_data_archiver()
         
         # Create Flask app
-        template_dir = os.path.join(os.path.dirname(__file__), '..', 'templates', 'analytics')
-        static_dir = os.path.join(os.path.dirname(__file__), '..', 'static')
+        # Use absolute path to ensure templates are found
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        template_dir = os.path.join(base_dir, 'src', 'templates', 'analytics')
+        static_dir = os.path.join(base_dir, 'src', 'static')
+        
+        # Debug template path
+        logger.info(f"Base dir: {base_dir}")
+        logger.info(f"Template dir: {template_dir}")
+        logger.info(f"Template dir exists: {os.path.exists(template_dir)}")
+        if os.path.exists(template_dir):
+            logger.info(f"Files in template dir: {os.listdir(template_dir)}")
+        else:
+            # Try alternative paths
+            alt_paths = [
+                os.path.join(base_dir, 'templates', 'analytics'),
+                os.path.join('/app', 'src', 'templates', 'analytics'),
+                os.path.join('/app', 'templates', 'analytics')
+            ]
+            for alt_path in alt_paths:
+                if os.path.exists(alt_path):
+                    template_dir = alt_path
+                    logger.info(f"Using alternative template dir: {template_dir}")
+                    break
         
         self.app = Flask(__name__, 
                         template_folder=template_dir,

@@ -178,18 +178,18 @@ class AdaptiveTrumpGoldStrategy:
         
         # Calculate dynamic levels based on current price
         self.entry_zones = [
-            current_price - 20,  # Deep pullback
-            current_price - 10,  # Medium pullback
-            current_price - 5,   # Shallow pullback
-            current_price + 5,   # Breakout
-            current_price + 15,  # Strong breakout
+            current_price - 40,  # Deep pullback
+            current_price - 20,  # Medium pullback
+            current_price - 10,  # Shallow pullback
+            current_price + 10,  # Breakout
+            current_price + 30,  # Strong breakout
         ]
         
         self.profit_targets = [
-            current_price + 20,  # First target
-            current_price + 40,  # Second target
-            current_price + 60,  # Third target
-            current_price + 100, # Major target
+            current_price + 400,  # First target: +$400 (20x multiplier)
+            current_price + 800,  # Second target: +$800 (20x multiplier)
+            current_price + 1200, # Third target: +$1,200 (20x multiplier)
+            current_price + 2000, # Major target: +$2,000 (20x multiplier)
         ]
         
         self.stop_loss_levels = [
