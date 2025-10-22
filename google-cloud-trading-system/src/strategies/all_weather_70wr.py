@@ -19,6 +19,16 @@ from typing import Dict, List, Optional, Tuple
 from enum import Enum
 import logging
 
+# Learning & Honesty System (NEW OCT 21, 2025)
+try:
+    from ..core.loss_learner import get_loss_learner
+    from ..core.early_trend_detector import get_early_trend_detector
+    from ..core.honesty_reporter import get_honesty_reporter
+    LEARNING_AVAILABLE = True
+except ImportError:
+    LEARNING_AVAILABLE = False
+    logging.warning("⚠️ Learning system not available")
+
 logger = logging.getLogger(__name__)
 
 class MarketRegime(Enum):
@@ -36,6 +46,9 @@ class AllWeatherAdaptive70WR:
     
     def __init__(self, config: Dict = None):
         self.config = config or {}
+        
+        # INSTRUMENTS
+        self.instruments = ['EUR_USD', 'GBP_USD', 'USD_JPY', 'AUD_USD']
         
         # BASE PARAMETERS (FIXED OCT 16, 2025 - lowered for real trading)
         self.base_signal_strength = 0.25  # 25% (was 60% - too strict!)
@@ -101,6 +114,29 @@ class AllWeatherAdaptive70WR:
         self.current_regime = MarketRegime.UNKNOWN
         self.daily_trades = 0
         self.total_trades = 0
+        
+        # ===============================================
+        # ENHANCED LEARNING & HONESTY SYSTEM (NEW OCT 21, 2025)
+        # ===============================================
+        self.learning_enabled = False
+        if LEARNING_AVAILABLE:
+            try:
+                self.loss_learner = get_loss_learner(strategy_name="All-Weather 70% WR")
+                self.early_trend = get_early_trend_detector()
+                self.honesty = get_honesty_reporter(strategy_name="All-Weather 70% WR")
+                self.learning_enabled = True
+                logger.info("✅ Enhanced loss learning ENABLED - Augments regime learning")
+                logger.info("✅ Early trend detection ENABLED - Catches moves early")
+                logger.info("✅ Brutal honesty reporting ENABLED - No sugar-coating")
+            except Exception as e:
+                logger.warning(f"⚠️ Could not initialize enhanced learning system: {e}")
+                self.loss_learner = None
+                self.early_trend = None
+                self.honesty = None
+        else:
+            self.loss_learner = None
+            self.early_trend = None
+            self.honesty = None
         
     def detect_regime(self, data: pd.DataFrame) -> MarketRegime:
         """
@@ -392,6 +428,71 @@ class AllWeatherAdaptive70WR:
                 }
         
         return report
+    
+    def record_enhanced_trade_result(self, trade_info: Dict, result: str, pnl: float):
+        """
+        Enhanced trade result recording with loss learning (NEW OCT 21, 2025)
+        Augments the existing regime-based learning
+        
+        Args:
+            trade_info: Dict with trade details (instrument, regime, adx, momentum, etc.)
+            result: 'WIN' or 'LOSS'
+            pnl: Profit/loss amount
+        """
+        # First, record in the original regime-based system
+        if 'regime' in trade_info:
+            regime_str = trade_info['regime']
+            # Convert string to MarketRegime enum
+            regime_map = {
+                'TRENDING': MarketRegime.TRENDING,
+                'RANGING': MarketRegime.RANGING,
+                'VOLATILE': MarketRegime.VOLATILE,
+                'UNKNOWN': MarketRegime.UNKNOWN,
+                'trending': MarketRegime.TRENDING,
+                'ranging': MarketRegime.RANGING,
+                'volatile': MarketRegime.VOLATILE,
+                'unknown': MarketRegime.UNKNOWN
+            }
+            regime = regime_map.get(regime_str, MarketRegime.UNKNOWN)
+            self.record_trade_result(result, regime, pnl)
+        
+        # Then, record in the enhanced loss learning system
+        if not self.learning_enabled or not self.loss_learner:
+            return
+        
+        if result == 'LOSS':
+            self.loss_learner.record_loss(
+                instrument=trade_info.get('instrument', 'UNKNOWN'),
+                regime=trade_info.get('regime', 'UNKNOWN'),
+                adx=trade_info.get('adx', 0.0),
+                momentum=trade_info.get('momentum', 0.0),
+                volume=trade_info.get('volume', 0.0),
+                pnl=pnl,
+                conditions=trade_info.get('conditions', {})
+            )
+            logger.info(f"📉 Enhanced learning: Recorded loss for {trade_info.get('instrument')} in {trade_info.get('regime')} market")
+        else:
+            self.loss_learner.record_win(
+                instrument=trade_info.get('instrument', 'UNKNOWN'),
+                pnl=pnl
+            )
+            logger.info(f"📈 Enhanced learning: Recorded win for {trade_info.get('instrument')}")
+    
+    def get_enhanced_learning_summary(self) -> Dict:
+        """Get combined learning summary (regime + loss patterns)"""
+        summary = {
+            'regime_learning': self.get_learning_report(),
+            'enhanced_learning': {'enabled': False}
+        }
+        
+        if self.learning_enabled and self.loss_learner:
+            summary['enhanced_learning'] = {
+                'enabled': True,
+                'performance': self.loss_learner.get_performance_summary(),
+                'avoidance_patterns': self.loss_learner.get_avoidance_list()
+            }
+        
+        return summary
     
     def reset_daily_tracking(self):
         """Reset daily counters"""

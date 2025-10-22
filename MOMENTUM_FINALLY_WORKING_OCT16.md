@@ -191,3 +191,5 @@ Momentum: -0.43% (bearish)
 
 
 
+
+

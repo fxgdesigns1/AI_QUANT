@@ -18,6 +18,8 @@ from flask_socketio import SocketIO, emit
 from flask_apscheduler import APScheduler
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, asdict
+from functools import lru_cache
+import hashlib
 
 # Add src to Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
@@ -29,10 +31,100 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Import analytics modules
+try:
+    from src.analytics.trade_database import get_trade_database
+    from src.analytics.trade_logger import get_trade_logger
+    from src.analytics.strategy_version_manager import get_strategy_version_manager
+    from src.analytics.analytics_dashboard import start_analytics_dashboard
+    from src.analytics.data_archiver import get_data_archiver
+    ANALYTICS_ENABLED = True
+    logger.info("✅ Analytics modules imported successfully")
+except ImportError as e:
+    ANALYTICS_ENABLED = False
+    logger.warning(f"⚠️ Analytics not available: {e}")
+
 # Create Flask app with correct template directory (MOVED UP for app.config usage)
 template_dir = os.path.join(os.path.dirname(__file__), 'src', 'templates')
 app = Flask(__name__, template_folder=template_dir)
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'your-secret-key-here')
+
+# Performance optimization settings
+app.config['ENABLE_RESPONSE_CACHE'] = os.getenv('ENABLE_RESPONSE_CACHE', 'true').lower() == 'true'
+app.config['CACHE_TTL_SECONDS'] = int(os.getenv('CACHE_TTL_SECONDS', '15'))
+app.config['DASHBOARD_UPDATE_INTERVAL'] = int(os.getenv('DASHBOARD_UPDATE_INTERVAL', '30'))
+app.config['MARKET_DATA_UPDATE_INTERVAL'] = int(os.getenv('MARKET_DATA_UPDATE_INTERVAL', '10'))
+
+# Response cache for performance optimization
+response_cache = {}
+cache_lock = threading.Lock()
+
+def get_cache_key(endpoint: str, params: Dict[str, Any] = None) -> str:
+    """Generate cache key for endpoint and parameters"""
+    key_data = f"{endpoint}:{json.dumps(params or {}, sort_keys=True)}"
+    return hashlib.md5(key_data.encode()).hexdigest()
+
+def get_cached_response(cache_key: str) -> Optional[Dict[str, Any]]:
+    """Get cached response if available and not expired"""
+    if not app.config['ENABLE_RESPONSE_CACHE']:
+        return None
+    
+    with cache_lock:
+        if cache_key in response_cache:
+            cached = response_cache[cache_key]
+            if time.time() - cached['timestamp'] < app.config['CACHE_TTL_SECONDS']:
+                return cached['response']
+            else:
+                del response_cache[cache_key]
+    return None
+
+def cache_response(cache_key: str, response: Dict[str, Any]):
+    """Cache response with timestamp"""
+    if not app.config['ENABLE_RESPONSE_CACHE']:
+        return
+    
+    with cache_lock:
+        response_cache[cache_key] = {
+            'response': response,
+            'timestamp': time.time()
+        }
+        
+        # Clean old cache entries (keep only last 100)
+        if len(response_cache) > 100:
+            oldest_key = min(response_cache.keys(), key=lambda k: response_cache[k]['timestamp'])
+            del response_cache[oldest_key]
+
+def cached_endpoint(endpoint_name: str):
+    """Decorator for caching endpoint responses"""
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            # Generate cache key
+            params = request.args.to_dict() if hasattr(request, 'args') else {}
+            cache_key = get_cache_key(endpoint_name, params)
+            
+            # Check cache first
+            cached = get_cached_response(cache_key)
+            if cached:
+                logger.debug(f"Cache hit for {endpoint_name}")
+                return jsonify(cached)
+            
+            # Generate response
+            try:
+                result = func(*args, **kwargs)
+                if isinstance(result, tuple):
+                    response_data, status_code = result
+                    if status_code == 200:
+                        # Cache successful responses
+                        if isinstance(response_data, dict):
+                            cache_response(cache_key, response_data)
+                        elif hasattr(response_data, 'get_json'):
+                            cache_response(cache_key, response_data.get_json())
+                return result
+            except Exception as e:
+                logger.error(f"Error in cached endpoint {endpoint_name}: {e}")
+                raise
+        return wrapper
+    return decorator
 
 # Configure APScheduler
 app.config['SCHEDULER_API_ENABLED'] = True
@@ -1152,7 +1244,7 @@ def get_opportunities():
                 continue
         
         # Find opportunities
-        opportunities = opportunity_finder.find_opportunities(scanner.strategies, market_data)
+        opportunities = opportunity_finder.find_opportunities(list(scanner.strategies.values()), market_data)
         
         # Get stats
         stats = opportunity_finder.get_user_stats()
@@ -1430,6 +1522,7 @@ def deploy_configuration():
         }), 500
 
 @app.route('/api/status')
+@cached_endpoint('api_status')
 def status():
     """Status route"""
     mgr = get_dashboard_manager()
@@ -3324,6 +3417,48 @@ if __name__ == '__main__':
     logger.info("✅ News integration enabled")
     logger.info("✅ AI assistant enabled")
     logger.info("✅ APScheduler already started on app init")
+    
+    # Initialize analytics system
+    if ANALYTICS_ENABLED:
+        try:
+            logger.info("🔄 Initializing analytics system...")
+            
+            # Initialize database
+            trade_db = get_trade_database()
+            logger.info("✅ Trade database initialized")
+            
+            # Initialize trade logger
+            trade_logger = get_trade_logger()
+            logger.info("✅ Trade logger initialized")
+            
+            # Initialize version manager and auto-version strategies
+            version_manager = get_strategy_version_manager()
+            versioned = version_manager.auto_version_all_strategies()
+            logger.info(f"✅ Strategy version manager initialized ({len(versioned)} strategies)")
+            
+            # Initialize data archiver
+            archiver = get_data_archiver()
+            logger.info("✅ Data archiver initialized")
+            
+            # Start analytics dashboard on port 8081 in background
+            analytics_thread = start_analytics_dashboard(port=8081, background=True)
+            logger.info("✅ Analytics dashboard started on port 8081")
+            
+            # Schedule daily archival at 2 AM London time
+            @scheduler.task('cron', id='daily_archival', hour=2, minute=0, timezone='Europe/London')
+            def daily_archival_job():
+                logger.info("🔄 Running daily archival job...")
+                result = archiver.archive_old_trades(days=90)
+                logger.info(f"✅ Archival complete: {result.get('archived_count', 0)} trades archived")
+                
+                # Generate daily snapshots
+                trade_logger.cleanup_and_report()
+            
+            logger.info("✅ Analytics system fully initialized")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize analytics: {e}")
+            logger.exception("Full traceback:")
+    
     logger.info("=" * 60)
     
     # Start dashboard updates in background
@@ -3588,4 +3723,198 @@ def cron_aggressive_scan():
     except Exception as e:
         logger.error(f"Aggressive scan error: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
+# ===============================================
+# ANALYTICS INTEGRATION ENDPOINTS
+# ===============================================
+
+@app.route('/api/analytics/health')
+def api_analytics_health():
+    """Check analytics system health"""
+    if not ANALYTICS_ENABLED:
+        return jsonify({'success': False, 'error': 'Analytics not enabled'}), 503
+    
+    try:
+        db_stats = get_trade_database().get_database_stats()
+        return jsonify({
+            'success': True,
+            'status': 'healthy',
+            'analytics_dashboard_url': 'http://localhost:8081',
+            'database_stats': db_stats,
+            'timestamp': datetime.now().isoformat()
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/analytics/summary')
+def api_analytics_summary():
+    """Get analytics summary for main dashboard"""
+    if not ANALYTICS_ENABLED:
+        return jsonify({'success': False, 'error': 'Analytics not enabled'})
+    
+    try:
+        all_metrics = get_trade_database().get_all_strategy_metrics()
+        
+        # Calculate totals
+        total_trades = sum(m.get('total_trades', 0) for m in all_metrics)
+        total_pnl = sum(m.get('total_pnl', 0) for m in all_metrics)
+        avg_win_rate = sum(m.get('win_rate', 0) for m in all_metrics) / len(all_metrics) if all_metrics else 0
+        
+        return jsonify({
+            'success': True,
+            'summary': {
+                'total_strategies': len(all_metrics),
+                'total_trades': total_trades,
+                'total_pnl': total_pnl,
+                'avg_win_rate': avg_win_rate
+            },
+            'analytics_url': 'http://localhost:8081'
+        })
+    except Exception as e:
+        logger.error(f"❌ Error getting analytics summary: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# Daily Bulletin API Endpoints
+@app.route('/api/bulletin/morning')
+def api_bulletin_morning():
+    """Get morning bulletin with comprehensive market analysis"""
+    try:
+        from src.core.daily_bulletin_generator import DailyBulletinGenerator
+        from src.core.gold_analyzer import GoldAnalyzer
+        
+        # Initialize bulletin generator
+        bulletin_generator = DailyBulletinGenerator(
+            data_feed=app.config.get('DATA_FEED'),
+            shadow_system=app.config.get('SHADOW_SYSTEM'),
+            news_integration=app.config.get('NEWS_INTEGRATION'),
+            economic_calendar=app.config.get('ECONOMIC_CALENDAR')
+        )
+        
+        # Get accounts from config
+        accounts = app.config.get('ACCOUNTS', [])
+        
+        # Generate morning bulletin
+        bulletin = bulletin_generator.generate_morning_bulletin(accounts)
+        
+        return jsonify({
+            'success': True,
+            'bulletin': bulletin,
+            'timestamp': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"❌ Error generating morning bulletin: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/bulletin/midday')
+def api_bulletin_midday():
+    """Get midday update with quick market pulse"""
+    try:
+        from src.core.daily_bulletin_generator import DailyBulletinGenerator
+        
+        bulletin_generator = DailyBulletinGenerator(
+            data_feed=app.config.get('DATA_FEED'),
+            shadow_system=app.config.get('SHADOW_SYSTEM'),
+            news_integration=app.config.get('NEWS_INTEGRATION'),
+            economic_calendar=app.config.get('ECONOMIC_CALENDAR')
+        )
+        
+        accounts = app.config.get('ACCOUNTS', [])
+        bulletin = bulletin_generator.generate_midday_update(accounts)
+        
+        return jsonify({
+            'success': True,
+            'bulletin': bulletin,
+            'timestamp': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"❌ Error generating midday bulletin: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/bulletin/evening')
+def api_bulletin_evening():
+    """Get evening summary with day recap"""
+    try:
+        from src.core.daily_bulletin_generator import DailyBulletinGenerator
+        
+        bulletin_generator = DailyBulletinGenerator(
+            data_feed=app.config.get('DATA_FEED'),
+            shadow_system=app.config.get('SHADOW_SYSTEM'),
+            news_integration=app.config.get('NEWS_INTEGRATION'),
+            economic_calendar=app.config.get('ECONOMIC_CALENDAR')
+        )
+        
+        accounts = app.config.get('ACCOUNTS', [])
+        bulletin = bulletin_generator.generate_evening_summary(accounts)
+        
+        return jsonify({
+            'success': True,
+            'bulletin': bulletin,
+            'timestamp': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"❌ Error generating evening bulletin: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/bulletin/live')
+def api_bulletin_live():
+    """Get current real-time bulletin"""
+    try:
+        from src.core.daily_bulletin_generator import DailyBulletinGenerator
+        
+        bulletin_generator = DailyBulletinGenerator(
+            data_feed=app.config.get('DATA_FEED'),
+            shadow_system=app.config.get('SHADOW_SYSTEM'),
+            news_integration=app.config.get('NEWS_INTEGRATION'),
+            economic_calendar=app.config.get('ECONOMIC_CALENDAR')
+        )
+        
+        accounts = app.config.get('ACCOUNTS', [])
+        
+        # Determine which bulletin to generate based on time
+        now = datetime.now()
+        hour = now.hour
+        
+        if 6 <= hour < 12:  # Morning
+            bulletin = bulletin_generator.generate_morning_bulletin(accounts)
+        elif 12 <= hour < 18:  # Midday
+            bulletin = bulletin_generator.generate_midday_update(accounts)
+        else:  # Evening
+            bulletin = bulletin_generator.generate_evening_summary(accounts)
+        
+        return jsonify({
+            'success': True,
+            'bulletin': bulletin,
+            'timestamp': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"❌ Error generating live bulletin: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/gold/analysis')
+def api_gold_analysis():
+    """Get comprehensive Gold analysis"""
+    try:
+        from src.core.gold_analyzer import GoldAnalyzer
+        
+        gold_analyzer = GoldAnalyzer(
+            data_feed=app.config.get('DATA_FEED'),
+            news_integration=app.config.get('NEWS_INTEGRATION')
+        )
+        
+        accounts = app.config.get('ACCOUNTS', [])
+        analysis = gold_analyzer.get_comprehensive_gold_analysis(accounts)
+        
+        return jsonify({
+            'success': True,
+            'analysis': analysis,
+            'timestamp': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"❌ Error getting Gold analysis: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 

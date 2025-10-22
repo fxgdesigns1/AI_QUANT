@@ -36,6 +36,9 @@ class UltraSelective75WRChampion:
     def __init__(self, config: Dict = None):
         self.config = config or {}
         
+        # INSTRUMENTS
+        self.instruments = ['EUR_USD', 'GBP_USD', 'USD_JPY', 'AUD_USD', 'XAU_USD']
+        
         # OPTIMIZED PARAMETERS (LOWERED FOR REAL MARKET - OCT 16, 2025)
         self.signal_strength_min = 0.20  # LOWERED: 20% minimum (was 0.25)
         self.confluence_required = 2      # 2 factors must align (was 3)

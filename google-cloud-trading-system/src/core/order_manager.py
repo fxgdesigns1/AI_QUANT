@@ -265,6 +265,25 @@ class OrderManager:
     def execute_trade(self, signal: TradeSignal) -> TradeExecution:
         """Execute a trade signal"""
         try:
+            # TRADE SIZE VALIDATION (NEW OCT 21, 2025)
+            from .trade_size_validator import get_trade_size_validator
+            validator = get_trade_size_validator()
+            
+            size_validation = validator.validate_trade_size(
+                instrument=signal.instrument,
+                units=signal.units,
+                strategy_name=getattr(signal, 'strategy_name', 'Unknown')
+            )
+            
+            if not size_validation['valid']:
+                logger.warning(f"🚫 MICRO TRADE BLOCKED: {size_validation['reason']}")
+                return TradeExecution(
+                    signal=signal,
+                    order=None,
+                    success=False,
+                    error_message=f"Trade size {abs(signal.units)} below minimum {size_validation['min_required']}"
+                )
+            
             # Calculate position size
             position_size = self.calculate_position_size(signal)
             if not position_size:

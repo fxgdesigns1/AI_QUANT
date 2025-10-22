@@ -34,3 +34,6 @@ flask-socketio==5.3.6
 eventlet==0.33.3
 python-engineio==4.8.0
 python-socketio==5.10.0
+
+# Google Cloud Secret Manager (for mobile credential access)
+google-cloud-secret-manager>=2.16.0

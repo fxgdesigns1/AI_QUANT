@@ -58,6 +58,7 @@ class GBP_USD_Optimized_Strategy:
     def __init__(self, rank: int, strategy_params: Dict):
         """Initialize optimized strategy"""
         self.rank = rank
+        self.instruments = ['GBP_USD']  # GBP/USD optimized strategies
         self.name = f"GBP_USD_5m_Strategy_Rank_{rank}"
         self.instrument = 'GBP_USD'
         
