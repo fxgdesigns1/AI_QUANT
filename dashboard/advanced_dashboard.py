@@ -876,44 +876,6 @@ def get_contextual(pair):
         'active_sessions': 'London/NY Overlap'
     })
 
-@app.route('/api/trade_ideas')
-def get_trade_ideas():
-    """Get trade ideas"""
-    try:
-        # Get opportunities from the main system
-        opportunities = []
-        
-        # Check if we have any market data to analyze
-        if dashboard_manager.market_data:
-            for pair, data in dashboard_manager.market_data.items():
-                if hasattr(data, 'bid') and hasattr(data, 'ask'):
-                    # Simple opportunity detection based on spread
-                    spread = data.ask - data.bid
-                    if spread < 0.0005:  # Tight spread indicates good opportunity
-                        opportunities.append({
-                            'pair': pair.replace('_', '/'),
-                            'direction': 'BUY' if data.bid < data.ask else 'SELL',
-                            'entry': round((data.bid + data.ask) / 2, 5),
-                            'spread': round(spread, 5),
-                            'quality': 'High' if spread < 0.0003 else 'Medium',
-                            'timestamp': data.timestamp
-                        })
-        
-        return jsonify({
-            'ideas': opportunities,
-            'count': len(opportunities),
-            'status': 'active' if opportunities else 'scanning',
-            'message': f"Found {len(opportunities)} opportunities" if opportunities else "Scanning for opportunities..."
-        })
-    except Exception as e:
-        logger.error(f"❌ Trade ideas error: {e}")
-        return jsonify({
-            'ideas': [],
-            'count': 0,
-            'status': 'error',
-            'message': 'Temporarily unavailable'
-        })
-
 @app.route('/tasks/full_scan', methods=['POST'])
 def full_scan():
     """Trigger full market scan"""
@@ -1257,41 +1219,6 @@ def get_gold_focus():
             'data_source': 'ERROR',
             'timestamp': datetime.now().isoformat()
         }), 500
-
-@app.route('/api/ai-insights')
-def get_ai_insights():
-    """Get AI insights and hot tips"""
-    return jsonify({
-        'insights': [
-            {
-                'type': 'market_regime',
-                'title': 'Market Regime Analysis',
-                'content': 'Current market showing mixed signals with moderate volatility. EUR/USD trending bullish while GBP/USD consolidating.',
-                'confidence': 0.85,
-                'impact': 'medium'
-            },
-            {
-                'type': 'opportunity',
-                'title': 'Gold Breakout Opportunity',
-                'content': 'XAU/USD testing resistance at 2030. Break above could target 2045-2050 zone. Risk: 2015 support.',
-                'confidence': 0.78,
-                'impact': 'high'
-            },
-            {
-                'type': 'risk_warning',
-                'title': 'Volatility Alert',
-                'content': 'USD/JPY showing increased volatility. Consider reducing position sizes or tightening stops.',
-                'confidence': 0.92,
-                'impact': 'high'
-            }
-        ],
-        'hot_tips': [
-            'EUR/USD: Strong support at 1.0820, bullish momentum intact',
-            'Gold: Breaking resistance, target 2030-2045 zone',
-            'GBP/USD: Consolidating, wait for clear direction'
-        ],
-        'timestamp': datetime.now().isoformat()
-    })
 
 @app.route('/api/upcoming-events')
 def get_upcoming_events():
