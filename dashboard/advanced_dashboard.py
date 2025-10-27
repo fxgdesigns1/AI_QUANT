@@ -745,53 +745,66 @@ def get_performance():
         win_rate = 75.5  # This would need historical trade data to calculate accurately
         risk_reward_ratio = 2.3  # This would need historical trade data
         
-        # Return real account data for all three strategy cards
-        strategies = [
-            {
-                'name': 'Ultra Strict Forex',
-                'account_id': account_id,
-                'balance': balance,
-                'unrealized_pl': unrealized_pl,
-                'realized_pl': realized_pl,
-                'margin_used': margin_used,
-                'margin_available': margin_available,
-                'win_rate': win_rate,
-                'risk_reward_ratio': risk_reward_ratio,
-                'note': 'Shares account with other strategies'
-            },
-            {
-                'name': 'Gold Scalping',
-                'account_id': account_id,
-                'balance': balance,
-                'unrealized_pl': unrealized_pl,
-                'realized_pl': realized_pl,
-                'margin_used': margin_used,
-                'margin_available': margin_available,
-                'win_rate': win_rate,
-                'risk_reward_ratio': risk_reward_ratio,
-                'note': 'Shares account with other strategies'
-            },
-            {
-                'name': 'Momentum Trading',
-                'account_id': account_id,
-                'balance': balance,
-                'unrealized_pl': unrealized_pl,
-                'realized_pl': realized_pl,
-                'margin_used': margin_used,
-                'margin_available': margin_available,
-                'win_rate': win_rate,
-                'risk_reward_ratio': risk_reward_ratio,
-                'note': 'Shares account with other strategies'
-            }
-        ]
+        # Get real account data for each strategy from the Google Cloud system
+        strategies = []
+        
+        # Map strategies to their actual account IDs
+        strategy_accounts = {
+            'Ultra Strict Forex': '101-004-30719775-008',
+            'Gold Scalping': '101-004-30719775-007', 
+            'Momentum Trading': '101-004-30719775-006'
+        }
+        
+        for strategy_name, account_id in strategy_accounts.items():
+            try:
+                # Get account data for this specific strategy
+                strategy_client = OandaClient(api_key=api_key, account_id=account_id)
+                strategy_account_info = strategy_client.get_account_info()
+                
+                strategy_data = {
+                    'name': strategy_name,
+                    'account_id': account_id,
+                    'balance': strategy_account_info.balance,
+                    'unrealized_pl': strategy_account_info.unrealized_pl,
+                    'realized_pl': strategy_account_info.realized_pl,
+                    'margin_used': strategy_account_info.margin_used,
+                    'margin_available': strategy_account_info.margin_available,
+                    'win_rate': 75.5,  # Would need historical data
+                    'risk_reward_ratio': 2.3,  # Would need historical data
+                    'note': f'Individual account: {account_id}'
+                }
+                strategies.append(strategy_data)
+                
+            except Exception as e:
+                logger.error(f"❌ Failed to get data for {strategy_name} ({account_id}): {e}")
+                # Fallback to main account data
+                strategy_data = {
+                    'name': strategy_name,
+                    'account_id': account_id,
+                    'balance': balance,
+                    'unrealized_pl': unrealized_pl,
+                    'realized_pl': realized_pl,
+                    'margin_used': margin_used,
+                    'margin_available': margin_available,
+                    'win_rate': 75.5,
+                    'risk_reward_ratio': 2.3,
+                    'note': f'Fallback data for {account_id}'
+                }
+                strategies.append(strategy_data)
+        
+        # Calculate total balance from all strategies
+        total_balance = sum(strategy['balance'] for strategy in strategies)
+        total_unrealized_pl = sum(strategy['unrealized_pl'] for strategy in strategies)
+        total_realized_pl = sum(strategy['realized_pl'] for strategy in strategies)
+        total_margin_used = sum(strategy['margin_used'] for strategy in strategies)
         
         return jsonify({
             'strategies': strategies,
-            'total_balance': balance,
-            'total_unrealized_pl': unrealized_pl,
-            'total_realized_pl': realized_pl,
-            'total_margin_used': margin_used,
-            'account_id': account_id,
+            'total_balance': total_balance,
+            'total_unrealized_pl': total_unrealized_pl,
+            'total_realized_pl': total_realized_pl,
+            'total_margin_used': total_margin_used,
+            'account_id': 'Multiple Accounts',
             'data_source': 'OANDA_LIVE',
             'timestamp': datetime.now().isoformat()
         })
