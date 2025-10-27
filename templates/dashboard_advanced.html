@@ -3858,6 +3858,51 @@
                         ⚡ ${opp.signal === 'BUY' ? 'BULLISH' : 'BEARISH'} Signal | Quality Score: ${opp.quality_score}/100
                     </div>
                 </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px;">
+                    <button onclick="approveOpportunity('${opp.id}')" style="
+                        background: linear-gradient(135deg, #06d6a0, #05b587);
+                        color: white;
+                        border: none;
+                        padding: 12px 20px;
+                        border-radius: 8px;
+                        font-weight: bold;
+                        font-size: 0.95rem;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 4px 15px rgba(6, 214, 160, 0.3);
+                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(6, 214, 160, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(6, 214, 160, 0.3)'">
+                        ✅ Approve Trade
+                    </button>
+                    <button onclick="watchOpportunity('${opp.id}')" style="
+                        background: linear-gradient(135deg, #3a86ff, #2563eb);
+                        color: white;
+                        border: none;
+                        padding: 12px 20px;
+                        border-radius: 8px;
+                        font-weight: bold;
+                        font-size: 0.95rem;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 4px 15px rgba(58, 134, 255, 0.3);
+                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(58, 134, 255, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(58, 134, 255, 0.3)'">
+                        👁️ Watch
+                    </button>
+                    <button onclick="dismissOpportunity('${opp.id}')" style="
+                        background: linear-gradient(135deg, #ef476f, #c7304f);
+                        color: white;
+                        border: none;
+                        padding: 12px 20px;
+                        border-radius: 8px;
+                        font-weight: bold;
+                        font-size: 0.95rem;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 4px 15px rgba(239, 71, 111, 0.3);
+                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(239, 71, 111, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(239, 71, 111, 0.3)'">
+                        ❌ Hold
+                    </button>
+                </div>
             `;
             
             return card;
