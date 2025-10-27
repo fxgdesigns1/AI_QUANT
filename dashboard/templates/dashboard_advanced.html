@@ -2595,81 +2595,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script>
-        // Navigation System (Like Crypto Dashboard)
-        document.addEventListener('DOMContentLoaded', function() {
-            // Handle sidebar navigation
-            const navLinks = document.querySelectorAll('.sidebar .nav-link[data-section]');
-            const contentSections = document.querySelectorAll('.content-section');
-            
-            navLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    // Remove active class from all nav links
-                    navLinks.forEach(nav => nav.classList.remove('active'));
-                    
-                    // Add active class to clicked link
-                    this.classList.add('active');
-                    
-                    // Hide all content sections
-                    contentSections.forEach(section => section.classList.remove('active'));
-                    
-                    // Show selected section
-                    const targetSection = this.getAttribute('data-section');
-                    const section = document.getElementById(targetSection);
-                    if (section) {
-                        section.classList.add('active');
-                        
-                        // Load section data when navigated to (lazy loading)
-                        const loaders = {
-                            'accounts': loadAccountsSection,
-                            'strategies': loadStrategiesSection,
-                            'positions': loadPositionsSection,
-                            'signals': loadSignalsSection,
-                            'news': loadNewsSection,
-                            'trade-manager': loadTradeManagerSection,
-                            'system-status': loadSystemStatusSection,
-                            'config': loadConfigSection,
-                            'insights': loadInsightsSection,
-                            'strategy-switcher': loadStrategySwitcherSection,
-                            'ai-copilot': loadAICopilotSection,
-                            'reports': loadReportsSection,
-                            'performance': loadPerformanceSection
-                        };
-                        
-                        if (loaders[targetSection]) {
-                            loaders[targetSection]();
-                        }
-                    }
-                });
-            });
-            
-            // Handle refresh data button
-            const refreshBtn = document.getElementById('refreshData');
-            if (refreshBtn) {
-                refreshBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    // Trigger data refresh
-                    if (typeof loadDashboardData === 'function') {
-                        loadDashboardData();
-                    }
-                    // Show toast notification
-                    if (typeof showInfoToast === 'function') {
-                        showInfoToast('🔄 Refreshing dashboard data...');
-                    }
-                });
-            }
-
-            // Handle hash-based navigation on page load
-            const hash = window.location.hash.substring(1); // Remove #
-            if (hash) {
-                const link = document.querySelector(`[data-section="${hash}"]`);
-                if (link) {
-                    link.click();
-                }
-            }
-        });
-
         // Chart Management
         let priceChart = null;
         let currentInstrument = 'EUR_USD';
@@ -2803,8 +2728,83 @@
         
         document.addEventListener('DOMContentLoaded', () => {
           console.log('🚀 Dashboard DOM loaded, initializing...');
+          
+          // Initialize navigation system FIRST
+          initNavigation();
+          
+          // Then initialize dashboard
           initDashboard();
         });
+        
+        // Initialize navigation system
+        function initNavigation() {
+            console.log('🔗 Initializing navigation system...');
+            
+            // Handle sidebar navigation
+            const navLinks = document.querySelectorAll('.sidebar .nav-link[data-section]');
+            const contentSections = document.querySelectorAll('.content-section');
+            
+            console.log('Found nav links:', navLinks.length);
+            console.log('Found content sections:', contentSections.length);
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('Navigation clicked:', this.getAttribute('data-section'));
+                    
+                    // Remove active class from all nav links
+                    navLinks.forEach(nav => nav.classList.remove('active'));
+                    
+                    // Add active class to clicked link
+                    this.classList.add('active');
+                    
+                    // Hide all content sections
+                    contentSections.forEach(section => section.classList.remove('active'));
+                    
+                    // Show selected section
+                    const targetSection = this.getAttribute('data-section');
+                    const section = document.getElementById(targetSection);
+                    console.log('Target section:', targetSection, 'Found:', section !== null);
+                    
+                    if (section) {
+                        section.classList.add('active');
+                        console.log('Section activated:', targetSection);
+                        
+                        // Load section data when navigated to (lazy loading)
+                        const loaders = {
+                            'accounts': typeof loadAccountsSection !== 'undefined' ? loadAccountsSection : null,
+                            'strategies': typeof loadStrategiesSection !== 'undefined' ? loadStrategiesSection : null,
+                            'positions': typeof loadPositionsSection !== 'undefined' ? loadPositionsSection : null,
+                            'signals': typeof loadSignalsSection !== 'undefined' ? loadSignalsSection : null,
+                            'news': typeof loadNewsSection !== 'undefined' ? loadNewsSection : null,
+                            'trade-manager': typeof loadTradeManagerSection !== 'undefined' ? loadTradeManagerSection : null,
+                            'system-status': typeof loadSystemStatusSection !== 'undefined' ? loadSystemStatusSection : null,
+                            'config': typeof loadConfigSection !== 'undefined' ? loadConfigSection : null,
+                            'insights': typeof loadInsightsSection !== 'undefined' ? loadInsightsSection : null,
+                            'strategy-switcher': typeof loadStrategySwitcherSection !== 'undefined' ? loadStrategySwitcherSection : null,
+                            'ai-copilot': typeof loadAICopilotSection !== 'undefined' ? loadAICopilotSection : null,
+                            'reports': typeof loadReportsSection !== 'undefined' ? loadReportsSection : null,
+                            'performance': typeof loadPerformanceSection !== 'undefined' ? loadPerformanceSection : null
+                        };
+                        
+                        if (loaders[targetSection]) {
+                            console.log('Loading section data for:', targetSection);
+                            loaders[targetSection]();
+                        }
+                    }
+                });
+            });
+            
+            // Handle hash-based navigation on page load
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                const link = document.querySelector(`[data-section="${hash}"]`);
+                if (link) {
+                    console.log('Triggering initial navigation to:', hash);
+                    link.click();
+                }
+            }
+        }
         
         // Initialize dashboard data
         function initDashboard() {
@@ -3342,190 +3342,6 @@
         // Initialize AI Assistant (removed duplicate - handled by separate script below)
         function initAIAssistant() {
             console.log('🤖 AI Assistant handled by separate script');
-        }
-        
-        }
-        
-        }
-        
-        // Load trading signals
-        async function loadTradingSignals() {
-            console.log('🎯 loadTradingSignals() called - STARTING');
-            try {
-                console.log('🎯 Loading trading signals...');
-                const response = await fetch('/api/signals/pending');
-                console.log('🎯 Response received:', response.status);
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('🎯 Data received:', data);
-                    if (data.signals && data.signals.length > 0) {
-                        console.log('🎯 Calling updateTradingSignals with', data.signals.length, 'signals');
-                        updateTradingSignals(data);
-                    } else {
-                        console.log('🎯 No signals in data');
-                    }
-                } else {
-                    console.log('❌ Response not ok:', response.status);
-                }
-            } catch (error) {
-                console.error('❌ Trading signals error:', error);
-            }
-            console.log('🎯 loadTradingSignals() finished');
-        }
-        
-        // Update trading signals display
-        function updateTradingSignals(data) {
-            console.log('🎯 Updating trading signals...');
-            const signalsContainer = document.getElementById('tradingSignals');
-            if (!signalsContainer) return;
-            
-            const signals = data.signals || [];
-            if (signals.length === 0) {
-                signalsContainer.innerHTML = `
-                    <div style="text-align: center; padding: 20px; color: #666;">
-                        <div style="font-size: 18px; margin-bottom: 10px;">📊</div>
-                        <div>No active signals</div>
-                    </div>
-                `;
-                return;
-            }
-                    messages.scrollTop = messages.scrollHeight;
-                    
-                    // Call real AI assistant API
-                    fetch('/ai/interpret', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ text: message })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        // Remove typing indicator
-                        messages.removeChild(typingMsg);
-                        
-                        // Add AI response
-                        const aiMsg = document.createElement('div');
-                        aiMsg.className = 'message ai-message';
-                        aiMsg.innerHTML = data.reply.replace(/\n/g, '<br>');
-                        messages.appendChild(aiMsg);
-                        
-                        // Handle confirmation flow
-                        if (data.requires_confirmation && data.confirmation_id) {
-                            const confirmDiv = document.createElement('div');
-                            confirmDiv.className = 'confirmation-panel';
-                            confirmDiv.innerHTML = `
-                                <div class="confirmation-preview">
-                                    <strong>Preview:</strong> ${data.preview.summary}
-                                </div>
-                                <div class="confirmation-buttons">
-                                    <button class="confirm-btn" data-id="${data.confirmation_id}">Confirm</button>
-                                    <button class="cancel-btn" data-id="${data.confirmation_id}">Cancel</button>
-                                </div>
-                            `;
-                            messages.appendChild(confirmDiv);
-                            
-                            // Add event listeners
-                            const confirmBtn = confirmDiv.querySelector('.confirm-btn');
-                            const cancelBtn = confirmDiv.querySelector('.cancel-btn');
-                            
-                            confirmBtn.addEventListener('click', async () => {
-                                try {
-                                    const response = await fetch('/ai/confirm', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ 
-                                            confirmation_id: data.confirmation_id, 
-                                            confirm: true 
-                                        })
-                                    });
-                                    const result = await response.json();
-                                    
-                                    const resultMsg = document.createElement('div');
-                                    resultMsg.className = 'message ai-message result';
-                                    resultMsg.textContent = `Result: ${result.message || result.status}`;
-                                    messages.appendChild(resultMsg);
-                                    
-                                } catch (error) {
-                                    const errorMsg = document.createElement('div');
-                                    errorMsg.className = 'message ai-message error';
-                                    errorMsg.textContent = `Error: ${error.message}`;
-                                    messages.appendChild(errorMsg);
-                                }
-                                
-                                // Remove confirmation panel
-                                messages.removeChild(confirmDiv);
-                                messages.scrollTop = messages.scrollHeight;
-                            });
-                            
-                            cancelBtn.addEventListener('click', async () => {
-                                try {
-                                    await fetch('/ai/confirm', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ 
-                                            confirmation_id: data.confirmation_id, 
-                                            confirm: false 
-                                        })
-                                    });
-                                    
-                                    const cancelMsg = document.createElement('div');
-                                    cancelMsg.className = 'message ai-message';
-                                    cancelMsg.textContent = 'Action cancelled';
-                                    messages.appendChild(cancelMsg);
-                                    
-                                } catch (error) {
-                                    console.error('Cancel error:', error);
-                                }
-                                
-                                // Remove confirmation panel
-                                messages.removeChild(confirmDiv);
-                                messages.scrollTop = messages.scrollHeight;
-                            });
-                        }
-                        
-                        // Scroll to bottom
-                        messages.scrollTop = messages.scrollHeight;
-                    })
-                    .catch(error => {
-                        // Remove typing indicator
-                        messages.removeChild(typingMsg);
-                        
-                        // Add error message
-                        const errorMsg = document.createElement('div');
-                        errorMsg.className = 'message ai-message error';
-                        errorMsg.textContent = 'Sorry, I encountered an error. Please try again.';
-                        messages.appendChild(errorMsg);
-                        
-                        // Scroll to bottom
-                        messages.scrollTop = messages.scrollHeight;
-                    });
-                }
-                
-                sendButton.addEventListener('click', sendMessage);
-                input.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        sendMessage();
-                    }
-                });
-            }
-        }
-        
-        // Generate AI response
-        function generateAIResponse(message) {
-            const responses = [
-                "📊 Market Analysis: Current market conditions show moderate volatility. EUR/USD is trending upward with strong support at 1.0850. Consider monitoring key resistance levels at 1.0950.",
-                "📰 News Impact: Recent economic data shows mixed signals. The Federal Reserve's stance on interest rates continues to influence market sentiment.",
-                "⚠️ Risk Management: Current portfolio risk is within acceptable limits. Ensure proper position sizing and maintain stop-loss orders.",
-                "🎯 Trading Strategy: The system is currently monitoring multiple timeframes for entry signals. Gold scalping strategy shows promising setups on 5-minute charts.",
-                "🔧 System Status: All trading systems are operational. Data feeds are live and stable. Risk management protocols are active.",
-                "💡 Trade Ideas: Based on current market analysis, consider monitoring EUR/USD for potential breakout opportunities above 1.1750.",
-                "📈 Performance: System is performing within expected parameters. All risk metrics are green and systems are optimized for current market conditions."
-            ];
-            
-            return responses[Math.floor(Math.random() * responses.length)];
         }
         
         // Load trading signals
