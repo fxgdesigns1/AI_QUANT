@@ -45,6 +45,9 @@ class YAMLManager:
         # Cache config in memory for read-only mode
         self._cached_config = None
         
+        # Strategy config path (separate file)
+        self.strategy_config_path = self._find_strategy_config_file()
+        
         logger.info(f"✅ YAML Manager initialized: {self.yaml_path} (read-only: {self.read_only_mode})")
     
     def _check_filesystem_writability(self):
@@ -297,6 +300,154 @@ class YAMLManager:
         """Get all strategies from YAML"""
         config = self.read_config()
         return config.get('strategies', {})
+
+    def _find_strategy_config_file(self) -> Optional[Path]:
+        """Find strategy_config.yaml file"""
+        possible_paths = [
+            Path("strategy_config.yaml"),
+            Path(__file__).parent.parent.parent / "strategy_config.yaml",
+            Path.cwd() / "strategy_config.yaml",
+        ]
+        
+        for path in possible_paths:
+            if path.exists():
+                return path
+        
+        return None
+    
+    def read_strategy_config(self) -> Dict[str, Any]:
+        """Read strategy configuration from strategy_config.yaml"""
+        try:
+            if not self.strategy_config_path or not self.strategy_config_path.exists():
+                logger.warning("⚠️ strategy_config.yaml not found")
+                return {}
+            
+            with open(self.strategy_config_path, 'r') as f:
+                config = yaml.safe_load(f)
+            
+            return config or {}
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to read strategy config: {e}")
+            return {}
+    
+    def write_strategy_config(self, config: Dict[str, Any], backup: bool = True) -> bool:
+        """Write strategy configuration with backup"""
+        try:
+            if self.read_only_mode:
+                logger.error("❌ Cannot write strategy config: filesystem is read-only")
+                return False
+            
+            if not self.strategy_config_path:
+                logger.error("❌ strategy_config.yaml path not found")
+                return False
+            
+            # Create backup
+            if backup and self.strategy_config_path.exists():
+                self._create_strategy_config_backup()
+            
+            # Write to temporary file first
+            temp_path = self.strategy_config_path.with_suffix('.tmp')
+            with open(temp_path, 'w') as f:
+                yaml.dump(config, f, default_flow_style=False, sort_keys=False, indent=2)
+            
+            # Verify written file
+            with open(temp_path, 'r') as f:
+                verification = yaml.safe_load(f)
+            
+            if not verification:
+                raise ValueError("Written strategy config is invalid")
+            
+            # Move temp to actual
+            shutil.move(str(temp_path), str(self.strategy_config_path))
+            
+            logger.info("✅ Strategy configuration written successfully")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to write strategy config: {e}")
+            temp_path = self.strategy_config_path.with_suffix('.tmp')
+            if temp_path.exists():
+                temp_path.unlink()
+            return False
+    
+    def _create_strategy_config_backup(self):
+        """Create timestamped backup of strategy_config.yaml"""
+        try:
+            if not self.backup_dir:
+                return
+            
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            backup_file = self.backup_dir / f"strategy_config_backup_{timestamp}.yaml"
+            
+            shutil.copy2(self.strategy_config_path, backup_file)
+            logger.info(f"💾 Strategy config backup created: {backup_file.name}")
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Strategy config backup creation failed: {e}")
+    
+    def update_strategy_params(self, strategy_name: str, param_updates: Dict[str, Any]) -> bool:
+        """Update specific parameters for a strategy"""
+        try:
+            config = self.read_strategy_config()
+            
+            if strategy_name not in config:
+                logger.error(f"❌ Strategy not found: {strategy_name}")
+                return False
+            
+            # Deep merge the updates
+            strategy_config = config[strategy_name]
+            self._deep_update(strategy_config, param_updates)
+            
+            # Write updated config
+            return self.write_strategy_config(config)
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to update strategy params: {e}")
+            return False
+    
+    def _deep_update(self, base_dict: Dict, updates: Dict):
+        """Deep merge two dictionaries"""
+        for key, value in updates.items():
+            if isinstance(value, dict) and key in base_dict and isinstance(base_dict[key], dict):
+                self._deep_update(base_dict[key], value)
+            else:
+                base_dict[key] = value
+    
+    def enable_strategy(self, strategy_name: str) -> bool:
+        """Enable a strategy"""
+        return self.update_strategy_params(strategy_name, {'enabled': True})
+    
+    def disable_strategy(self, strategy_name: str) -> bool:
+        """Disable a strategy"""
+        return self.update_strategy_params(strategy_name, {'enabled': False})
+    
+    def switch_account_strategy(self, account_id: str, new_strategy_name: str) -> bool:
+        """Switch an account's strategy (updates accounts.yaml)"""
+        try:
+            # Read accounts config
+            config = self.read_config()
+            
+            # Find account
+            account_found = False
+            for account in config['accounts']:
+                if account['id'] == account_id:
+                    old_strategy = account.get('strategy')
+                    account['strategy'] = new_strategy_name
+                    account_found = True
+                    logger.info(f"🔄 Switched account {account_id} from {old_strategy} to {new_strategy_name}")
+                    break
+            
+            if not account_found:
+                logger.error(f"❌ Account not found: {account_id}")
+                return False
+            
+            # Write updated config
+            return self.write_config(config)
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to switch account strategy: {e}")
+            return False
 
 
 # Global instance
