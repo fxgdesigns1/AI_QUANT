@@ -32,8 +32,8 @@ def load_config():
     """Load dashboard configuration"""
     config = {
         'telegram': {
-            'token': os.getenv('TELEGRAM_TOKEN'),
-            'chat_id': os.getenv('TELEGRAM_CHAT_ID')
+            'token': os.getenv('TELEGRAM_TOKEN', '7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU'),
+            'chat_id': os.getenv('TELEGRAM_CHAT_ID', '6100678501')
         },
         'data_sources': {
             'api_keys': {
@@ -174,6 +174,15 @@ class AdvancedDashboardManager:
         self.system_alerts: List[Dict] = []
         self.data_validation_log: List[Dict] = []
         self.portfolio_risk_metrics: Dict = {}
+        
+        # Initialize news integration bridge
+        try:
+            from news_integration_bridge import news_bridge
+            self.news_integration = news_bridge
+            logger.info("✅ News integration bridge connected")
+        except Exception as e:
+            logger.warning(f"⚠️ News integration bridge not available: {e}")
+            self.news_integration = None
         
         logger.info("✅ Advanced dashboard initialized")
     

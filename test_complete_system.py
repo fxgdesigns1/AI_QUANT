@@ -21,7 +21,7 @@ from src.core.dynamic_account_manager import DynamicAccountManager
 from src.core.trading_scanner import TradingScanner
 from src.core.order_manager import OrderManager
 from src.strategies.momentum_trading import MomentumTradingStrategy
-from src.strategies.gold_scalping import GoldScalpingStrategy
+from src.strategies.gold_scalping_optimized import GoldScalpingStrategy
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

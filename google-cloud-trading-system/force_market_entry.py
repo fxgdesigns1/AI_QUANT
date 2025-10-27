@@ -65,8 +65,17 @@ for account in active_accounts:
     instrument = instruments[0]
     
     try:
+        # Get API credentials for this account
+        api_key = account.get('api_key')
+        account_id = account['id']
+        
+        if not api_key:
+            print(f"  ❌ ERROR: API key not found for account {account_id}")
+            trades_failed += 1
+            continue
+        
         # Create OANDA client for this account
-        client = OandaClient(account_id=account_id)
+        client = OandaClient(api_key=api_key, account_id=account_id)
         
         # Get current price
         prices = client.get_current_prices([instrument], force_refresh=True)
