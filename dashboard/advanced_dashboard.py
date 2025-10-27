@@ -404,17 +404,30 @@ def get_news():
 
 @app.route('/api/insights')
 def get_insights():
-    """Get AI insights"""
+    """Get AI insights - SYNCHRONIZED WITH TELEGRAM REPORTS"""
     try:
+        # Get live account data for consistency with Telegram
+        accounts_response = get_accounts()
+        if hasattr(accounts_response, 'get_json'):
+            accounts_data = accounts_response.get_json()
+            if accounts_data.get('status') == 'success':
+                accounts = accounts_data.get('accounts', {})
+            else:
+                accounts = {}
+        else:
+            accounts = {}
+        total_balance = sum(acc.get('balance', 0) for acc in accounts.values())
+        total_positions = sum(acc.get('open_positions', 0) for acc in accounts.values())
+        
         # Get current system status
-        total_systems = 8  # We have 8 active accounts
-        running_systems = 8  # All systems are running
-        live_data_count = 8  # All systems have live data
+        total_systems = len(accounts)
+        running_systems = len([acc for acc in accounts.values() if acc.get('active', False)])
+        live_data_count = running_systems
         
         # Get market data status
         market_pairs = len(dashboard_manager.market_data)
         
-        # Generate insights based on current data
+        # Generate insights based on current data - SAME AS TELEGRAM
         insights = {
             'status': 'success',
             'insights': {
@@ -430,7 +443,19 @@ def get_insights():
                 'risk_level': 'medium',
                 'market_volatility': 'moderate',
                 'trading_session': 'London/NY overlap',
-                'data_source': 'OANDA_LIVE'
+                'data_source': 'OANDA_LIVE',
+                # Add Telegram-synchronized portfolio data
+                'portfolio_status': {
+                    'total_balance': total_balance,
+                    'active_accounts': running_systems,
+                    'open_positions': total_positions,
+                    'system_status': '🟢 Online'
+                },
+                'daily_targets': {
+                    'daily_target': 700,
+                    'weekly_target': 2500,
+                    'current_progress': 0  # Updated from actual trades
+                }
             },
             'timestamp': datetime.now().isoformat()
         }
@@ -454,6 +479,88 @@ def get_insights():
                 'data_source': 'ERROR'
             }
         })
+
+@app.route('/api/status')
+def get_status():
+    """Get system status - SAME DATA STRUCTURE AS TELEGRAM REPORTS"""
+    try:
+        # Get account data
+        accounts_response = get_accounts()
+        if hasattr(accounts_response, 'get_json'):
+            accounts_data = accounts_response.get_json()
+            if accounts_data.get('status') == 'success':
+                accounts = accounts_data.get('accounts', {})
+            else:
+                accounts = {}
+        else:
+            accounts = {}
+        account_statuses = {}
+        total_balance = 0
+        total_positions = 0
+        
+        for account_id, account in accounts.items():
+            balance = account.get('balance', 0)
+            positions = account.get('open_positions', 0)
+            total_balance += balance
+            total_positions += positions
+            
+            account_statuses[account_id] = {
+                'balance': balance,
+                'open_positions': positions,
+                'active': account.get('active', False),
+                'strategy': account.get('strategy', 'Unknown')
+            }
+        
+        # Get market data
+        market_data = {}
+        for instrument, data in dashboard_manager.market_data.items():
+            if hasattr(data, 'bid') and hasattr(data, 'ask'):
+                market_data[instrument] = {
+                    'bid': data.bid,
+                    'ask': data.ask,
+                    'timestamp': data.timestamp if hasattr(data, 'timestamp') else datetime.now().isoformat()
+                }
+            else:
+                market_data[instrument] = {
+                    'bid': 0,
+                    'ask': 0,
+                    'timestamp': datetime.now().isoformat()
+                }
+        
+        # Get trading metrics (mock for now - will be real data)
+        trading_metrics = {
+            'total_trades': 0,
+            'win_rate': 0.0,
+            'total_profit': 0.0,
+            'total_loss': 0.0
+        }
+        
+        # Determine trade phase and AI recommendation
+        current_hour = datetime.now().hour
+        if 6 <= current_hour < 14:
+            trade_phase = "London Session"
+            ai_recommendation = "ACTIVE"
+        elif 14 <= current_hour < 21:
+            trade_phase = "London/NY Overlap"
+            ai_recommendation = "AGGRESSIVE"
+        else:
+            trade_phase = "Asian Session"
+            ai_recommendation = "HOLD"
+        
+        status = {
+            'status': 'success',
+            'account_statuses': account_statuses,
+            'market_data': market_data,
+            'trading_metrics': trading_metrics,
+            'trade_phase': trade_phase,
+            'ai_recommendation': ai_recommendation,
+            'timestamp': datetime.now().isoformat()
+        }
+        
+        return jsonify(status)
+    except Exception as e:
+        logger.error(f"Error getting status: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/api/trade_ideas')
 def get_trade_ideas():
@@ -608,102 +715,6 @@ def get_validation_log():
 def get_risk_metrics():
     """Get current risk metrics"""
     return jsonify(dashboard_manager.portfolio_risk_metrics)
-
-@app.route('/api/status')
-def get_status():
-    """Get system status with real account data"""
-    try:
-        # Get real account data from the accounts API
-        from src.core.oanda_client import OandaClient
-        api_key = os.getenv('OANDA_API_KEY', 'REMOVED_SECRET')
-        
-        all_accounts = {
-            '101-004-30719775-008': 'Primary Trading Account',
-            '101-004-30719775-007': 'Gold Scalping Account', 
-            '101-004-30719775-006': 'Strategy Alpha Account',
-            '101-004-30719775-004': 'Strategy Gamma Account',
-            '101-004-30719775-003': 'Strategy Delta Account',
-            '101-004-30719775-001': 'Strategy Zeta Account',
-            '101-004-30719775-009': '75% WR Champion Strategy',
-            '101-004-30719775-010': 'Trump DNA Gold Strategy'
-        }
-        
-        trading_systems = {}
-        account_statuses = {}
-        active_systems = 0
-        
-        for account_id, account_name in all_accounts.items():
-            try:
-                client = OandaClient(api_key=api_key, account_id=account_id)
-                account_info = client.get_account_info()
-                
-                # Create trading system entry
-                trading_systems[account_id] = {
-                    'name': account_name,
-                    'status': 'running',
-                    'health_score': 0.9,
-                    'uptime': '24:00:00',
-                    'last_check': datetime.now().isoformat(),
-                    'is_live_data': True,
-                    'data_freshness': 'fresh',
-                    'error_count': 0
-                }
-                
-                # Create account status entry
-                account_statuses[account_id] = {
-                    'balance': account_info.balance,
-                    'unrealized_pl': account_info.unrealized_pl,
-                    'realized_pl': account_info.realized_pl,
-                    'margin_used': account_info.margin_used,
-                    'margin_available': account_info.margin_available,
-                    'open_positions': account_info.open_position_count,
-                    'status': 'active'
-                }
-                
-                active_systems += 1
-                
-            except Exception as e:
-                logger.error(f"❌ Failed to get status for account {account_id}: {e}")
-                trading_systems[account_id] = {
-                    'name': account_name,
-                    'status': 'error',
-                    'health_score': 0.0,
-                    'uptime': '0:00:00',
-                    'last_check': datetime.now().isoformat(),
-                    'is_live_data': False,
-                    'data_freshness': 'unknown',
-                    'error_count': 1
-                }
-                account_statuses[account_id] = {
-                    'balance': 0,
-                    'unrealized_pl': 0,
-                    'realized_pl': 0,
-                    'margin_used': 0,
-                    'margin_available': 0,
-                    'open_positions': 0,
-                    'status': 'error'
-                }
-        
-        return jsonify({
-            'status': 'running',
-            'timestamp': datetime.now().isoformat(),
-            'systems_active': active_systems,
-            'health': 'good',
-            'trading_systems': trading_systems,
-            'account_statuses': account_statuses,
-            'market_data': dashboard_manager.market_data,
-            'data_source': 'OANDA_LIVE'
-        })
-        
-    except Exception as e:
-        logger.error(f"❌ Error getting status: {e}")
-        return jsonify({
-            'status': 'error',
-            'timestamp': datetime.now().isoformat(),
-            'systems_active': 0,
-            'health': 'poor',
-            'error': str(e)
-        })
 
 @app.route('/api/opportunities')
 def get_opportunities():

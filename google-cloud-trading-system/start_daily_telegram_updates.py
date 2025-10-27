@@ -26,17 +26,17 @@ def send_telegram(message):
         return False
 
 def get_cloud_status():
-    """Get status from cloud system"""
+    """Get status from LOCAL dashboard system - SYNCHRONIZED DATA"""
     try:
         response = requests.get(
-            "https://ai-quant-trading.uc.r.appspot.com/api/status",
+            "http://localhost:8080/api/status",
             timeout=15
         )
         if response.status_code == 200:
             return response.json()
         return None
     except Exception as e:
-        print(f"Error getting cloud status: {e}")
+        print(f"Error getting local dashboard status: {e}")
         return None
 
 def morning_briefing():

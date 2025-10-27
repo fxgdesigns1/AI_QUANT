@@ -22,6 +22,14 @@ from enum import Enum
 from functools import lru_cache
 import hashlib
 
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+    print("✅ Loaded .env file successfully")
+except ImportError:
+    print("⚠️ python-dotenv not installed, using system environment variables")
+
 # Add src to Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
@@ -494,6 +502,189 @@ def signals_dashboard():
 # ═══════════════════════════════════════════════════════════════
 # SIGNALS API ENDPOINTS
 # ═══════════════════════════════════════════════════════════════
+
+@app.route('/api/signals')
+def api_signals():
+    """Get all active signals from strategies"""
+    try:
+        mgr = get_dashboard_manager()
+        if mgr is None:
+            return jsonify({
+                'error': 'Dashboard manager not available',
+                'signals': [],
+                'count': 0,
+                'timestamp': datetime.now().isoformat(),
+                'status': 'error'
+            })
+        
+        signals = mgr.get_all_signals()
+        return jsonify({
+            'signals': signals,
+            'count': len(signals),
+            'timestamp': datetime.now().isoformat(),
+            'status': 'success'
+        })
+    except Exception as e:
+        logger.error(f"❌ API Signals error: {e}")
+        return jsonify({
+            'error': str(e),
+            'signals': [],
+            'count': 0,
+            'timestamp': datetime.now().isoformat(),
+            'status': 'error'
+        })
+
+@app.route('/api/reports')
+def api_reports():
+    """Get all available reports"""
+    try:
+        mgr = get_dashboard_manager()
+        if mgr is None:
+            return jsonify({
+                'error': 'Dashboard manager not available',
+                'reports': [],
+                'count': 0,
+                'timestamp': datetime.now().isoformat(),
+                'status': 'error'
+            })
+        
+        reports = mgr.get_all_reports()
+        return jsonify({
+            'reports': reports,
+            'count': len(reports),
+            'timestamp': datetime.now().isoformat(),
+            'status': 'success'
+        })
+    except Exception as e:
+        logger.error(f"❌ API Reports error: {e}")
+        return jsonify({
+            'error': str(e),
+            'reports': [],
+            'count': 0,
+            'timestamp': datetime.now().isoformat(),
+            'status': 'error'
+        })
+
+@app.route('/api/weekly-reports')
+def api_weekly_reports():
+    """Get weekly performance reports"""
+    try:
+        mgr = get_dashboard_manager()
+        if mgr is None:
+            return jsonify({
+                'error': 'Dashboard manager not available',
+                'weekly_reports': [],
+                'count': 0,
+                'timestamp': datetime.now().isoformat(),
+                'status': 'error'
+            })
+        
+        weekly_reports = mgr.get_weekly_reports()
+        return jsonify({
+            'weekly_reports': weekly_reports,
+            'count': len(weekly_reports),
+            'timestamp': datetime.now().isoformat(),
+            'status': 'success'
+        })
+    except Exception as e:
+        logger.error(f"❌ API Weekly Reports error: {e}")
+        return jsonify({
+            'error': str(e),
+            'weekly_reports': [],
+            'count': 0,
+            'timestamp': datetime.now().isoformat(),
+            'status': 'error'
+        })
+
+@app.route('/api/roadmap')
+def api_roadmap():
+    """Get strategy roadmap and future plans"""
+    try:
+        mgr = get_dashboard_manager()
+        if mgr is None:
+            return jsonify({
+                'error': 'Dashboard manager not available',
+                'roadmap': {},
+                'timestamp': datetime.now().isoformat(),
+                'status': 'error'
+            })
+        
+        roadmap = mgr.get_strategy_roadmap()
+        return jsonify({
+            'roadmap': roadmap,
+            'timestamp': datetime.now().isoformat(),
+            'status': 'success'
+        })
+    except Exception as e:
+        logger.error(f"❌ API Roadmap error: {e}")
+        return jsonify({
+            'error': str(e),
+            'roadmap': {},
+            'timestamp': datetime.now().isoformat(),
+            'status': 'error'
+        })
+
+@app.route('/api/strategy-reports')
+def api_strategy_reports():
+    """Get individual strategy reports"""
+    try:
+        mgr = get_dashboard_manager()
+        if mgr is None:
+            return jsonify({
+                'error': 'Dashboard manager not available',
+                'strategy_reports': [],
+                'count': 0,
+                'timestamp': datetime.now().isoformat(),
+                'status': 'error'
+            })
+        
+        strategy_reports = mgr.get_strategy_reports()
+        return jsonify({
+            'strategy_reports': strategy_reports,
+            'count': len(strategy_reports),
+            'timestamp': datetime.now().isoformat(),
+            'status': 'success'
+        })
+    except Exception as e:
+        logger.error(f"❌ API Strategy Reports error: {e}")
+        return jsonify({
+            'error': str(e),
+            'strategy_reports': [],
+            'count': 0,
+            'timestamp': datetime.now().isoformat(),
+            'status': 'error'
+        })
+
+@app.route('/api/performance-reports')
+def api_performance_reports():
+    """Get performance analysis reports"""
+    try:
+        mgr = get_dashboard_manager()
+        if mgr is None:
+            return jsonify({
+                'error': 'Dashboard manager not available',
+                'performance_reports': [],
+                'count': 0,
+                'timestamp': datetime.now().isoformat(),
+                'status': 'error'
+            })
+        
+        performance_reports = mgr.get_performance_reports()
+        return jsonify({
+            'performance_reports': performance_reports,
+            'count': len(performance_reports),
+            'timestamp': datetime.now().isoformat(),
+            'status': 'success'
+        })
+    except Exception as e:
+        logger.error(f"❌ API Performance Reports error: {e}")
+        return jsonify({
+            'error': str(e),
+            'performance_reports': [],
+            'count': 0,
+            'timestamp': datetime.now().isoformat(),
+            'status': 'error'
+        })
 
 @app.route('/api/signals/pending')
 def get_pending_signals():
@@ -3830,34 +4021,6 @@ def test_chart():
         'message': 'Chart endpoint is working - UPDATED VERSION',
         'test_data': [{'time': '2025-10-19T22:00:00Z', 'mid': {'c': '1.0500'}}]
     })
-
-@app.route('/api/sidebar/live-prices')
-def get_sidebar_live_prices():
-    """Get current prices for sidebar display - uses existing account data"""
-    try:
-        mgr = get_dashboard_manager()
-        if not mgr or not mgr.accounts_data:
-            return jsonify({'success': False, 'error': 'No data'})
-        
-        # Extract unique instruments from all accounts
-        instruments_data = {}
-        for acc_data in mgr.accounts_data.values():
-            for inst in acc_data.get('instruments', []):
-                if inst not in instruments_data:
-                    # Use cached price from dashboard manager
-                    price_data = mgr.get_cached_price(inst)
-                    if price_data:
-                        instruments_data[inst] = {
-                            'instrument': inst,
-                            'bid': price_data.get('bid', 0),
-                            'ask': price_data.get('ask', 0),
-                            'spread': price_data.get('spread', 0)
-                        }
-        
-        return jsonify({'success': True, 'prices': instruments_data})
-    except Exception as e:
-        logger.error(f"Sidebar live prices error: {e}")
-        return jsonify({'success': False, 'error': str(e), 'prices': {}})
 
 @socketio.on('request_performance_update')
 def handle_performance_update():

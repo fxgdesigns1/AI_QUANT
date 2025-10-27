@@ -56,9 +56,22 @@ class DynamicAccountManager:
         import yaml
         
         try:
+            # Load .env file if available
+            try:
+                from dotenv import load_dotenv
+                load_dotenv()
+                logger.info("✅ Loaded .env file for API keys")
+            except ImportError:
+                logger.info("⚠️ python-dotenv not available, using system environment")
+            
             # Get API credentials from environment
             api_key = os.getenv('OANDA_API_KEY')
             environment = os.getenv('OANDA_ENVIRONMENT', 'practice')
+            
+            # CRITICAL: Verify API key is loaded
+            if not api_key:
+                raise ValueError("OANDA_API_KEY not found in environment variables. Check .env file.")
+            logger.info(f"✅ API key loaded: {api_key[:20]}...")
             
             # Load accounts.yaml DIRECTLY (no config_loader middleman)
             config_path = os.path.join(os.path.dirname(__file__), '../../accounts.yaml')
