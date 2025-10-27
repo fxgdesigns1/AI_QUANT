@@ -20,7 +20,7 @@ sys.path.append('/Users/mac/quant_system_clean/google-cloud-trading-system')
 from src.core.dynamic_account_manager import DynamicAccountManager
 from src.core.order_manager import OrderManager
 from src.strategies.momentum_trading import MomentumTradingStrategy
-from src.strategies.gold_scalping import GoldScalpingStrategy
+from src.strategies.gold_scalping_optimized import GoldScalpingStrategy
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
