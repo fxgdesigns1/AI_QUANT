@@ -3295,16 +3295,11 @@
         async function loadTradingSignals() {
             try {
                 console.log('🎯 Loading trading signals...');
-                const response = await fetch('/tasks/full_scan', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
+                const response = await fetch('/api/signals/pending');
                 
                 if (response.ok) {
                     const data = await response.json();
-                    if (data.ok) {
+                    if (data.signals && data.signals.length > 0) {
                         updateTradingSignals(data);
                     }
                 }
@@ -3314,28 +3309,31 @@
         }
         
         // Update trading signals display
-        function updateTradingSignals(signals) {
+        function updateTradingSignals(data) {
             console.log('🎯 Updating trading signals...');
-            const signalsContainer = document.getElementById('activeTradesData');
+            const signalsContainer = document.getElementById('tradingSignals');
             if (!signalsContainer) return;
+            
+            const signals = data.signals || [];
+            if (signals.length === 0) {
+                signalsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #666;">
+                        <div style="font-size: 18px; margin-bottom: 10px;">📊</div>
+                        <div>No active signals</div>
+                    </div>
+                `;
+                return;
+            }
             
             signalsContainer.innerHTML = `
                 <div class="trading-signals">
-                    <div class="signal-item">
-                        <div class="signal-pair">EUR/USD</div>
-                        <div class="signal-action">BUY</div>
-                        <div class="signal-confidence">85%</div>
-                    </div>
-                    <div class="signal-item">
-                        <div class="signal-pair">XAU/USD</div>
-                        <div class="signal-action">SELL</div>
-                        <div class="signal-confidence">78%</div>
-                    </div>
-                    <div class="signal-item">
-                        <div class="signal-pair">GBP/USD</div>
-                        <div class="signal-action">HOLD</div>
-                        <div class="signal-confidence">92%</div>
-                    </div>
+                    ${signals.map(signal => `
+                        <div class="signal-item">
+                            <div class="signal-pair">${signal.instrument}</div>
+                            <div class="signal-action">${signal.direction}</div>
+                            <div class="signal-confidence">${signal.quality_score}%</div>
+                        </div>
+                    `).join('')}
                 </div>
             `;
         }
