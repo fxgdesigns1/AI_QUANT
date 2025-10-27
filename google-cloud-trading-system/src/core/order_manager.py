@@ -47,6 +47,7 @@ class TradeSignal:
     instrument: str
     side: OrderSide
     units: int
+    entry_price: Optional[float] = None
     stop_loss: Optional[float] = None
     take_profit: Optional[float] = None
     strategy_name: str = ""

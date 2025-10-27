@@ -282,8 +282,12 @@ class MomentumTradingStrategy:
             logger.info("📥 Pre-filling price history from OANDA...")
             
             # Get credentials from environment
-            api_key = os.environ.get('OANDA_API_KEY', 'REMOVED_SECRET')
+            api_key = os.environ.get('OANDA_API_KEY')
             base_url = os.environ.get('OANDA_BASE_URL', 'https://api-fxpractice.oanda.com')
+            
+            if not api_key:
+                logger.warning("⚠️ OANDA_API_KEY not found in environment")
+                return
             
             headers = {
                 'Authorization': f'Bearer {api_key}',
@@ -896,6 +900,7 @@ class MomentumTradingStrategy:
                 instrument=instrument,
                 side=side,
                 units=position_size,
+                entry_price=current_data.bid if side == OrderSide.BUY else current_data.ask,
                 stop_loss=sl,
                 take_profit=tp,
                 confidence=final_confidence,

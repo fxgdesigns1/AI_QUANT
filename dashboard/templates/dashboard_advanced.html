@@ -1126,6 +1126,12 @@
                     AI Copilot
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#reports" data-section="reports">
+                    <i class="bi bi-file-earmark-bar-graph me-2"></i>
+                    Reports & Analytics
+                </a>
+            </li>
         </ul>
     </div>
     
@@ -1299,6 +1305,8 @@
                                 <div style="font-size: 14px; color: #999;">High-quality setups will appear here</div>
                             </div>
                         </div>
+                        
+                        <!-- Cleaner Dashboard - Reports moved to separate menu -->
                         
                         <!-- A/B Lane Comparison -->
                         <div style="margin-top: 30px; padding: 20px; background: rgba(131, 56, 236, 0.1); border-radius: 12px; border: 1px solid #8338ec;">
@@ -1868,6 +1876,12 @@
                 `;
             }
         }
+
+        async function loadReportsSection() {
+            // Load daily report and weekly roadmap when reports section is accessed
+            await loadDailyReport();
+            await loadWeeklyRoadmap();
+        }
         </script>
         
         <section id="ai-copilot" class="content-section">
@@ -1875,6 +1889,65 @@
                 <h2>🤖 AI Copilot</h2>
                 <div id="aiCopilotTabContent">
                     <p>Loading AI Copilot...</p>
+                </div>
+            </div>
+        </section>
+        
+        <section id="reports" class="content-section">
+            <div class="container-fluid">
+                <h2>📊 Reports & Analytics</h2>
+                <div class="row">
+                    <!-- Daily Report -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card" style="background: rgba(6, 214, 160, 0.1); border: 1px solid #06d6a0;">
+                            <div class="card-header" style="background: rgba(6, 214, 160, 0.2); border-bottom: 1px solid #06d6a0;">
+                                <h4 style="color: #06d6a0; margin: 0; font-size: 1.2rem;">
+                                    📊 Daily Report
+                                </h4>
+                            </div>
+                            <div class="card-body" id="dailyReportContent">
+                                <div style="text-align: center; padding: 20px; color: #666;">
+                                    <div style="font-size: 18px; margin-bottom: 10px;">📈</div>
+                                    <div>Loading daily report...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Weekly Roadmap -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card" style="background: rgba(131, 56, 236, 0.1); border: 1px solid #8338ec;">
+                            <div class="card-header" style="background: rgba(131, 56, 236, 0.2); border-bottom: 1px solid #8338ec;">
+                                <h4 style="color: #8338ec; margin: 0; font-size: 1.2rem;">
+                                    🗺️ Weekly Roadmap
+                                </h4>
+                            </div>
+                            <div class="card-body" id="weeklyRoadmapContent">
+                                <div style="text-align: center; padding: 20px; color: #666;">
+                                    <div style="font-size: 18px; margin-bottom: 10px;">🎯</div>
+                                    <div>Loading weekly roadmap...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Additional Analytics -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card" style="background: rgba(17, 138, 178, 0.1); border: 1px solid #118ab2;">
+                            <div class="card-header" style="background: rgba(17, 138, 178, 0.2); border-bottom: 1px solid #118ab2;">
+                                <h4 style="color: #118ab2; margin: 0; font-size: 1.2rem;">
+                                    📈 Performance Analytics
+                                </h4>
+                            </div>
+                            <div class="card-body">
+                                <p style="color: var(--text-secondary); text-align: center; padding: 20px;">
+                                    Advanced performance metrics and historical analysis will be displayed here.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1995,7 +2068,8 @@
                             'config': loadConfigSection,
                             'insights': loadInsightsSection,
                             'strategy-switcher': loadStrategySwitcherSection,
-                            'ai-copilot': loadAICopilotSection
+                            'ai-copilot': loadAICopilotSection,
+                            'reports': loadReportsSection
                         };
                         
                         if (loaders[targetSection]) {
@@ -4028,6 +4102,179 @@
         // Load opportunities every 10 seconds
         setInterval(loadTradeOpportunities, 10000);
         setTimeout(loadTradeOpportunities, 2000);  // Initial load
+        
+        // Load Daily Report
+        async function loadDailyReport() {
+            try {
+                const response = await fetch('/api/daily-report');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    displayDailyReport(data.report);
+                } else {
+                    document.getElementById('dailyReportContent').innerHTML = `
+                        <div style="text-align: center; padding: 20px; color: #ef476f;">
+                            <div style="font-size: 18px; margin-bottom: 10px;">❌</div>
+                            <div>Error loading daily report</div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Failed to load daily report:', error);
+                document.getElementById('dailyReportContent').innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #ef476f;">
+                        <div style="font-size: 18px; margin-bottom: 10px;">❌</div>
+                        <div>Failed to load daily report</div>
+                    </div>
+                `;
+            }
+        }
+        
+        function displayDailyReport(report) {
+            const content = document.getElementById('dailyReportContent');
+            const netPl = report.trading_summary.net_pl;
+            const dailyReturn = report.trading_summary.daily_return_pct;
+            const progressPct = report.daily_targets.progress_pct;
+            
+            content.innerHTML = `
+                <div style="padding: 15px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                        <span style="color: #999;">Current Time:</span>
+                        <span style="color: white; font-weight: bold;">${report.current_time}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                        <span style="color: #999;">Session:</span>
+                        <span style="color: #06d6a0; font-weight: bold;">${report.session_status}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                        <span style="color: #999;">Next:</span>
+                        <span style="color: #999; font-size: 12px;">${report.next_session}</span>
+                    </div>
+                    
+                    <div style="border-top: 1px solid #333; padding-top: 15px; margin-top: 15px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span style="color: #999;">Total Balance:</span>
+                            <span style="color: white; font-weight: bold;">$${report.portfolio_summary.total_balance.toLocaleString()}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span style="color: #999;">Open Positions:</span>
+                            <span style="color: white; font-weight: bold;">${report.portfolio_summary.open_positions}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span style="color: #999;">Total Trades:</span>
+                            <span style="color: white; font-weight: bold;">${report.trading_summary.total_trades}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span style="color: #999;">Win Rate:</span>
+                            <span style="color: white; font-weight: bold;">${report.trading_summary.win_rate.toFixed(1)}%</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span style="color: #999;">Net P/L:</span>
+                            <span style="color: ${netPl >= 0 ? '#06d6a0' : '#ef476f'}; font-weight: bold;">$${netPl.toFixed(2)}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                            <span style="color: #999;">Daily Return:</span>
+                            <span style="color: ${dailyReturn >= 0 ? '#06d6a0' : '#ef476f'}; font-weight: bold;">${dailyReturn.toFixed(2)}%</span>
+                        </div>
+                        
+                        <div style="border-top: 1px solid #333; padding-top: 15px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span style="color: #999;">Daily Target:</span>
+                                <span style="color: white; font-weight: bold;">$${report.daily_targets.daily_target}</span>
+                            </div>
+                            <div style="background: rgba(0,0,0,0.3); border-radius: 4px; height: 8px; margin-bottom: 8px;">
+                                <div style="background: #06d6a0; height: 100%; width: ${Math.min(progressPct, 100)}%; border-radius: 4px; transition: width 0.3s;"></div>
+                            </div>
+                            <div style="text-align: center; color: #999; font-size: 12px;">
+                                ${progressPct.toFixed(1)}% Complete
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Load Weekly Roadmap
+        async function loadWeeklyRoadmap() {
+            try {
+                const response = await fetch('/api/weekly-roadmap');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    displayWeeklyRoadmap(data.roadmap);
+                } else {
+                    document.getElementById('weeklyRoadmapContent').innerHTML = `
+                        <div style="text-align: center; padding: 20px; color: #ef476f;">
+                            <div style="font-size: 18px; margin-bottom: 10px;">❌</div>
+                            <div>Error loading weekly roadmap</div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Failed to load weekly roadmap:', error);
+                document.getElementById('weeklyRoadmapContent').innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #ef476f;">
+                        <div style="font-size: 18px; margin-bottom: 10px;">❌</div>
+                        <div>Failed to load weekly roadmap</div>
+                    </div>
+                `;
+            }
+        }
+        
+        function displayWeeklyRoadmap(roadmap) {
+            const content = document.getElementById('weeklyRoadmapContent');
+            const weekProgress = roadmap.week_info.week_progress_pct;
+            const weeklyProgress = roadmap.targets.weekly_progress_pct;
+            const onTrack = roadmap.targets.on_track;
+            
+            content.innerHTML = `
+                <div style="padding: 15px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                        <span style="color: #999;">Current Day:</span>
+                        <span style="color: white; font-weight: bold;">${roadmap.week_info.current_day}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                        <span style="color: #999;">Week Progress:</span>
+                        <span style="color: #8338ec; font-weight: bold;">${roadmap.week_info.days_passed}/7 days</span>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.3); border-radius: 4px; height: 8px; margin-bottom: 15px;">
+                        <div style="background: #8338ec; height: 100%; width: ${weekProgress}%; border-radius: 4px; transition: width 0.3s;"></div>
+                    </div>
+                    
+                    <div style="border-top: 1px solid #333; padding-top: 15px; margin-top: 15px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span style="color: #999;">Weekly Target:</span>
+                            <span style="color: white; font-weight: bold;">$${roadmap.targets.weekly_target}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span style="color: #999;">Current Progress:</span>
+                            <span style="color: white; font-weight: bold;">$${roadmap.targets.current_progress.toFixed(2)}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span style="color: #999;">Expected:</span>
+                            <span style="color: #999; font-weight: bold;">$${roadmap.targets.expected_progress.toFixed(2)}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                            <span style="color: #999;">Status:</span>
+                            <span style="color: ${onTrack ? '#06d6a0' : '#ef476f'}; font-weight: bold;">${onTrack ? 'ON TRACK' : 'BEHIND'}</span>
+                        </div>
+                        
+                        <div style="background: rgba(0,0,0,0.3); border-radius: 4px; height: 8px; margin-bottom: 15px;">
+                            <div style="background: ${onTrack ? '#06d6a0' : '#ef476f'}; height: 100%; width: ${Math.min(weeklyProgress, 100)}%; border-radius: 4px; transition: width 0.3s;"></div>
+                        </div>
+                        
+                        <div style="border-top: 1px solid #333; padding-top: 15px;">
+                            <div style="color: #999; margin-bottom: 10px; font-size: 12px;">Weekly Goals:</div>
+                            ${roadmap.weekly_goals.map(goal => `
+                                <div style="color: #999; font-size: 11px; margin-bottom: 5px;">• ${goal}</div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Reports are now loaded on-demand when user navigates to Reports & Analytics section
         
     </script>
 

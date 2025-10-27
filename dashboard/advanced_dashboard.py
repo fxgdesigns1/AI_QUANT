@@ -562,6 +562,174 @@ def get_status():
         logger.error(f"Error getting status: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
+@app.route('/api/daily-report')
+def get_daily_report():
+    """Get daily trading report - SAME AS TELEGRAM"""
+    try:
+        # Get current status data
+        status_response = get_status()
+        if hasattr(status_response, 'get_json'):
+            status_data = status_response.get_json()
+        else:
+            status_data = status_response
+        
+        # Get account data
+        accounts_response = get_accounts()
+        if hasattr(accounts_response, 'get_json'):
+            accounts_data = accounts_response.get_json()
+            if accounts_data.get('status') == 'success':
+                accounts = accounts_data.get('accounts', {})
+            else:
+                accounts = {}
+        else:
+            accounts = {}
+        
+        # Calculate totals
+        total_balance = sum(acc.get('balance', 0) for acc in accounts.values())
+        total_positions = sum(acc.get('open_positions', 0) for acc in accounts.values())
+        
+        # Get trading metrics
+        trading_metrics = status_data.get('trading_metrics', {})
+        total_trades = trading_metrics.get('total_trades', 0)
+        win_rate = trading_metrics.get('win_rate', 0)
+        total_profit = trading_metrics.get('total_profit', 0)
+        total_loss = trading_metrics.get('total_loss', 0)
+        net_pl = total_profit + total_loss
+        
+        # Determine daily return
+        if total_balance > 0:
+            daily_return_pct = (net_pl / total_balance) * 100
+        else:
+            daily_return_pct = 0
+        
+        # Get current time info
+        current_hour = datetime.now().hour
+        current_time = datetime.now().strftime('%I:%M %p')
+        
+        # Determine session status
+        if 6 <= current_hour < 14:
+            session_status = "London Session"
+            next_session = "London/NY Overlap (2:00 PM)"
+        elif 14 <= current_hour < 21:
+            session_status = "London/NY Overlap"
+            next_session = "NY Close (9:00 PM)"
+        else:
+            session_status = "Asian Session"
+            next_session = "London Open (8:00 AM)"
+        
+        daily_report = {
+            'status': 'success',
+            'report': {
+                'timestamp': datetime.now().isoformat(),
+                'current_time': current_time,
+                'session_status': session_status,
+                'next_session': next_session,
+                'portfolio_summary': {
+                    'total_balance': total_balance,
+                    'active_accounts': len(accounts),
+                    'open_positions': total_positions,
+                    'system_status': '🟢 Online'
+                },
+                'trading_summary': {
+                    'total_trades': total_trades,
+                    'win_rate': win_rate,
+                    'net_pl': net_pl,
+                    'daily_return_pct': daily_return_pct,
+                    'total_profit': total_profit,
+                    'total_loss': total_loss
+                },
+                'daily_targets': {
+                    'daily_target': 700,
+                    'weekly_target': 2500,
+                    'current_progress': net_pl,
+                    'progress_pct': (net_pl / 700) * 100 if net_pl > 0 else 0
+                },
+                'market_conditions': {
+                    'volatility': 'moderate',
+                    'risk_level': 'medium',
+                    'ai_recommendation': status_data.get('ai_recommendation', 'HOLD'),
+                    'trade_phase': status_data.get('trade_phase', 'Unknown')
+                }
+            }
+        }
+        
+        return jsonify(daily_report)
+    except Exception as e:
+        logger.error(f"Error getting daily report: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/weekly-roadmap')
+def get_weekly_roadmap():
+    """Get weekly trading roadmap - SAME AS TELEGRAM"""
+    try:
+        # Get current week info
+        today = datetime.now()
+        week_start = today - timedelta(days=today.weekday())
+        week_end = week_start + timedelta(days=6)
+        
+        # Calculate week progress
+        days_passed = today.weekday() + 1
+        week_progress_pct = (days_passed / 7) * 100
+        
+        # Get daily report data for current progress
+        daily_response = get_daily_report()
+        if hasattr(daily_response, 'get_json'):
+            daily_data = daily_response.get_json()
+            current_progress = daily_data.get('report', {}).get('daily_targets', {}).get('current_progress', 0)
+        else:
+            current_progress = 0
+        
+        # Calculate weekly targets
+        weekly_target = 2500
+        daily_target = 700
+        expected_weekly_progress = daily_target * days_passed
+        weekly_progress_pct = (current_progress / weekly_target) * 100
+        
+        weekly_roadmap = {
+            'status': 'success',
+            'roadmap': {
+                'week_info': {
+                    'week_start': week_start.strftime('%Y-%m-%d'),
+                    'week_end': week_end.strftime('%Y-%m-%d'),
+                    'current_day': today.strftime('%A'),
+                    'days_passed': days_passed,
+                    'days_remaining': 7 - days_passed,
+                    'week_progress_pct': week_progress_pct
+                },
+                'targets': {
+                    'daily_target': daily_target,
+                    'weekly_target': weekly_target,
+                    'current_progress': current_progress,
+                    'expected_progress': expected_weekly_progress,
+                    'weekly_progress_pct': weekly_progress_pct,
+                    'on_track': current_progress >= expected_weekly_progress * 0.8
+                },
+                'strategy_focus': {
+                    'primary_pairs': ['EUR/USD', 'GBP/USD', 'XAU/USD'],
+                    'risk_level': 'Medium',
+                    'max_daily_trades': 15,
+                    'max_concurrent_positions': 5
+                },
+                'weekly_goals': [
+                    'Achieve 2% minimum weekly return',
+                    'Maintain 70%+ win rate',
+                    'Complete 5+ high-quality setups',
+                    'Stay within risk parameters'
+                ],
+                'performance_metrics': {
+                    'target_win_rate': 70,
+                    'target_daily_return': 0.5,
+                    'max_drawdown': 2.0,
+                    'risk_per_trade': 1.0
+                }
+            }
+        }
+        
+        return jsonify(weekly_roadmap)
+    except Exception as e:
+        logger.error(f"Error getting weekly roadmap: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 @app.route('/api/trade_ideas')
 def get_trade_ideas():
     """Get trade ideas based on current market conditions"""

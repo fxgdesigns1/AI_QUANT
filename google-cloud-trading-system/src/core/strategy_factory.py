@@ -76,6 +76,15 @@ class StrategyFactory:
     def __init__(self):
         self._strategy_cache = {}
         self._load_errors = {}
+        
+        # Load environment variables for strategies
+        try:
+            from dotenv import load_dotenv
+            load_dotenv()
+            logger.info("✅ Loaded .env file for strategy initialization")
+        except ImportError:
+            logger.info("⚠️ python-dotenv not available, using system environment")
+        
         logger.info("✅ Strategy Factory initialized")
     
     def get_strategy(self, strategy_name: str, account_config: Dict = None) -> Any:
