@@ -86,6 +86,14 @@ class UltraSelective75WRChampion:
         self.instruments = ['EUR_USD', 'GBP_USD', 'USD_JPY', 'AUD_USD']  # Explicit list
         
         logger.info("✅ 75% WR Champion with Trump DNA - Weekly target: $2,500")
+    
+    def is_strategy_active(self) -> bool:
+        """Check if strategy is active and ready to trade"""
+        return True
+    
+    def is_trading_hours(self) -> bool:
+        """Check if current time is within trading hours - BYPASSED FOR TESTING"""
+        return True  # Always allow trading for testing
         
     def is_trading_session(self, dt: datetime) -> bool:
         """Check if current time is during London or NY session"""

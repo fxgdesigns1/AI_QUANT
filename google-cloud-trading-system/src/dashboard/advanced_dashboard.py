@@ -1222,6 +1222,130 @@ def api_overview():
             'timestamp': datetime.now().isoformat()
         })
 
+@app.route('/api/signals')
+def api_signals():
+    """Get all active signals from strategies"""
+    try:
+        signals = dashboard_manager.get_all_signals()
+        return jsonify({
+            'signals': signals,
+            'count': len(signals),
+            'timestamp': datetime.now().isoformat(),
+            'status': 'success'
+        })
+    except Exception as e:
+        logger.error(f"❌ API Signals error: {e}")
+        return jsonify({
+            'error': str(e),
+            'signals': [],
+            'count': 0,
+            'timestamp': datetime.now().isoformat(),
+            'status': 'error'
+        })
+
+@app.route('/api/reports')
+def api_reports():
+    """Get all available reports"""
+    try:
+        reports = dashboard_manager.get_all_reports()
+        return jsonify({
+            'reports': reports,
+            'count': len(reports),
+            'timestamp': datetime.now().isoformat(),
+            'status': 'success'
+        })
+    except Exception as e:
+        logger.error(f"❌ API Reports error: {e}")
+        return jsonify({
+            'error': str(e),
+            'reports': [],
+            'count': 0,
+            'timestamp': datetime.now().isoformat(),
+            'status': 'error'
+        })
+
+@app.route('/api/weekly-reports')
+def api_weekly_reports():
+    """Get weekly performance reports"""
+    try:
+        weekly_reports = dashboard_manager.get_weekly_reports()
+        return jsonify({
+            'weekly_reports': weekly_reports,
+            'count': len(weekly_reports),
+            'timestamp': datetime.now().isoformat(),
+            'status': 'success'
+        })
+    except Exception as e:
+        logger.error(f"❌ API Weekly Reports error: {e}")
+        return jsonify({
+            'error': str(e),
+            'weekly_reports': [],
+            'count': 0,
+            'timestamp': datetime.now().isoformat(),
+            'status': 'error'
+        })
+
+@app.route('/api/roadmap')
+def api_roadmap():
+    """Get strategy roadmap and future plans"""
+    try:
+        roadmap = dashboard_manager.get_strategy_roadmap()
+        return jsonify({
+            'roadmap': roadmap,
+            'timestamp': datetime.now().isoformat(),
+            'status': 'success'
+        })
+    except Exception as e:
+        logger.error(f"❌ API Roadmap error: {e}")
+        return jsonify({
+            'error': str(e),
+            'roadmap': {},
+            'timestamp': datetime.now().isoformat(),
+            'status': 'error'
+        })
+
+@app.route('/api/strategy-reports')
+def api_strategy_reports():
+    """Get individual strategy reports"""
+    try:
+        strategy_reports = dashboard_manager.get_strategy_reports()
+        return jsonify({
+            'strategy_reports': strategy_reports,
+            'count': len(strategy_reports),
+            'timestamp': datetime.now().isoformat(),
+            'status': 'success'
+        })
+    except Exception as e:
+        logger.error(f"❌ API Strategy Reports error: {e}")
+        return jsonify({
+            'error': str(e),
+            'strategy_reports': [],
+            'count': 0,
+            'timestamp': datetime.now().isoformat(),
+            'status': 'error'
+        })
+
+@app.route('/api/performance-reports')
+def api_performance_reports():
+    """Get performance analysis reports"""
+    try:
+        performance_reports = dashboard_manager.get_performance_reports()
+        return jsonify({
+            'performance_reports': performance_reports,
+            'count': len(performance_reports),
+            'timestamp': datetime.now().isoformat(),
+            'status': 'success'
+        })
+    except Exception as e:
+        logger.error(f"❌ API Performance Reports error: {e}")
+        return jsonify({
+            'error': str(e),
+            'performance_reports': [],
+            'count': 0,
+            'timestamp': datetime.now().isoformat(),
+            'status': 'error'
+        })
+
 @app.route('/api/execute_signals', methods=['POST'])
 def api_execute_signals():
     """Execute trading signals"""
@@ -1230,14 +1354,14 @@ def api_execute_signals():
         return jsonify({
             'success': True,
             'results': results,
-            'timestamp': self._safe_timestamp(datetime.now())
+            'timestamp': datetime.now().isoformat()
         })
     except Exception as e:
         logger.error(f"❌ Failed to execute signals: {e}")
         return jsonify({
             'success': False,
             'error': str(e),
-            'timestamp': self._safe_timestamp(datetime.now())
+            'timestamp': datetime.now().isoformat()
         }), 500
 
 @app.route('/api/bulletin/morning')
@@ -1334,6 +1458,278 @@ def api_execute_suggestion(suggestion_id):
             'success': False,
             'error': str(e)
         })
+
+    def get_all_signals(self):
+        """Get all active signals from strategies"""
+        try:
+            self._ensure_initialized()
+            signals = []
+            
+            # Get signals from each strategy
+            for strategy_name, strategy in self._strategies.items():
+                try:
+                    if hasattr(strategy, 'generate_signals'):
+                        # Get market data for the strategy
+                        market_data = self._data_feed.get_latest_prices(strategy.instruments if hasattr(strategy, 'instruments') else ['EUR_USD'])
+                        strategy_signals = strategy.generate_signals(market_data)
+                        
+                        for signal in strategy_signals:
+                            signals.append({
+                                'strategy': strategy_name,
+                                'instrument': signal.instrument if hasattr(signal, 'instrument') else 'Unknown',
+                                'side': signal.side if hasattr(signal, 'side') else 'Unknown',
+                                'entry_price': signal.entry_price if hasattr(signal, 'entry_price') else 0,
+                                'stop_loss': signal.stop_loss if hasattr(signal, 'stop_loss') else 0,
+                                'take_profit': signal.take_profit if hasattr(signal, 'take_profit') else 0,
+                                'confidence': signal.confidence if hasattr(signal, 'confidence') else 0,
+                                'timestamp': datetime.now().isoformat()
+                            })
+                except Exception as e:
+                    logger.warning(f"⚠️ Error getting signals from {strategy_name}: {e}")
+            
+            return signals
+        except Exception as e:
+            logger.error(f"❌ Error getting all signals: {e}")
+            return []
+
+    def get_all_reports(self):
+        """Get all available reports"""
+        try:
+            reports = []
+            
+            # Add system status report
+            reports.append({
+                'type': 'system_status',
+                'title': 'System Status Report',
+                'description': 'Current system health and performance',
+                'timestamp': datetime.now().isoformat(),
+                'data': self.get_system_status()
+            })
+            
+            # Add account overview report
+            reports.append({
+                'type': 'account_overview',
+                'title': 'Account Overview Report',
+                'description': 'All trading accounts status and balances',
+                'timestamp': datetime.now().isoformat(),
+                'data': self.get_account_overview()
+            })
+            
+            # Add market data report
+            reports.append({
+                'type': 'market_data',
+                'title': 'Market Data Report',
+                'description': 'Current market conditions and prices',
+                'timestamp': datetime.now().isoformat(),
+                'data': self.get_market_data()
+            })
+            
+            return reports
+        except Exception as e:
+            logger.error(f"❌ Error getting all reports: {e}")
+            return []
+
+    def get_weekly_reports(self):
+        """Get weekly performance reports"""
+        try:
+            weekly_reports = []
+            
+            # Generate weekly report for each strategy
+            for strategy_name, strategy in self._strategies.items():
+                try:
+                    weekly_report = {
+                        'strategy': strategy_name,
+                        'week_start': (datetime.now() - timedelta(days=7)).isoformat(),
+                        'week_end': datetime.now().isoformat(),
+                        'performance': {
+                            'total_trades': getattr(strategy, 'total_trades', 0),
+                            'wins': getattr(strategy, 'wins', 0),
+                            'losses': getattr(strategy, 'losses', 0),
+                            'win_rate': getattr(strategy, 'win_rate', 0),
+                            'total_pnl': getattr(strategy, 'total_pnl', 0),
+                            'max_drawdown': getattr(strategy, 'max_drawdown', 0),
+                            'sharpe_ratio': getattr(strategy, 'sharpe_ratio', 0)
+                        },
+                        'status': 'active' if getattr(strategy, 'active', True) else 'inactive',
+                        'timestamp': datetime.now().isoformat()
+                    }
+                    weekly_reports.append(weekly_report)
+                except Exception as e:
+                    logger.warning(f"⚠️ Error generating weekly report for {strategy_name}: {e}")
+            
+            return weekly_reports
+        except Exception as e:
+            logger.error(f"❌ Error getting weekly reports: {e}")
+            return []
+
+    def get_strategy_roadmap(self):
+        """Get strategy roadmap and future plans"""
+        try:
+            roadmap = {
+                'current_version': '2.0',
+                'last_updated': datetime.now().isoformat(),
+                'phases': [
+                    {
+                        'phase': 'Phase 1 - Foundation',
+                        'status': 'completed',
+                        'description': 'Core trading system with OANDA integration',
+                        'strategies': ['momentum_trading', 'gold_scalping', 'ultra_strict_forex'],
+                        'completion_date': '2025-10-15'
+                    },
+                    {
+                        'phase': 'Phase 2 - Optimization',
+                        'status': 'completed',
+                        'description': 'Strategy optimization and performance tuning',
+                        'strategies': ['champion_75wr', 'ultra_strict_v2', 'momentum_v2'],
+                        'completion_date': '2025-10-20'
+                    },
+                    {
+                        'phase': 'Phase 3 - Advanced Features',
+                        'status': 'in_progress',
+                        'description': 'AI integration and advanced analytics',
+                        'strategies': ['all_weather_70wr', 'multi_strategy_portfolio'],
+                        'completion_date': '2025-10-30'
+                    },
+                    {
+                        'phase': 'Phase 4 - Machine Learning',
+                        'status': 'planned',
+                        'description': 'ML-based strategy adaptation',
+                        'strategies': ['adaptive_ml_strategy', 'reinforcement_learning'],
+                        'completion_date': '2025-11-15'
+                    }
+                ],
+                'upcoming_features': [
+                    'Real-time strategy performance monitoring',
+                    'Automated strategy parameter optimization',
+                    'Advanced risk management algorithms',
+                    'Multi-timeframe analysis integration',
+                    'Social sentiment analysis integration'
+                ],
+                'performance_targets': {
+                    'monthly_return': '5-10%',
+                    'max_drawdown': '<5%',
+                    'win_rate': '>70%',
+                    'sharpe_ratio': '>2.0'
+                }
+            }
+            return roadmap
+        except Exception as e:
+            logger.error(f"❌ Error getting strategy roadmap: {e}")
+            return {}
+
+    def get_strategy_reports(self):
+        """Get individual strategy reports"""
+        try:
+            self._ensure_initialized()
+            strategy_reports = []
+            
+            for strategy_name, strategy in self._strategies.items():
+                try:
+                    report = {
+                        'strategy_name': strategy_name,
+                        'status': 'active' if getattr(strategy, 'active', True) else 'inactive',
+                        'instruments': getattr(strategy, 'instruments', []),
+                        'parameters': {
+                            'max_risk_per_trade': getattr(strategy, 'max_risk_per_trade', 0),
+                            'max_daily_trades': getattr(strategy, 'max_daily_trades', 0),
+                            'max_concurrent_positions': getattr(strategy, 'max_concurrent_positions', 0)
+                        },
+                        'performance': {
+                            'total_trades': getattr(strategy, 'total_trades', 0),
+                            'wins': getattr(strategy, 'wins', 0),
+                            'losses': getattr(strategy, 'losses', 0),
+                            'win_rate': getattr(strategy, 'win_rate', 0),
+                            'total_pnl': getattr(strategy, 'total_pnl', 0)
+                        },
+                        'last_signal_time': getattr(strategy, 'last_signal_time', None),
+                        'timestamp': datetime.now().isoformat()
+                    }
+                    strategy_reports.append(report)
+                except Exception as e:
+                    logger.warning(f"⚠️ Error generating report for {strategy_name}: {e}")
+            
+            return strategy_reports
+        except Exception as e:
+            logger.error(f"❌ Error getting strategy reports: {e}")
+            return []
+
+    def get_performance_reports(self):
+        """Get performance analysis reports"""
+        try:
+            performance_reports = []
+            
+            # Overall portfolio performance
+            portfolio_report = {
+                'type': 'portfolio_performance',
+                'title': 'Portfolio Performance Analysis',
+                'period': 'last_30_days',
+                'metrics': {
+                    'total_return': 0,  # Will be calculated from actual data
+                    'volatility': 0,
+                    'sharpe_ratio': 0,
+                    'max_drawdown': 0,
+                    'win_rate': 0,
+                    'total_trades': 0
+                },
+                'timestamp': datetime.now().isoformat()
+            }
+            performance_reports.append(portfolio_report)
+            
+            # Risk analysis report
+            risk_report = {
+                'type': 'risk_analysis',
+                'title': 'Risk Analysis Report',
+                'metrics': {
+                    'portfolio_var': 0,
+                    'correlation_matrix': {},
+                    'concentration_risk': 0,
+                    'leverage_ratio': 0
+                },
+                'timestamp': datetime.now().isoformat()
+            }
+            performance_reports.append(risk_report)
+            
+            return performance_reports
+        except Exception as e:
+            logger.error(f"❌ Error getting performance reports: {e}")
+            return []
+
+    def execute_trading_signals(self):
+        """Execute trading signals"""
+        try:
+            self._ensure_initialized()
+            results = []
+            
+            # Get all signals
+            signals = self.get_all_signals()
+            
+            for signal in signals:
+                try:
+                    # Execute the signal through order manager
+                    if self._order_manager:
+                        result = self._order_manager.execute_signal(signal)
+                        results.append({
+                            'signal': signal,
+                            'result': result,
+                            'status': 'executed' if result.get('success') else 'failed'
+                        })
+                    else:
+                        results.append({
+                            'signal': signal,
+                            'result': {'error': 'Order manager not available'},
+                            'status': 'failed'
+                        })
+                except Exception as e:
+                    results.append({
+                        'signal': signal,
+                        'result': {'error': str(e)},
+                        'status': 'failed'
+                    })
+            
+            return results
+        except Exception as e:
+            logger.error(f"❌ Error executing trading signals: {e}")
+            return []
 
 # WebSocket events
 @socketio.on('connect')
