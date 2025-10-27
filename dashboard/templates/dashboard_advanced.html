@@ -1132,6 +1132,12 @@
                     Reports & Analytics
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#performance" data-section="performance">
+                    <i class="bi bi-graph-up-arrow me-2"></i>
+                    Performance Monitoring
+                </a>
+            </li>
         </ul>
     </div>
     
@@ -1879,8 +1885,246 @@
 
         async function loadReportsSection() {
             // Load daily report and weekly roadmap when reports section is accessed
-            await loadDailyReport();
-            await loadWeeklyRoadmap();
+            console.log('📊 Loading Reports & Analytics section...');
+            
+            // Show loading indicators
+            const dailyContent = document.getElementById('dailyReportContent');
+            const weeklyContent = document.getElementById('weeklyRoadmapContent');
+            
+            if (dailyContent) {
+                dailyContent.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #06d6a0;">
+                        <div style="font-size: 18px; margin-bottom: 10px;">⏳</div>
+                        <div>Loading daily report...</div>
+                    </div>
+                `;
+            }
+            
+            if (weeklyContent) {
+                weeklyContent.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #8338ec;">
+                        <div style="font-size: 18px; margin-bottom: 10px;">⏳</div>
+                        <div>Loading weekly roadmap...</div>
+                    </div>
+                `;
+            }
+            
+            try {
+                await loadDailyReport();
+                await loadWeeklyRoadmap();
+                console.log('✅ Reports & Analytics section loaded successfully');
+            } catch (error) {
+                console.error('❌ Error loading reports section:', error);
+            }
+        }
+        
+        async function loadPerformanceSection() {
+            // Load performance monitoring data when performance section is accessed
+            await loadPerformanceOverview();
+            await loadStrategyPerformanceCards();
+            await loadTradeHistoryTable();
+            await loadKeyMetrics();
+            await loadDatabaseStats();
+        }
+        
+        async function loadPerformanceOverview() {
+            try {
+                const response = await fetch('/api/performance/overview');
+                const data = await response.json();
+                
+                const overviewDiv = document.getElementById('performanceOverview');
+                if (overviewDiv) {
+                    overviewDiv.innerHTML = `
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <div class="text-center">
+                                    <h3 style="color: #06d6a0; margin: 0;">${data.total_trades || 0}</h3>
+                                    <p style="color: #ffffff; margin: 0;">Total Trades</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="text-center">
+                                    <h3 style="color: #06d6a0; margin: 0;">${data.total_pnl || 0}</h3>
+                                    <p style="color: #ffffff; margin: 0;">Total P&L</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="text-center">
+                                    <h3 style="color: #06d6a0; margin: 0;">${data.win_rate || 0}%</h3>
+                                    <p style="color: #ffffff; margin: 0;">Win Rate</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="text-center">
+                                    <h3 style="color: #06d6a0; margin: 0;">${data.active_strategies || 0}</h3>
+                                    <p style="color: #ffffff; margin: 0;">Active Strategies</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading performance overview:', error);
+                const overviewDiv = document.getElementById('performanceOverview');
+                if (overviewDiv) {
+                    overviewDiv.innerHTML = '<p style="color: #ff6b6b;">Error loading performance data</p>';
+                }
+            }
+        }
+        
+        async function loadStrategyPerformanceCards() {
+            try {
+                const response = await fetch('/api/performance/strategies');
+                const data = await response.json();
+                
+                const cardsDiv = document.getElementById('strategyPerformanceCards');
+                if (cardsDiv) {
+                    if (data.strategies && data.strategies.length > 0) {
+                        cardsDiv.innerHTML = data.strategies.map(strategy => `
+                            <div class="col-md-6 mb-3">
+                                <div class="card" style="background: rgba(33, 37, 41, 0.6); border: 1px solid #495057;">
+                                    <div class="card-body">
+                                        <h5 style="color: #ffffff;">${strategy.strategy_id}</h5>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <small style="color: #adb5bd;">Trades: ${strategy.total_trades || 0}</small><br>
+                                                <small style="color: #adb5bd;">Win Rate: ${strategy.win_rate || 0}%</small>
+                                            </div>
+                                            <div class="col-6">
+                                                <small style="color: #adb5bd;">P&L: ${strategy.total_pnl || 0}</small><br>
+                                                <small style="color: #adb5bd;">Sharpe: ${strategy.sharpe_ratio || 'N/A'}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        cardsDiv.innerHTML = '<p style="color: #adb5bd; text-align: center;">No strategy performance data available</p>';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading strategy performance:', error);
+                const cardsDiv = document.getElementById('strategyPerformanceCards');
+                if (cardsDiv) {
+                    cardsDiv.innerHTML = '<p style="color: #ff6b6b;">Error loading strategy data</p>';
+                }
+            }
+        }
+        
+        async function loadTradeHistoryTable() {
+            try {
+                const response = await fetch('/api/performance/trades');
+                const data = await response.json();
+                
+                const tableDiv = document.getElementById('tradeHistoryTable');
+                if (tableDiv) {
+                    if (data.trades && data.trades.length > 0) {
+                        tableDiv.innerHTML = `
+                            <div class="table-responsive">
+                                <table class="table table-dark table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th style="color: #ffffff;">Trade ID</th>
+                                            <th style="color: #ffffff;">Strategy</th>
+                                            <th style="color: #ffffff;">Instrument</th>
+                                            <th style="color: #ffffff;">Direction</th>
+                                            <th style="color: #ffffff;">P&L</th>
+                                            <th style="color: #ffffff;">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${data.trades.slice(0, 10).map(trade => `
+                                            <tr>
+                                                <td style="color: #adb5bd;">${trade.trade_id}</td>
+                                                <td style="color: #adb5bd;">${trade.strategy_id}</td>
+                                                <td style="color: #adb5bd;">${trade.instrument}</td>
+                                                <td style="color: ${trade.direction === 'BUY' ? '#06d6a0' : '#ff6b6b'};">${trade.direction}</td>
+                                                <td style="color: ${trade.realized_pnl >= 0 ? '#06d6a0' : '#ff6b6b'};">${trade.realized_pnl || 'N/A'}</td>
+                                                <td style="color: #adb5bd;">${trade.is_closed ? 'Closed' : 'Open'}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        `;
+                    } else {
+                        tableDiv.innerHTML = '<p style="color: #adb5bd; text-align: center;">No trade history available</p>';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading trade history:', error);
+                const tableDiv = document.getElementById('tradeHistoryTable');
+                if (tableDiv) {
+                    tableDiv.innerHTML = '<p style="color: #ff6b6b;">Error loading trade history</p>';
+                }
+            }
+        }
+        
+        async function loadKeyMetrics() {
+            try {
+                const response = await fetch('/api/performance/metrics');
+                const data = await response.json();
+                
+                const metricsDiv = document.getElementById('keyMetrics');
+                if (metricsDiv) {
+                    metricsDiv.innerHTML = `
+                        <div class="row">
+                            <div class="col-12 mb-2">
+                                <small style="color: #adb5bd;">Profit Factor: <span style="color: #ffffff;">${data.profit_factor || 'N/A'}</span></small>
+                            </div>
+                            <div class="col-12 mb-2">
+                                <small style="color: #adb5bd;">Max Drawdown: <span style="color: #ffffff;">${data.max_drawdown || 'N/A'}</span></small>
+                            </div>
+                            <div class="col-12 mb-2">
+                                <small style="color: #adb5bd;">Avg Trade Duration: <span style="color: #ffffff;">${data.avg_trade_duration || 'N/A'}</span></small>
+                            </div>
+                            <div class="col-12 mb-2">
+                                <small style="color: #adb5bd;">Risk/Reward Ratio: <span style="color: #ffffff;">${data.risk_reward_ratio || 'N/A'}</span></small>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading key metrics:', error);
+                const metricsDiv = document.getElementById('keyMetrics');
+                if (metricsDiv) {
+                    metricsDiv.innerHTML = '<p style="color: #ff6b6b;">Error loading metrics</p>';
+                }
+            }
+        }
+        
+        async function loadDatabaseStats() {
+            try {
+                const response = await fetch('/api/performance/database');
+                const data = await response.json();
+                
+                const statsDiv = document.getElementById('databaseStats');
+                if (statsDiv) {
+                    statsDiv.innerHTML = `
+                        <div class="row">
+                            <div class="col-12 mb-2">
+                                <small style="color: #adb5bd;">Database Size: <span style="color: #ffffff;">${data.db_size_mb || 0} MB</span></small>
+                            </div>
+                            <div class="col-12 mb-2">
+                                <small style="color: #adb5bd;">Total Records: <span style="color: #ffffff;">${data.total_trades || 0}</span></small>
+                            </div>
+                            <div class="col-12 mb-2">
+                                <small style="color: #adb5bd;">Strategies Tracked: <span style="color: #ffffff;">${data.strategies_count || 0}</span></small>
+                            </div>
+                            <div class="col-12 mb-2">
+                                <small style="color: #adb5bd;">Last Updated: <span style="color: #ffffff;">${data.latest_trade || 'Never'}</span></small>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading database stats:', error);
+                const statsDiv = document.getElementById('databaseStats');
+                if (statsDiv) {
+                    statsDiv.innerHTML = '<p style="color: #ff6b6b;">Error loading database stats</p>';
+                }
+            }
         }
         </script>
         
@@ -1952,10 +2196,105 @@
             </div>
         </section>
         
-        <section id="analytics" class="content-section">
+        <section id="performance" class="content-section">
             <div class="container-fluid">
-                <h2>📊 Analytics</h2>
-                <p>Performance analytics and reports will be displayed here.</p>
+                <h2>📈 Performance Monitoring</h2>
+                <div class="row">
+                    <!-- Performance Overview -->
+                    <div class="col-12 mb-4">
+                        <div class="card" style="background: rgba(6, 214, 160, 0.1); border: 1px solid #06d6a0;">
+                            <div class="card-header" style="background: rgba(6, 214, 160, 0.2); border-bottom: 1px solid #06d6a0;">
+                                <h4 style="color: #06d6a0; margin: 0; font-size: 1.2rem;">
+                                    📊 Strategy Performance Overview
+                                </h4>
+                            </div>
+                            <div class="card-body" id="performanceOverview">
+                                <div class="text-center">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-2">Loading performance data...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Strategy Performance Cards -->
+                    <div class="col-12 mb-4">
+                        <div class="card" style="background: rgba(33, 37, 41, 0.8); border: 1px solid #495057;">
+                            <div class="card-header" style="background: rgba(33, 37, 41, 0.9); border-bottom: 1px solid #495057;">
+                                <h4 style="color: #ffffff; margin: 0; font-size: 1.2rem;">
+                                    🎯 Individual Strategy Performance
+                                </h4>
+                            </div>
+                            <div class="card-body" id="strategyPerformanceCards">
+                                <div class="text-center">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-2">Loading strategy data...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Trade History -->
+                    <div class="col-12 mb-4">
+                        <div class="card" style="background: rgba(33, 37, 41, 0.8); border: 1px solid #495057;">
+                            <div class="card-header" style="background: rgba(33, 37, 41, 0.9); border-bottom: 1px solid #495057;">
+                                <h4 style="color: #ffffff; margin: 0; font-size: 1.2rem;">
+                                    📋 Recent Trade History
+                                </h4>
+                            </div>
+                            <div class="card-body" id="tradeHistoryTable">
+                                <div class="text-center">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-2">Loading trade history...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Performance Metrics -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card" style="background: rgba(33, 37, 41, 0.8); border: 1px solid #495057;">
+                            <div class="card-header" style="background: rgba(33, 37, 41, 0.9); border-bottom: 1px solid #495057;">
+                                <h4 style="color: #ffffff; margin: 0; font-size: 1.2rem;">
+                                    📊 Key Metrics
+                                </h4>
+                            </div>
+                            <div class="card-body" id="keyMetrics">
+                                <div class="text-center">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-2">Loading metrics...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Database Stats -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card" style="background: rgba(33, 37, 41, 0.8); border: 1px solid #495057;">
+                            <div class="card-header" style="background: rgba(33, 37, 41, 0.9); border-bottom: 1px solid #495057;">
+                                <h4 style="color: #ffffff; margin: 0; font-size: 1.2rem;">
+                                    💾 Database Statistics
+                                </h4>
+                            </div>
+                            <div class="card-body" id="databaseStats">
+                                <div class="text-center">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-2">Loading database stats...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
         
@@ -2069,7 +2408,8 @@
                             'insights': loadInsightsSection,
                             'strategy-switcher': loadStrategySwitcherSection,
                             'ai-copilot': loadAICopilotSection,
-                            'reports': loadReportsSection
+                            'reports': loadReportsSection,
+                            'performance': loadPerformanceSection
                         };
                         
                         if (loaders[targetSection]) {

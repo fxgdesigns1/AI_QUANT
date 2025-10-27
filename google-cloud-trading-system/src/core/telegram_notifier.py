@@ -304,9 +304,22 @@ class TelegramNotifier:
         message_obj = TelegramMessage(text=message)
         return self.send_message(message_obj, message_type)
 
-# Global Telegram notifier instance
-telegram_notifier = TelegramNotifier()
+# Global Telegram notifier instance (lazy initialization)
+telegram_notifier = None
 
 def get_telegram_notifier() -> TelegramNotifier:
-    """Get the global Telegram notifier instance"""
+    """Get the global Telegram notifier instance with lazy initialization"""
+    global telegram_notifier
+    
+    if telegram_notifier is None:
+        # Load environment variables if not already loaded
+        try:
+            from dotenv import load_dotenv
+            load_dotenv()
+            logger.info("✅ Loaded .env file for Telegram notifier")
+        except ImportError:
+            logger.info("⚠️ python-dotenv not available, using system environment")
+        
+        telegram_notifier = TelegramNotifier()
+    
     return telegram_notifier
