@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trade Signals Test</title>
+</head>
+<body>
+    <h1>Trade Signals Test</h1>
+    <div id="tradingSignals">
+        <div>Loading trading signals...</div>
+    </div>
+    
+    <script>
+        console.log('🎯 Test page loaded');
+        
+        // Test the exact function from the dashboard
+        async function loadTradingSignals() {
+            console.log('🎯 loadTradingSignals() called - STARTING');
+            try {
+                console.log('🎯 Loading trading signals...');
+                const response = await fetch('/api/signals/pending');
+                console.log('🎯 Response received:', response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('🎯 Data received:', data);
+                    if (data.signals && data.signals.length > 0) {
+                        console.log('🎯 Calling updateTradingSignals with', data.signals.length, 'signals');
+                        updateTradingSignals(data);
+                    } else {
+                        console.log('🎯 No signals in data');
+                    }
+                } else {
+                    console.log('❌ Response not ok:', response.status);
+                }
+            } catch (error) {
+                console.error('❌ Trading signals error:', error);
+            }
+            console.log('🎯 loadTradingSignals() finished');
+        }
+        
+        function updateTradingSignals(data) {
+            console.log('🎯 Updating trading signals...');
+            const signalsContainer = document.getElementById('tradingSignals');
+            if (!signalsContainer) {
+                console.log('❌ signalsContainer not found');
+                return;
+            }
+            
+            const signals = data.signals || [];
+            if (signals.length === 0) {
+                signalsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #666;">
+                        <div style="font-size: 18px; margin-bottom: 10px;">📊</div>
+                        <div>No active signals</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            signalsContainer.innerHTML = `
+                <div class="trading-signals">
+                    ${signals.map(signal => `
+                        <div class="signal-item">
+                            <div class="signal-pair">${signal.instrument}</div>
+                            <div class="signal-action">${signal.direction}</div>
+                            <div class="signal-confidence">${signal.quality_score}%</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            console.log('🎯 Signals updated successfully');
+        }
+        
+        // Call the function when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎯 DOM loaded, calling loadTradingSignals');
+            loadTradingSignals();
+        });
+    </script>
+</body>
+</html>
