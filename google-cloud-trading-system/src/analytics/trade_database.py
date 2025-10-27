@@ -645,3 +645,5 @@ def get_trade_database() -> TradeDatabase:
     
     return _trade_database_instance
 
+
+

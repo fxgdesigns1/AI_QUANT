@@ -84,8 +84,20 @@ def plan_upcoming_week():
         {"date": "2025-10-25", "time": "13:30", "event": "US PCE Inflation", "impact": "HIGH", "gold_impact": "Critical for Fed policy"},
     ]
     
-    # Key levels based on current market
-    current_gold_price = 2000.0  # This would be fetched from API
+    # Key levels based on current market - fetch real price from OANDA
+    try:
+        from src.core.oanda_client import OandaClient
+        client = OandaClient()
+        prices = client.get_current_prices(['XAU_USD'], force_refresh=True)
+        if 'XAU_USD' in prices:
+            current_gold_price = (prices['XAU_USD'].bid + prices['XAU_USD'].ask) / 2
+            print(f"✅ Fetched real gold price: ${current_gold_price:.2f}")
+        else:
+            current_gold_price = 2000.0  # Fallback if API fails
+            print("⚠️ Using fallback gold price - API unavailable")
+    except Exception as e:
+        current_gold_price = 2000.0  # Fallback if API fails
+        print(f"⚠️ Using fallback gold price - Error: {e}")
     key_levels = {
         'support_1': current_gold_price - 20,
         'support_2': current_gold_price - 40,

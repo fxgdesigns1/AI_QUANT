@@ -320,3 +320,4 @@ def get_credentials_manager(use_secret_manager: bool = True, project_id: Optiona
         _default_credentials_manager = CredentialsManager(use_secret_manager, project_id)
     return _default_credentials_manager
 
+

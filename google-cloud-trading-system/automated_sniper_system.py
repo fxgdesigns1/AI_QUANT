@@ -105,7 +105,7 @@ class AutomatedSniperSystem:
     def analyze_opportunity(self, instrument):
         """Analyze sniper opportunity"""
         try:
-            price_data = self.get_current_price(instrument)
+            price_data = self.get_current_prices([instrument]).get(instrument)
             candles = self.get_candles(instrument, 20)
             
             if not price_data or not candles or len(candles) < 10:

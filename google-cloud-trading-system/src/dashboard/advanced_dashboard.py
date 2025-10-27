@@ -42,14 +42,18 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv(os.path.join(os.path.dirname(__file__), '../../oanda_config.env'))
 
+# Add the project path
+sys.path.append('/Users/mac/quant_system_clean/google-cloud-trading-system')
+sys.path.append('/Users/mac/quant_system_clean/google-cloud-trading-system/src')
+
 # Import live trading components
 from src.core.dynamic_account_manager import get_account_manager
 from src.core.multi_account_data_feed import get_multi_account_data_feed
 from src.core.multi_account_order_manager import get_multi_account_order_manager
 from src.core.telegram_notifier import get_telegram_notifier
 from src.core.daily_bulletin_generator import DailyBulletinGenerator
-from src.strategies.ultra_strict_forex import get_ultra_strict_forex_strategy
-from src.strategies.gold_scalping import get_gold_scalping_strategy
+from src.strategies.ultra_strict_forex_optimized import get_ultra_strict_forex_strategy
+from src.strategies.gold_scalping_optimized import get_gold_scalping_strategy
 from src.strategies.momentum_trading import get_momentum_trading_strategy
 from src.strategies.alpha import get_alpha_strategy
 try:
@@ -461,6 +465,49 @@ class AdvancedDashboardManager:
             return ts.isoformat()
         return str(ts)
     
+    def _safe_serialize_dict(self, data: dict) -> dict:
+        """Safely serialize dictionary, converting sets to lists"""
+        if not data:
+            return {}
+        
+        result = {}
+        for k, v in data.items():
+            if isinstance(v, dict):
+                result[k] = self._safe_serialize_dict(v)
+            elif isinstance(v, set):
+                result[k] = list(v)
+            elif isinstance(v, (list, tuple)):
+                result[k] = [self._safe_serialize_dict(item) if isinstance(item, dict) else item for item in v]
+            else:
+                result[k] = v
+        return result
+    
+    def _serialize_trade_results(self, trade_results: dict) -> dict:
+        """Convert trade results to JSON-serializable format"""
+        if not trade_results:
+            return {}
+        
+        serialized = {}
+        for key, value in trade_results.items():
+            if key in ['executed_trades', 'failed_trades'] and isinstance(value, list):
+                # Convert TradeExecution objects to dictionaries
+                serialized[key] = []
+                for trade in value:
+                    if hasattr(trade, '__dict__'):
+                        trade_dict = trade.__dict__.copy()
+                        # Convert OrderSide enum to string
+                        if 'signal' in trade_dict and hasattr(trade_dict['signal'], 'side'):
+                            trade_dict['signal'] = trade_dict['signal'].__dict__.copy()
+                            if hasattr(trade_dict['signal']['side'], 'value'):
+                                trade_dict['signal']['side'] = trade_dict['signal']['side'].value
+                        serialized[key].append(trade_dict)
+                    else:
+                        serialized[key].append(str(value))
+            else:
+                serialized[key] = value
+        
+        return serialized
+    
     # ----------------------
     # Cache helpers
     # ----------------------
@@ -486,9 +533,14 @@ class AdvancedDashboardManager:
             try:
                 # Get account statuses
                 account_statuses = {}
-                for account_id, system_info in self.trading_systems.items():
-                    account_status = self.account_manager.get_account_status(account_id)
-                    account_statuses[account_id] = account_status
+                if self.trading_systems:
+                    for account_id, system_info in self.trading_systems.items():
+                        try:
+                            account_status = self.account_manager.get_account_status(account_id)
+                            account_statuses[account_id] = account_status
+                        except Exception as e:
+                            logger.error(f"❌ Failed to get account status for {account_id}: {e}")
+                            account_statuses[account_id] = {'error': str(e)}
                 
                 # Get market data
                 market_data = {}
@@ -516,7 +568,7 @@ class AdvancedDashboardManager:
                     'live_data_mode': self.use_live_data,
                     'active_accounts': len(list(self.active_accounts)),
                     'account_statuses': account_statuses,
-                    'trading_systems': {k: {kk: (list(vv) if isinstance(vv, set) else vv) for kk, vv in v.items()} for k, v in self.trading_systems.items()},
+                    'trading_systems': self._safe_serialize_dict(self.trading_systems) if self.trading_systems else {},
                     'market_data': market_data,
                     'trading_metrics': trading_metrics,
                     'news_data': news_data,
@@ -827,10 +879,14 @@ class AdvancedDashboardManager:
                     if signals:
                         # Execute trades
                         trade_results = self.order_manager.execute_trades(account_id, signals)
+                        
+                        # Convert TradeExecution objects to serializable format
+                        serializable_results = self._serialize_trade_results(trade_results)
+                        
                         results[account_id] = {
                             'signals_generated': len(signals),
                             'trades_executed': len(trade_results.get('executed_trades', [])),
-                            'trade_results': trade_results
+                            'trade_results': serializable_results
                         }
                         
                         # Send Telegram notification
@@ -1204,6 +1260,81 @@ def api_health():
         'active_accounts': len(dashboard_manager.active_accounts)
     })
 
+# Trade Suggestions API Endpoints - Proxy to working system
+@app.route('/api/suggestions', methods=['GET'])
+def api_get_suggestions():
+    """Get trade suggestions - proxy to working system"""
+    try:
+        import requests
+        response = requests.get('http://localhost:8082/api/suggestions', timeout=10)
+        return jsonify(response.json())
+    except Exception as e:
+        logger.error(f"❌ Error getting suggestions: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'count': 0,
+            'suggestions': []
+        })
+
+@app.route('/api/suggestions/generate', methods=['POST'])
+def api_generate_suggestions():
+    """Generate new trade suggestions - proxy to working system"""
+    try:
+        import requests
+        response = requests.post('http://localhost:8082/api/suggestions/generate', timeout=10)
+        return jsonify(response.json())
+    except Exception as e:
+        logger.error(f"❌ Error generating suggestions: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'count': 0,
+            'suggestions': []
+        })
+
+@app.route('/api/suggestions/<suggestion_id>/approve', methods=['POST'])
+def api_approve_suggestion(suggestion_id):
+    """Approve a trade suggestion - proxy to working system"""
+    try:
+        import requests
+        response = requests.post(f'http://localhost:8082/api/suggestions/{suggestion_id}/approve', timeout=10)
+        return jsonify(response.json())
+    except Exception as e:
+        logger.error(f"❌ Error approving suggestion {suggestion_id}: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        })
+
+@app.route('/api/suggestions/<suggestion_id>/reject', methods=['POST'])
+def api_reject_suggestion(suggestion_id):
+    """Reject a trade suggestion - proxy to working system"""
+    try:
+        import requests
+        response = requests.post(f'http://localhost:8082/api/suggestions/{suggestion_id}/reject', timeout=10)
+        return jsonify(response.json())
+    except Exception as e:
+        logger.error(f"❌ Error rejecting suggestion {suggestion_id}: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        })
+
+@app.route('/api/suggestions/<suggestion_id>/execute', methods=['POST'])
+def api_execute_suggestion(suggestion_id):
+    """Execute a trade suggestion - proxy to working system"""
+    try:
+        import requests
+        response = requests.post(f'http://localhost:8082/api/suggestions/{suggestion_id}/execute', timeout=10)
+        return jsonify(response.json())
+    except Exception as e:
+        logger.error(f"❌ Error executing suggestion {suggestion_id}: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        })
+
 # WebSocket events
 @socketio.on('connect')
 def handle_connect():
@@ -1228,4 +1359,4 @@ def handle_status_request():
 
 if __name__ == '__main__':
     logger.info("🚀 Starting Advanced Trading Dashboard")
-    socketio.run(app, host='0.0.0.0', port=8080, debug=False)
+    socketio.run(app, host='0.0.0.0', port=8080, debug=False, allow_unsafe_werkzeug=True)

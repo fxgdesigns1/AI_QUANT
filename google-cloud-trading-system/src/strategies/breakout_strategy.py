@@ -418,3 +418,7 @@ class BreakoutStrategy:
                 logger.error(f"❌ Error analyzing {instrument}: {e}")
         
         return signals
+
+def get_breakout_strategy(instruments=None):
+    """Get Breakout Strategy instance"""
+    return BreakoutStrategy(instruments=instruments)

@@ -78,11 +78,11 @@ class TrumpDNAIntegration:
             max_trades_day = 5
             fixed_stop = 8.0
         elif "70" in self.strategy_name or "Weather" in self.strategy_name:
-            weekly_target = 2000.0
+            weekly_target = 4000.0  # Updated for current gold prices
             max_trades_day = 5
             fixed_stop = 10.0
         elif "Strict" in self.strategy_name:
-            weekly_target = 2000.0
+            weekly_target = 4000.0  # Updated for current gold prices
             max_trades_day = 5
             fixed_stop = 10.0
         elif "Momentum" in self.strategy_name:
@@ -90,7 +90,7 @@ class TrumpDNAIntegration:
             max_trades_day = 10
             fixed_stop = 12.0
         else:
-            weekly_target = 2000.0
+            weekly_target = 4000.0  # Updated for current gold prices
             max_trades_day = 10
             fixed_stop = 10.0
         

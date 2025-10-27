@@ -71,7 +71,7 @@ class TrumpDNAPlanner:
             strategy_name='Gold Scalping',
             
             # Weekly Planning
-            weekly_target_dollars=2000.0,  # $2K/week target
+            weekly_target_dollars=4000.0,  # $4K/week target (updated for current gold prices)
             daily_targets={
                 'Monday': 300.0,      # Conservative (US holiday often)
                 'Tuesday': 400.0,     # Normal
@@ -169,7 +169,7 @@ class TrumpDNAPlanner:
             strategy_name='Ultra Strict Forex',
             
             # Weekly Planning
-            weekly_target_dollars=2000.0,  # $2K/week
+            weekly_target_dollars=4000.0,  # $4K/week (updated for current gold prices)
             daily_targets={
                 'Monday': 300.0,
                 'Tuesday': 350.0,     # Germany ZEW

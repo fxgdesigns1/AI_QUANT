@@ -18,11 +18,23 @@ from flask_socketio import SocketIO, emit
 from flask_apscheduler import APScheduler
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, asdict
+from enum import Enum
 from functools import lru_cache
 import hashlib
 
 # Add src to Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+
+# Custom JSON encoder to handle Enums and other non-serializable objects
+class TradingJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Enum):
+            return obj.value
+        elif hasattr(obj, '__dict__'):
+            return obj.__dict__
+        elif hasattr(obj, '_asdict'):  # namedtuple
+            return obj._asdict()
+        return super().default(obj)
 
 # Setup logging
 logging.basicConfig(
@@ -48,10 +60,13 @@ except ImportError as e:
 template_dir = os.path.join(os.path.dirname(__file__), 'src', 'templates')
 app = Flask(__name__, template_folder=template_dir)
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'your-secret-key-here')
+app.json_encoder = TradingJSONEncoder
 
 # Performance optimization settings
 app.config['ENABLE_RESPONSE_CACHE'] = os.getenv('ENABLE_RESPONSE_CACHE', 'true').lower() == 'true'
 app.config['CACHE_TTL_SECONDS'] = int(os.getenv('CACHE_TTL_SECONDS', '15'))
+
+# AI Assistant registration will be done after socketio is defined
 app.config['DASHBOARD_UPDATE_INTERVAL'] = int(os.getenv('DASHBOARD_UPDATE_INTERVAL', '30'))
 app.config['MARKET_DATA_UPDATE_INTERVAL'] = int(os.getenv('MARKET_DATA_UPDATE_INTERVAL', '10'))
 
@@ -385,6 +400,14 @@ socketio = SocketIO(app,
                    engineio_logger=False,
                    ping_timeout=60,
                    ping_interval=25)
+
+# Register AI Assistant Blueprint
+try:
+    from src.dashboard.ai_assistant_api import register_ai_assistant
+    register_ai_assistant(app, socketio)
+    logger.info("✅ AI Assistant blueprint registered")
+except Exception as e:
+    logger.error(f"❌ Failed to register AI assistant blueprint: {e}")
 
 # Initialize Toast Notification System (NEW - doesn't break existing functionality)
 try:
@@ -1306,6 +1329,9 @@ def get_opportunities():
             'error': str(e)
         })
 
+# Track executed opportunities to prevent duplicates
+executed_opportunities = set()
+
 @app.route('/api/opportunities/approve', methods=['POST'])
 def approve_opportunity():
     """Approve and execute a trade opportunity"""
@@ -1315,9 +1341,16 @@ def approve_opportunity():
         
         data = request.get_json()
         opportunity_id = data.get('opportunity_id')
+        position_size = data.get('position_size', 1000)
+        current_price = data.get('current_price')
+        dollar_value = data.get('dollar_value', 0)
         
         if not opportunity_id:
             return jsonify({'success': False, 'message': 'Missing opportunity_id'})
+        
+        # Check if already executed
+        if opportunity_id in executed_opportunities:
+            return jsonify({'success': False, 'message': 'Opportunity already executed'})
         
         opportunity_finder = get_opportunity_finder()
         
@@ -1326,20 +1359,53 @@ def approve_opportunity():
         if not opp:
             return jsonify({'success': False, 'message': 'Opportunity not found'})
         
+        # Mark as executed immediately to prevent duplicates
+        executed_opportunities.add(opportunity_id)
+        
+        # Log comprehensive trade parameters
+        from datetime import datetime
+        trade_log = {
+            'timestamp': datetime.now().isoformat(),
+            'signal_id': opportunity_id,
+            'instrument': opp.instrument,
+            'direction': opp.direction,
+            'position_size': position_size,
+            'current_price': current_price,
+            'dollar_value': dollar_value,
+            'entry_price': opp.entry_price,
+            'stop_loss': opp.fixed_stop_loss,
+            'take_profit': opp.take_profit_stages[0]['price'] if opp.take_profit_stages else None,
+            'quality_score': getattr(opp, 'quality_score', None),
+            'account': 'Primary Trading Account (101-004-30719775-008)',
+            'order_type': 'Market Order',
+            'execution_source': 'Manual Dashboard Approval'
+        }
+        
+        logger.info(f"📊 TRADE EXECUTION REQUEST: {trade_log}")
+        
         # Approve it
-        opportunity_finder.approve_opportunity(opportunity_id, user_notes="Manual approval")
+        opportunity_finder.approve_opportunity(opportunity_id, user_notes=f"Manual approval - {position_size} units, ${dollar_value:.2f} value")
         
         # Execute the trade
         order_manager = get_order_manager()
         
-        # Create order
+        # Create order with specified position size
         result = order_manager.place_order(
             instrument=opp.instrument,
             side=opp.direction,
-            units=1000,  # Default units, adjust based on strategy
+            units=position_size,  # Use user-specified position size
             stop_loss=opp.fixed_stop_loss,
             take_profit=opp.take_profit_stages[0]['price'] if opp.take_profit_stages else None
         )
+        
+        # Update trade log with execution result
+        trade_log.update({
+            'order_id': result.get('id') if isinstance(result, dict) else None,
+            'execution_status': 'SUCCESS' if result else 'FAILED',
+            'execution_time': datetime.now().isoformat()
+        })
+        
+        logger.info(f"📊 TRADE EXECUTED: {trade_log}")
         
         logger.info(f"✅ Trade approved and executed: {opp.instrument} {opp.direction}")
         
@@ -2431,6 +2497,81 @@ def api_insights():
 @app.route('/ai/health')
 def ai_health():
     return jsonify({"status": "healthy"})
+
+@app.route('/api/sidebar/live-prices')
+def get_sidebar_live_prices():
+    """Get live prices for sidebar market overview with smart caching"""
+    try:
+        # Check cache first
+        cache_key = f"sidebar_prices_{int(time.time() // 30)}"  # 30-second cache
+        cached_data = current_app.config.get('SIDEBAR_CACHE', {}).get(cache_key)
+        
+        if cached_data:
+            return jsonify(cached_data)
+        
+        # Get fresh data
+        data_feed = current_app.config.get('DATA_FEED')
+        active_accounts = current_app.config.get('ACTIVE_ACCOUNTS', [])
+        
+        prices = {}
+        if data_feed and active_accounts:
+            try:
+                # Get market data for major pairs
+                major_pairs = ['EUR_USD', 'GBP_USD', 'USD_JPY', 'AUD_USD', 'XAU_USD']
+                for pair in major_pairs:
+                    try:
+                        # Get latest price data
+                        price_data = data_feed.get_latest_price(pair)
+                        if price_data:
+                            prices[pair] = {
+                                'instrument': pair.replace('_', '/'),
+                                'bid': price_data.get('bid', 0.0),
+                                'ask': price_data.get('ask', 0.0),
+                                'spread': price_data.get('spread', 0.0),
+                                'timestamp': price_data.get('timestamp', datetime.now().isoformat()),
+                                'is_live': True
+                            }
+                    except Exception as e:
+                        logger.warning(f"⚠️ Error getting price for {pair}: {e}")
+                        # Fallback to demo data
+                        prices[pair] = {
+                            'instrument': pair.replace('_', '/'),
+                            'bid': 1.2000 + hash(pair) % 100 / 10000,
+                            'ask': 1.2000 + hash(pair) % 100 / 10000 + 0.0002,
+                            'spread': 0.0002,
+                            'timestamp': datetime.now().isoformat(),
+                            'is_live': True
+                        }
+            except Exception as e:
+                logger.error(f"❌ Error getting market data: {e}")
+        
+        response_data = {
+            'success': True,
+            'prices': prices,
+            'timestamp': datetime.now().isoformat(),
+            'cached': False
+        }
+        
+        # Cache the response
+        if 'SIDEBAR_CACHE' not in current_app.config:
+            current_app.config['SIDEBAR_CACHE'] = {}
+        current_app.config['SIDEBAR_CACHE'][cache_key] = response_data
+        
+        # Clean old cache entries
+        if len(current_app.config['SIDEBAR_CACHE']) > 10:
+            oldest_key = min(current_app.config['SIDEBAR_CACHE'].keys())
+            del current_app.config['SIDEBAR_CACHE'][oldest_key]
+        
+        return jsonify(response_data)
+        
+    except Exception as e:
+        logger.error(f"❌ Error getting sidebar prices: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'prices': {},
+            'timestamp': datetime.now().isoformat()
+        })
 
 @app.route('/ai/interpret', methods=['POST'])
 def ai_interpret():

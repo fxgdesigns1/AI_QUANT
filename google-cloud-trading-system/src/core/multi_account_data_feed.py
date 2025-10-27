@@ -238,6 +238,52 @@ class MultiAccountDataFeed:
         for account_id in self.data_feeds:
             status[account_id] = self.get_data_status(account_id)
         return status
+    
+    def get_historical_data(self, account_id: str, instrument: str, 
+                           period: str = "M5", count: int = 100) -> Optional[List[Dict]]:
+        """
+        Get historical data for specific instrument
+        
+        Args:
+            account_id: Account ID
+            instrument: Instrument name
+            period: Time period (M1, M5, M15, H1, H4, D1)
+            count: Number of candles
+            
+        Returns:
+            List of historical data dictionaries
+        """
+        try:
+            data_feed = self.data_feeds.get(account_id)
+            if not data_feed:
+                return None
+            
+            # Get historical data from the individual data feed
+            historical_data = data_feed.get_historical_data(instrument, period, count)
+            
+            if not historical_data:
+                return None
+            
+            # Convert to list of dictionaries
+            result = []
+            for data in historical_data:
+                if hasattr(data, 'to_dict'):
+                    result.append(data.to_dict())
+                else:
+                    result.append({
+                        'timestamp': data.timestamp,
+                        'open': data.open,
+                        'high': data.high,
+                        'low': data.low,
+                        'close': data.close,
+                        'volume': data.volume
+                    })
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to get historical data for {account_id}/{instrument}: {e}")
+            return None
 
 # Global multi-account data feed instance
 multi_account_data_feed = MultiAccountDataFeed()

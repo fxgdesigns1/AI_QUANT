@@ -589,6 +589,64 @@ class QualityScoring:
         # Calculate final threshold
         return base_threshold * regime_multiplier * session_multiplier
 
+    def score_trade_setup(self, instrument: str, side: str, 
+                          price_data: Dict[str, Any],
+                          indicators: Dict[str, float]) -> float:
+        """
+        Score a trade setup (0-100)
+        
+        Args:
+            instrument: Trading instrument
+            side: 'BUY' or 'SELL'
+            price_data: Current price data
+            indicators: Technical indicators dict
+        
+        Returns:
+            Quality score 0-100
+        """
+        try:
+            # Start with base score
+            score = 50.0
+            
+            # Trend strength (0-20 points)
+            if 'adx' in indicators:
+                adx = indicators['adx']
+                if adx > 25:
+                    score += min(20, (adx - 25) / 3)
+            
+            # Momentum alignment (0-20 points)
+            if 'momentum' in indicators:
+                momentum = abs(indicators['momentum'])
+                if momentum > 0.001:
+                    score += min(20, momentum * 1000)
+            
+            # Volume confirmation (0-15 points)
+            if 'volume' in indicators:
+                volume = indicators['volume']
+                if volume > 0.5:
+                    score += min(15, volume * 30)
+            
+            # Risk/reward ratio (0-15 points)
+            if 'risk_reward' in indicators:
+                rr = indicators['risk_reward']
+                if rr >= 2.0:
+                    score += min(15, (rr - 2) * 5)
+            
+            # Market regime bonus (0-10 points)
+            if 'market_regime' in indicators:
+                regime = indicators['market_regime']
+                if regime in ['TRENDING', 'STRONG_TREND']:
+                    score += 10
+                elif regime == 'RANGING':
+                    score += 5
+            
+            # Cap at 100
+            return min(100.0, max(0.0, score))
+            
+        except Exception as e:
+            logger.warning(f"Error in score_trade_setup: {e}")
+            return 50.0  # Default neutral score
+
 
 # Global instance
 _quality_scoring = None

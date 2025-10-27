@@ -286,6 +286,23 @@ class TelegramNotifier:
         
         message = TelegramMessage(text=message_text)
         return self.send_message(message, "news_alert")
+    
+    def send_alert(self, message: str, priority: str = "NORMAL") -> bool:
+        """Send a general alert message"""
+        if not self.enabled:
+            return False
+        
+        # Map priority to message type
+        message_type = "high_priority" if priority.upper() == "HIGH" else "general"
+        
+        # Add priority indicator to message
+        if priority.upper() == "HIGH":
+            message = f"🚨 **HIGH PRIORITY** 🚨\n\n{message}"
+        elif priority.upper() == "MEDIUM":
+            message = f"⚠️ **MEDIUM PRIORITY** ⚠️\n\n{message}"
+        
+        message_obj = TelegramMessage(text=message)
+        return self.send_message(message_obj, message_type)
 
 # Global Telegram notifier instance
 telegram_notifier = TelegramNotifier()

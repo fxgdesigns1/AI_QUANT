@@ -75,19 +75,19 @@ class MomentumTradingStrategy:
         self.instruments = ['XAU_USD']  # Focus on 89% WR Gold, disable losing forex
         
         # ===============================================
-        # OPTIMIZED STRATEGY PARAMETERS - MAX 10/DAY (FIXED OCT 16, 2025)
+        # BALANCED STRATEGY PARAMETERS (OPTIMIZED OCT 23, 2025)
         # ===============================================
         self.stop_loss_atr = 2.5             # MONTE CARLO OPTIMIZED for Gold
         self.take_profit_atr = 20.0          # MONTE CARLO OPTIMAL: Best tested value
-        self.min_signal_strength = 0.25      # REALISTIC: 25% minimum (was 0.85 - too strict!)
-        self.max_trades_per_day = 100        # INCREASED: 100/day (was 10 - blocking after first batch!)
+        self.min_signal_strength = 0.35      # BALANCED: 35% (not too strict, not too loose)
+        self.max_trades_per_day = 15         # BALANCED: 15/day (prevent overtrading)
         self.min_trades_today = 0            # NO FORCED TRADES - only high-quality setups
         
         # ===============================================
-        # ULTRA RELAXED FILTERS (TUNED OCT 16, 2025 - Validation proven)
+        # BALANCED FILTERS (OCT 23, 2025 - Middle Ground)
         # ===============================================
-        self.min_adx = 8.0                   # REVERTED: Lower is better for Gold (was 12.0)
-        self.min_momentum = 0.0003           # REVERTED: Lower catches more good setups (was 0.0005)
+        self.min_adx = 15.0                  # BALANCED: 15 (not too strict, ensures trend)
+        self.min_momentum = 0.0015           # BALANCED: 0.15% (catches good moves without noise)
         self.min_volume = 0.03               # ABSOLUTE MINIMUM: Very low bar (was 0.054)
         self.momentum_period = 40            # MONTE CARLO OPTIMIZED: 40 bars = 3.3 hours (catches moves faster)
         self.trend_period = 80               # MONTE CARLO OPTIMIZED: 80 bars = 6.7 hours (more responsive)
@@ -247,6 +247,28 @@ class MomentumTradingStrategy:
         
         # CRITICAL FIX: Pre-fill price history so strategy can generate signals immediately!
         self._prefill_price_history()
+    
+    def is_strategy_active(self) -> bool:
+        """Check if strategy is active"""
+        return True  # Always active
+    
+    def is_trading_hours(self, current_time: Optional[datetime] = None) -> bool:
+        """Check if current time is within trading hours"""
+        if current_time is None:
+            current_time = datetime.now()
+        
+        # Gold trades 24/7, but forex has better hours
+        current_hour = current_time.hour
+        
+        # London session: 8-17 GMT (3-12 EST)
+        # NY session: 13-22 GMT (8-17 EST)
+        # Asian session: 22-8 GMT (17-3 EST)
+        
+        # Prefer London and NY sessions for forex
+        if any(instrument in ['EUR_USD', 'GBP_USD', 'USD_JPY', 'AUD_USD'] for instrument in self.instruments):
+            return 8 <= current_hour <= 22  # London + NY sessions
+        else:
+            return True  # Gold trades 24/7
     
     def _prefill_price_history(self):
         """
@@ -933,10 +955,17 @@ class MomentumTradingStrategy:
                 filtered_signals = []
                 for signal in trade_signals:
                     # Get quality score for this setup
+                    # Get current price for entry_price calculation
+                    current_price = market_data.get(signal.instrument)
+                    if current_price:
+                        entry_price = current_price.ask if signal.side == OrderSide.BUY else current_price.bid
+                    else:
+                        entry_price = 0.0  # Fallback
+                    
                     quality = self.quality_scorer.score_trade_setup(
                         instrument=signal.instrument,
                         direction=signal.side.value,
-                        entry_price=signal.entry_price,
+                        entry_price=entry_price,
                         market_data=market_data
                     )
                     

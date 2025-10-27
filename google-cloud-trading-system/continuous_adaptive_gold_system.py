@@ -129,7 +129,7 @@ class ContinuousAdaptiveGoldSystem:
                 return None
             
             # Get current gold price
-            gold_data = self.get_current_price('XAU_USD')
+            gold_data = self.get_current_prices(['XAU_USD']).get('XAU_USD')
             if not gold_data:
                 return None
             

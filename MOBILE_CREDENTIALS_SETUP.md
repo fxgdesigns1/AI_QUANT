@@ -324,3 +324,4 @@ api_key = credentials.get('OANDA_API_KEY')
 
 That's it! 🎯
 
+

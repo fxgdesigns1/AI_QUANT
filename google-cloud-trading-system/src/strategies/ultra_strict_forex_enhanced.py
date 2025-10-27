@@ -17,7 +17,7 @@ from ..core.data_feed import MarketData, get_data_feed
 from ..core.news_integration import safe_news_integration
 
 # Import existing strategy
-from .ultra_strict_forex import UltraStrictForexStrategy, EMASignal, MomentumSignal
+from .ultra_strict_forex_optimized import UltraStrictForexStrategy, EMASignal, MomentumSignal
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)

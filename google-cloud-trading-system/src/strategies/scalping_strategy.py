@@ -426,3 +426,7 @@ class ScalpingStrategy:
                 logger.error(f"❌ Error analyzing {instrument}: {e}")
         
         return signals
+
+def get_scalping_strategy(instruments=None):
+    """Get Scalping Strategy instance"""
+    return ScalpingStrategy(instruments=instruments)

@@ -80,3 +80,5 @@ echo ""
 echo "📋 Following logs (Ctrl+C to exit):"
 echo "=========================================="
 tail -f main.log
+
+

@@ -479,3 +479,7 @@ class SwingStrategy:
                 logger.error(f"❌ Error analyzing {instrument}: {e}")
         
         return signals
+
+def get_swing_strategy(instruments=None):
+    """Get Swing Strategy instance"""
+    return SwingStrategy(instruments=instruments)
