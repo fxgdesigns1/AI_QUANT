@@ -38,8 +38,8 @@ def load_config():
         'data_sources': {
             'api_keys': {
                 'oanda': {
-                    'api_key': os.getenv('OANDA_API_KEY'),
-                    'account_id': os.getenv('OANDA_ACCOUNT_ID'),
+                    'api_key': os.getenv('OANDA_API_KEY', 'REMOVED_SECRET'),
+                    'account_id': os.getenv('OANDA_ACCOUNT_ID', '101-004-30719775-008'),
                     'environment': 'practice',
                     'base_url': 'https://api-fxpractice.oanda.com'
                 }
@@ -256,7 +256,7 @@ class AdvancedDashboardManager:
         try:
             # Get live market data from OANDA - NO MOCK DATA ALLOWED
             from src.core.oanda_client import OandaClient
-            api_key = os.getenv('OANDA_API_KEY')
+            api_key = os.getenv('OANDA_API_KEY', 'REMOVED_SECRET')
             account_id = "101-004-30719775-008"
             
             if not api_key:
@@ -721,7 +721,7 @@ def get_performance():
     try:
         # Get live account data from OANDA
         from src.core.oanda_client import OandaClient
-        api_key = os.getenv('OANDA_API_KEY')
+        api_key = os.getenv('OANDA_API_KEY', 'REMOVED_SECRET')
         account_id = "101-004-30719775-008"
         
         if not api_key:
@@ -806,7 +806,7 @@ def get_accounts():
     try:
         # Get live account data from OANDA
         from src.core.oanda_client import OandaClient
-        api_key = os.getenv('OANDA_API_KEY')
+        api_key = os.getenv('OANDA_API_KEY', 'REMOVED_SECRET')
         account_id = "101-004-30719775-008"
         
         if not api_key:
