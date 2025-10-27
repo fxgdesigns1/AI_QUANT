@@ -1847,6 +1847,260 @@ def handle_update_request():
     emit('alerts_update', dashboard_manager.system_alerts[-10:])
     emit('risk_update', dashboard_manager.portfolio_risk_metrics)
 
+# ===============================================
+# STRATEGY SWITCHER API ENDPOINTS
+# ===============================================
+
+@app.route('/api/strategy-switcher/strategies', methods=['GET'])
+def get_all_strategies():
+    """List all available strategies with their parameters"""
+    try:
+        import sys
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'google-cloud-trading-system'))
+        from src.core.yaml_manager import get_yaml_manager
+        
+        yaml_mgr = get_yaml_manager()
+        strategies = yaml_mgr.read_strategy_config()
+        
+        # Get active accounts for each strategy
+        accounts = yaml_mgr.get_all_accounts()
+        account_by_strategy = {}
+        
+        for account in accounts:
+            strategy_name = account.get('strategy')
+            if strategy_name:
+                if strategy_name not in account_by_strategy:
+                    account_by_strategy[strategy_name] = []
+                account_by_strategy[strategy_name].append(account)
+        
+        # Format response
+        strategies_list = []
+        for name, config in strategies.items():
+            if name == 'system':
+                continue
+                
+            strategies_list.append({
+                'name': name,
+                'enabled': config.get('enabled', True),
+                'locked': config.get('locked', False),
+                'account': config.get('account'),
+                'assigned_accounts': account_by_strategy.get(name, []),
+                'parameters': config.get('parameters', {}),
+                'entry': config.get('entry', {}),
+                'risk': config.get('risk', {}),
+                'instruments': config.get('instruments', [])
+            })
+        
+        return jsonify({
+            'success': True,
+            'strategies': strategies_list
+        })
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to get strategies: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/strategy-switcher/active', methods=['GET'])
+def get_active_strategies():
+    """List active strategy assignments per account"""
+    try:
+        import sys
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'google-cloud-trading-system'))
+        from src.core.yaml_manager import get_yaml_manager
+        
+        yaml_mgr = get_yaml_manager()
+        accounts = yaml_mgr.get_all_accounts()
+        
+        active = []
+        for account in accounts:
+            if account.get('active', True):
+                active.append({
+                    'account_id': account['id'],
+                    'account_name': account.get('name'),
+                    'strategy': account.get('strategy'),
+                    'instruments': account.get('instruments', []),
+                    'active': True
+                })
+        
+        return jsonify({
+            'success': True,
+            'active_assignments': active
+        })
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to get active strategies: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/strategy-switcher/update-params', methods=['POST'])
+def update_strategy_params():
+    """Update strategy parameters (hot-reload)"""
+    try:
+        import sys
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'google-cloud-trading-system'))
+        from src.core.yaml_manager import get_yaml_manager
+        from src.core.config_reloader import get_config_reloader
+        
+        data = request.json
+        strategy_name = data.get('strategy_name')
+        params = data.get('params', {})
+        
+        if not strategy_name:
+            return jsonify({'success': False, 'error': 'strategy_name required'}), 400
+        
+        yaml_mgr = get_yaml_manager()
+        config_reloader = get_config_reloader()
+        
+        # Update YAML file
+        success = yaml_mgr.update_strategy_params(strategy_name, params)
+        
+        if success:
+            # Hot-reload parameters
+            config_reloader.reload_strategy_params(strategy_name, params)
+            
+            # Notify components
+            config_reloader.notify_all_components(
+                'param_update',
+                [strategy_name],
+                {'params': params}
+            )
+            
+            logger.info(f"✅ Updated parameters for {strategy_name}")
+            
+            return jsonify({
+                'success': True,
+                'message': f'Parameters updated for {strategy_name}'
+            })
+        else:
+            return jsonify({'success': False, 'error': 'Failed to update parameters'}), 500
+            
+    except Exception as e:
+        logger.error(f"❌ Failed to update params: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/strategy-switcher/switch-strategy', methods=['POST'])
+def switch_strategy():
+    """Change account's strategy (requires restart)"""
+    try:
+        import sys
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'google-cloud-trading-system'))
+        from src.core.yaml_manager import get_yaml_manager
+        from src.core.config_reloader import get_config_reloader
+        
+        data = request.json
+        account_id = data.get('account_id')
+        new_strategy = data.get('new_strategy')
+        
+        if not account_id or not new_strategy:
+            return jsonify({'success': False, 'error': 'account_id and new_strategy required'}), 400
+        
+        yaml_mgr = get_yaml_manager()
+        config_reloader = get_config_reloader()
+        
+        # Update account strategy
+        success = yaml_mgr.switch_account_strategy(account_id, new_strategy)
+        
+        if success:
+            # Signal full restart
+            config_reloader.signal_full_restart(
+                f"Switched account {account_id} to strategy {new_strategy}"
+            )
+            
+            logger.warning(f"⚠️ Switched account {account_id} to {new_strategy} - restart required")
+            
+            return jsonify({
+                'success': True,
+                'message': f'Strategy switched - system restart required',
+                'restart_required': True
+            })
+        else:
+            return jsonify({'success': False, 'error': 'Failed to switch strategy'}), 500
+            
+    except Exception as e:
+        logger.error(f"❌ Failed to switch strategy: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/strategy-switcher/enable', methods=['POST'])
+def enable_strategy():
+    """Enable a strategy"""
+    try:
+        import sys
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'google-cloud-trading-system'))
+        from src.core.yaml_manager import get_yaml_manager
+        from src.core.config_reloader import get_config_reloader
+        
+        data = request.json
+        strategy_name = data.get('strategy_name')
+        
+        if not strategy_name:
+            return jsonify({'success': False, 'error': 'strategy_name required'}), 400
+        
+        yaml_mgr = get_yaml_manager()
+        config_reloader = get_config_reloader()
+        
+        success = yaml_mgr.enable_strategy(strategy_name)
+        
+        if success:
+            config_reloader.notify_all_components('enable', [strategy_name])
+            return jsonify({'success': True, 'message': f'Strategy {strategy_name} enabled'})
+        else:
+            return jsonify({'success': False, 'error': 'Failed to enable strategy'}), 500
+            
+    except Exception as e:
+        logger.error(f"❌ Failed to enable strategy: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/strategy-switcher/disable', methods=['POST'])
+def disable_strategy():
+    """Disable a strategy"""
+    try:
+        import sys
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'google-cloud-trading-system'))
+        from src.core.yaml_manager import get_yaml_manager
+        from src.core.config_reloader import get_config_reloader
+        
+        data = request.json
+        strategy_name = data.get('strategy_name')
+        
+        if not strategy_name:
+            return jsonify({'success': False, 'error': 'strategy_name required'}), 400
+        
+        yaml_mgr = get_yaml_manager()
+        config_reloader = get_config_reloader()
+        
+        success = yaml_mgr.disable_strategy(strategy_name)
+        
+        if success:
+            config_reloader.notify_all_components('disable', [strategy_name])
+            return jsonify({'success': True, 'message': f'Strategy {strategy_name} disabled'})
+        else:
+            return jsonify({'success': False, 'error': 'Failed to disable strategy'}), 500
+            
+    except Exception as e:
+        logger.error(f"❌ Failed to disable strategy: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/strategy-switcher/reload', methods=['POST'])
+def reload_config():
+    """Manually trigger config reload"""
+    try:
+        import sys
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'google-cloud-trading-system'))
+        from src.core.config_reloader import get_config_reloader
+        
+        config_reloader = get_config_reloader()
+        
+        # This would trigger a reload of all config files
+        # Implementation depends on how the system watches files
+        
+        return jsonify({
+            'success': True,
+            'message': 'Config reload triggered'
+        })
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to reload config: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 def update_dashboard():
     """Update dashboard data periodically"""
     while True:

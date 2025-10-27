@@ -1854,14 +1854,239 @@
             const content = document.getElementById('strategySwitcherContent');
             if (content) {
                 content.innerHTML = `
-                    <div class="card">
-                        <div class="card-body">
-                            <h5>Strategy Switcher</h5>
-                            <p>Switch between trading strategies...</p>
-                            <p><a href="/strategy-switcher" class="btn btn-primary">Open Strategy Switcher</a></p>
+                    <div style="padding: 20px;">
+                        <h3 style="color: #06d6a0; margin-bottom: 20px;">
+                            <i class="bi bi-shuffle me-2"></i>Universal Strategy Switcher
+                        </h3>
+                        
+                        <div id="strategySwitcherStatus" class="alert alert-info" style="display: none;">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <span id="strategySwitcherMessage">Loading strategies...</span>
+                        </div>
+                        
+                        <!-- Active Strategies -->
+                        <div class="card mb-4" style="background: #1a1a2e; border: 1px solid #06d6a0;">
+                            <div class="card-header" style="background: #16213e; border-bottom: 1px solid #06d6a0;">
+                                <h5 style="color: #06d6a0; margin: 0;">
+                                    <i class="bi bi-list-task me-2"></i>Active Strategies
+                                </h5>
+                            </div>
+                            <div class="card-body" id="activeStrategiesList">
+                                <div class="text-center" style="padding: 40px;">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p style="color: #999; margin-top: 10px;">Loading active strategies...</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- All Available Strategies -->
+                        <div class="card mb-4" style="background: #1a1a2e; border: 1px solid #8338ec;">
+                            <div class="card-header" style="background: #16213e; border-bottom: 1px solid #8338ec;">
+                                <h5 style="color: #8338ec; margin: 0;">
+                                    <i class="bi bi-list-ul me-2"></i>All Available Strategies
+                                </h5>
+                            </div>
+                            <div class="card-body" id="allStrategiesList">
+                                <div class="text-center" style="padding: 40px;">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p style="color: #999; margin-top: 10px;">Loading strategies...</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
+                
+                // Load strategies
+                await loadAllStrategies();
+                await loadActiveStrategies();
+            }
+        }
+        
+        async function loadAllStrategies() {
+            try {
+                const response = await fetch('/api/strategy-switcher/strategies');
+                const data = await response.json();
+                
+                const strategiesList = document.getElementById('allStrategiesList');
+                if (!strategiesList) return;
+                
+                if (data.success && data.strategies && data.strategies.length > 0) {
+                    const html = data.strategies.map(strategy => `
+                        <div class="card mb-3 strategy-card" style="background: #0f3460; border: 1px solid #8338ec;" data-strategy="${strategy.name}">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 style="color: #8338ec; margin-bottom: 10px;">
+                                            ${strategy.name}
+                                            ${strategy.enabled ? '<span class="badge bg-success ms-2">Enabled</span>' : '<span class="badge bg-secondary ms-2">Disabled</span>'}
+                                            ${strategy.locked ? '<span class="badge bg-warning ms-2">Locked</span>' : ''}
+                                        </h6>
+                                        <div style="color: #999; font-size: 0.9em; margin-bottom: 10px;">
+                                            <strong>Instruments:</strong> ${strategy.instruments ? strategy.instruments.join(', ') : 'N/A'}
+                                        </div>
+                                        <div style="color: #999; font-size: 0.85em;">
+                                            <strong>Account:</strong> ${strategy.account || 'N/A'} |
+                                            <strong>Max Trades/Day:</strong> ${strategy.parameters?.max_trades_per_day || 'N/A'} |
+                                            <strong>Max Positions:</strong> ${strategy.parameters?.max_positions || 'N/A'}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-sm btn-primary me-2" onclick="editStrategyParams('${strategy.name}')">
+                                            <i class="bi bi-gear"></i> Modify Params
+                                        </button>
+                                        <button class="btn btn-sm btn-${strategy.enabled ? 'warning' : 'success'}" onclick="toggleStrategy('${strategy.name}', ${strategy.enabled})">
+                                            <i class="bi bi-toggle-${strategy.enabled ? 'on' : 'off'}"></i> ${strategy.enabled ? 'Disable' : 'Enable'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    strategiesList.innerHTML = html;
+                } else {
+                    strategiesList.innerHTML = '<p style="color: #999; text-align: center;">No strategies found</p>';
+                }
+            } catch (error) {
+                console.error('Error loading strategies:', error);
+                const strategiesList = document.getElementById('allStrategiesList');
+                if (strategiesList) {
+                    strategiesList.innerHTML = '<p style="color: #d32f2f; text-align: center;">Error loading strategies</p>';
+                }
+            }
+        }
+        
+        async function loadActiveStrategies() {
+            try {
+                const response = await fetch('/api/strategy-switcher/active');
+                const data = await response.json();
+                
+                const activeList = document.getElementById('activeStrategiesList');
+                if (!activeList) return;
+                
+                if (data.success && data.active_assignments && data.active_assignments.length > 0) {
+                    const html = data.active_assignments.map(assignment => `
+                        <div class="card mb-3" style="background: #0f3460; border: 1px solid #06d6a0;">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 style="color: #06d6a0; margin-bottom: 10px;">${assignment.account_name}</h6>
+                                        <div style="color: #999; font-size: 0.9em;">
+                                            <strong>Account ID:</strong> ${assignment.account_id}<br>
+                                            <strong>Strategy:</strong> ${assignment.strategy}<br>
+                                            <strong>Instruments:</strong> ${assignment.instruments ? assignment.instruments.join(', ') : 'N/A'}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-sm btn-warning" onclick="switchAccountStrategy('${assignment.account_id}', '${assignment.strategy}')">
+                                            <i class="bi bi-arrow-repeat"></i> Change Strategy
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    activeList.innerHTML = html;
+                } else {
+                    activeList.innerHTML = '<p style="color: #999; text-align: center;">No active strategies</p>';
+                }
+            } catch (error) {
+                console.error('Error loading active strategies:', error);
+                const activeList = document.getElementById('activeStrategiesList');
+                if (activeList) {
+                    activeList.innerHTML = '<p style="color: #d32f2f; text-align: center;">Error loading active strategies</p>';
+                }
+            }
+        }
+        
+        async function editStrategyParams(strategyName) {
+            alert(`Modify parameters for ${strategyName}\n\nThis will open the parameter editing modal. (Implementation pending)`);
+        }
+        
+        async function toggleStrategy(strategyName, currentlyEnabled) {
+            if (!confirm(`Are you sure you want to ${currentlyEnabled ? 'disable' : 'enable'} strategy "${strategyName}"?`)) {
+                return;
+            }
+            
+            try {
+                const endpoint = currentlyEnabled ? '/api/strategy-switcher/disable' : '/api/strategy-switcher/enable';
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ strategy_name: strategyName })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStrategyMessage(`Strategy "${strategyName}" ${currentlyEnabled ? 'disabled' : 'enabled'} successfully`, 'success');
+                    // Reload strategies
+                    await loadAllStrategies();
+                } else {
+                    showStrategyMessage(`Failed to ${currentlyEnabled ? 'disable' : 'enable'} strategy: ${data.error}`, 'danger');
+                }
+            } catch (error) {
+                console.error('Error toggling strategy:', error);
+                showStrategyMessage('Error toggling strategy', 'danger');
+            }
+        }
+        
+        async function switchAccountStrategy(accountId, currentStrategy) {
+            const newStrategy = prompt(`Enter new strategy name for account ${accountId}\n\nCurrent strategy: ${currentStrategy}\n\nWarning: This will require a system restart!`);
+            
+            if (!newStrategy) return;
+            
+            if (!confirm(`Switch account ${accountId} from "${currentStrategy}" to "${newStrategy}"?\n\nWARNING: This will restart the trading system!`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/strategy-switcher/switch-strategy', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        account_id: accountId,
+                        new_strategy: newStrategy
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStrategyMessage(`Strategy switched successfully. System restart required.`, 'warning');
+                    // Reload active strategies
+                    await loadActiveStrategies();
+                } else {
+                    showStrategyMessage(`Failed to switch strategy: ${data.error}`, 'danger');
+                }
+            } catch (error) {
+                console.error('Error switching strategy:', error);
+                showStrategyMessage('Error switching strategy', 'danger');
+            }
+        }
+        
+        function showStrategyMessage(message, type) {
+            const statusDiv = document.getElementById('strategySwitcherStatus');
+            const messageSpan = document.getElementById('strategySwitcherMessage');
+            
+            if (statusDiv && messageSpan) {
+                statusDiv.className = `alert alert-${type}`;
+                messageSpan.textContent = message;
+                statusDiv.style.display = 'block';
+                
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 5000);
             }
         }
 
@@ -2585,6 +2810,9 @@
         function initDashboard() {
             console.log('🚀 Initializing dashboard...');
             
+            // Test if JavaScript is working at all
+            console.log('🎯 JAVASCRIPT IS WORKING - TEST MESSAGE');
+            
             // Initialize AI Assistant
             initAIAssistant();
             
@@ -2594,7 +2822,9 @@
             loadRiskMetrics();
             loadNewsData();
             loadAccountDetails();
+            console.log('🎯 About to call loadTradingSignals...');
             loadTradingSignals();
+            console.log('🎯 loadTradingSignals called');
             loadInsights();
             loadTradeIdeas();
             
@@ -3109,50 +3339,57 @@
             });
         }
         
-        // Initialize AI Assistant
+        // Initialize AI Assistant (removed duplicate - handled by separate script below)
         function initAIAssistant() {
-            console.log('🤖 Initializing AI Assistant...');
+            console.log('🤖 AI Assistant handled by separate script');
+        }
+        
+        }
+        
+        }
+        
+        // Load trading signals
+        async function loadTradingSignals() {
+            console.log('🎯 loadTradingSignals() called - STARTING');
+            try {
+                console.log('🎯 Loading trading signals...');
+                const response = await fetch('/api/signals/pending');
+                console.log('🎯 Response received:', response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('🎯 Data received:', data);
+                    if (data.signals && data.signals.length > 0) {
+                        console.log('🎯 Calling updateTradingSignals with', data.signals.length, 'signals');
+                        updateTradingSignals(data);
+                    } else {
+                        console.log('🎯 No signals in data');
+                    }
+                } else {
+                    console.log('❌ Response not ok:', response.status);
+                }
+            } catch (error) {
+                console.error('❌ Trading signals error:', error);
+            }
+            console.log('🎯 loadTradingSignals() finished');
+        }
+        
+        // Update trading signals display
+        function updateTradingSignals(data) {
+            console.log('🎯 Updating trading signals...');
+            const signalsContainer = document.getElementById('tradingSignals');
+            if (!signalsContainer) return;
             
-            // Create AI assistant panel if it doesn't exist
-            if (!document.querySelector('.ai-assistant-panel')) {
-                const panel = document.createElement('div');
-                panel.className = 'ai-assistant-panel';
-                panel.innerHTML = `
-                    <div class="ai-assistant-header">
-                        <div class="ai-assistant-title">🤖 AI Assistant</div>
-                        <div class="ai-mode-badge">Live</div>
-                    </div>
-                    <div class="chat-messages"></div>
-                    <div class="chat-input">
-                        <textarea placeholder="Ask or use /commands (actions need Confirm)" class="ai-chat-input"></textarea>
-                        <button class="send-button">Send</button>
+            const signals = data.signals || [];
+            if (signals.length === 0) {
+                signalsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #666;">
+                        <div style="font-size: 18px; margin-bottom: 10px;">📊</div>
+                        <div>No active signals</div>
                     </div>
                 `;
-                document.body.appendChild(panel);
-                
-                // Add event listeners
-                const input = panel.querySelector('.ai-chat-input');
-                const sendButton = panel.querySelector('.send-button');
-                const messages = panel.querySelector('.chat-messages');
-                
-                function sendMessage() {
-                    const message = input.value.trim();
-                    if (!message) return;
-                    
-                    // Add user message
-                    const userMsg = document.createElement('div');
-                    userMsg.className = 'message user-message';
-                    userMsg.textContent = message;
-                    messages.appendChild(userMsg);
-                    
-                    // Clear input
-                    input.value = '';
-                    
-                    // Show typing indicator
-                    const typingMsg = document.createElement('div');
-                    typingMsg.className = 'message ai-message typing';
-                    typingMsg.textContent = '🤖 AI is thinking...';
-                    messages.appendChild(typingMsg);
+                return;
+            }
                     messages.scrollTop = messages.scrollHeight;
                     
                     // Call real AI assistant API
@@ -3293,19 +3530,28 @@
         
         // Load trading signals
         async function loadTradingSignals() {
+            console.log('🎯 loadTradingSignals() called - STARTING');
             try {
                 console.log('🎯 Loading trading signals...');
                 const response = await fetch('/api/signals/pending');
+                console.log('🎯 Response received:', response.status);
                 
                 if (response.ok) {
                     const data = await response.json();
+                    console.log('🎯 Data received:', data);
                     if (data.signals && data.signals.length > 0) {
+                        console.log('🎯 Calling updateTradingSignals with', data.signals.length, 'signals');
                         updateTradingSignals(data);
+                    } else {
+                        console.log('🎯 No signals in data');
                     }
+                } else {
+                    console.log('❌ Response not ok:', response.status);
                 }
             } catch (error) {
                 console.error('❌ Trading signals error:', error);
             }
+            console.log('🎯 loadTradingSignals() finished');
         }
         
         // Update trading signals display
@@ -3328,11 +3574,11 @@
             signalsContainer.innerHTML = `
                 <div class="trading-signals">
                     ${signals.map(signal => `
-                        <div class="signal-item">
+                    <div class="signal-item">
                             <div class="signal-pair">${signal.instrument}</div>
                             <div class="signal-action">${signal.direction}</div>
                             <div class="signal-confidence">${signal.quality_score}%</div>
-                        </div>
+                    </div>
                     `).join('')}
                 </div>
             `;
