@@ -1790,7 +1790,6 @@ def deploy_configuration():
         }), 500
 
 @app.route('/api/status')
-@cached_endpoint('api_status')
 def status():
     """Status route"""
     mgr = get_dashboard_manager()

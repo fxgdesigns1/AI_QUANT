@@ -13,6 +13,42 @@
     <!-- Socket.IO for Real-time Toast Notifications -->
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     
+    <!-- FINAL FONT COLOR FIX - MUST BE AFTER BOOTSTRAP -->
+    <style>
+        /* NUCLEAR OPTION: Force ALL elements to be white - AFTER BOOTSTRAP */
+        html, body, * {
+            color: #ffffff !important;
+            opacity: 1 !important;
+        }
+        
+        /* Force ALL navigation elements */
+        .nav-link, .navbar-nav .nav-link, .sidebar .nav-link,
+        .nav-item .nav-link, .dropdown-item, .dropdown-toggle, 
+        .navbar-brand, #refreshData, .nav-link[href="#"] {
+            color: #ffffff !important;
+            opacity: 1 !important;
+        }
+        
+        /* Override Bootstrap's default link colors */
+        a, a:hover, a:focus, a:active {
+            color: #ffffff !important;
+            opacity: 1 !important;
+        }
+        
+        /* Override ALL possible Bootstrap classes */
+        .text-white-50, .text-white-75, .text-white, .text-muted, 
+        .text-secondary, .text-light, .text-dark {
+            color: #ffffff !important;
+            opacity: 1 !important;
+        }
+        
+        /* Override any inline styles */
+        [style*="color: rgba(255, 255, 255, 0."] {
+            color: #ffffff !important;
+            opacity: 1 !important;
+        }
+    </style>
+    
     <style>
         /* CSS Variables for Consistent Theming (Like Crypto Dashboard) */
         :root {
@@ -109,6 +145,29 @@
         
         /* Override any inline styles */
         [style*="color: rgba(255, 255, 255, 0."] {
+            color: #ffffff !important;
+            opacity: 1 !important;
+        }
+        
+        /* NUCLEAR OPTION: Force ALL elements to be white */
+        html, body, * {
+            color: #ffffff !important;
+            opacity: 1 !important;
+        }
+        
+        /* Specific overrides for problematic elements */
+        .navbar-nav .nav-link[href="#refresh"], 
+        .navbar-nav .nav-link[href="#settings"],
+        .nav-link[data-section="refresh"],
+        .nav-link[data-section="settings"],
+        #refreshData,
+        .nav-link[href="#"] {
+            color: #ffffff !important;
+            opacity: 1 !important;
+        }
+        
+        /* Override Bootstrap's default link colors */
+        a, a:hover, a:focus, a:active {
             color: #ffffff !important;
             opacity: 1 !important;
         }
@@ -1340,13 +1399,13 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="#" id="refreshData">
+                        <a class="nav-link" href="#" id="refreshData" style="color: #ffffff !important; opacity: 1 !important;">
                             <i class="bi bi-arrow-clockwise me-1"></i>
                             Refresh Data
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
+                        <a class="nav-link" href="#" style="color: #ffffff !important; opacity: 1 !important;">
                             <i class="bi bi-gear me-1"></i>
                             Settings
                         </a>
@@ -2708,6 +2767,26 @@
             elements.forEach(el => {
                 el.style.color = '#ffffff';
                 el.style.opacity = '1';
+            });
+            
+            // Force specific problematic elements using setProperty with important
+            const refreshData = document.getElementById('refreshData');
+            if (refreshData) {
+                refreshData.style.setProperty('color', '#ffffff', 'important');
+                refreshData.style.setProperty('opacity', '1', 'important');
+            }
+            
+            const settingsLink = document.querySelector('.nav-link[href="#"]:not(#refreshData)');
+            if (settingsLink) {
+                settingsLink.style.setProperty('color', '#ffffff', 'important');
+                settingsLink.style.setProperty('opacity', '1', 'important');
+            }
+            
+            // Force all nav-links to be white
+            const allNavLinks = document.querySelectorAll('.nav-link');
+            allNavLinks.forEach(link => {
+                link.style.setProperty('color', '#ffffff', 'important');
+                link.style.setProperty('opacity', '1', 'important');
             });
         });
         
