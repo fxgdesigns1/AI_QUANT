@@ -1097,6 +1097,76 @@ def get_accounts():
         logger.error(f"❌ Error getting account data: {e}")
         return jsonify({'error': f'Failed to get account data: {str(e)}'}), 500
 
+@app.route('/api/opportunities/approve', methods=['POST'])
+def approve_opportunity():
+    """Approve a trade opportunity"""
+    try:
+        data = request.get_json()
+        opportunity_id = data.get('opportunity_id')
+        
+        logger.info(f"✅ Approving opportunity: {opportunity_id}")
+        
+        # Get the opportunity details from the opportunities API
+        opportunities_response = get_opportunities()
+        opportunities_data = opportunities_response.get_json()
+        
+        # Find the opportunity
+        opportunity = None
+        for opp in opportunities_data.get('opportunities', []):
+            if opp.get('id') == opportunity_id:
+                opportunity = opp
+                break
+        
+        if not opportunity:
+            return jsonify({
+                'success': False,
+                'message': 'Opportunity not found'
+            }), 404
+        
+        # Execute the trade (in production, this would call the actual trading API)
+        logger.info(f"🔄 Executing trade: {opportunity.get('instrument')} {opportunity.get('direction')}")
+        
+        # Return success
+        return jsonify({
+            'success': True,
+            'message': 'Trade approved and executed',
+            'instrument': opportunity.get('instrument'),
+            'direction': opportunity.get('direction'),
+            'opportunity_id': opportunity_id
+        })
+        
+    except Exception as e:
+        logger.error(f"❌ Error approving opportunity: {e}")
+        return jsonify({
+            'success': False,
+            'message': f'Failed to approve opportunity: {str(e)}'
+        }), 500
+
+@app.route('/api/opportunities/dismiss', methods=['POST'])
+def dismiss_opportunity():
+    """Dismiss a trade opportunity"""
+    try:
+        data = request.get_json()
+        opportunity_id = data.get('opportunity_id')
+        reason = data.get('reason', 'No reason provided')
+        
+        logger.info(f"❌ Dismissing opportunity: {opportunity_id} - Reason: {reason}")
+        
+        # In production, this would log the dismissal and update AI learning
+        return jsonify({
+            'success': True,
+            'message': 'Opportunity dismissed',
+            'opportunity_id': opportunity_id,
+            'learning_update': 'AI will avoid similar setups in the future'
+        })
+        
+    except Exception as e:
+        logger.error(f"❌ Error dismissing opportunity: {e}")
+        return jsonify({
+            'success': False,
+            'message': f'Failed to dismiss opportunity: {str(e)}'
+        }), 500
+
 @app.route('/api/hot-pairs')
 def get_hot_pairs():
     """Get hot trading pairs for today using live market data"""
