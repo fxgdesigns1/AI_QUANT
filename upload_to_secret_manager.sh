@@ -129,3 +129,4 @@ echo "✅ Access from anywhere with proper authentication"
 echo "✅ Use the secret_manager.py we created earlier to retrieve them"
 echo ""
 
+

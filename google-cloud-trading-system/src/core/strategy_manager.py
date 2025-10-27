@@ -18,9 +18,7 @@ import queue
 from .dynamic_account_manager import get_account_manager
 from .multi_account_data_feed import get_multi_account_data_feed
 from .adaptive_system import AdaptiveTradingSystem, MarketCondition
-from ..strategies.ultra_strict_forex import get_ultra_strict_forex_strategy
-from ..strategies.gold_scalping import get_gold_scalping_strategy
-from ..strategies.alpha import get_alpha_strategy
+from .strategy_factory import get_strategy_factory
 from .telegram_notifier import TelegramNotifier
 from .optimization_loader import (
     load_optimization_results,
@@ -120,7 +118,7 @@ class StrategyManager:
         logger.info(f"📊 Registered {len(self.strategies)} strategies")
     
     def _initialize_strategies(self):
-        """Initialize all available strategies"""
+        """Initialize all available strategies using strategy factory"""
         try:
             # Get available accounts
             active_accounts = self.account_manager.get_active_accounts()
@@ -129,62 +127,51 @@ class StrategyManager:
                 logger.warning("⚠️ No active accounts found for strategy assignment")
                 return
             
-            # Strategy 1: Ultra Strict Forex
-            forex_account = active_accounts[0] if len(active_accounts) > 0 else None
-            if forex_account:
-                self.strategies['ULTRA_FOREX'] = StrategyConfig(
-                    strategy_id='ULTRA_FOREX',
-                    strategy_name='Ultra Strict Forex',
-                    strategy_class=get_ultra_strict_forex_strategy(),
-                    account_id=forex_account,
-                    account_name='PRIMARY',
-                    instruments=['EUR_USD', 'GBP_USD', 'USD_JPY', 'AUD_USD'],
-                    max_positions=5,
-                    max_daily_trades=50,
-                    risk_per_trade=0.002,  # 0.2%
-                    stop_loss_pct=0.002,
-                    take_profit_pct=0.003,
-                    priority=1,
-                    performance_threshold=0.02
-                )
+            # Get strategy factory
+            strategy_factory = get_strategy_factory()
             
-            # Strategy 2: Gold Scalping
-            gold_account = active_accounts[1] if len(active_accounts) > 1 else active_accounts[0]
-            if gold_account:
-                self.strategies['GOLD_SCALPING'] = StrategyConfig(
-                    strategy_id='GOLD_SCALPING',
-                    strategy_name='Gold Scalping',
-                    strategy_class=get_gold_scalping_strategy(),
-                    account_id=gold_account,
-                    account_name='GOLD',
-                    instruments=['XAU_USD'],
-                    max_positions=3,
-                    max_daily_trades=100,
-                    risk_per_trade=0.002,
-                    stop_loss_pct=0.002,
-                    take_profit_pct=0.003,
-                    priority=2,
-                    performance_threshold=0.03
-                )
+            # Load strategies dynamically based on accounts.yaml
+            from src.core.yaml_manager import get_yaml_manager
+            yaml_mgr = get_yaml_manager()
+            accounts = yaml_mgr.get_all_accounts()
+            active_account_configs = [a for a in accounts if a.get('active', False)]
             
-            # Strategy 3: Alpha/Momentum
-            alpha_account = active_accounts[2] if len(active_accounts) > 2 else active_accounts[0]
-            if alpha_account:
-                self.strategies['ALPHA_MOMENTUM'] = StrategyConfig(
-                    strategy_id='ALPHA_MOMENTUM',
-                    strategy_name='Alpha Momentum',
-                    strategy_class=get_alpha_strategy(),
-                    account_id=alpha_account,
-                    account_name='ALPHA',
-                    instruments=['EUR_USD', 'GBP_USD', 'USD_JPY', 'XAU_USD', 'AUD_USD'],
-                    max_positions=7,
-                    max_daily_trades=30,
-                    risk_per_trade=0.002,
-                    stop_loss_pct=0.002,
-                    take_profit_pct=0.003,
-                    priority=3,
-                    performance_threshold=0.025
-                )
+            logger.info(f"📊 Found {len(active_account_configs)} active account configurations")
+            
+            for account_config in active_account_configs:
+                strategy_name = account_config.get('strategy')
+                account_id = account_config.get('id')
+                
+                if strategy_name and account_id:
+                    try:
+                        # Load strategy using factory
+                        strategy_instance = strategy_factory.get_strategy(
+                            strategy_name, 
+                            account_config=account_config
+                        )
+                        
+                        # Create strategy config
+                        strategy_id = f"{strategy_name.upper()}_{account_id[-3:]}"
+                        self.strategies[strategy_id] = StrategyConfig(
+                            strategy_id=strategy_id,
+                            strategy_name=strategy_name.replace('_', ' ').title(),
+                            strategy_class=strategy_instance,
+                            account_id=account_id,
+                            account_name=account_config.get('name', 'Unknown'),
+                            instruments=account_config.get('instruments', []),
+                            max_positions=account_config.get('risk_settings', {}).get('max_positions', 3),
+                            max_daily_trades=account_config.get('risk_settings', {}).get('daily_trade_limit', 50),
+                            risk_per_trade=account_config.get('risk_settings', {}).get('max_risk_per_trade', 0.02),
+                            stop_loss_pct=0.002,  # Default
+                            take_profit_pct=0.003,  # Default
+                            priority=1,
+                            performance_threshold=0.02
+                        )
+                        
+                        logger.info(f"✅ Initialized strategy: {strategy_name} for account {account_id}")
+                        
+                    except Exception as e:
+                        logger.error(f"❌ Failed to initialize {strategy_name} for {account_id}: {e}")
             
             # Initialize metrics for all strategies
             for strategy_id in self.strategies:
@@ -202,7 +189,7 @@ class StrategyManager:
                     last_update=datetime.now()
                 )
             
-            logger.info("✅ All strategies initialized successfully")
+            logger.info(f"✅ All {len(self.strategies)} strategies initialized successfully")
             
         except Exception as e:
             logger.error(f"❌ Failed to initialize strategies: {e}")

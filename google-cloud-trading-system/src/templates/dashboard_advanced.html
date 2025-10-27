@@ -29,8 +29,8 @@
             --bg-hover: #2a2a2a;
             --border-color: #444;
             --text-primary: #ffffff;
-            --text-secondary: #e0e0e0;
-            --text-muted: #b0b0b0;
+            --text-secondary: #ffffff;
+            --text-muted: #ffffff;
         }
         * {
             margin: 0;
@@ -41,11 +41,44 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-dark);
-            color: var(--text-primary);
+            color: #ffffff !important;
             margin: 0;
             padding: 0;
             font-size: 14px;
             line-height: 1.5;
+        }
+        
+        /* Force all text to be white for visibility */
+        * {
+            color: #ffffff !important;
+        }
+        
+        /* Specific overrides for better visibility */
+        .card {
+            background-color: #2a2a2a !important;
+            border: 1px solid #555 !important;
+        }
+        
+        .card-body {
+            color: #ffffff !important;
+        }
+        
+        .card-body p, .card-body div, .card-body span, .card-body strong {
+            color: #ffffff !important;
+        }
+        
+        .text-muted {
+            color: #ffffff !important;
+        }
+        
+        .suggestion-card {
+            background-color: #2a2a2a !important;
+            border: 1px solid #555 !important;
+            color: #ffffff !important;
+        }
+        
+        .suggestion-card * {
+            color: #ffffff !important;
         }
 
         .container {
@@ -1873,44 +1906,226 @@
         
         <section id="signals" class="content-section">
             <div class="container-fluid">
-                <h2>🎯 Trading Signals</h2>
-                <div id="signalsGrid" class="row"></div>
+                <h2>🎯 Trading Signals & AI Suggestions</h2>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">AI-Powered Trading Opportunities</h5>
+                                <div>
+                                    <button class="btn btn-primary me-2" onclick="generateSuggestions()">
+                                        <i class="bi bi-arrow-clockwise me-1"></i>
+                                        Generate Suggestions
+                                    </button>
+                                    <button class="btn btn-success" onclick="loadSuggestions()">
+                                        <i class="bi bi-download me-1"></i>
+                                        Load Existing
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-3">
+                                        <div class="stat-card text-center">
+                                            <div class="stat-number" id="total-suggestions">0</div>
+                                            <div class="stat-label">Total Suggestions</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="stat-card text-center">
+                                            <div class="stat-number" id="pending-trades">0</div>
+                                            <div class="stat-label">Pending Trades</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="stat-card text-center">
+                                            <div class="stat-number" id="executed-trades">0</div>
+                                            <div class="stat-label">Executed Today</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="stat-card text-center">
+                                            <div class="stat-number" id="success-rate">--%</div>
+                                            <div class="stat-label">Success Rate</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div id="suggestions-container">
+                                    <div class="text-center py-5">
+                                        <i class="bi bi-lightbulb" style="font-size: 3rem; color: var(--text-muted);"></i>
+                                        <p class="mt-3 text-muted">No suggestions yet. Click "Generate Suggestions" to start!</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
         <script>
+        // Trade Suggestions Functions
+        let suggestions = [];
+        let pendingTrades = [];
+        let executedTrades = [];
+
         async function loadSignalsSection() {
+            // Load existing suggestions
+            await loadSuggestions();
+        }
+
+        async function loadSuggestions() {
             try {
-                const response = await fetch('/api/signals/pending');
+                console.log('📊 Loading suggestions...');
+                const response = await fetch('/api/suggestions');
                 const data = await response.json();
                 
-                const grid = document.getElementById('signalsGrid');
-                if (grid) {
-                    if (data.signals && data.signals.length > 0) {
-                        grid.innerHTML = data.signals.map(signal => `
-                            <div class="col-md-6 mb-3">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h5>${signal.instrument}</h5>
-                                        <p><strong>Type:</strong> ${signal.type}</p>
-                                        <p><strong>Entry:</strong> ${signal.entry_price}</p>
-                                        <p><strong>Stop Loss:</strong> ${signal.stop_loss}</p>
-                                        <p><strong>Take Profit:</strong> ${signal.take_profit}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        `).join('');
-                    } else {
-                        grid.innerHTML = '<div class="col-12"><div class="alert alert-info">No pending signals</div></div>';
-                    }
+                if (data.success) {
+                    suggestions = data.suggestions;
+                    console.log('✅ Loaded', suggestions.length, 'suggestions');
+                    updateSuggestionsDisplay();
+                    updateStats();
+                } else {
+                    console.error('❌ API error:', data.error);
                 }
             } catch (error) {
-                console.error('Signals load error:', error);
-                const grid = document.getElementById('signalsGrid');
-                if (grid) {
-                    grid.innerHTML = '<div class="col-12"><div class="alert alert-warning">Failed to load signals data</div></div>';
-                }
+                console.error('❌ Error loading suggestions:', error);
+                showError('Error loading suggestions: ' + error.message);
             }
+        }
+
+        async function generateSuggestions() {
+            try {
+                console.log('🔄 Generating new suggestions...');
+                const response = await fetch('/api/suggestions/generate', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    suggestions = data.suggestions;
+                    console.log('✅ Generated', suggestions.length, 'suggestions');
+                    updateSuggestionsDisplay();
+                    updateStats();
+                } else {
+                    console.error('❌ Generate error:', data.error);
+                }
+            } catch (error) {
+                console.error('❌ Error generating suggestions:', error);
+                showError('Error generating suggestions: ' + error.message);
+            }
+        }
+
+        function updateSuggestionsDisplay() {
+            const container = document.getElementById('suggestions-container');
+            
+            if (suggestions.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="bi bi-lightbulb" style="font-size: 3rem; color: var(--text-muted);"></i>
+                        <p class="mt-3 text-muted">No suggestions available</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = suggestions.map(suggestion => `
+                <div class="card mb-3 suggestion-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h6 class="mb-1">${suggestion.instrument} ${suggestion.direction}</h6>
+                                <small class="text-muted">Confidence: ${(suggestion.confidence * 100).toFixed(1)}%</small>
+                            </div>
+                            <span class="badge ${suggestion.risk_level === 'LOW' ? 'bg-success' : suggestion.risk_level === 'MEDIUM' ? 'bg-warning' : 'bg-danger'}">
+                                ${suggestion.risk_level}
+                            </span>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-2">
+                                    <strong>Current Price:</strong> ${suggestion.current_price.toFixed(5)}
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Entry Price:</strong> ${suggestion.entry_price.toFixed(5)}
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Stop Loss:</strong> ${suggestion.stop_loss.toFixed(5)}
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Take Profit:</strong> ${suggestion.take_profit.toFixed(5)}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-2">
+                                    <strong>Risk-Reward:</strong> 1:${suggestion.risk_reward_ratio.toFixed(1)}
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Risk:</strong> ${suggestion.risk_pips} pips
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Reward:</strong> ${suggestion.reward_pips} pips
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Distance from Entry:</strong> ${suggestion.pip_distance_from_entry} pips
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <strong>Market Conditions:</strong> ${suggestion.market_conditions}<br>
+                            <strong>Analysis:</strong> ${suggestion.reason}
+                        </div>
+                        
+                        <div class="mt-3 d-flex gap-2">
+                            <button class="btn btn-success btn-sm" onclick="approveSuggestion('${suggestion.id}')">
+                                <i class="bi bi-check-circle me-1"></i>Approve
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="rejectSuggestion('${suggestion.id}')">
+                                <i class="bi bi-x-circle me-1"></i>Reject
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="executeTrade('${suggestion.id}')">
+                                <i class="bi bi-play-circle me-1"></i>Execute
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateStats() {
+            document.getElementById('total-suggestions').textContent = suggestions.length;
+            document.getElementById('pending-trades').textContent = pendingTrades.length;
+            document.getElementById('executed-trades').textContent = executedTrades.length;
+            
+            if (executedTrades.length > 0) {
+                const successful = executedTrades.filter(trade => trade.success).length;
+                const successRate = (successful / executedTrades.length * 100).toFixed(1);
+                document.getElementById('success-rate').textContent = successRate + '%';
+            }
+        }
+
+        function showError(message) {
+            const container = document.getElementById('suggestions-container');
+            container.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    ${message}
+                    <button class="btn btn-sm btn-outline-danger ms-2" onclick="generateSuggestions()">Try Again</button>
+                </div>
+            `;
+        }
+
+        async function approveSuggestion(suggestionId) {
+            console.log('Approving suggestion:', suggestionId);
+        }
+
+        async function rejectSuggestion(suggestionId) {
+            console.log('Rejecting suggestion:', suggestionId);
+        }
+
+        async function executeTrade(suggestionId) {
+            console.log('Executing trade for suggestion:', suggestionId);
         }
         </script>
         
@@ -2092,6 +2307,168 @@
                 `;
             }
         }
+
+
+        // Trade Suggestions Functions
+        let suggestions = [];
+        let pendingTrades = [];
+        let executedTrades = [];
+
+        async function loadSuggestions() {
+            try {
+                console.log('📊 Loading suggestions...');
+                const response = await fetch('/api/suggestions');
+                const data = await response.json();
+                
+                if (data.success) {
+                    suggestions = data.suggestions;
+                    console.log('✅ Loaded', suggestions.length, 'suggestions');
+                    updateSuggestionsDisplay();
+                    updateStats();
+                } else {
+                    console.error('❌ API error:', data.error);
+                }
+            } catch (error) {
+                console.error('❌ Error loading suggestions:', error);
+                showError('Error loading suggestions: ' + error.message);
+            }
+        }
+
+        async function generateSuggestions() {
+            try {
+                console.log('🔄 Generating new suggestions...');
+                const response = await fetch('/api/suggestions/generate', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    suggestions = data.suggestions;
+                    console.log('✅ Generated', suggestions.length, 'suggestions');
+                    updateSuggestionsDisplay();
+                    updateStats();
+                } else {
+                    console.error('❌ Generate error:', data.error);
+                }
+            } catch (error) {
+                console.error('❌ Error generating suggestions:', error);
+                showError('Error generating suggestions: ' + error.message);
+            }
+        }
+
+        function updateSuggestionsDisplay() {
+            const container = document.getElementById('suggestions-container');
+            
+            if (suggestions.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="bi bi-lightbulb" style="font-size: 3rem; color: var(--text-muted);"></i>
+                        <p class="mt-3 text-muted">No suggestions available</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = suggestions.map(suggestion => `
+                <div class="card mb-3 suggestion-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h6 class="mb-1">${suggestion.instrument} ${suggestion.direction}</h6>
+                                <small class="text-muted">Confidence: ${(suggestion.confidence * 100).toFixed(1)}%</small>
+                            </div>
+                            <span class="badge ${suggestion.risk_level === 'LOW' ? 'bg-success' : suggestion.risk_level === 'MEDIUM' ? 'bg-warning' : 'bg-danger'}">
+                                ${suggestion.risk_level}
+                            </span>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-2">
+                                    <strong>Current Price:</strong> ${suggestion.current_price.toFixed(5)}
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Entry Price:</strong> ${suggestion.entry_price.toFixed(5)}
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Stop Loss:</strong> ${suggestion.stop_loss.toFixed(5)}
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Take Profit:</strong> ${suggestion.take_profit.toFixed(5)}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-2">
+                                    <strong>Risk-Reward:</strong> 1:${suggestion.risk_reward_ratio.toFixed(1)}
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Risk:</strong> ${suggestion.risk_pips} pips
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Reward:</strong> ${suggestion.reward_pips} pips
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Distance from Entry:</strong> ${suggestion.pip_distance_from_entry} pips
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <strong>Market Conditions:</strong> ${suggestion.market_conditions}<br>
+                            <strong>Analysis:</strong> ${suggestion.reason}
+                        </div>
+                        
+                        <div class="mt-3 d-flex gap-2">
+                            <button class="btn btn-success btn-sm" onclick="approveSuggestion('${suggestion.id}')">
+                                <i class="bi bi-check-circle me-1"></i>Approve
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="rejectSuggestion('${suggestion.id}')">
+                                <i class="bi bi-x-circle me-1"></i>Reject
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="executeTrade('${suggestion.id}')">
+                                <i class="bi bi-play-circle me-1"></i>Execute
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateStats() {
+            document.getElementById('total-suggestions').textContent = suggestions.length;
+            document.getElementById('pending-trades').textContent = pendingTrades.length;
+            document.getElementById('executed-trades').textContent = executedTrades.length;
+            
+            if (executedTrades.length > 0) {
+                const successful = executedTrades.filter(trade => trade.success).length;
+                const successRate = (successful / executedTrades.length * 100).toFixed(1);
+                document.getElementById('success-rate').textContent = successRate + '%';
+            }
+        }
+
+        function showError(message) {
+            const container = document.getElementById('suggestions-container');
+            container.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    ${message}
+                    <button class="btn btn-sm btn-outline-danger ms-2" onclick="generateSuggestions()">Try Again</button>
+                </div>
+            `;
+        }
+
+        async function approveSuggestion(suggestionId) {
+            // Implementation for approving suggestions
+            console.log('Approving suggestion:', suggestionId);
+        }
+
+        async function rejectSuggestion(suggestionId) {
+            // Implementation for rejecting suggestions
+            console.log('Rejecting suggestion:', suggestionId);
+        }
+
+        async function executeTrade(suggestionId) {
+            // Implementation for executing trades
+            console.log('Executing trade for suggestion:', suggestionId);
+        }
         </script>
         
         <section id="ai-copilot" class="content-section">
@@ -2102,6 +2479,7 @@
                 </div>
             </div>
         </section>
+
         
         <section id="analytics" class="content-section">
             <div class="container-fluid">
@@ -2219,7 +2597,7 @@
                             'config': loadConfigSection,
                             'insights': loadInsightsSection,
                             'strategy-switcher': loadStrategySwitcherSection,
-                            'ai-copilot': loadAICopilotSection
+                            'ai-copilot': loadAICopilotSection,
                         };
                         
                         if (loaders[targetSection]) {
@@ -2971,7 +3349,7 @@
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({ text: message })
+                        body: JSON.stringify({ message: message, session_id: 'browser_session' })
                     })
                     .then(response => response.json())
                     .then(data => {
@@ -4508,7 +4886,7 @@
               const r = await fetch('/ai/interpret', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: message, session_id: 'dashboard' })
+                body: JSON.stringify({ message: message, session_id: 'dashboard' })
               });
               const ct = r.headers.get('content-type') || '';
               if (!r.ok) throw new Error(`HTTP ${r.status}`);

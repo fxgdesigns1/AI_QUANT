@@ -214,3 +214,4 @@ if __name__ == '__main__':
     print("Copy these patterns into your own code!")
     print("\n" + "="*70)
 
+

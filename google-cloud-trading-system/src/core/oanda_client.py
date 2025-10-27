@@ -220,6 +220,11 @@ class OandaClient:
             logger.error(f"❌ Failed to get account info: {e}")
             raise
     
+    def get_current_price(self, instrument: str) -> OandaPrice:
+        """Get current price for a single instrument"""
+        prices = self.get_current_prices([instrument], force_refresh=True)
+        return prices.get(instrument)
+    
     def get_current_prices(self, instruments: List[str], force_refresh: bool = False) -> Dict[str, OandaPrice]:
         """Get current prices for instruments with optional cache bypass
         

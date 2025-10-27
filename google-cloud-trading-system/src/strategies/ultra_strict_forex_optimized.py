@@ -95,7 +95,7 @@ class UltraStrictForexStrategy:
         # ===============================================
         # ENHANCED ENTRY CONDITIONS
         # ===============================================
-        self.only_trade_london_ny = True     # High volume sessions only
+        self.only_trade_london_ny = False    # DISABLED: Trade all sessions to get more opportunities
         self.london_session_start = 7        # 07:00 UTC
         self.london_session_end = 16         # 16:00 UTC
         self.ny_session_start = 13           # 13:00 UTC
@@ -516,6 +516,19 @@ class UltraStrictForexStrategy:
                 logger.warning(f"⚠️  News integration error (continuing without news): {e}")
         
         return trade_signals
+    
+    def is_strategy_active(self) -> bool:
+        """Check if strategy is active"""
+        return True  # Always active
+    
+    def is_trading_hours(self, current_time: Optional[datetime] = None) -> bool:
+        """Check if current time is within trading hours"""
+        if current_time is None:
+            current_time = datetime.now()
+        
+        # Forex has better hours - London and NY sessions
+        current_hour = current_time.hour
+        return 8 <= current_hour <= 22  # London + NY sessions
     
     def analyze_market(self, market_data: Dict[str, MarketData]) -> List[TradeSignal]:
         """Analyze market and generate trading signals"""

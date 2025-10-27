@@ -112,3 +112,5 @@ echo "   ./quick_cloud_deploy.sh"
 echo ""
 echo "🎉 Your analytics system is ready to track trades!"
 echo "=========================================="
+
+

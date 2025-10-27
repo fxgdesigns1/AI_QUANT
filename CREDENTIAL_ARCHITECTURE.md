@@ -401,3 +401,4 @@ app.config['SECRET_KEY'] = credentials.get('FLASK_SECRET_KEY')
 
 *Your credentials, secure and accessible everywhere.* 🔐🌍
 
+

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Test Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Simple Test Dashboard</h1>
+        <p>This is a simple test to verify template rendering works.</p>
+        
+        <div class="status success">
+            ✅ Template rendering is working
+        </div>
+        
+        <div class="status success">
+            ✅ Flask is serving HTML correctly
+        </div>
+        
+        <div class="status success">
+            ✅ JavaScript execution test:
+            <script>
+                document.write('<span style="color: green;">✅ JavaScript is executing</span>');
+            </script>
+        </div>
+        
+        <h2>API Test</h2>
+        <button onclick="testAPI()">Test API</button>
+        <div id="api-result"></div>
+        
+        <script>
+            function testAPI() {
+                fetch('/api/status')
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('api-result').innerHTML = 
+                            '<div class="status success">✅ API working: ' + JSON.stringify(data) + '</div>';
+                    })
+                    .catch(error => {
+                        document.getElementById('api-result').innerHTML = 
+                            '<div class="status error">❌ API error: ' + error + '</div>';
+                    });
+            }
+        </script>
+    </div>
+</body>
+</html>

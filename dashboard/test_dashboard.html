@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; }
+        .success { color: green; }
+        .error { color: red; }
+        button { padding: 10px 20px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Dashboard Test Page</h1>
+    
+    <div class="test-section">
+        <h2>API Tests</h2>
+        <button onclick="testSuggestions()">Test Get Suggestions</button>
+        <button onclick="testGenerate()">Test Generate Suggestions</button>
+        <button onclick="testPending()">Test Pending Trades</button>
+        <div id="test-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Live Data</h2>
+        <div id="live-data">Loading...</div>
+    </div>
+
+    <script>
+        function log(message, isError = false) {
+            const div = document.getElementById('test-results');
+            const p = document.createElement('p');
+            p.className = isError ? 'error' : 'success';
+            p.textContent = new Date().toLocaleTimeString() + ': ' + message;
+            div.appendChild(p);
+        }
+        
+        async function testSuggestions() {
+            try {
+                log('🔄 Testing get suggestions...');
+                const response = await fetch('/api/suggestions');
+                const data = await response.json();
+                
+                if (data.success) {
+                    log(`✅ SUCCESS: ${data.count} suggestions loaded`);
+                    if (data.suggestions.length > 0) {
+                        const first = data.suggestions[0];
+                        log(`   First: ${first.instrument} ${first.direction} (${first.confidence:.1%})`);
+                    }
+                } else {
+                    log(`❌ ERROR: ${data.error}`, true);
+                }
+            } catch (error) {
+                log(`❌ FETCH ERROR: ${error.message}`, true);
+            }
+        }
+        
+        async function testGenerate() {
+            try {
+                log('🔄 Testing generate suggestions...');
+                const response = await fetch('/api/suggestions/generate', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    log(`✅ SUCCESS: ${data.count} suggestions generated`);
+                    if (data.suggestions.length > 0) {
+                        const first = data.suggestions[0];
+                        log(`   First: ${first.instrument} ${first.direction} (${first.confidence:.1%})`);
+                    }
+                } else {
+                    log(`❌ ERROR: ${data.error}`, true);
+                }
+            } catch (error) {
+                log(`❌ FETCH ERROR: ${error.message}`, true);
+            }
+        }
+        
+        async function testPending() {
+            try {
+                log('🔄 Testing pending trades...');
+                const response = await fetch('/api/trades/pending');
+                const data = await response.json();
+                
+                if (data.success) {
+                    log(`✅ SUCCESS: ${data.count} pending trades`);
+                } else {
+                    log(`❌ ERROR: ${data.error}`, true);
+                }
+            } catch (error) {
+                log(`❌ FETCH ERROR: ${error.message}`, true);
+            }
+        }
+        
+        async function updateLiveData() {
+            try {
+                const response = await fetch('/api/suggestions');
+                const data = await response.json();
+                
+                const div = document.getElementById('live-data');
+                if (data.success) {
+                    div.innerHTML = `
+                        <h3>Live Dashboard Data</h3>
+                        <p><strong>Suggestions:</strong> ${data.count}</p>
+                        <p><strong>Status:</strong> ✅ API Working</p>
+                        <p><strong>Time:</strong> ${new Date().toLocaleTimeString()}</p>
+                    `;
+                } else {
+                    div.innerHTML = `<p class="error">❌ API Error: ${data.error}</p>`;
+                }
+            } catch (error) {
+                document.getElementById('live-data').innerHTML = `<p class="error">❌ Connection Error: ${error.message}</p>`;
+            }
+        }
+        
+        // Auto-update every 5 seconds
+        setInterval(updateLiveData, 5000);
+        
+        // Initial load
+        updateLiveData();
+    </script>
+</body>
+</html>

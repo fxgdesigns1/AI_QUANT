@@ -55,12 +55,12 @@ class GoldScalpingStrategy:
         self.instruments = ['XAU_USD']
         
         # ===============================================
-        # OPTIMIZED STRATEGY PARAMETERS - MAX 10/DAY
+        # BALANCED STRATEGY PARAMETERS (OPTIMIZED OCT 23, 2025)
         # ===============================================
         self.stop_loss_pips = 6              # OPTIMIZED: 6 pips stop loss
         self.take_profit_pips = 24           # OPTIMIZED: 24 pips take profit = 1:4.0 R:R
-        self.min_signal_strength = 0.85      # OPTIMIZED: Very high quality
-        self.max_trades_per_day = 10         # OPTIMIZED: Max 10 trades per day
+        self.min_signal_strength = 0.70      # BALANCED: 70% (relaxed from 85% to catch more setups)
+        self.max_trades_per_day = 15         # INCREASED: 15/day (was 10 - too restrictive)
         self.min_trades_today = 0            # NO FORCED TRADES - only high-quality setups
         
         # ===============================================
@@ -72,18 +72,18 @@ class GoldScalpingStrategy:
         self.volatility_lookback = 20        # Look back 20 periods for volatility
         
         # ===============================================
-        # OPTIMIZED QUALITY FILTERS
+        # BALANCED QUALITY FILTERS (OPTIMIZED OCT 23, 2025)
         # ===============================================
-        self.max_daily_quality_trades = 5    # Top 5 quality trades per day
-        self.quality_score_threshold = 0.90  # Very high quality threshold
+        self.max_daily_quality_trades = 8    # INCREASED: Top 8 quality trades per day
+        self.quality_score_threshold = 0.75  # RELAXED: 75% (was 90% - too strict)
         self.daily_trade_ranking = True      # Rank and select best
         self.require_multiple_confirmations = True
-        self.min_confirmations = 3           # At least 3 confirmations
+        self.min_confirmations = 2           # REDUCED: 2 confirmations (was 3 - too strict)
         
         # ===============================================
         # ENHANCED ENTRY CONDITIONS
         # ===============================================
-        self.only_trade_london_ny = True     # High volume sessions only
+        self.only_trade_london_ny = False    # DISABLED: Trade all sessions to get more opportunities
         self.london_session_start = 7        # 07:00 UTC
         self.london_session_end = 16         # 16:00 UTC
         self.ny_session_start = 13           # 13:00 UTC
@@ -416,6 +416,18 @@ class GoldScalpingStrategy:
                 logger.warning(f"⚠️  News check failed (trading anyway): {e}")
         
         return trade_signals
+    
+    def is_strategy_active(self) -> bool:
+        """Check if strategy is active"""
+        return True  # Always active
+    
+    def is_trading_hours(self, current_time: Optional[datetime] = None) -> bool:
+        """Check if current time is within trading hours"""
+        if current_time is None:
+            current_time = datetime.now()
+        
+        # Gold trades 24/7
+        return True
     
     def analyze_market(self, market_data: Dict[str, MarketData]) -> List[TradeSignal]:
         """Analyze market and generate trading signals"""

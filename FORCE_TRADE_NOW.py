@@ -1,60 +1,137 @@
 #!/usr/bin/env python3
 """
-FORCE TRADE ENTRY - BYPASS ALL RESTRICTIONS
-Place trades immediately during UK CPI window
+FORCE TRADE NOW - DIRECT TRADING SYSTEM
+This will place actual trades immediately
 """
 
-import sys
 import os
-sys.path.insert(0, 'src')
+import sys
+import time
+import logging
 
-from core.yaml_manager import get_yaml_manager
-from core.oanda_client import OandaClient
-from datetime import datetime
+# Set up environment
+os.environ['OANDA_API_KEY'] = "REMOVED_SECRET"
+os.environ['OANDA_ENVIRONMENT'] = "practice"
 
-print('🔥 FORCING TRADE ENTRY - UK CPI WINDOW')
-print('='*60)
+# Add the project path
+sys.path.append('/Users/mac/quant_system_clean/google-cloud-trading-system')
 
-# Get accounts
-yaml_mgr = get_yaml_manager()
-accounts = [a for a in yaml_mgr.get_all_accounts() if a.get('active', False)]
+from src.core.dynamic_account_manager import get_account_manager
+from src.core.oanda_client import OandaClient
 
-print(f'Found {len(accounts)} active accounts')
-print()
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
-# Force trade on first GBP/USD account
-gbp_accounts = [a for a in accounts if 'GBP_USD' in a.get('instruments', [])]
-
-if gbp_accounts:
-    account = gbp_accounts[0]
-    print(f'Forcing trade on: {account["name"]}')
-    print(f'Strategy: {account["strategy"]}')
-    print(f'Instruments: {account["instruments"]}')
-    print()
+def force_trade_now():
+    """Force place trades immediately"""
+    logger.info("🚀 FORCING TRADES NOW...")
     
+    # Get account manager
+    account_manager = get_account_manager()
+    active_accounts = account_manager.get_active_accounts()
+    
+    logger.info(f"📊 Found {len(active_accounts)} active accounts")
+    
+    # Get first account for testing
+    account_id = active_accounts[0]
+    logger.info(f"🎯 Using account: {account_id}")
+    
+    # Create OANDA client
+    client = OandaClient(account_id=account_id)
+    
+    # Get current prices
+    instruments = ['EUR_USD', 'GBP_USD', 'XAU_USD']
+    market_data = client.get_current_prices(instruments)
+    
+    logger.info("📊 Current market prices:")
+    for instrument, price in market_data.items():
+        logger.info(f"   {instrument}: {price.bid} / {price.ask}")
+    
+    # Place a simple EUR_USD trade
     try:
-        # This will fail without API credentials, but shows the intent
-        client = OandaClient(account_id=account['id'])
+        logger.info("🚀 PLACING EUR_USD BUY ORDER...")
         
-        # Force GBP/USD BUY order
+        # Get account info
+        account_info = client.get_account_info()
+        balance = account_info.balance
+        logger.info(f"💰 Account balance: ${balance:.2f}")
+        
+        # Calculate position size (1% risk)
+        risk_amount = balance * 0.01
+        stop_distance = 0.005  # 50 pips
+        position_size = int(risk_amount / stop_distance)
+        
+        logger.info(f"📊 Position size: {position_size} units")
+        logger.info(f"📊 Risk amount: ${risk_amount:.2f}")
+        
+        # Place market order (positive units = BUY)
         result = client.place_market_order(
-            instrument='GBP_USD',
-            units=1000,  # Small position
-            take_profit_distance=0.0020,  # 20 pips
-            stop_loss_distance=0.0010     # 10 pips
+            instrument='EUR_USD',
+            units=position_size,  # Positive = BUY
+            stop_loss=market_data['EUR_USD'].bid - 0.005,
+            take_profit=market_data['EUR_USD'].ask + 0.01
         )
         
-        if result and result.get('success'):
-            print('✅ TRADE EXECUTED!')
-            print(f'Trade ID: {result.get("trade_id")}')
+        if result:
+            logger.info("✅ TRADE PLACED SUCCESSFULLY!")
+            logger.info(f"   Instrument: EUR_USD")
+            logger.info(f"   Side: BUY")
+            logger.info(f"   Units: {position_size}")
+            logger.info(f"   Entry: {market_data['EUR_USD'].ask}")
+            logger.info(f"   Stop Loss: {market_data['EUR_USD'].bid - 0.005}")
+            logger.info(f"   Take Profit: {market_data['EUR_USD'].ask + 0.01}")
         else:
-            print('❌ Trade failed - check API credentials')
+            logger.error("❌ TRADE FAILED!")
             
     except Exception as e:
-        print(f'❌ Error: {e}')
-        print('Need to set OANDA_API_KEY and OANDA_ACCOUNT_ID')
-else:
-    print('❌ No GBP/USD accounts found')
+        logger.error(f"❌ Trade placement failed: {e}")
+    
+    # Place a Gold trade
+    try:
+        logger.info("🚀 PLACING XAU_USD BUY ORDER...")
+        
+        # Calculate position size for Gold
+        risk_amount = balance * 0.01
+        stop_distance = 5.0  # $5 stop
+        position_size = int(risk_amount / stop_distance)
+        
+        logger.info(f"📊 Gold position size: {position_size} units")
+        
+        # Place market order (positive units = BUY)
+        result = client.place_market_order(
+            instrument='XAU_USD',
+            units=position_size,  # Positive = BUY
+            stop_loss=market_data['XAU_USD'].bid - 5.0,
+            take_profit=market_data['XAU_USD'].ask + 10.0
+        )
+        
+        if result:
+            logger.info("✅ GOLD TRADE PLACED SUCCESSFULLY!")
+            logger.info(f"   Instrument: XAU_USD")
+            logger.info(f"   Side: BUY")
+            logger.info(f"   Units: {position_size}")
+            logger.info(f"   Entry: {market_data['XAU_USD'].ask}")
+            logger.info(f"   Stop Loss: {market_data['XAU_USD'].bid - 5.0}")
+            logger.info(f"   Take Profit: {market_data['XAU_USD'].ask + 10.0}")
+        else:
+            logger.error("❌ GOLD TRADE FAILED!")
+            
+    except Exception as e:
+        logger.error(f"❌ Gold trade placement failed: {e}")
+    
+    # Check positions
+    logger.info("🔍 CHECKING POSITIONS...")
+    try:
+        trades = client.get_open_trades()
+        
+        logger.info(f"📊 Open trades: {len(trades)}")
+        
+        for trade in trades:
+            logger.info(f"   Trade: {trade.get('instrument', 'Unknown')} {trade.get('units', 0)} units")
+            
+    except Exception as e:
+        logger.error(f"❌ Failed to check positions: {e}")
 
-print()
-print('🚨 URGENT: Set API credentials and restart system!')
+if __name__ == "__main__":
+    force_trade_now()

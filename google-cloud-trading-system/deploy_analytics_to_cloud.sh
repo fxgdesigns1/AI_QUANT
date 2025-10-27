@@ -134,3 +134,5 @@ echo ""
 echo "🔄 To update deployment:"
 echo "   ./deploy_analytics_to_cloud.sh"
 echo ""
+
+

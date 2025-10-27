@@ -15,9 +15,9 @@ from .oanda_client import get_oanda_client
 from .optimization_loader import load_optimization_results, apply_per_pair_to_ultra_strict, apply_per_pair_to_momentum, apply_per_pair_to_gold
 from .order_manager import get_order_manager
 from .risk_manager import get_risk_manager
-from src.strategies.ultra_strict_forex import get_ultra_strict_forex_strategy
+from src.strategies.ultra_strict_forex_optimized import get_ultra_strict_forex_strategy
 from src.strategies.momentum_trading import get_momentum_trading_strategy
-from src.strategies.gold_scalping import get_gold_scalping_strategy
+from src.strategies.gold_scalping_optimized import get_gold_scalping_strategy
 from src.strategies.gbp_usd_optimized import get_strategy_rank_1, get_strategy_rank_2, get_strategy_rank_3
 from src.strategies.champion_75wr import get_champion_75wr_strategy
 from src.strategies.ultra_strict_v2 import get_ultra_strict_v2_strategy

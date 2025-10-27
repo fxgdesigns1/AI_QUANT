@@ -17,9 +17,9 @@ from .yaml_manager import get_yaml_manager
 from .economic_calendar import get_economic_calendar
 from .trump_dna_framework import get_trump_dna_planner
 from .adaptive_scanner_integration import AdaptiveScannerMixin
-from src.strategies.ultra_strict_forex import get_ultra_strict_forex_strategy
+from src.strategies.ultra_strict_forex_optimized import get_ultra_strict_forex_strategy
 from src.strategies.momentum_trading import get_momentum_trading_strategy
-from src.strategies.gold_scalping import get_gold_scalping_strategy
+from src.strategies.gold_scalping_optimized import get_gold_scalping_strategy
 from src.strategies.gbp_usd_optimized import get_strategy_rank_1, get_strategy_rank_2, get_strategy_rank_3
 from src.strategies.champion_75wr import get_champion_75wr_strategy
 from src.strategies.ultra_strict_v2 import get_ultra_strict_v2_strategy

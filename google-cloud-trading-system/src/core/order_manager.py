@@ -105,7 +105,7 @@ class OrderManager:
             if account_id == primary_account:
                 # PRIMARY account (Gold Scalping 5M)
                 self.max_risk_per_trade = max_risk_per_trade or float(os.getenv('PRIMARY_MAX_RISK_PER_TRADE', '0.02'))
-                self.max_portfolio_risk = max_portfolio_risk or float(os.getenv('PRIMARY_MAX_PORTFOLIO_RISK', '0.75'))  # CORRECTED: 75%
+                self.max_portfolio_risk = max_portfolio_risk or float(os.getenv('PRIMARY_MAX_PORTFOLIO_RISK', '0.20'))  # SAFE: 20% MAX
                 self.max_positions = max_positions or int(os.getenv('PRIMARY_MAX_POSITIONS', '5'))
                 self.daily_trade_limit = daily_trade_limit or int(os.getenv('PRIMARY_DAILY_TRADE_LIMIT', '50'))
             elif account_id == gold_account:
@@ -180,7 +180,8 @@ class OrderManager:
                 return None
             
             # Get current price
-            current_price = self.oanda_client.get_current_price(signal.instrument)
+            prices = self.oanda_client.get_current_prices([signal.instrument], force_refresh=True)
+            current_price = prices.get(signal.instrument)
             if not current_price:
                 logger.error(f"❌ Could not get price for {signal.instrument}")
                 return None
@@ -190,7 +191,7 @@ class OrderManager:
                 logger.error("❌ No stop loss provided")
                 return None
             
-            stop_loss_distance = abs(current_price - signal.stop_loss)
+            stop_loss_distance = abs(current_price.bid - signal.stop_loss)
             
             # SMART DYNAMIC POSITION SIZING BASED ON SIGNAL STRENGTH
             # Use signal confidence (0.0-1.0) to scale risk
@@ -204,7 +205,7 @@ class OrderManager:
             pos_result = position_sizer.calculate_position_size(
                 account_balance=account_info.balance,
                 risk_percent=self.max_risk_per_trade * 100,  # Convert to percentage
-                entry_price=current_price,
+                entry_price=current_price.bid,  # Extract bid price as float
                 stop_loss=signal.stop_loss,
                 instrument=signal.instrument,
                 signal_strength=signal_strength  # Pass signal strength for dynamic sizing
@@ -212,7 +213,7 @@ class OrderManager:
             
             units = pos_result.units
             risk_amount = pos_result.risk_amount
-            position_value = units * current_price
+            position_value = units * current_price.bid
             
             logger.info(f"📊 Position calculated: {units} units, ${risk_amount:.2f} risk (signal: {signal_strength*100:.0f}%)")
             

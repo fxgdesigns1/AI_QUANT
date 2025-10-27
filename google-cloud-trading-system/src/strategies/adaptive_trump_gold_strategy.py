@@ -108,6 +108,11 @@ class AdaptiveTrumpGoldStrategy:
         self.economic_events = []
         self.news_impact_multiplier = 1.0
         
+        # Trading hours (Gold trades 24/7 - more flexible)
+        self.trading_hours = [
+            (time(0, 0), time(23, 59)),  # 24/7 trading for gold
+        ]
+        
         # Learning system
         self.performance_history = []
         self.adaptation_log = []
@@ -275,7 +280,7 @@ class AdaptiveTrumpGoldStrategy:
         
         # Check if in entry zone
         for i, zone in enumerate(self.entry_zones):
-            if abs(current_price - zone) <= 5.0:  # Within $5 of zone
+            if abs(current_price - zone) <= 15.0:  # Within $15 of zone (more flexible)
                 
                 # Determine entry type and confidence
                 if current_price < zone:
@@ -366,12 +371,29 @@ class AdaptiveTrumpGoldStrategy:
             else:
                 return entry_price - 30
     
+    def is_strategy_active(self) -> bool:
+        """Check if strategy is active"""
+        return True  # This strategy is designed to be permanent
+    
+    def is_trading_hours(self, current_time: Optional[datetime] = None) -> bool:
+        """Check if current time is within gold trading hours"""
+        if current_time is None:
+            current_time = datetime.now()
+        
+        current_hour_minute = current_time.time()
+        
+        for start, end in self.trading_hours:
+            if start <= current_hour_minute <= end:
+                return True
+        
+        return False
+
     def analyze_market(self, market_data: Dict[str, MarketData]) -> List[TradeSignal]:
         """Analyze market and generate adaptive gold signals"""
         signals = []
         
         # Check if strategy is active
-        if not self.is_active:
+        if not self.is_strategy_active():
             return signals
         
         # Get gold market data
