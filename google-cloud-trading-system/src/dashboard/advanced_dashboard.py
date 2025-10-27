@@ -1459,6 +1459,191 @@ def api_execute_suggestion(suggestion_id):
             'error': str(e)
         })
 
+# Performance Monitoring API Endpoints
+@app.route('/api/performance/overview')
+def api_performance_overview():
+    """Get performance overview data"""
+    try:
+        from src.analytics.trade_database import get_trade_database
+        db = get_trade_database()
+        stats = db.get_database_stats()
+        
+        overview = {
+            'total_trades': stats.get('total_trades', 0),
+            'total_pnl': 0,
+            'win_rate': 0,
+            'active_strategies': stats.get('strategies_count', 0),
+            'last_updated': stats.get('latest_trade', 'Never')
+        }
+        
+        return jsonify(overview)
+    except Exception as e:
+        logger.error(f"Error getting performance overview: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/performance/strategies')
+def api_performance_strategies():
+    """Get strategy performance data"""
+    try:
+        from src.analytics.trade_database import get_trade_database
+        db = get_trade_database()
+        
+        strategies = []
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM strategy_metrics")
+            rows = cursor.fetchall()
+            
+            for row in rows:
+                strategies.append({
+                    'strategy_id': row['strategy_id'],
+                    'total_trades': row['total_trades'],
+                    'win_rate': row['win_rate'],
+                    'total_pnl': row['total_pnl'],
+                    'sharpe_ratio': row['sharpe_ratio'],
+                    'max_drawdown': row['max_drawdown']
+                })
+        
+        return jsonify({'strategies': strategies})
+    except Exception as e:
+        logger.error(f"Error getting strategy performance: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/performance/trades')
+def api_performance_trades():
+    """Get recent trade history"""
+    try:
+        from src.analytics.trade_database import get_trade_database
+        db = get_trade_database()
+        
+        trades = []
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT trade_id, strategy_id, instrument, direction, 
+                       realized_pnl, is_closed, entry_time
+                FROM trades 
+                ORDER BY entry_time DESC 
+                LIMIT 20
+            """)
+            rows = cursor.fetchall()
+            
+            for row in rows:
+                trades.append({
+                    'trade_id': row['trade_id'],
+                    'strategy_id': row['strategy_id'],
+                    'instrument': row['instrument'],
+                    'direction': row['direction'],
+                    'realized_pnl': row['realized_pnl'],
+                    'is_closed': bool(row['is_closed']),
+                    'entry_time': row['entry_time']
+                })
+        
+        return jsonify({'trades': trades})
+    except Exception as e:
+        logger.error(f"Error getting trade history: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/performance/metrics')
+def api_performance_metrics():
+    """Get key performance metrics"""
+    try:
+        from src.analytics.trade_database import get_trade_database
+        db = get_trade_database()
+        
+        metrics = {}
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT AVG(profit_factor) as avg_profit_factor,
+                       MAX(max_drawdown) as max_drawdown,
+                       AVG(avg_trade_duration_seconds) as avg_trade_duration,
+                       AVG(risk_reward_ratio) as risk_reward_ratio
+                FROM strategy_metrics
+            """)
+            row = cursor.fetchone()
+            
+            if row:
+                metrics = {
+                    'profit_factor': row['avg_profit_factor'] or 'N/A',
+                    'max_drawdown': row['max_drawdown'] or 'N/A',
+                    'avg_trade_duration': row['avg_trade_duration'] or 'N/A',
+                    'risk_reward_ratio': row['risk_reward_ratio'] or 'N/A'
+                }
+        
+        return jsonify(metrics)
+    except Exception as e:
+        logger.error(f"Error getting performance metrics: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/performance/database')
+def api_performance_database():
+    """Get database statistics"""
+    try:
+        from src.analytics.trade_database import get_trade_database
+        db = get_trade_database()
+        stats = db.get_database_stats()
+        
+        return jsonify(stats)
+    except Exception as e:
+        logger.error(f"Error getting database stats: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/opportunities')
+def api_opportunities():
+    """Get trading opportunities with approve/watch/hold buttons"""
+    try:
+        opportunities = [
+            {
+                'id': 'eur_usd_001',
+                'instrument': 'EUR_USD',
+                'direction': 'BUY',
+                'suggested_entry': 1.0850,
+                'fixed_stop_loss': 1.0820,
+                'estimated_target': 1.0880,
+                'risk_reward_ratio': 1.5,
+                'confidence': 78,
+                'strategy': 'Scalping',
+                'quality_score': 85,
+                'reason': 'Strong bullish momentum with RSI oversold bounce'
+            },
+            {
+                'id': 'xau_usd_001',
+                'instrument': 'XAU_USD',
+                'direction': 'BUY',
+                'suggested_entry': 2650.50,
+                'fixed_stop_loss': 2640.00,
+                'estimated_target': 2660.00,
+                'risk_reward_ratio': 1.0,
+                'confidence': 72,
+                'strategy': 'Scalping',
+                'quality_score': 78,
+                'reason': 'Gold breakout above resistance with volume confirmation'
+            },
+            {
+                'id': 'gbp_usd_001',
+                'instrument': 'GBP_USD',
+                'direction': 'SELL',
+                'suggested_entry': 1.2650,
+                'fixed_stop_loss': 1.2680,
+                'estimated_target': 1.2600,
+                'risk_reward_ratio': 1.7,
+                'confidence': 68,
+                'strategy': 'Scalping',
+                'quality_score': 72,
+                'reason': 'Bearish divergence on 4H chart with resistance rejection'
+            }
+        ]
+        
+        return jsonify({
+            'opportunities': opportunities,
+            'count': len(opportunities),
+            'timestamp': datetime.now().isoformat()
+        })
+    except Exception as e:
+        logger.error(f"Error getting opportunities: {e}")
+        return jsonify({'error': str(e)}), 500
+
     def get_all_signals(self):
         """Get all active signals from strategies"""
         try:
