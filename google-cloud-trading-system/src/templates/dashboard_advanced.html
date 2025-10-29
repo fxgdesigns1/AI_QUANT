@@ -417,6 +417,168 @@
             color: #2d3748;
         }
 
+        /* NEW: Cloud System Integration Styles */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+            margin-left: 10px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider-toggle {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #6b7280;
+            transition: .4s;
+            border-radius: 30px;
+        }
+
+        .slider-toggle:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider-toggle {
+            background-color: #10b981;
+        }
+
+        input:checked + .slider-toggle:before {
+            transform: translateX(30px);
+        }
+
+        .toggle-switch-small {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+            margin-left: 8px;
+        }
+
+        .toggle-switch-small input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider-toggle-small {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #6b7280;
+            transition: .4s;
+            border-radius: 20px;
+        }
+
+        .slider-toggle-small:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider-toggle-small {
+            background-color: #10b981;
+        }
+
+        input:checked + .slider-toggle-small:before {
+            transform: translateX(20px);
+        }
+
+        .risk-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 5px;
+            background: #374151;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .risk-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+        }
+
+        .risk-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+        }
+
+        .api-gauge {
+            margin-bottom: 15px;
+        }
+
+        .gauge-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: white;
+        }
+
+        .gauge-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #374151;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .gauge-fill {
+            height: 100%;
+            transition: width 0.5s ease, background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .gauge-fill.green { background-color: #10b981; }
+        .gauge-fill.yellow { background-color: #f59e0b; }
+        .gauge-fill.red { background-color: #ef4444; }
+
+        .gauge-remaining {
+            margin-top: 5px;
+            font-size: 0.85rem;
+            color: #9ca3af;
+        }
+
         .news-countdown {
             background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
             padding: 16px;
@@ -1160,6 +1322,114 @@
                                 📊 Strategy Performance
                             </a>
                             <span>Last Update: <span id="lastUpdate">Loading...</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NEW: AI System Performance Panel -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card" style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); border: 2px solid #3b82f6;">
+                            <div class="card-header" style="background: transparent; border: none; color: white; font-weight: 600;">
+                                🤖 AI System Performance
+                            </div>
+                            <div class="card-body" id="cloudPerformance" style="color: white;">
+                                <div style="text-align: center; padding: 20px;">
+                                    <div class="spinner-border text-light" role="status">
+                                        <span class="sr-only">Loading...</span>
+                                    </div>
+                                    <div style="margin-top: 10px;">Loading cloud system status...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card" style="background: var(--bg-card);">
+                            <div class="card-header" style="background: transparent; border-bottom: 1px solid var(--border-color); color: white;">
+                                📊 API Usage Monitoring
+                            </div>
+                            <div class="card-body" id="apiUsage" style="color: white;">
+                                <div style="text-align: center; padding: 20px;">
+                                    <div class="spinner-border text-light" role="status">
+                                        <span class="sr-only">Loading...</span>
+                                    </div>
+                                    <div style="margin-top: 10px;">Loading API usage...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NEW: Trading Controls Panel -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="card" style="background: var(--bg-card);">
+                            <div class="card-header d-flex justify-content-between align-items-center" style="background: transparent; border-bottom: 1px solid var(--border-color); color: white;">
+                                <span style="font-weight: 600;">🎛️ Trading Controls</span>
+                                <button class="btn btn-sm btn-outline-light" onclick="toggleControls()">
+                                    <span id="controlsToggleIcon">▼</span>
+                                </button>
+                            </div>
+                            <div class="card-body" id="tradingControls" style="color: white;">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <h6 style="color: white; margin-bottom: 15px;">🎯 Master Controls</h6>
+                                        <div style="margin-bottom: 10px;">
+                                            <label style="color: white;">Master Trading:</label>
+                                            <label class="toggle-switch">
+                                                <input type="checkbox" id="masterTradingToggle" checked onchange="toggleMasterTrading()">
+                                                <span class="slider-toggle"></span>
+                                            </label>
+                                            <span id="masterTradingStatus" style="margin-left: 10px; color: #10b981;">ON</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <h6 style="color: white; margin-bottom: 15px;">📈 Strategy Controls</h6>
+                                        <div style="margin-bottom: 8px;">
+                                            <label style="color: white; font-size: 0.9rem;">Ultra Forex:</label>
+                                            <label class="toggle-switch-small">
+                                                <input type="checkbox" id="ultraForexToggle" checked onchange="toggleStrategy('ultra_forex')">
+                                                <span class="slider-toggle-small"></span>
+                                            </label>
+                                        </div>
+                                        <div style="margin-bottom: 8px;">
+                                            <label style="color: white; font-size: 0.9rem;">Gold Scalping:</label>
+                                            <label class="toggle-switch-small">
+                                                <input type="checkbox" id="goldScalpToggle" checked onchange="toggleStrategy('gold_scalping')">
+                                                <span class="slider-toggle-small"></span>
+                                            </label>
+                                        </div>
+                                        <div style="margin-bottom: 8px;">
+                                            <label style="color: white; font-size: 0.9rem;">Momentum:</label>
+                                            <label class="toggle-switch-small">
+                                                <input type="checkbox" id="momentumToggle" checked onchange="toggleStrategy('momentum')">
+                                                <span class="slider-toggle-small"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 style="color: white; margin-bottom: 15px;">⚖️ Risk Parameters</h6>
+                                        <div style="margin-bottom: 12px;">
+                                            <label style="color: white; display: block; margin-bottom: 5px;">
+                                                Max Risk Per Trade: <span id="riskValue">1.5%</span>
+                                            </label>
+                                            <input type="range" class="risk-slider" id="riskSlider" min="0.5" max="2" step="0.1" value="1.5" oninput="updateRisk(this.value)">
+                                        </div>
+                                        <div style="margin-bottom: 12px;">
+                                            <label style="color: white; display: block; margin-bottom: 5px;">
+                                                Max Portfolio Risk: <span id="portfolioRiskValue">10%</span>
+                                            </label>
+                                            <input type="range" class="risk-slider" id="portfolioRiskSlider" min="5" max="15" step="0.5" value="10" oninput="updatePortfolioRisk(this.value)">
+                                        </div>
+                                        <div>
+                                            <label style="color: white; display: block; margin-bottom: 5px;">
+                                                Max Positions: <span id="maxPosValue">5</span>
+                                            </label>
+                                            <input type="range" class="risk-slider" id="maxPosSlider" min="1" max="10" step="1" value="5" oninput="updateMaxPos(this.value)">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2764,7 +3034,237 @@
         const connectionStatus = document.getElementById('connectionStatus');
         const connectionText = document.getElementById('connectionText');
         
+        // NEW: Cloud System Integration JavaScript Functions
+        
+        // Load cloud system performance data
+        async function loadCloudPerformance() {
+            try {
+                const response = await fetch('/api/cloud/performance');
+                const data = await response.json();
+                
+                const container = document.getElementById('cloudPerformance');
+                if (container) {
+                    const status = data.status || 'offline';
+                    const statusColor = status === 'offline' ? '#ef4444' : '#10b981';
+                    const statusText = status === 'offline' ? '⚠️ Offline' : '✅ Online';
+                    
+                    container.innerHTML = `
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div>
+                                <div style="font-size: 0.85rem; color: #d1d5db; margin-bottom: 5px;">System Status</div>
+                                <div style="font-size: 1.3rem; font-weight: 600; color: ${statusColor};">${statusText}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.85rem; color: #d1d5db; margin-bottom: 5px;">Total P&L</div>
+                                <div style="font-size: 1.3rem; font-weight: 600; color: ${data.total_pnl >= 0 ? '#10b981' : '#ef4444'};">
+                                    ${data.total_pnl >= 0 ? '+' : ''}$${data.total_pnl?.toFixed(2) || '0.00'}
+                                </div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.85rem; color: #d1d5db; margin-bottom: 5px;">Win Rate</div>
+                                <div style="font-size: 1.3rem; font-weight: 600; color: white;">
+                                    ${data.win_rate ? (data.win_rate * 100).toFixed(1) + '%' : 'N/A'}
+                                </div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.85rem; color: #d1d5db; margin-bottom: 5px;">Trades Today</div>
+                                <div style="font-size: 1.3rem; font-weight: 600; color: white;">
+                                    ${data.trades_today || '0'}/${data.max_trades || '10'}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading cloud performance:', error);
+                const container = document.getElementById('cloudPerformance');
+                if (container) {
+                    container.innerHTML = '<div style="color: #ef4444; text-align: center;">⚠️ Cloud system unavailable</div>';
+                }
+            }
+        }
+        
+        // Load API usage statistics
+        async function loadAPIUsage() {
+            try {
+                const response = await fetch('/api/usage/stats');
+                const data = await response.json();
+                
+                const container = document.getElementById('apiUsage');
+                if (container && data.oanda) {
+                    let html = '';
+                    
+                    // OANDA API
+                    const oanda = data.oanda;
+                    const oandaPercent = oanda.percentage_used;
+                    const oandaColor = oandaPercent < 70 ? 'green' : oandaPercent < 90 ? 'yellow' : 'red';
+                    
+                    html += `
+                        <div class="api-gauge">
+                            <div class="gauge-label">
+                                <span>${oanda.name}</span>
+                                <span>${oanda.calls_today.toLocaleString()}/${oanda.daily_limit.toLocaleString()}</span>
+                            </div>
+                            <div class="gauge-bar">
+                                <div class="gauge-fill ${oandaColor}" style="width: ${oandaPercent}%;">
+                                    ${oandaPercent.toFixed(1)}%
+                                </div>
+                            </div>
+                            <div class="gauge-remaining">${oanda.remaining.toLocaleString()} calls remaining</div>
+                        </div>
+                    `;
+                    
+                    // Marketaux API
+                    if (data.marketaux) {
+                        const marketaux = data.marketaux;
+                        const mauxPercent = marketaux.percentage_used;
+                        const mauxColor = mauxPercent < 70 ? 'green' : mauxPercent < 90 ? 'yellow' : 'red';
+                        
+                        html += `
+                            <div class="api-gauge">
+                                <div class="gauge-label">
+                                    <span>${marketaux.name}</span>
+                                    <span>${marketaux.calls_today}/${marketaux.daily_limit}</span>
+                                </div>
+                                <div class="gauge-bar">
+                                    <div class="gauge-fill ${mauxColor}" style="width: ${mauxPercent}%;">
+                                        ${mauxPercent.toFixed(1)}%
+                                    </div>
+                                </div>
+                                <div class="gauge-remaining">${marketaux.remaining} calls remaining</div>
+                            </div>
+                        `;
+                    }
+                    
+                    // Other APIs
+                    if (data.other) {
+                        const other = data.other;
+                        const otherPercent = other.percentage_used;
+                        const otherColor = otherPercent < 70 ? 'green' : otherPercent < 90 ? 'yellow' : 'red';
+                        
+                        html += `
+                            <div class="api-gauge">
+                                <div class="gauge-label">
+                                    <span>${other.name}</span>
+                                    <span>${other.calls_today}/${other.daily_limit}</span>
+                                </div>
+                                <div class="gauge-bar">
+                                    <div class="gauge-fill ${otherColor}" style="width: ${otherPercent}%;">
+                                        ${otherPercent.toFixed(1)}%
+                                    </div>
+                                </div>
+                                <div class="gauge-remaining">${other.remaining} calls remaining</div>
+                            </div>
+                        `;
+                    }
+                    
+                    container.innerHTML = html;
+                }
+            } catch (error) {
+                console.error('Error loading API usage:', error);
+            }
+        }
+        
+        // Toggle master trading
+        async function toggleMasterTrading() {
+            const toggle = document.getElementById('masterTradingToggle');
+            const status = document.getElementById('masterTradingStatus');
+            const action = toggle.checked ? 'on' : 'off';
+            
+            try {
+                const response = await fetch('/api/cloud/controls/toggle', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({action: action})
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    status.textContent = toggle.checked ? 'ON' : 'OFF';
+                    status.style.color = toggle.checked ? '#10b981' : '#ef4444';
+                }
+            } catch (error) {
+                console.error('Error toggling master trading:', error);
+            }
+        }
+        
+        // Toggle individual strategy
+        async function toggleStrategy(strategyName) {
+            const toggle = document.getElementById(strategyName + 'Toggle');
+            const action = toggle.checked ? 'enable' : 'disable';
+            
+            try {
+                const response = await fetch('/api/cloud/controls/strategy', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        strategy_name: strategyName,
+                        action: action
+                    })
+                });
+                
+                const data = await response.json();
+                if (!data.success) {
+                    console.error('Error toggling strategy:', data.error);
+                }
+            } catch (error) {
+                console.error('Error toggling strategy:', error);
+            }
+        }
+        
+        // Update risk parameters
+        function updateRisk(value) {
+            document.getElementById('riskValue').textContent = value + '%';
+            
+            fetch('/api/cloud/controls/risk', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({max_risk_per_trade: value})
+            }).catch(error => console.error('Error updating risk:', error));
+        }
+        
+        function updatePortfolioRisk(value) {
+            document.getElementById('portfolioRiskValue').textContent = value + '%';
+            
+            fetch('/api/cloud/controls/risk', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({max_portfolio_risk: value})
+            }).catch(error => console.error('Error updating portfolio risk:', error));
+        }
+        
+        function updateMaxPos(value) {
+            document.getElementById('maxPosValue').textContent = value;
+            
+            fetch('/api/cloud/controls/risk', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({max_positions: value})
+            }).catch(error => console.error('Error updating max positions:', error));
+        }
+        
+        // Toggle controls visibility
+        function toggleControls() {
+            const controls = document.getElementById('tradingControls');
+            const icon = document.getElementById('controlsToggleIcon');
+            
+            if (controls.style.display === 'none') {
+                controls.style.display = 'block';
+                icon.textContent = '▼';
+            } else {
+                controls.style.display = 'none';
+                icon.textContent = '▶';
+            }
+        }
+        
+        // Auto-refresh cloud data
+        setInterval(loadCloudPerformance, 15000); // Every 15 seconds
+        setInterval(loadAPIUsage, 30000); // Every 30 seconds
+        
         document.addEventListener('DOMContentLoaded', () => {
+            // Load cloud data on page load
+            loadCloudPerformance();
+            loadAPIUsage();
           console.log('🚀 Dashboard DOM loaded, initializing...');
           
           // Initialize navigation system FIRST
