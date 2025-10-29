@@ -68,3 +68,4 @@ def test_console_errors():
 if __name__ == "__main__":
     success = test_console_errors()
     print(f"\n{'✅ SUCCESS' if success else '❌ FAILED'}: Console errors test")
+
