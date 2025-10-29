@@ -1,0 +1,30 @@
+[Unit]
+Description=AI Quant Agent Controller (Demo Account)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/quant_system_clean
+Environment=PORT=8081
+Environment=AGENT_DEMO_ACCOUNT_ID=101-004-30719775-008
+Environment=OANDA_ACCOUNT_ID=101-004-30719775-008
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/python3 dashboard/advanced_dashboard.py
+Restart=always
+RestartSec=5
+TimeoutStartSec=20
+
+# Resource limits suitable for f1-micro
+NoNewPrivileges=true
+MemoryAccounting=true
+CPUAccounting=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target
+
+
+

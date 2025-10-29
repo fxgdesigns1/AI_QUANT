@@ -8,3 +8,4 @@ echo "✅ Environment variables set:"
 echo "   OANDA_API_KEY: ${OANDA_API_KEY:0:10}..."
 echo "   OANDA_ENVIRONMENT: $OANDA_ENVIRONMENT"
 
+

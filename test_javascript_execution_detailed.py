@@ -95,3 +95,4 @@ def test_javascript_execution_detailed():
 if __name__ == "__main__":
     success = test_javascript_execution_detailed()
     print(f"\n{'✅ SUCCESS' if success else '❌ FAILED'}: JavaScript execution detailed test")
+

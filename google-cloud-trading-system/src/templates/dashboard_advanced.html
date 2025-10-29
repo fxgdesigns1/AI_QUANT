@@ -1677,19 +1677,57 @@
                 const grid = document.getElementById('signalsGrid');
                 if (grid) {
                     if (data.signals && data.signals.length > 0) {
-                        grid.innerHTML = data.signals.map(signal => `
-                            <div class="col-md-6 mb-3">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h5>${signal.instrument}</h5>
-                                        <p><strong>Type:</strong> ${signal.type}</p>
-                                        <p><strong>Entry:</strong> ${signal.entry_price}</p>
-                                        <p><strong>Stop Loss:</strong> ${signal.stop_loss}</p>
-                                        <p><strong>Take Profit:</strong> ${signal.take_profit}</p>
+                        grid.innerHTML = `
+                            <div class="col-12">
+                                <div class="trading-signals">
+                                    ${data.signals.map(signal => `
+                                    <div class="opportunity-card">
+                                        <div class="opportunity-header">
+                                            <div class="opportunity-title">
+                                                ${signal.direction === 'BUY' ? '🟢' : '🔴'} ${signal.instrument} ${signal.direction}
+                                            </div>
+                                            <div class="opportunity-quality">
+                                                ${signal.quality_score}/100
+                                            </div>
+                                        </div>
+                                        <div class="opportunity-details">
+                                            <div class="detail-row">
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Entry Price:</span>
+                                                    <span class="detail-value">${signal.entry_price}</span>
+                                                </div>
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Stop Loss:</span>
+                                                    <span class="detail-value">${signal.stop_loss}</span>
+                                                </div>
+                                            </div>
+                                            <div class="detail-row">
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Confidence:</span>
+                                                    <span class="detail-value" style="color: #ffffff;">${signal.quality_score}%</span>
+                                                </div>
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Strategy:</span>
+                                                    <span class="detail-value" style="color: #ffffff;">Scalping</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="opportunity-actions">
+                                            <button class="action-btn approve-btn" onclick="approveSignal('${signal.id}')">
+                                                ✔ Approve Trade
+                                            </button>
+                                            <button class="action-btn watch-btn" onclick="watchSignal('${signal.id}')">
+                                                👁️ Watch
+                                            </button>
+                                            <button class="action-btn hold-btn" onclick="holdSignal('${signal.id}')">
+                                                ❌ Hold
+                                            </button>
+                                        </div>
                                     </div>
+                                    `).join('')}
                                 </div>
                             </div>
-                        `).join('');
+                        `;
                     } else {
                         grid.innerHTML = '<div class="col-12"><div class="alert alert-info">No pending signals</div></div>';
                     }
@@ -1854,14 +1892,239 @@
             const content = document.getElementById('strategySwitcherContent');
             if (content) {
                 content.innerHTML = `
-                    <div class="card">
-                        <div class="card-body">
-                            <h5>Strategy Switcher</h5>
-                            <p>Switch between trading strategies...</p>
-                            <p><a href="/strategy-switcher" class="btn btn-primary">Open Strategy Switcher</a></p>
+                    <div style="padding: 20px;">
+                        <h3 style="color: #06d6a0; margin-bottom: 20px;">
+                            <i class="bi bi-shuffle me-2"></i>Universal Strategy Switcher
+                        </h3>
+                        
+                        <div id="strategySwitcherStatus" class="alert alert-info" style="display: none;">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <span id="strategySwitcherMessage">Loading strategies...</span>
+                        </div>
+                        
+                        <!-- Active Strategies -->
+                        <div class="card mb-4" style="background: #1a1a2e; border: 1px solid #06d6a0;">
+                            <div class="card-header" style="background: #16213e; border-bottom: 1px solid #06d6a0;">
+                                <h5 style="color: #06d6a0; margin: 0;">
+                                    <i class="bi bi-list-task me-2"></i>Active Strategies
+                                </h5>
+                            </div>
+                            <div class="card-body" id="activeStrategiesList">
+                                <div class="text-center" style="padding: 40px;">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p style="color: #999; margin-top: 10px;">Loading active strategies...</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- All Available Strategies -->
+                        <div class="card mb-4" style="background: #1a1a2e; border: 1px solid #8338ec;">
+                            <div class="card-header" style="background: #16213e; border-bottom: 1px solid #8338ec;">
+                                <h5 style="color: #8338ec; margin: 0;">
+                                    <i class="bi bi-list-ul me-2"></i>All Available Strategies
+                                </h5>
+                            </div>
+                            <div class="card-body" id="allStrategiesList">
+                                <div class="text-center" style="padding: 40px;">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p style="color: #999; margin-top: 10px;">Loading strategies...</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
+                
+                // Load strategies
+                await loadAllStrategies();
+                await loadActiveStrategies();
+            }
+        }
+        
+        async function loadAllStrategies() {
+            try {
+                const response = await fetch('/api/strategy-switcher/strategies');
+                const data = await response.json();
+                
+                const strategiesList = document.getElementById('allStrategiesList');
+                if (!strategiesList) return;
+                
+                if (data.success && data.strategies && data.strategies.length > 0) {
+                    const html = data.strategies.map(strategy => `
+                        <div class="card mb-3 strategy-card" style="background: #0f3460; border: 1px solid #8338ec;" data-strategy="${strategy.name}">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 style="color: #8338ec; margin-bottom: 10px;">
+                                            ${strategy.name}
+                                            ${strategy.enabled ? '<span class="badge bg-success ms-2">Enabled</span>' : '<span class="badge bg-secondary ms-2">Disabled</span>'}
+                                            ${strategy.locked ? '<span class="badge bg-warning ms-2">Locked</span>' : ''}
+                                        </h6>
+                                        <div style="color: #999; font-size: 0.9em; margin-bottom: 10px;">
+                                            <strong>Instruments:</strong> ${strategy.instruments ? strategy.instruments.join(', ') : 'N/A'}
+                                        </div>
+                                        <div style="color: #999; font-size: 0.85em;">
+                                            <strong>Account:</strong> ${strategy.account || 'N/A'} |
+                                            <strong>Max Trades/Day:</strong> ${strategy.parameters?.max_trades_per_day || 'N/A'} |
+                                            <strong>Max Positions:</strong> ${strategy.parameters?.max_positions || 'N/A'}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-sm btn-primary me-2" onclick="editStrategyParams('${strategy.name}')">
+                                            <i class="bi bi-gear"></i> Modify Params
+                                        </button>
+                                        <button class="btn btn-sm btn-${strategy.enabled ? 'warning' : 'success'}" onclick="toggleStrategy('${strategy.name}', ${strategy.enabled})">
+                                            <i class="bi bi-toggle-${strategy.enabled ? 'on' : 'off'}"></i> ${strategy.enabled ? 'Disable' : 'Enable'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    strategiesList.innerHTML = html;
+                } else {
+                    strategiesList.innerHTML = '<p style="color: #999; text-align: center;">No strategies found</p>';
+                }
+            } catch (error) {
+                console.error('Error loading strategies:', error);
+                const strategiesList = document.getElementById('allStrategiesList');
+                if (strategiesList) {
+                    strategiesList.innerHTML = '<p style="color: #d32f2f; text-align: center;">Error loading strategies</p>';
+                }
+            }
+        }
+        
+        async function loadActiveStrategies() {
+            try {
+                const response = await fetch('/api/strategy-switcher/active');
+                const data = await response.json();
+                
+                const activeList = document.getElementById('activeStrategiesList');
+                if (!activeList) return;
+                
+                if (data.success && data.active_assignments && data.active_assignments.length > 0) {
+                    const html = data.active_assignments.map(assignment => `
+                        <div class="card mb-3" style="background: #0f3460; border: 1px solid #06d6a0;">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 style="color: #06d6a0; margin-bottom: 10px;">${assignment.account_name}</h6>
+                                        <div style="color: #999; font-size: 0.9em;">
+                                            <strong>Account ID:</strong> ${assignment.account_id}<br>
+                                            <strong>Strategy:</strong> ${assignment.strategy}<br>
+                                            <strong>Instruments:</strong> ${assignment.instruments ? assignment.instruments.join(', ') : 'N/A'}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-sm btn-warning" onclick="switchAccountStrategy('${assignment.account_id}', '${assignment.strategy}')">
+                                            <i class="bi bi-arrow-repeat"></i> Change Strategy
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    activeList.innerHTML = html;
+                } else {
+                    activeList.innerHTML = '<p style="color: #999; text-align: center;">No active strategies</p>';
+                }
+            } catch (error) {
+                console.error('Error loading active strategies:', error);
+                const activeList = document.getElementById('activeStrategiesList');
+                if (activeList) {
+                    activeList.innerHTML = '<p style="color: #d32f2f; text-align: center;">Error loading active strategies</p>';
+                }
+            }
+        }
+        
+        async function editStrategyParams(strategyName) {
+            alert(`Modify parameters for ${strategyName}\n\nThis will open the parameter editing modal. (Implementation pending)`);
+        }
+        
+        async function toggleStrategy(strategyName, currentlyEnabled) {
+            if (!confirm(`Are you sure you want to ${currentlyEnabled ? 'disable' : 'enable'} strategy "${strategyName}"?`)) {
+                return;
+            }
+            
+            try {
+                const endpoint = currentlyEnabled ? '/api/strategy-switcher/disable' : '/api/strategy-switcher/enable';
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ strategy_name: strategyName })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStrategyMessage(`Strategy "${strategyName}" ${currentlyEnabled ? 'disabled' : 'enabled'} successfully`, 'success');
+                    // Reload strategies
+                    await loadAllStrategies();
+                } else {
+                    showStrategyMessage(`Failed to ${currentlyEnabled ? 'disable' : 'enable'} strategy: ${data.error}`, 'danger');
+                }
+            } catch (error) {
+                console.error('Error toggling strategy:', error);
+                showStrategyMessage('Error toggling strategy', 'danger');
+            }
+        }
+        
+        async function switchAccountStrategy(accountId, currentStrategy) {
+            const newStrategy = prompt(`Enter new strategy name for account ${accountId}\n\nCurrent strategy: ${currentStrategy}\n\nWarning: This will require a system restart!`);
+            
+            if (!newStrategy) return;
+            
+            if (!confirm(`Switch account ${accountId} from "${currentStrategy}" to "${newStrategy}"?\n\nWARNING: This will restart the trading system!`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/strategy-switcher/switch-strategy', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        account_id: accountId,
+                        new_strategy: newStrategy
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStrategyMessage(`Strategy switched successfully. System restart required.`, 'warning');
+                    // Reload active strategies
+                    await loadActiveStrategies();
+                } else {
+                    showStrategyMessage(`Failed to switch strategy: ${data.error}`, 'danger');
+                }
+            } catch (error) {
+                console.error('Error switching strategy:', error);
+                showStrategyMessage('Error switching strategy', 'danger');
+            }
+        }
+        
+        function showStrategyMessage(message, type) {
+            const statusDiv = document.getElementById('strategySwitcherStatus');
+            const messageSpan = document.getElementById('strategySwitcherMessage');
+            
+            if (statusDiv && messageSpan) {
+                statusDiv.className = `alert alert-${type}`;
+                messageSpan.textContent = message;
+                statusDiv.style.display = 'block';
+                
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 5000);
             }
         }
 
@@ -2370,81 +2633,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script>
-        // Navigation System (Like Crypto Dashboard)
-        document.addEventListener('DOMContentLoaded', function() {
-            // Handle sidebar navigation
-            const navLinks = document.querySelectorAll('.sidebar .nav-link[data-section]');
-            const contentSections = document.querySelectorAll('.content-section');
-            
-            navLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    // Remove active class from all nav links
-                    navLinks.forEach(nav => nav.classList.remove('active'));
-                    
-                    // Add active class to clicked link
-                    this.classList.add('active');
-                    
-                    // Hide all content sections
-                    contentSections.forEach(section => section.classList.remove('active'));
-                    
-                    // Show selected section
-                    const targetSection = this.getAttribute('data-section');
-                    const section = document.getElementById(targetSection);
-                    if (section) {
-                        section.classList.add('active');
-                        
-                        // Load section data when navigated to (lazy loading)
-                        const loaders = {
-                            'accounts': loadAccountsSection,
-                            'strategies': loadStrategiesSection,
-                            'positions': loadPositionsSection,
-                            'signals': loadSignalsSection,
-                            'news': loadNewsSection,
-                            'trade-manager': loadTradeManagerSection,
-                            'system-status': loadSystemStatusSection,
-                            'config': loadConfigSection,
-                            'insights': loadInsightsSection,
-                            'strategy-switcher': loadStrategySwitcherSection,
-                            'ai-copilot': loadAICopilotSection,
-                            'reports': loadReportsSection,
-                            'performance': loadPerformanceSection
-                        };
-                        
-                        if (loaders[targetSection]) {
-                            loaders[targetSection]();
-                        }
-                    }
-                });
-            });
-            
-            // Handle refresh data button
-            const refreshBtn = document.getElementById('refreshData');
-            if (refreshBtn) {
-                refreshBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    // Trigger data refresh
-                    if (typeof loadDashboardData === 'function') {
-                        loadDashboardData();
-                    }
-                    // Show toast notification
-                    if (typeof showInfoToast === 'function') {
-                        showInfoToast('🔄 Refreshing dashboard data...');
-                    }
-                });
-            }
-
-            // Handle hash-based navigation on page load
-            const hash = window.location.hash.substring(1); // Remove #
-            if (hash) {
-                const link = document.querySelector(`[data-section="${hash}"]`);
-                if (link) {
-                    link.click();
-                }
-            }
-        });
-
         // Chart Management
         let priceChart = null;
         let currentInstrument = 'EUR_USD';
@@ -2578,12 +2766,90 @@
         
         document.addEventListener('DOMContentLoaded', () => {
           console.log('🚀 Dashboard DOM loaded, initializing...');
+          
+          // Initialize navigation system FIRST
+          initNavigation();
+          
+          // Then initialize dashboard
           initDashboard();
         });
+        
+        // Initialize navigation system
+        function initNavigation() {
+            console.log('🔗 Initializing navigation system...');
+            
+            // Handle sidebar navigation
+            const navLinks = document.querySelectorAll('.sidebar .nav-link[data-section]');
+            const contentSections = document.querySelectorAll('.content-section');
+            
+            console.log('Found nav links:', navLinks.length);
+            console.log('Found content sections:', contentSections.length);
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('Navigation clicked:', this.getAttribute('data-section'));
+                    
+                    // Remove active class from all nav links
+                    navLinks.forEach(nav => nav.classList.remove('active'));
+                    
+                    // Add active class to clicked link
+                    this.classList.add('active');
+                    
+                    // Hide all content sections
+                    contentSections.forEach(section => section.classList.remove('active'));
+                    
+                    // Show selected section
+                    const targetSection = this.getAttribute('data-section');
+                    const section = document.getElementById(targetSection);
+                    console.log('Target section:', targetSection, 'Found:', section !== null);
+                    
+                    if (section) {
+                        section.classList.add('active');
+                        console.log('Section activated:', targetSection);
+                        
+                        // Load section data when navigated to (lazy loading)
+                        const loaders = {
+                            'accounts': typeof loadAccountsSection !== 'undefined' ? loadAccountsSection : null,
+                            'strategies': typeof loadStrategiesSection !== 'undefined' ? loadStrategiesSection : null,
+                            'positions': typeof loadPositionsSection !== 'undefined' ? loadPositionsSection : null,
+                            'signals': typeof loadSignalsSection !== 'undefined' ? loadSignalsSection : null,
+                            'news': typeof loadNewsSection !== 'undefined' ? loadNewsSection : null,
+                            'trade-manager': typeof loadTradeManagerSection !== 'undefined' ? loadTradeManagerSection : null,
+                            'system-status': typeof loadSystemStatusSection !== 'undefined' ? loadSystemStatusSection : null,
+                            'config': typeof loadConfigSection !== 'undefined' ? loadConfigSection : null,
+                            'insights': typeof loadInsightsSection !== 'undefined' ? loadInsightsSection : null,
+                            'strategy-switcher': typeof loadStrategySwitcherSection !== 'undefined' ? loadStrategySwitcherSection : null,
+                            'ai-copilot': typeof loadAICopilotSection !== 'undefined' ? loadAICopilotSection : null,
+                            'reports': typeof loadReportsSection !== 'undefined' ? loadReportsSection : null,
+                            'performance': typeof loadPerformanceSection !== 'undefined' ? loadPerformanceSection : null
+                        };
+                        
+                        if (loaders[targetSection]) {
+                            console.log('Loading section data for:', targetSection);
+                            loaders[targetSection]();
+                        }
+                    }
+                });
+            });
+            
+            // Handle hash-based navigation on page load
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                const link = document.querySelector(`[data-section="${hash}"]`);
+                if (link) {
+                    console.log('Triggering initial navigation to:', hash);
+                    link.click();
+                }
+            }
+        }
         
         // Initialize dashboard data
         function initDashboard() {
             console.log('🚀 Initializing dashboard...');
+            
+            // Test if JavaScript is working at all
+            console.log('🎯 JAVASCRIPT IS WORKING - TEST MESSAGE');
             
             // Initialize AI Assistant
             initAIAssistant();
@@ -2594,7 +2860,9 @@
             loadRiskMetrics();
             loadNewsData();
             loadAccountDetails();
+            console.log('🎯 About to call loadTradingSignals...');
             loadTradingSignals();
+            console.log('🎯 loadTradingSignals called');
             loadInsights();
             loadTradeIdeas();
             
@@ -3109,235 +3377,122 @@
             });
         }
         
-        // Initialize AI Assistant
+        // Initialize AI Assistant (removed duplicate - handled by separate script below)
         function initAIAssistant() {
-            console.log('🤖 Initializing AI Assistant...');
-            
-            // Create AI assistant panel if it doesn't exist
-            if (!document.querySelector('.ai-assistant-panel')) {
-                const panel = document.createElement('div');
-                panel.className = 'ai-assistant-panel';
-                panel.innerHTML = `
-                    <div class="ai-assistant-header">
-                        <div class="ai-assistant-title">🤖 AI Assistant</div>
-                        <div class="ai-mode-badge">Live</div>
-                    </div>
-                    <div class="chat-messages"></div>
-                    <div class="chat-input">
-                        <textarea placeholder="Ask or use /commands (actions need Confirm)" class="ai-chat-input"></textarea>
-                        <button class="send-button">Send</button>
-                    </div>
-                `;
-                document.body.appendChild(panel);
-                
-                // Add event listeners
-                const input = panel.querySelector('.ai-chat-input');
-                const sendButton = panel.querySelector('.send-button');
-                const messages = panel.querySelector('.chat-messages');
-                
-                function sendMessage() {
-                    const message = input.value.trim();
-                    if (!message) return;
-                    
-                    // Add user message
-                    const userMsg = document.createElement('div');
-                    userMsg.className = 'message user-message';
-                    userMsg.textContent = message;
-                    messages.appendChild(userMsg);
-                    
-                    // Clear input
-                    input.value = '';
-                    
-                    // Show typing indicator
-                    const typingMsg = document.createElement('div');
-                    typingMsg.className = 'message ai-message typing';
-                    typingMsg.textContent = '🤖 AI is thinking...';
-                    messages.appendChild(typingMsg);
-                    messages.scrollTop = messages.scrollHeight;
-                    
-                    // Call real AI assistant API
-                    fetch('/ai/interpret', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ text: message })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        // Remove typing indicator
-                        messages.removeChild(typingMsg);
-                        
-                        // Add AI response
-                        const aiMsg = document.createElement('div');
-                        aiMsg.className = 'message ai-message';
-                        aiMsg.innerHTML = data.reply.replace(/\n/g, '<br>');
-                        messages.appendChild(aiMsg);
-                        
-                        // Handle confirmation flow
-                        if (data.requires_confirmation && data.confirmation_id) {
-                            const confirmDiv = document.createElement('div');
-                            confirmDiv.className = 'confirmation-panel';
-                            confirmDiv.innerHTML = `
-                                <div class="confirmation-preview">
-                                    <strong>Preview:</strong> ${data.preview.summary}
-                                </div>
-                                <div class="confirmation-buttons">
-                                    <button class="confirm-btn" data-id="${data.confirmation_id}">Confirm</button>
-                                    <button class="cancel-btn" data-id="${data.confirmation_id}">Cancel</button>
-                                </div>
-                            `;
-                            messages.appendChild(confirmDiv);
-                            
-                            // Add event listeners
-                            const confirmBtn = confirmDiv.querySelector('.confirm-btn');
-                            const cancelBtn = confirmDiv.querySelector('.cancel-btn');
-                            
-                            confirmBtn.addEventListener('click', async () => {
-                                try {
-                                    const response = await fetch('/ai/confirm', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ 
-                                            confirmation_id: data.confirmation_id, 
-                                            confirm: true 
-                                        })
-                                    });
-                                    const result = await response.json();
-                                    
-                                    const resultMsg = document.createElement('div');
-                                    resultMsg.className = 'message ai-message result';
-                                    resultMsg.textContent = `Result: ${result.message || result.status}`;
-                                    messages.appendChild(resultMsg);
-                                    
-                                } catch (error) {
-                                    const errorMsg = document.createElement('div');
-                                    errorMsg.className = 'message ai-message error';
-                                    errorMsg.textContent = `Error: ${error.message}`;
-                                    messages.appendChild(errorMsg);
-                                }
-                                
-                                // Remove confirmation panel
-                                messages.removeChild(confirmDiv);
-                                messages.scrollTop = messages.scrollHeight;
-                            });
-                            
-                            cancelBtn.addEventListener('click', async () => {
-                                try {
-                                    await fetch('/ai/confirm', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ 
-                                            confirmation_id: data.confirmation_id, 
-                                            confirm: false 
-                                        })
-                                    });
-                                    
-                                    const cancelMsg = document.createElement('div');
-                                    cancelMsg.className = 'message ai-message';
-                                    cancelMsg.textContent = 'Action cancelled';
-                                    messages.appendChild(cancelMsg);
-                                    
-                                } catch (error) {
-                                    console.error('Cancel error:', error);
-                                }
-                                
-                                // Remove confirmation panel
-                                messages.removeChild(confirmDiv);
-                                messages.scrollTop = messages.scrollHeight;
-                            });
-                        }
-                        
-                        // Scroll to bottom
-                        messages.scrollTop = messages.scrollHeight;
-                    })
-                    .catch(error => {
-                        // Remove typing indicator
-                        messages.removeChild(typingMsg);
-                        
-                        // Add error message
-                        const errorMsg = document.createElement('div');
-                        errorMsg.className = 'message ai-message error';
-                        errorMsg.textContent = 'Sorry, I encountered an error. Please try again.';
-                        messages.appendChild(errorMsg);
-                        
-                        // Scroll to bottom
-                        messages.scrollTop = messages.scrollHeight;
-                    });
-                }
-                
-                sendButton.addEventListener('click', sendMessage);
-                input.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        sendMessage();
-                    }
-                });
-            }
-        }
-        
-        // Generate AI response
-        function generateAIResponse(message) {
-            const responses = [
-                "📊 Market Analysis: Current market conditions show moderate volatility. EUR/USD is trending upward with strong support at 1.0850. Consider monitoring key resistance levels at 1.0950.",
-                "📰 News Impact: Recent economic data shows mixed signals. The Federal Reserve's stance on interest rates continues to influence market sentiment.",
-                "⚠️ Risk Management: Current portfolio risk is within acceptable limits. Ensure proper position sizing and maintain stop-loss orders.",
-                "🎯 Trading Strategy: The system is currently monitoring multiple timeframes for entry signals. Gold scalping strategy shows promising setups on 5-minute charts.",
-                "🔧 System Status: All trading systems are operational. Data feeds are live and stable. Risk management protocols are active.",
-                "💡 Trade Ideas: Based on current market analysis, consider monitoring EUR/USD for potential breakout opportunities above 1.1750.",
-                "📈 Performance: System is performing within expected parameters. All risk metrics are green and systems are optimized for current market conditions."
-            ];
-            
-            return responses[Math.floor(Math.random() * responses.length)];
+            console.log('🤖 AI Assistant handled by separate script');
         }
         
         // Load trading signals
         async function loadTradingSignals() {
+            console.log('🎯 loadTradingSignals() called - STARTING');
             try {
                 console.log('🎯 Loading trading signals...');
-                const response = await fetch('/tasks/full_scan', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
+                const response = await fetch('/api/signals/pending');
+                console.log('🎯 Response received:', response.status);
                 
                 if (response.ok) {
                     const data = await response.json();
-                    if (data.ok) {
+                    console.log('🎯 Data received:', data);
+                    if (data.signals && data.signals.length > 0) {
+                        console.log('🎯 Calling updateTradingSignals with', data.signals.length, 'signals');
                         updateTradingSignals(data);
+                    } else {
+                        console.log('🎯 No signals in data');
                     }
+                } else {
+                    console.log('❌ Response not ok:', response.status);
                 }
             } catch (error) {
                 console.error('❌ Trading signals error:', error);
             }
+            console.log('🎯 loadTradingSignals() finished');
         }
         
         // Update trading signals display
-        function updateTradingSignals(signals) {
+        function updateTradingSignals(data) {
             console.log('🎯 Updating trading signals...');
-            const signalsContainer = document.getElementById('activeTradesData');
+            const signalsContainer = document.getElementById('tradingSignals');
             if (!signalsContainer) return;
+            
+            const signals = data.signals || [];
+            if (signals.length === 0) {
+                signalsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #666;">
+                        <div style="font-size: 18px; margin-bottom: 10px;">📊</div>
+                        <div>No active signals</div>
+                    </div>
+                `;
+                return;
+            }
             
             signalsContainer.innerHTML = `
                 <div class="trading-signals">
-                    <div class="signal-item">
-                        <div class="signal-pair">EUR/USD</div>
-                        <div class="signal-action">BUY</div>
-                        <div class="signal-confidence">85%</div>
+                    ${signals.map(signal => `
+                    <div class="opportunity-card">
+                        <div class="opportunity-header">
+                            <div class="opportunity-title">
+                                ${signal.direction === 'BUY' ? '🟢' : '🔴'} ${signal.instrument} ${signal.direction}
+                            </div>
+                            <div class="opportunity-quality">
+                                ${signal.quality_score}/100
+                            </div>
+                        </div>
+                        <div class="opportunity-details">
+                            <div class="detail-row">
+                                <div class="detail-item">
+                                    <span class="detail-label">Entry Price:</span>
+                                    <span class="detail-value">${signal.entry_price}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Stop Loss:</span>
+                                    <span class="detail-value">${signal.stop_loss}</span>
+                                </div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-item">
+                                    <span class="detail-label">Confidence:</span>
+                                    <span class="detail-value" style="color: #ffffff;">${signal.quality_score}%</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Strategy:</span>
+                                    <span class="detail-value" style="color: #ffffff;">Scalping</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="opportunity-actions">
+                            <button class="action-btn approve-btn" onclick="approveSignal('${signal.id}')">
+                                ✔ Approve Trade
+                            </button>
+                            <button class="action-btn watch-btn" onclick="watchSignal('${signal.id}')">
+                                👁️ Watch
+                            </button>
+                            <button class="action-btn hold-btn" onclick="holdSignal('${signal.id}')">
+                                ❌ Hold
+                            </button>
+                        </div>
                     </div>
-                    <div class="signal-item">
-                        <div class="signal-pair">XAU/USD</div>
-                        <div class="signal-action">SELL</div>
-                        <div class="signal-confidence">78%</div>
-                    </div>
-                    <div class="signal-item">
-                        <div class="signal-pair">GBP/USD</div>
-                        <div class="signal-action">HOLD</div>
-                        <div class="signal-confidence">92%</div>
-                    </div>
+                    `).join('')}
                 </div>
             `;
+        }
+
+        // Signal action functions
+        function approveSignal(signalId) {
+            console.log('✅ Approving signal:', signalId);
+            // TODO: Implement signal approval logic
+            alert(`Signal ${signalId} approved!`);
+        }
+
+        function watchSignal(signalId) {
+            console.log('👁️ Watching signal:', signalId);
+            // TODO: Implement signal watch logic
+            alert(`Signal ${signalId} added to watchlist!`);
+        }
+
+        function holdSignal(signalId) {
+            console.log('❌ Holding signal:', signalId);
+            // TODO: Implement signal hold logic
+            alert(`Signal ${signalId} held!`);
         }
 
         // Handle slash commands
@@ -4446,39 +4601,18 @@
         // Load Daily Report
         async function loadDailyReport() {
             try {
-                const response = await fetch('/api/reports');
+                const response = await fetch('/api/daily-report');
                 const data = await response.json();
                 
-                if (data.status === 'success' && data.reports.length > 0) {
-                    displayDailyReport(data.reports[0]);
+                if (data.status === 'success') {
+                    displayDailyReport(data.report);
                 } else {
-                    // Show sample data if no reports available
-                    const sampleReport = {
-                        current_time: new Date().toLocaleTimeString(),
-                        session_status: "London Session",
-                        next_session: "London/NY Overlap (2:00 PM)",
-                        portfolio_summary: {
-                            total_balance: 0,
-                            open_positions: 0,
-                            system_status: "🟢 Online"
-                        },
-                        trading_summary: {
-                            total_trades: 0,
-                            net_pl: 0.0,
-                            daily_return_pct: 0,
-                            win_rate: 0.0
-                        },
-                        daily_targets: {
-                            progress_pct: 0,
-                            daily_target: 700
-                        },
-                        market_conditions: {
-                            risk_level: "medium",
-                            volatility: "moderate",
-                            trade_phase: "London Session"
-                        }
-                    };
-                    displayDailyReport(sampleReport);
+                    document.getElementById('dailyReportContent').innerHTML = `
+                        <div style="text-align: center; padding: 20px; color: #ef476f;">
+                            <div style="font-size: 18px; margin-bottom: 10px;">❌</div>
+                            <div>Error loading daily report</div>
+                        </div>
+                    `;
                 }
             } catch (error) {
                 console.error('Failed to load daily report:', error);
@@ -4558,49 +4692,18 @@
         // Load Weekly Roadmap
         async function loadWeeklyRoadmap() {
             try {
-                const response = await fetch('/api/roadmap');
+                const response = await fetch('/api/weekly-roadmap');
                 const data = await response.json();
                 
-                if (data.status === 'success' && Object.keys(data.roadmap).length > 0) {
+                if (data.status === 'success') {
                     displayWeeklyRoadmap(data.roadmap);
                 } else {
-                    // Show sample data if no roadmap available
-                    const sampleRoadmap = {
-                        week_info: {
-                            current_day: "Monday",
-                            days_passed: 1,
-                            days_remaining: 6,
-                            week_start: "2025-10-27",
-                            week_end: "2025-11-02",
-                            week_progress_pct: 14.3
-                        },
-                        targets: {
-                            weekly_target: 2500,
-                            daily_target: 700,
-                            current_progress: 0.0,
-                            weekly_progress_pct: 0.0,
-                            on_track: false
-                        },
-                        strategy_focus: {
-                            primary_pairs: ["EUR/USD", "GBP/USD", "XAU/USD"],
-                            max_daily_trades: 15,
-                            max_concurrent_positions: 5,
-                            risk_level: "Medium"
-                        },
-                        performance_metrics: {
-                            target_win_rate: 70,
-                            target_daily_return: 0.5,
-                            risk_per_trade: 1.0,
-                            max_drawdown: 2.0
-                        },
-                        weekly_goals: [
-                            "Achieve 2% minimum weekly return",
-                            "Maintain 70%+ win rate",
-                            "Complete 5+ high-quality setups",
-                            "Stay within risk parameters"
-                        ]
-                    };
-                    displayWeeklyRoadmap(sampleRoadmap);
+                    document.getElementById('weeklyRoadmapContent').innerHTML = `
+                        <div style="text-align: center; padding: 20px; color: #ef476f;">
+                            <div style="font-size: 18px; margin-bottom: 10px;">❌</div>
+                            <div>Error loading weekly roadmap</div>
+                        </div>
+                    `;
                 }
             } catch (error) {
                 console.error('Failed to load weekly roadmap:', error);

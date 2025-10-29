@@ -1677,19 +1677,57 @@
                 const grid = document.getElementById('signalsGrid');
                 if (grid) {
                     if (data.signals && data.signals.length > 0) {
-                        grid.innerHTML = data.signals.map(signal => `
-                            <div class="col-md-6 mb-3">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h5>${signal.instrument}</h5>
-                                        <p><strong>Type:</strong> ${signal.type}</p>
-                                        <p><strong>Entry:</strong> ${signal.entry_price}</p>
-                                        <p><strong>Stop Loss:</strong> ${signal.stop_loss}</p>
-                                        <p><strong>Take Profit:</strong> ${signal.take_profit}</p>
+                        grid.innerHTML = `
+                            <div class="col-12">
+                                <div class="trading-signals">
+                                    ${data.signals.map(signal => `
+                                    <div class="opportunity-card">
+                                        <div class="opportunity-header">
+                                            <div class="opportunity-title">
+                                                ${signal.direction === 'BUY' ? '🟢' : '🔴'} ${signal.instrument} ${signal.direction}
+                                            </div>
+                                            <div class="opportunity-quality">
+                                                ${signal.quality_score}/100
+                                            </div>
+                                        </div>
+                                        <div class="opportunity-details">
+                                            <div class="detail-row">
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Entry Price:</span>
+                                                    <span class="detail-value">${signal.entry_price}</span>
+                                                </div>
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Stop Loss:</span>
+                                                    <span class="detail-value">${signal.stop_loss}</span>
+                                                </div>
+                                            </div>
+                                            <div class="detail-row">
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Confidence:</span>
+                                                    <span class="detail-value" style="color: #ffffff;">${signal.quality_score}%</span>
+                                                </div>
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Strategy:</span>
+                                                    <span class="detail-value" style="color: #ffffff;">Scalping</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="opportunity-actions">
+                                            <button class="action-btn approve-btn" onclick="approveSignal('${signal.id}')">
+                                                ✔ Approve Trade
+                                            </button>
+                                            <button class="action-btn watch-btn" onclick="watchSignal('${signal.id}')">
+                                                👁️ Watch
+                                            </button>
+                                            <button class="action-btn hold-btn" onclick="holdSignal('${signal.id}')">
+                                                ❌ Hold
+                                            </button>
+                                        </div>
                                     </div>
+                                    `).join('')}
                                 </div>
                             </div>
-                        `).join('');
+                        `;
                     } else {
                         grid.innerHTML = '<div class="col-12"><div class="alert alert-info">No pending signals</div></div>';
                     }
@@ -3390,14 +3428,71 @@
             signalsContainer.innerHTML = `
                 <div class="trading-signals">
                     ${signals.map(signal => `
-                    <div class="signal-item">
-                            <div class="signal-pair">${signal.instrument}</div>
-                            <div class="signal-action">${signal.direction}</div>
-                            <div class="signal-confidence">${signal.quality_score}%</div>
+                    <div class="opportunity-card">
+                        <div class="opportunity-header">
+                            <div class="opportunity-title">
+                                ${signal.direction === 'BUY' ? '🟢' : '🔴'} ${signal.instrument} ${signal.direction}
+                            </div>
+                            <div class="opportunity-quality">
+                                ${signal.quality_score}/100
+                            </div>
+                        </div>
+                        <div class="opportunity-details">
+                            <div class="detail-row">
+                                <div class="detail-item">
+                                    <span class="detail-label">Entry Price:</span>
+                                    <span class="detail-value">${signal.entry_price}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Stop Loss:</span>
+                                    <span class="detail-value">${signal.stop_loss}</span>
+                                </div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-item">
+                                    <span class="detail-label">Confidence:</span>
+                                    <span class="detail-value" style="color: #ffffff;">${signal.quality_score}%</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Strategy:</span>
+                                    <span class="detail-value" style="color: #ffffff;">Scalping</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="opportunity-actions">
+                            <button class="action-btn approve-btn" onclick="approveSignal('${signal.id}')">
+                                ✔ Approve Trade
+                            </button>
+                            <button class="action-btn watch-btn" onclick="watchSignal('${signal.id}')">
+                                👁️ Watch
+                            </button>
+                            <button class="action-btn hold-btn" onclick="holdSignal('${signal.id}')">
+                                ❌ Hold
+                            </button>
+                        </div>
                     </div>
                     `).join('')}
                 </div>
             `;
+        }
+
+        // Signal action functions
+        function approveSignal(signalId) {
+            console.log('✅ Approving signal:', signalId);
+            // TODO: Implement signal approval logic
+            alert(`Signal ${signalId} approved!`);
+        }
+
+        function watchSignal(signalId) {
+            console.log('👁️ Watching signal:', signalId);
+            // TODO: Implement signal watch logic
+            alert(`Signal ${signalId} added to watchlist!`);
+        }
+
+        function holdSignal(signalId) {
+            console.log('❌ Holding signal:', signalId);
+            // TODO: Implement signal hold logic
+            alert(`Signal ${signalId} held!`);
         }
 
         // Handle slash commands

@@ -19,6 +19,15 @@ from dataclasses import dataclass, asdict
 import hashlib
 import aiohttp
 
+# Import cloud system and API tracking
+try:
+    from api_usage_tracker import get_usage_tracker
+    from cloud_system_client import get_cloud_client
+except ImportError:
+    # Fallback for relative imports
+    from .api_usage_tracker import get_usage_tracker
+    from .cloud_system_client import get_cloud_client
+
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -26,6 +35,20 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'your-secret-key-here')
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
+try:
+    from .agent_controller import AgentController  # type: ignore
+except Exception:
+    # Fallback for direct execution
+    from agent_controller import AgentController  # type: ignore
+
+# Initialize lightweight controller bound to single demo account
+AGENT_DEMO_ACCOUNT_ID = os.getenv('AGENT_DEMO_ACCOUNT_ID', os.getenv('OANDA_ACCOUNT_ID', '101-004-30719775-008'))
+agent_controller = AgentController(account_id=AGENT_DEMO_ACCOUNT_ID)
+agent_controller.start()
+
+# Initialize API tracker and cloud client
+usage_tracker = get_usage_tracker()
+cloud_client = get_cloud_client()
 
 # Load configuration
 def load_config():
@@ -883,6 +906,24 @@ def get_validation_log():
 def get_risk_metrics():
     """Get current risk metrics"""
     return jsonify(dashboard_manager.portfolio_risk_metrics)
+
+@app.route('/api/agent_metrics')
+def get_agent_metrics():
+    """Return controller health/metrics for dashboard and telemetry."""
+    try:
+        metrics = agent_controller.get_metrics()
+        # Broadcast lightweight update
+        try:
+            socketio.emit('agent_metrics_update', metrics)
+        except Exception:
+            pass
+        return jsonify({
+            'status': 'success',
+            'metrics': metrics
+        })
+    except Exception as e:
+        logger.error(f"Error getting agent metrics: {e}")
+        return jsonify({'status': 'error', 'error': str(e)}), 500
 
 @app.route('/api/opportunities')
 def get_opportunities():
@@ -2130,6 +2171,11 @@ def update_dashboard():
                         dashboard_manager.system_alerts[-10:])
             socketio.emit('risk_update',
                         dashboard_manager.portfolio_risk_metrics)
+            # Agent metrics update
+            try:
+                socketio.emit('agent_metrics_update', agent_controller.get_metrics())
+            except Exception:
+                pass
             
             dashboard_manager.last_update = datetime.now()
             
@@ -2142,6 +2188,121 @@ def update_dashboard():
         except Exception as e:
             logger.error(f"❌ Dashboard update error: {e}")
             time.sleep(30)
+
+# ===============================================
+# NEW: CLOUD SYSTEM INTEGRATION ENDPOINTS
+# ===============================================
+
+@app.route('/api/cloud/performance')
+def get_cloud_performance():
+    """Get cloud system performance metrics"""
+    try:
+        metrics = cloud_client.get_performance_metrics()
+        return jsonify(metrics)
+    except Exception as e:
+        logger.error(f"❌ Cloud performance error: {e}")
+        return jsonify({'status': 'error', 'error': str(e)}), 500
+
+@app.route('/api/cloud/status')
+def get_cloud_status():
+    """Get cloud system health and status"""
+    try:
+        status = cloud_client.health_check()
+        connection = cloud_client.get_connection_status()
+        return jsonify({
+            'health': status,
+            'connection': connection
+        })
+    except Exception as e:
+        logger.error(f"❌ Cloud status error: {e}")
+        return jsonify({'status': 'error', 'error': str(e)}), 500
+
+@app.route('/api/cloud/controls')
+def get_cloud_controls():
+    """Get current control states from cloud system"""
+    try:
+        status = cloud_client.get_trading_status()
+        return jsonify(status)
+    except Exception as e:
+        logger.error(f"❌ Cloud controls error: {e}")
+        return jsonify({'status': 'error', 'error': str(e)}), 500
+
+@app.route('/api/cloud/controls/toggle', methods=['POST'])
+def toggle_cloud_trading():
+    """Toggle master trading on/off for cloud system"""
+    try:
+        data = request.json
+        action = data.get('action', 'toggle')
+        result = cloud_client.send_control_action('master-toggle', {'action': action})
+        return jsonify(result)
+    except Exception as e:
+        logger.error(f"❌ Toggle trading error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/cloud/controls/strategy', methods=['POST'])
+def toggle_cloud_strategy():
+    """Enable/disable specific strategy on cloud system"""
+    try:
+        data = request.json
+        strategy_name = data.get('strategy_name')
+        action = data.get('action', 'toggle')
+        result = cloud_client.send_control_action('strategy-toggle', {
+            'strategy_name': strategy_name,
+            'action': action
+        })
+        return jsonify(result)
+    except Exception as e:
+        logger.error(f"❌ Toggle strategy error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/cloud/controls/risk', methods=['POST'])
+def update_cloud_risk():
+    """Update risk parameters on cloud system"""
+    try:
+        data = request.json
+        result = cloud_client.send_control_action('update-risk', data)
+        return jsonify(result)
+    except Exception as e:
+        logger.error(f"❌ Update risk error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/cloud/controls/approve', methods=['POST'])
+def approve_cloud_trade():
+    """Approve/reject manual trades on cloud system"""
+    try:
+        data = request.json
+        opportunity_id = data.get('opportunity_id')
+        action = data.get('action', 'approve')
+        result = cloud_client.send_control_action('approve-trade', {
+            'opportunity_id': opportunity_id,
+            'action': action
+        })
+        return jsonify(result)
+    except Exception as e:
+        logger.error(f"❌ Approve trade error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/usage/stats')
+def get_api_usage_stats():
+    """Get API usage statistics for all APIs"""
+    try:
+        stats = usage_tracker.get_stats()
+        return jsonify(stats)
+    except Exception as e:
+        logger.error(f"❌ API usage stats error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/usage/track/<api_name>', methods=['POST'])
+def track_api_call(api_name):
+    """Track an API call for monitoring"""
+    try:
+        data = request.json
+        count = data.get('count', 1)
+        usage_tracker.track_call(api_name, count)
+        return jsonify({'success': True, 'count': count})
+    except Exception as e:
+        logger.error(f"❌ Track API call error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
     print("📊 Advanced AI Trading Systems Dashboard")
