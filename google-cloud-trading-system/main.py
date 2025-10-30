@@ -2741,45 +2741,7 @@ def update_strategy_params():
         logger.error(f"❌ Failed to update params: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@app.route('/api/strategy-switcher/switch-strategy', methods=['POST'])
-def switch_strategy():
-    """Change account's strategy (requires restart)"""
-    try:
-        from src.core.yaml_manager import get_yaml_manager
-        from src.core.config_reloader import get_config_reloader
-        
-        data = request.json
-        account_id = data.get('account_id')
-        new_strategy = data.get('new_strategy')
-        
-        if not account_id or not new_strategy:
-            return jsonify({'success': False, 'error': 'account_id and new_strategy required'}), 400
-        
-        yaml_mgr = get_yaml_manager()
-        config_reloader = get_config_reloader()
-        
-        # Update account strategy
-        success = yaml_mgr.switch_account_strategy(account_id, new_strategy)
-        
-        if success:
-            # Signal full restart
-            config_reloader.signal_full_restart(
-                f"Switched account {account_id} to strategy {new_strategy}"
-            )
-            
-            logger.warning(f"⚠️ Switched account {account_id} to {new_strategy} - restart required")
-            
-            return jsonify({
-                'success': True,
-                'message': f'Strategy switched - system restart required',
-                'restart_required': True
-            })
-        else:
-            return jsonify({'success': False, 'error': 'Failed to switch strategy'}), 500
-            
-    except Exception as e:
-        logger.error(f"❌ Failed to switch strategy: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+# DUPLICATE REMOVED - Function already exists at line 1056 as /api/strategies/switch
 
 @app.route('/api/strategy-switcher/enable', methods=['POST'])
 def enable_strategy():

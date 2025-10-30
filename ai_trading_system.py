@@ -48,6 +48,10 @@ class AITradingSystem:
         self.reserve_slots_for_diversification = 2  # keep slots for other symbols
         self.prev_mid: Dict[str, float] = {}
         self.per_symbol_cap = {'XAU_USD': 1}
+        
+        # Rate limiting for bracket notifications
+        self.last_bracket_notification = {}
+        self.bracket_notification_cooldown = 300  # 5 minutes between notifications per trade
         self.instrument_spread_limits = {
             'EUR_USD': 0.00025,
             'GBP_USD': 0.00030,
@@ -70,6 +74,17 @@ class AITradingSystem:
         logger.info(f"📊 Demo Account: {self.account_id}")
         logger.info(f"💰 Risk per trade: {self.risk_per_trade*100}%")
         logger.info(f"📱 Telegram commands: ENABLED")
+        
+    def should_send_bracket_notification(self, trade_id):
+        """Check if we should send a bracket notification (rate limited)"""
+        now = datetime.now()
+        last_notification = self.last_bracket_notification.get(trade_id)
+        
+        if last_notification is None:
+            return True
+            
+        time_since_last = (now - last_notification).total_seconds()
+        return time_since_last >= self.bracket_notification_cooldown
         
     def send_telegram_message(self, message):
         """Send message to Telegram"""
@@ -614,6 +629,122 @@ class AITradingSystem:
             logger.error(f"Error getting account info: {e}")
             return None
 
+    def list_open_trades(self) -> List[Dict[str, Any]]:
+        try:
+            r = requests.get(f"{OANDA_BASE_URL}/v3/accounts/{self.account_id}/trades",
+                             headers=self.headers, timeout=10)
+            if r.status_code == 200:
+                return r.json().get('trades', [])
+        except Exception as e:
+            logger.warning(f"list_open_trades error: {e}")
+        return []
+
+    def _round_price(self, inst: str, px: float) -> str:
+        if inst in ('EUR_USD', 'GBP_USD', 'AUD_USD'):
+            return f"{px:.5f}"
+        if inst == 'USD_JPY':
+            return f"{px:.3f}"
+        if inst == 'XAU_USD':
+            return f"{px:.2f}"
+        return f"{px:.5f}"
+
+    def attach_brackets(self, trade_id: str, instrument: str, side: str, entry_price: float) -> bool:
+        """Ensure SL/TP exist on a live trade by attaching dependent orders server-side."""
+        try:
+            # Conservative defaults if we lack original SL/TP: FX 20/40 pips, XAU $5/$10
+            if instrument == 'XAU_USD':
+                sl_dist = 5.0
+                tp_dist = 10.0
+            elif instrument == 'USD_JPY':
+                sl_dist = 0.20  # 20 pips ~ 0.20 JPY
+                tp_dist = 0.40
+            else:
+                sl_dist = 0.0020
+                tp_dist = 0.0040
+
+            if side == 'BUY':
+                sl = entry_price - sl_dist
+                tp = entry_price + tp_dist
+            else:
+                sl = entry_price + sl_dist
+                tp = entry_price - tp_dist
+
+            payload = {
+                "takeProfit": {"price": self._round_price(instrument, tp)},
+                "stopLoss": {"price": self._round_price(instrument, sl)}
+            }
+            url = f"{OANDA_BASE_URL}/v3/accounts/{self.account_id}/trades/{trade_id}/orders"
+            r = requests.put(url, headers=self.headers, json=payload, timeout=10)
+            ok = r.status_code in (200, 201)
+            if not ok:
+                logger.warning(f"attach_brackets failed {r.status_code}: {r.text[:120]}")
+            return ok
+        except Exception as e:
+            logger.warning(f"attach_brackets error: {e}")
+            return False
+
+    def trade_has_brackets(self, trade: Dict[str, Any]) -> bool:
+        # OANDA v3 returns dependent order summaries when present
+        return bool(trade.get('takeProfitOrder') or trade.get('stopLossOrder'))
+
+    def get_live_counts(self) -> Dict[str, int]:
+        counts: Dict[str, Any] = {"positions": 0, "pending": 0, "by_symbol": {}}
+        try:
+            # Open positions (net by instrument)
+            r = requests.get(f"{OANDA_BASE_URL}/v3/accounts/{self.account_id}/openPositions",
+                             headers=self.headers, timeout=10)
+            if r.status_code == 200:
+                for p in r.json().get('positions', []):
+                    long_u = float(p['long']['units']); short_u = float(p['short']['units'])
+                    if long_u != 0 or short_u != 0:
+                        counts['positions'] += 1
+                        sym = p['instrument']
+                        counts['by_symbol'][sym] = counts['by_symbol'].get(sym, 0) + 1
+            # Pending orders
+            r2 = requests.get(f"{OANDA_BASE_URL}/v3/accounts/{self.account_id}/pendingOrders",
+                              headers=self.headers, timeout=10)
+            if r2.status_code == 200:
+                for o in r2.json().get('orders', []):
+                    counts['pending'] += 1
+                    sym = o.get('instrument')
+                    if sym:
+                        counts['by_symbol'][sym] = counts['by_symbol'].get(sym, 0) + 1
+        except Exception as e:
+            logger.warning(f"get_live_counts error: {e}")
+        return counts  # type: ignore
+
+    def enforce_live_cap(self) -> None:
+        """Ensure positions+pending <= max_concurrent_trades; cancel excess pending by age."""
+        try:
+            counts = self.get_live_counts()
+            total_live = counts['positions'] + counts['pending']
+            if total_live <= self.max_concurrent_trades:
+                return
+            to_cancel = total_live - self.max_concurrent_trades
+            r = requests.get(f"{OANDA_BASE_URL}/v3/accounts/{self.account_id}/pendingOrders",
+                             headers=self.headers, timeout=10)
+            if r.status_code != 200:
+                return
+            orders = r.json().get('orders', [])
+            # Cancel oldest first
+            orders_sorted = sorted(orders, key=lambda o: o.get('createTime',''))
+            for o in orders_sorted:
+                if to_cancel <= 0:
+                    break
+                oid = o.get('id')
+                if not oid:
+                    continue
+                try:
+                    requests.put(f"{OANDA_BASE_URL}/v3/accounts/{self.account_id}/orders/{oid}/cancel",
+                                 headers=self.headers, timeout=10)
+                    logger.info(f"🗑️ Cancelled pending order {oid} to enforce cap")
+                    to_cancel -= 1
+                except Exception:
+                    continue
+            if to_cancel > 0:
+                logger.warning("Unable to cancel enough pending orders to meet cap")
+        except Exception as e:
+            logger.warning(f"enforce_live_cap error: {e}")
     def is_news_halt_active(self) -> bool:
         try:
             if self.news_halt_until is None:
@@ -812,8 +943,11 @@ class AITradingSystem:
                 logger.warning("Daily trade limit reached")
                 return False
             
-            if len(self.active_trades) >= self.max_concurrent_trades:
-                logger.warning("Max concurrent trades reached")
+            # Broker-aware cap: positions + pending must be below cap
+            live = self.get_live_counts()
+            total_live = live['positions'] + live['pending']
+            if total_live >= self.max_concurrent_trades:
+                logger.info("Global cap reached (positions+pending); skipping new entry")
                 return False
 
             # Diversification guardrails
@@ -826,9 +960,11 @@ class AITradingSystem:
 
             current_symbol = signal['instrument']
             current_symbol_cap = self.per_symbol_cap.get(current_symbol, self.max_per_symbol)
+            # Per-symbol live count (positions + pending)
+            sym_live = live['by_symbol'].get(current_symbol, 0)
             current_symbol_count = symbol_counts.get(current_symbol, 0)
 
-            if current_symbol_count >= current_symbol_cap:
+            if sym_live >= current_symbol_cap or current_symbol_count >= current_symbol_cap:
                 logger.info(f"Skipping trade: per-symbol cap reached for {current_symbol}")
                 return False
 
@@ -880,24 +1016,41 @@ class AITradingSystem:
             tp_str = round_price(current_symbol, tp)
             sl_str = round_price(current_symbol, sl)
 
-            order_data = {
-                "order": {
-                    "type": "MARKET",
-                    "instrument": signal['instrument'],
-                    "units": str(units),
-                    "timeInForce": "FOK",
-                    "positionFill": "DEFAULT",
-                    "stopLossOnFill": {"price": sl_str},
-                    "takeProfitOnFill": {"price": tp_str}
+            order_type = signal.get('order_type', 'MARKET').upper()
+            if order_type == 'LIMIT':
+                price_str = round_price(current_symbol, float(signal['entry_price']))
+                order_data = {
+                    "order": {
+                        "type": "LIMIT",
+                        "instrument": signal['instrument'],
+                        "units": str(units),
+                        "price": price_str,
+                        "timeInForce": "GTC",
+                        "positionFill": "DEFAULT",
+                        "stopLossOnFill": {"price": sl_str},
+                        "takeProfitOnFill": {"price": tp_str}
+                    }
                 }
-            }
+            else:
+                order_data = {
+                    "order": {
+                        "type": "MARKET",
+                        "instrument": signal['instrument'],
+                        "units": str(units),
+                        "timeInForce": "FOK",
+                        "positionFill": "DEFAULT",
+                        "stopLossOnFill": {"price": sl_str},
+                        "takeProfitOnFill": {"price": tp_str}
+                    }
+                }
             
             url = f"{OANDA_BASE_URL}/v3/accounts/{self.account_id}/orders"
             response = requests.post(url, headers=self.headers, json=order_data, timeout=10)
             
             if response.status_code == 201:
-                order_info = response.json()['orderCreateTransaction']
-                order_id = order_info['id']
+                body = response.json()
+                order_info = body.get('orderCreateTransaction') or {}
+                order_id = order_info.get('id', '')
                 
                 # Track the trade
                 self.active_trades[order_id] = {
@@ -915,6 +1068,25 @@ class AITradingSystem:
                 
                 # Send Telegram notification
                 self.send_trade_alert(signal, order_id, units)
+
+                # Post-fill verification (best-effort): ensure brackets present on live trades
+                try:
+                    if order_type != 'LIMIT':
+                        # MARKET orders may immediately create trades; verify and attach if missing
+                        trades = self.list_open_trades()
+                        for t in trades:
+                            if t.get('instrument') == current_symbol:
+                                side = 'BUY' if float(t.get('currentUnits','0')) > 0 else 'SELL'
+                                entry = float(t.get('price', signal['entry_price']))
+                                if not self.trade_has_brackets(t):
+                                    if self.attach_brackets(t['id'], current_symbol, side, entry):
+                                        trade_id = str(t['id']).replace('[', '').replace(']', '')
+                                        if self.should_send_bracket_notification(trade_id):
+                                            self.send_telegram_message(f"🔒 Brackets attached for {current_symbol} trade {trade_id}")
+                                            self.last_bracket_notification[trade_id] = datetime.now()
+                    # LIMIT orders get brackets on fill; the post-cycle audit will catch any missing
+                except Exception as e:
+                    logger.warning(f"post-fill bracket attach error: {e}")
                 
                 logger.info(f"✅ TRADE EXECUTED: {signal['instrument']} {signal['side']} - Units: {units}")
                 return True
@@ -929,16 +1101,25 @@ class AITradingSystem:
     def send_trade_alert(self, signal, order_id, units):
         """Send trade alert to Telegram"""
         try:
+            # Clean and format values to avoid brackets in messages
+            instrument = str(signal.get('instrument', 'Unknown')).replace('[', '').replace(']', '')
+            side = str(signal.get('side', 'Unknown')).replace('[', '').replace(']', '')
+            entry_price = f"{float(signal.get('entry_price', 0)):.5f}"
+            stop_loss = f"{float(signal.get('stop_loss', 0)):.5f}"
+            take_profit = f"{float(signal.get('take_profit', 0)):.5f}"
+            strategy = str(signal.get('strategy', 'Unknown')).replace('[', '').replace(']', '')
+            order_id_clean = str(order_id).replace('[', '').replace(']', '')
+            
             message = f"""🚀 TRADE EXECUTED!
 
-📊 Instrument: {signal['instrument']}
-📈 Side: {signal['side']}
+📊 Instrument: {instrument}
+📈 Side: {side}
 💰 Units: {units}
-💵 Entry: {signal['entry_price']}
-🛡️ Stop Loss: {signal['stop_loss']}
-🎯 Take Profit: {signal['take_profit']}
-📊 Strategy: {signal['strategy']}
-🆔 Order ID: {order_id}
+💵 Entry: {entry_price}
+🛡️ Stop Loss: {stop_loss}
+🎯 Take Profit: {take_profit}
+📊 Strategy: {strategy}
+🆔 Order ID: {order_id_clean}
 
 🤖 Demo Account: {self.account_id}"""
             
@@ -957,6 +1138,24 @@ class AITradingSystem:
                 positions = response.json()['positions']
                 # Refresh prices once per cycle
                 prices = self.get_current_prices()
+
+                # Backfill missing brackets on live trades (best-effort)
+                try:
+                    open_trades = self.list_open_trades()
+                    for t in open_trades:
+                        if not self.trade_has_brackets(t):
+                            inst = t.get('instrument')
+                            if not inst or inst not in prices:
+                                continue
+                            side = 'BUY' if float(t.get('currentUnits','0')) > 0 else 'SELL'
+                            entry = float(t.get('price', prices[inst]['mid']))
+                            if self.attach_brackets(t['id'], inst, side, entry):
+                                trade_id = str(t['id']).replace('[', '').replace(']', '')
+                                if self.should_send_bracket_notification(trade_id):
+                                    self.send_telegram_message(f"🔒 Brackets attached for {inst} trade {trade_id}")
+                                    self.last_bracket_notification[trade_id] = datetime.now()
+                except Exception as e:
+                    logger.warning(f"backfill brackets error: {e}")
                 for position in positions:
                     instrument = position['instrument']
                     if instrument not in self.instruments or instrument not in prices:
@@ -994,7 +1193,10 @@ class AITradingSystem:
                                     if r.status_code in (200, 201):
                                         t['tp25_done'] = True
                                         logger.info(f"✅ 0.8R harvest on {instrument}: {payload}")
-                                        self.send_telegram_message(f"0.8R Harvest: Closed {payload} on {instrument} @ ~{cur_mid:.5f}")
+                                        # Only send harvest notification once per trade
+                                        if not t.get('harvest_notified'):
+                                            self.send_telegram_message(f"0.8R Harvest: Closed {str(payload).replace('[', '').replace(']', '')} on {instrument} @ ~{cur_mid:.5f}")
+                                            t['harvest_notified'] = True
                             except Exception as e:
                                 logger.warning(f"0.8R harvest failed for {instrument}: {e}")
 
@@ -1014,7 +1216,10 @@ class AITradingSystem:
                                     if r.status_code in (200, 201):
                                         t['tp50_done'] = True
                                         logger.info(f"✅ 1R partial on {instrument}: {payload}")
-                                        self.send_telegram_message(f"1R Partial: Closed {payload} on {instrument} @ ~{cur_mid:.5f}")
+                                        # Only send partial notification once per trade
+                                        if not t.get('partial_notified'):
+                                            self.send_telegram_message(f"1R Partial: Closed {str(payload).replace('[', '').replace(']', '')} on {instrument} @ ~{cur_mid:.5f}")
+                                            t['partial_notified'] = True
                             except Exception as e:
                                 logger.warning(f"1R partial failed for {instrument}: {e}")
 
@@ -1068,6 +1273,8 @@ class AITradingSystem:
         
         # Monitor existing trades
         self.monitor_trades()
+        # Enforce cap post-execution (cancel excess pending if any)
+        self.enforce_live_cap()
         
         logger.info(f"🎯 Trading cycle complete - Executed {executed_count} trades")
         
