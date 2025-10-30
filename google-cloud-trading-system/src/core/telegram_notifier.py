@@ -75,6 +75,10 @@ class TelegramNotifier:
     
     def send_message(self, message, message_type: str = "general") -> bool:
         """Send message to Telegram with rate limiting"""
+        # EMERGENCY: Disable all Telegram messages to stop spam
+        logger.info(f"⚠️ Telegram disabled - would have sent: {message[:50] if isinstance(message, str) else 'TelegramMessage'}...")
+        return True
+        
         if not self._should_send_message(message_type):
             return False
         
