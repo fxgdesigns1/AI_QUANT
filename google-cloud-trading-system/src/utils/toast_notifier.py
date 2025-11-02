@@ -60,7 +60,7 @@ def emit_toast(message: str, toast_type: str = 'info', duration: int = 3000, roo
         if room:
             _socketio.emit('toast_notification', payload, room=room)
         else:
-            _socketio.emit('toast_notification', payload, broadcast=True)
+            _socketio.emit('toast_notification', payload)
         
         logger.debug(f"📢 Toast emitted: [{toast_type}] {message}")
         return True

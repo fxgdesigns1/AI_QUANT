@@ -144,6 +144,30 @@ class OrderManager:
         # Daily tracking
         self.daily_trade_count = 0
         self.last_reset_date = datetime.now().date()
+
+        # Global guardrails (shared across instances via module-level variables)
+        global GLOBAL_DAILY_TRADE_LIMIT, GLOBAL_DAILY_TRADE_COUNT, GLOBAL_LAST_RESET_DATE, MIN_SIGNAL_CONFIDENCE, MAX_ENTRIES_PER_INSTRUMENT
+        try:
+            GLOBAL_DAILY_TRADE_LIMIT
+        except NameError:
+            GLOBAL_DAILY_TRADE_LIMIT = int(os.getenv('GLOBAL_DAILY_TRADE_LIMIT', '20'))
+        try:
+            GLOBAL_DAILY_TRADE_COUNT
+        except NameError:
+            GLOBAL_DAILY_TRADE_COUNT = 0
+        try:
+            GLOBAL_LAST_RESET_DATE
+        except NameError:
+            GLOBAL_LAST_RESET_DATE = datetime.now().date()
+        try:
+            MIN_SIGNAL_CONFIDENCE
+        except NameError:
+            # High quality only
+            MIN_SIGNAL_CONFIDENCE = float(os.getenv('MIN_SIGNAL_CONFIDENCE', '0.80'))
+        try:
+            MAX_ENTRIES_PER_INSTRUMENT
+        except NameError:
+            MAX_ENTRIES_PER_INSTRUMENT = int(os.getenv('MAX_ENTRIES_PER_INSTRUMENT', '2'))
         
         # Performance tracking
         self.winning_trades = 0
@@ -166,6 +190,12 @@ class OrderManager:
             self.daily_trade_count = 0
             self.last_reset_date = current_date
             logger.info("🔄 Daily trade counters reset")
+        # Reset global counters once per day
+        global GLOBAL_LAST_RESET_DATE, GLOBAL_DAILY_TRADE_COUNT
+        if current_date > GLOBAL_LAST_RESET_DATE:
+            GLOBAL_DAILY_TRADE_COUNT = 0
+            GLOBAL_LAST_RESET_DATE = current_date
+            logger.info("🔄 Global daily trade counter reset")
     
     def calculate_position_size(self, signal: TradeSignal) -> Optional[PositionSizing]:
         """Calculate position size based on risk management rules and signal strength"""
@@ -235,6 +265,16 @@ class OrderManager:
     def validate_trade(self, signal: TradeSignal, position_size: PositionSizing) -> Tuple[bool, str]:
         """Validate trade against risk management rules"""
         try:
+            # Enforce high-quality signals only
+            if hasattr(signal, 'confidence') and signal.confidence is not None:
+                if signal.confidence < MIN_SIGNAL_CONFIDENCE:
+                    return False, f"Signal confidence too low: {signal.confidence:.2f} < {MIN_SIGNAL_CONFIDENCE:.2f}"
+
+            # Global daily trade cap
+            global GLOBAL_DAILY_TRADE_COUNT, GLOBAL_DAILY_TRADE_LIMIT
+            if GLOBAL_DAILY_TRADE_COUNT >= GLOBAL_DAILY_TRADE_LIMIT:
+                return False, f"Global daily trade limit reached: {GLOBAL_DAILY_TRADE_COUNT}/{GLOBAL_DAILY_TRADE_LIMIT}"
+
             # Check daily trade limit
             if self.daily_trade_count >= self.daily_trade_limit:
                 return False, f"Daily trade limit reached: {self.daily_trade_count}/{self.daily_trade_limit}"
@@ -244,6 +284,19 @@ class OrderManager:
             if current_positions >= self.max_positions:
                 return False, f"Maximum positions reached: {current_positions}/{self.max_positions}"
             
+            # Max entries per instrument (per account)
+            if self.oanda_client and signal.instrument:
+                try:
+                    open_trades = self.oanda_client.get_open_trades()
+                    instrument_trades = [t for t in open_trades if str(t.get('instrument')) == signal.instrument]
+                    if len(instrument_trades) >= MAX_ENTRIES_PER_INSTRUMENT:
+                        return False, (
+                            f"Max entries per instrument reached for {signal.instrument}: "
+                            f"{len(instrument_trades)}/{MAX_ENTRIES_PER_INSTRUMENT}"
+                        )
+                except Exception as e:
+                    logger.warning(f"⚠️ Could not verify per-instrument entries: {e}")
+
             # Check portfolio risk
             if self.oanda_client:
                 account_info = self.oanda_client.get_account_info()
@@ -267,6 +320,15 @@ class OrderManager:
     def execute_trade(self, signal: TradeSignal) -> TradeExecution:
         """Execute a trade signal"""
         try:
+            # Optional hard-disable via env for accounts/strategies (quality over quantity)
+            if os.getenv('ACCOUNT_DISABLED', 'false').lower() == 'true':
+                return TradeExecution(
+                    signal=signal,
+                    order=None,
+                    success=False,
+                    error_message="Account is disabled for trading"
+                )
+
             # TRADE SIZE VALIDATION (NEW OCT 21, 2025)
             from .trade_size_validator import get_trade_size_validator
             validator = get_trade_size_validator()
@@ -322,6 +384,9 @@ class OrderManager:
                 self.active_orders[order.order_id] = order
                 self.daily_trade_count += 1
                 self.position_sizes[order.order_id] = position_size
+                # Increment global counter
+                global GLOBAL_DAILY_TRADE_COUNT
+                GLOBAL_DAILY_TRADE_COUNT += 1
                 
                 logger.info(f"✅ Trade executed: {signal.instrument} {signal.side.value} {position_size.units} units")
                 

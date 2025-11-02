@@ -39,12 +39,11 @@ import logging
 from dataclasses import dataclass, asdict
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv(os.path.join(os.path.dirname(__file__), '../../oanda_config.env'))
-
-# Add the project path
-sys.path.append('/Users/mac/quant_system_clean/google-cloud-trading-system')
-sys.path.append('/Users/mac/quant_system_clean/google-cloud-trading-system/src')
+# Load environment variables (optional - fails gracefully if file not found)
+try:
+    load_dotenv(os.path.join(os.path.dirname(__file__), '../../oanda_config.env'))
+except:
+    pass
 
 # Import live trading components
 from src.core.dynamic_account_manager import get_account_manager
@@ -306,8 +305,13 @@ class AdvancedDashboardManager:
         
         # Ensure we have at least one account
         if not self._active_accounts:
-            logger.error("❌ No active OANDA accounts found")
-            raise ValueError("No active OANDA accounts configured")
+            # Do NOT hard-fail in production – allow dashboard to render in read-only mode
+            logger.error("❌ No active OANDA accounts found – continuing in read-only mode")
+            self._trading_systems = {}
+            self.use_live_data = False
+            # Mark initialized so callers can still get a valid status payload
+            self._initialized = True
+            return
         
         # Initialize trading systems
         self._trading_systems = {}
@@ -363,36 +367,37 @@ class AdvancedDashboardManager:
         # Update active_accounts to only include successfully loaded accounts
         self._active_accounts = list(self._trading_systems.keys())
         
-        # Start live data feed with verification
-        self._data_feed.start()
-        logger.info("✅ Live data feed start() called")
-        
-        # Verify it's actually running
-        time.sleep(3)
-        # Check if data feed has running attribute (LiveDataFeed) or streaming (MultiAccountDataFeed)
-        is_running = getattr(self._data_feed, 'running', getattr(self._data_feed, 'streaming', False))
-        if not is_running:
-            logger.error("❌ Data feed failed to start - running/streaming flag is False")
-            raise RuntimeError("❌ Data feed failed to start")
-        
-        # Wait for first data update (up to 10 seconds)
-        data_received = False
-        for i in range(10):
-            if self._data_feed.market_data:
-                logger.info(f"✅ Data feed confirmed active - {len(self._data_feed.market_data)} instruments loaded")
-                data_received = True
-                break
-            time.sleep(1)
-        
-        if not data_received:
-            logger.warning("⚠️ No data received after 10 seconds - may be market closed or connection issue")
-        else:
-            # Log sample data freshness
-            for inst, data in list(self._data_feed.market_data.items())[:3]:
-                # Handle both object and dict formats
-                age = getattr(data, 'last_update_age', data.get('last_update_age', 0) if isinstance(data, dict) else 0)
-                bid = getattr(data, 'bid', data.get('bid', 0) if isinstance(data, dict) else 0)
-                logger.info(f"  📊 {inst}: age={age}s, bid={bid:.5f}")
+        # Start live data feed with verification (soft-fail)
+        try:
+            self._data_feed.start()
+            logger.info("✅ Live data feed start() called")
+
+            # Verify it's actually running
+            time.sleep(3)
+            # Check if data feed has running attribute (LiveDataFeed) or streaming (MultiAccountDataFeed)
+            is_running = getattr(self._data_feed, 'running', getattr(self._data_feed, 'streaming', False))
+            if not is_running:
+                logger.error("❌ Data feed failed to start - running/streaming flag is False")
+            else:
+                # Wait for first data update (up to 10 seconds)
+                data_received = False
+                for i in range(10):
+                    if getattr(self._data_feed, 'market_data', None):
+                        logger.info(f"✅ Data feed confirmed active - {len(self._data_feed.market_data)} instruments loaded")
+                        data_received = True
+                        break
+                    time.sleep(1)
+                if not data_received:
+                    logger.warning("⚠️ No data received after 10 seconds - may be market closed or connection issue")
+                else:
+                    # Log sample data freshness
+                    for inst, data in list(self._data_feed.market_data.items())[:3]:
+                        age = getattr(data, 'last_update_age', data.get('last_update_age', 0) if isinstance(data, dict) else 0)
+                        bid = getattr(data, 'bid', data.get('bid', 0) if isinstance(data, dict) else 0)
+                        logger.info(f"  📊 {inst}: age={age}s, bid={bid:.5f}")
+        except Exception as e:
+            logger.error(f"❌ Data feed start failed (non-fatal): {e}")
+            self.use_live_data = False
         
         # Force cache invalidation to get fresh data
         self._invalidate('status')

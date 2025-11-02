@@ -149,6 +149,12 @@ class SafeNewsIntegration:
             if 'marketaux' in self.api_keys and self._can_call_api('marketaux'):
                 logger.info("🔄 Fetching news from MarketAux API...")
                 news_data = await self._fetch_marketaux_news(currency_pairs)
+                # Track API usage for Marketaux
+                try:
+                    from dashboard.api_usage_tracker import get_usage_tracker
+                    get_usage_tracker().track_call('marketaux', 1)
+                except Exception as _:
+                    pass
                 self._record_api_call('marketaux')
                 if news_data:
                     logger.info(f"✅ MarketAux: Retrieved {len(news_data)} news items")
@@ -162,6 +168,12 @@ class SafeNewsIntegration:
             if 'alpha_vantage' in self.api_keys and self._can_call_api('alpha_vantage'):
                 logger.info("🔄 Fetching news from Alpha Vantage API...")
                 news_data = await self._fetch_alpha_vantage_news(currency_pairs)
+                # Track under 'other' usage bucket
+                try:
+                    from dashboard.api_usage_tracker import get_usage_tracker
+                    get_usage_tracker().track_call('other', 1)
+                except Exception as _:
+                    pass
                 self._record_api_call('alpha_vantage')
                 if news_data:
                     logger.info(f"✅ Alpha Vantage: Retrieved {len(news_data)} news items")
@@ -175,6 +187,11 @@ class SafeNewsIntegration:
             if 'newsdata' in self.api_keys and self._can_call_api('newsdata'):
                 logger.info("🔄 Fetching news from NewsData.io API...")
                 news_data = await self._fetch_newsdata_news(currency_pairs)
+                try:
+                    from dashboard.api_usage_tracker import get_usage_tracker
+                    get_usage_tracker().track_call('other', 1)
+                except Exception as _:
+                    pass
                 self._record_api_call('newsdata')
                 if news_data:
                     logger.info(f"✅ NewsData.io: Retrieved {len(news_data)} news items")
@@ -188,6 +205,11 @@ class SafeNewsIntegration:
             if 'newsapi' in self.api_keys and self._can_call_api('newsapi'):
                 logger.info("🔄 Fetching news from NewsAPI...")
                 news_data = await self._fetch_newsapi_news(currency_pairs)
+                try:
+                    from dashboard.api_usage_tracker import get_usage_tracker
+                    get_usage_tracker().track_call('other', 1)
+                except Exception as _:
+                    pass
                 self._record_api_call('newsapi')
                 if news_data:
                     logger.info(f"✅ NewsAPI: Retrieved {len(news_data)} news items")
@@ -585,7 +607,7 @@ class SafeNewsIntegration:
                 'opportunities': []
             }
     
-    def should_pause_trading(self, currency_pairs: List[str] = None) -> bool:
+    def should_pause_trading(self, currency_pairs: List[str] = None, ignore_skip: bool = False) -> bool:
         """Check if trading should be paused based on news.
 
         Notes:
@@ -599,12 +621,13 @@ class SafeNewsIntegration:
                 return False
             
             # Bypass pause for configured instruments (default: XAU_USD)
-            skip_list = os.getenv('NEWS_PAUSE_SKIP', 'XAU_USD')
-            skip_instruments = {s.strip() for s in skip_list.split(',') if s.strip()}
-            if currency_pairs:
-                pairs = set(currency_pairs)
-                if skip_instruments & pairs:
-                    return False
+            if not ignore_skip:
+                skip_list = os.getenv('NEWS_PAUSE_SKIP', 'XAU_USD')
+                skip_instruments = {s.strip() for s in skip_list.split(',') if s.strip()}
+                if currency_pairs:
+                    pairs = set(currency_pairs)
+                    if skip_instruments & pairs:
+                        return False
 
             analysis = self.get_news_analysis(currency_pairs)
             

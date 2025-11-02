@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from src.core.order_manager import TradeSignal, OrderSide
 from src.core.data_feed import MarketData
 from src.core.position_sizing import get_position_sizer
+from src.core.news_integration import safe_news_integration
 from src.core.oanda_client import get_oanda_client
 
 logger = logging.getLogger(__name__)
@@ -293,6 +294,15 @@ class GoldTrumpWeekStrategy:
             logger.debug(f"⏰ Outside gold trading hours")
             return signals
         
+        # News-aware: Pause trading if high-impact negative news (do NOT skip gold)
+        try:
+            if safe_news_integration and safe_news_integration.enabled:
+                if safe_news_integration.should_pause_trading(['XAU_USD'], ignore_skip=True):
+                    logger.warning("🚫 Pausing gold trades due to high-impact negative news")
+                    return signals
+        except Exception as _:
+            pass
+
         # Get gold market data
         gold_data = market_data.get('XAU_USD')
         if not gold_data:
@@ -320,6 +330,15 @@ class GoldTrumpWeekStrategy:
             if not should_enter:
                 return signals
             
+            # News-aware: boost/reduce confidence based on news analysis
+            try:
+                if safe_news_integration and safe_news_integration.enabled:
+                    boost = safe_news_integration.get_news_boost_factor('BUY', ['XAU_USD'])
+                    confidence *= boost
+                    logger.info(f"📰 News factor applied to confidence: x{boost:.2f} → {confidence:.2f}")
+            except Exception as _:
+                pass
+
             # Check minimum confidence
             if confidence < self.min_confidence:
                 logger.debug(f"⚠️ Confidence too low: {confidence:.2f} < {self.min_confidence}")

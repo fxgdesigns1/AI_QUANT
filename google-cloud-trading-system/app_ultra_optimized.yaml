@@ -1,179 +1,152 @@
-# Google Cloud Trading System - ULTRA OPTIMIZED CONFIGURATION
-# Maximum cost savings while maintaining full performance
-# ULTRA OPTIMIZED: All advanced optimizations applied
-
-# =============================================================================
-# Runtime Configuration
-# =============================================================================
 runtime: python311
-
-# =============================================================================
-# Service Configuration
-# =============================================================================
 service: default
 entrypoint: python main.py
-
-# =============================================================================
-# Automatic Scaling Configuration - ULTRA OPTIMIZED
-# =============================================================================
 automatic_scaling:
-  # Minimum number of instances
   min_instances: 1
-  
-  # Maximum number of instances - ULTRA OPTIMIZED FOR MAXIMUM SAVINGS
-  # Weekdays: 1-2 instances (optimized performance)
-  # Weekends: 1 instance (maximum savings)
   max_instances: 2
-  
-  # Target CPU utilization (0.0 to 1.0) - ULTRA OPTIMIZED
   target_cpu_utilization: 0.9
-  
-  # Target throughput utilization (0.0 to 1.0) - ULTRA OPTIMIZED
   target_throughput_utilization: 0.9
-  
-  # Minimum pending latency (seconds)
   min_pending_latency: 30ms
-  
-  # Maximum pending latency (seconds)
   max_pending_latency: 200ms
-
-# =============================================================================
-# Instance Configuration - ULTRA OPTIMIZED F2
-# =============================================================================
-# ULTRA OPTIMIZATION: F2 instances with maximum efficiency
-# Expected total savings: $67.83/month (66.5% cost reduction)
-# Performance: Maintains excellent performance with advanced optimizations
 instance_class: F2
-
-# =============================================================================
-# Environment Variables - ULTRA OPTIMIZED CONFIGURATION
-# =============================================================================
 env_variables:
-  # Flask Configuration
   FLASK_ENV: production
-  FLASK_DEBUG: "False"
-  PORT: "8080"
-  
-  # OANDA API Configuration
-  OANDA_API_KEY: "c01de9eb4d793c945ea0fcbb0620cc4e-d0c62eb93ed53e8db5a709089460794a"
-  OANDA_ENVIRONMENT: "practice"
-  OANDA_BASE_URL: "https://api-fxpractice.oanda.com"
-  
-  # Ultra Optimization Settings
-  ULTRA_OPTIMIZATION_MODE: "enabled"
-  STRATEGY_LOADING_OPTIMIZED: "true"
-  NEWS_POLLING_FREQUENCY: "900"  # 15 minutes (was 5 minutes)
-  DASHBOARD_UPDATE_FREQUENCY: "30"  # 30 seconds (was 10 seconds)
-  LOGGING_LEVEL: "WARNING"  # Reduced from INFO
-  AI_ASSISTANT_MODE: "conditional"  # Only when needed
-  WEEKEND_OPTIMIZATION: "aggressive"  # Maximum weekend savings
-  
-  # Account Configuration - ACTIVE ACCOUNTS ONLY
-  ACTIVE_ACCOUNT_001: "101-004-30719775-006"  # Strategy #3
-  ACTIVE_ACCOUNT_002: "101-004-30719775-007"  # Strategy #2
-  ACTIVE_ACCOUNT_003: "101-004-30719775-008"  # Strategy #1
-  
-  # Strategy Configuration - OPTIMIZED LOADING
-  LOAD_ACTIVE_STRATEGIES_ONLY: "true"
-  ACTIVE_STRATEGIES: "Ultra Strict Forex,Momentum Trading,Gold Scalping"
-  UNUSED_STRATEGIES: "AUD_USD_High_Return,EUR_USD_Safe,XAU_USD_Gold_High_Return,Multi_Strategy_Portfolio"
-  
-  # Telegram Configuration
-  TELEGRAM_TOKEN: "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-  TELEGRAM_CHAT_ID: "6100678501"
-  
-  # Google Cloud Configuration
-  GOOGLE_CLOUD_PROJECT: "ai-quant-trading"
-  GOOGLE_CLOUD_REGION: "us-central1"
-  
-  # Risk Management Settings - ULTRA OPTIMIZED
-  # Account 006 (Strategy #3)
-  STRATEGY_3_MAX_RISK_PER_TRADE: "0.015"
-  STRATEGY_3_MAX_PORTFOLIO_RISK: "0.75"
-  STRATEGY_3_MAX_POSITIONS: "5"
-  STRATEGY_3_DAILY_TRADE_LIMIT: "100"
-  
-  # Account 007 (Strategy #2)
-  STRATEGY_2_MAX_RISK_PER_TRADE: "0.015"
-  STRATEGY_2_MAX_PORTFOLIO_RISK: "0.75"
-  STRATEGY_2_MAX_POSITIONS: "5"
-  STRATEGY_2_DAILY_TRADE_LIMIT: "100"
-  
-  # Account 008 (Strategy #1)
-  STRATEGY_1_MAX_RISK_PER_TRADE: "0.015"
-  STRATEGY_1_MAX_PORTFOLIO_RISK: "0.75"
-  STRATEGY_1_MAX_POSITIONS: "5"
-  STRATEGY_1_DAILY_TRADE_LIMIT: "100"
-  
-  # Global Risk Settings
-  MAX_CORRELATION_RISK: "0.75"
-  POSITION_SIZING_METHOD: "risk_based"
-  POSITION_SIZE_MULTIPLIER: "0.5"
-  FORCED_TRADING_MODE: "enabled"
-  MIN_TRADES_TODAY: "2"
-  
-  # Ultra Performance Settings
-  DASHBOARD_UPDATE_INTERVAL: "30"  # Reduced from 15
-  MARKET_DATA_UPDATE_INTERVAL: "5"
-  SYSTEM_STATUS_CHECK_INTERVAL: "60"  # Reduced from 30
-  
-  # Security Settings
-  API_RATE_LIMIT: "100"
-  API_RATE_WINDOW: "60"
-  CORS_ORIGINS: "*"
-  
-  # News API Configuration - OPTIMIZED FREQUENCY
-  ALPHA_VANTAGE_API_KEY: "LSBZJ73J9W1G8FWB"
-  MARKETAUX_API_KEY: "qL23wrqpBdU908DrznhIpfINVOgDg4bPmpKzQfW2"
-  
-  # News Integration Settings - OPTIMIZED
-  NEWS_TRADING_ENABLED: "True"
-  HIGH_IMPACT_PAUSE: "True"
-  NEGATIVE_SENTIMENT_THRESHOLD: "-0.3"
-  POSITIVE_SENTIMENT_THRESHOLD: "0.3"
-  NEWS_CONFIDENCE_THRESHOLD: "0.5"
-  
-  # AI Assistant Configuration - CONDITIONAL MODE
-  AI_ASSISTANT_ENABLED: "conditional"
-  AI_MODEL_PROVIDER: "demo"
-  AI_RATE_LIMIT_PER_MINUTE: "10"
-  AI_REQUIRE_LIVE_CONFIRMATION: "true"
-  AI_ACTIVATION_MODE: "on_demand"  # Only when needed
-  
-  # Live actions toggle
-  ALLOW_LIVE_ACTIONS: "true"
-  
-  # Secure manual scan trigger token
-  SCAN_TRIGGER_TOKEN: "scan_7d8f5c5f8b2a4a8f"
-
-# =============================================================================
-# Resource Limits - ULTRA OPTIMIZED
-# =============================================================================
+  FLASK_DEBUG: 'False'
+  PORT: '8080'
+  OANDA_API_KEY: c01de9eb4d793c945ea0fcbb0620cc4e-d0c62eb93ed53e8db5a709089460794a
+  OANDA_ENVIRONMENT: practice
+  OANDA_BASE_URL: https://api-fxpractice.oanda.com
+  ULTRA_OPTIMIZATION_MODE: enabled
+  STRATEGY_LOADING_OPTIMIZED: 'true'
+  NEWS_POLLING_FREQUENCY: '900'
+  DASHBOARD_UPDATE_FREQUENCY: '30'
+  LOGGING_LEVEL: WARNING
+  AI_ASSISTANT_MODE: conditional
+  WEEKEND_OPTIMIZATION: aggressive
+  ACTIVE_ACCOUNT_001: 101-004-30719775-006
+  ACTIVE_ACCOUNT_002: 101-004-30719775-007
+  ACTIVE_ACCOUNT_003: 101-004-30719775-008
+  LOAD_ACTIVE_STRATEGIES_ONLY: 'true'
+  ACTIVE_STRATEGIES: Ultra Strict Forex,Momentum Trading,Gold Scalping
+  UNUSED_STRATEGIES: AUD_USD_High_Return,EUR_USD_Safe,XAU_USD_Gold_High_Return,Multi_Strategy_Portfolio
+  TELEGRAM_TOKEN: 7248728383:AAFpLNAlidybk7ed56bosfi8W_e1MaX7Oxs
+  TELEGRAM_CHAT_ID: '6100678501'
+  GOOGLE_CLOUD_PROJECT: ai-quant-trading
+  GOOGLE_CLOUD_REGION: us-central1
+  STRATEGY_3_MAX_RISK_PER_TRADE: '0.015'
+  STRATEGY_3_MAX_PORTFOLIO_RISK: '0.75'
+  STRATEGY_3_MAX_POSITIONS: '5'
+  STRATEGY_3_DAILY_TRADE_LIMIT: '100'
+  STRATEGY_2_MAX_RISK_PER_TRADE: '0.015'
+  STRATEGY_2_MAX_PORTFOLIO_RISK: '0.75'
+  STRATEGY_2_MAX_POSITIONS: '5'
+  STRATEGY_2_DAILY_TRADE_LIMIT: '100'
+  STRATEGY_1_MAX_RISK_PER_TRADE: '0.015'
+  STRATEGY_1_MAX_PORTFOLIO_RISK: '0.75'
+  STRATEGY_1_MAX_POSITIONS: '5'
+  STRATEGY_1_DAILY_TRADE_LIMIT: '100'
+  MAX_CORRELATION_RISK: '0.75'
+  POSITION_SIZING_METHOD: risk_based
+  POSITION_SIZE_MULTIPLIER: '0.5'
+  FORCED_TRADING_MODE: enabled
+  MIN_TRADES_TODAY: '2'
+  DASHBOARD_UPDATE_INTERVAL: '30'
+  MARKET_DATA_UPDATE_INTERVAL: '5'
+  SYSTEM_STATUS_CHECK_INTERVAL: '60'
+  API_RATE_LIMIT: '100'
+  API_RATE_WINDOW: '60'
+  CORS_ORIGINS: '*'
+  ALPHA_VANTAGE_API_KEY: LSBZJ73J9W1G8FWB
+  MARKETAUX_API_KEY: qL23wrqpBdU908DrznhIpfINVOgDg4bPmpKzQfW2
+  NEWS_TRADING_ENABLED: 'True'
+  HIGH_IMPACT_PAUSE: 'True'
+  NEGATIVE_SENTIMENT_THRESHOLD: '-0.3'
+  POSITIVE_SENTIMENT_THRESHOLD: '0.3'
+  NEWS_CONFIDENCE_THRESHOLD: '0.5'
+  AI_ASSISTANT_ENABLED: conditional
+  AI_MODEL_PROVIDER: demo
+  AI_RATE_LIMIT_PER_MINUTE: '10'
+  AI_REQUIRE_LIVE_CONFIRMATION: 'true'
+  AI_ACTIVATION_MODE: on_demand
+  ALLOW_LIVE_ACTIONS: 'true'
+  SCAN_TRIGGER_TOKEN: scan_7d8f5c5f8b2a4a8f
 resources:
   cpu: 1
   memory_gb: 2
   disk_size_gb: 10
-
-# =============================================================================
-# Health Check Configuration
-# =============================================================================
 readiness_check:
-  path: "/api/health"
-  check_interval_sec: 10  # Reduced frequency
+  path: /api/health
+  check_interval_sec: 10
   timeout_sec: 4
   failure_threshold: 2
   success_threshold: 2
   app_start_timeout_sec: 300
-
 liveness_check:
-  path: "/api/health"
-  check_interval_sec: 60  # Reduced frequency
+  path: /api/health
+  check_interval_sec: 60
   timeout_sec: 4
   failure_threshold: 4
   success_threshold: 2
-
-# =============================================================================
-# Beta Features
-# =============================================================================
 beta_settings:
   cloud_build: true
+ACTIVE_ACCOUNT_003: 101-004-30719775-008
+LIVE_INSTRUMENTS_008:
+- XAU_USD
+- USD_JPY
+- EUR_USD
+- NZD_USD
+LIVE_STRATEGY_PARAMS_008:
+  XAU_USD:
+    ema_fast: 2
+    ema_slow: 8
+    rsi_oversold: 22
+    rsi_overbought: 85
+    atr_multiplier: 1.5
+    risk_reward_ratio: 3.0
+    filters:
+      min_ema_separation: 0.0005
+      min_momentum: 0.0003
+      session_filter: true
+      news_filter: true
+    max_trades_per_day: 5
+  USD_JPY:
+    ema_fast: 2
+    ema_slow: 8
+    rsi_oversold: 22
+    rsi_overbought: 85
+    atr_multiplier: 1.5
+    risk_reward_ratio: 3.0
+    filters:
+      min_ema_separation: 0.0005
+      min_momentum: 0.0003
+      session_filter: true
+      news_filter: true
+    max_trades_per_day: 5
+  EUR_USD:
+    ema_fast: 2
+    ema_slow: 8
+    rsi_oversold: 22
+    rsi_overbought: 85
+    atr_multiplier: 1.5
+    risk_reward_ratio: 3.0
+    filters:
+      min_ema_separation: 0.0005
+      min_momentum: 0.0003
+      session_filter: true
+      news_filter: true
+    max_trades_per_day: 8
+  NZD_USD:
+    ema_fast: 2
+    ema_slow: 8
+    rsi_oversold: 22
+    rsi_overbought: 85
+    atr_multiplier: 1.5
+    risk_reward_ratio: 3.0
+    filters:
+      min_ema_separation: 0.0005
+      min_momentum: 0.0003
+      session_filter: true
+      news_filter: true
+    max_trades_per_day: 8
+TELEGRAM_ENABLED: true
+NEWS_ENABLED: true

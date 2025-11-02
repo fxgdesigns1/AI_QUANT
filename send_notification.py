@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 import requests
 
-# Telegram credentials
-BOT_TOKEN = '7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU'
-CHAT_ID = '6100678501'
+import os
+# Telegram credentials from environment
+BOT_TOKEN = os.getenv('TELEGRAM_TOKEN', '')
+CHAT_ID = os.getenv('TELEGRAM_CHAT_ID', '')
 
 message = """AUTOMATED TRADING SYSTEM IS LIVE!
 

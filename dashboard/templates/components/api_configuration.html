@@ -1,0 +1,477 @@
+<!-- API Configuration Panel -->
+<div class="card">
+    <h3>
+        <i class="bi bi-key-fill" style="color: var(--primary);"></i>
+        API Configuration
+    </h3>
+    
+    <!-- Loading Indicator -->
+    <div id="api-config-loading" class="text-center py-4">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2 text-muted">Loading API configuration...</p>
+    </div>
+    
+    <!-- Main Configuration Content -->
+    <div id="api-config-content" style="display: none;">
+        <!-- OANDA Configuration -->
+        <div class="mb-4">
+            <h5 class="mb-3">
+                <i class="bi bi-currency-exchange"></i>
+                OANDA Trading API
+            </h5>
+            <div class="config-item">
+                <label class="form-label fw-bold">API Key</label>
+                <div class="input-group">
+                    <input type="password" class="form-control" id="oanda-api-key" 
+                           placeholder="OANDA API Key" readonly>
+                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('oanda-api-key')">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-primary" type="button" onclick="editApiKey('OANDA_API_KEY', 'oanda-api-key')">
+                        <i class="bi bi-pencil"></i> Edit
+                    </button>
+                    <button class="btn btn-success" type="button" onclick="testApiConnection('oanda')">
+                        <i class="bi bi-arrow-repeat"></i> Test
+                    </button>
+                </div>
+                <div class="config-status" id="oanda-status">
+                    <span class="badge bg-success">Active</span>
+                </div>
+            </div>
+            <div class="config-item mt-2">
+                <label class="form-label fw-bold">Environment</label>
+                <span class="badge bg-info" id="oanda-environment">practice</span>
+            </div>
+        </div>
+        
+        <!-- News APIs Section -->
+        <div class="mb-4">
+            <h5 class="mb-3">
+                <i class="bi bi-newspaper"></i>
+                News & Data APIs
+            </h5>
+            
+            <!-- Alpha Vantage -->
+            <div class="config-item mb-3">
+                <label class="form-label fw-bold">Alpha Vantage</label>
+                <div class="input-group">
+                    <input type="password" class="form-control" id="alpha-vantage-key" readonly>
+                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('alpha-vantage-key')">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-primary" type="button" onclick="editApiKey('ALPHA_VANTAGE_API_KEY', 'alpha-vantage-key')">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-success" type="button" onclick="testApiConnection('alpha_vantage')">
+                        <i class="bi bi-arrow-repeat"></i>
+                    </button>
+                </div>
+                <div class="config-status" id="alpha-vantage-status"></div>
+            </div>
+            
+            <!-- Marketaux -->
+            <div class="config-item mb-3">
+                <label class="form-label fw-bold">Marketaux</label>
+                <div class="input-group">
+                    <input type="password" class="form-control" id="marketaux-key" readonly>
+                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('marketaux-key')">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-primary" type="button" onclick="editApiKey('MARKETAUX_API_KEY', 'marketaux-key')">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-success" type="button" onclick="testApiConnection('marketaux')">
+                        <i class="bi bi-arrow-repeat"></i>
+                    </button>
+                </div>
+                <div class="config-status" id="marketaux-status"></div>
+            </div>
+            
+            <!-- NewsData -->
+            <div class="config-item mb-3">
+                <label class="form-label fw-bold">NewsData.io</label>
+                <div class="input-group">
+                    <input type="password" class="form-control" id="newsdata-key" readonly>
+                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('newsdata-key')">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-primary" type="button" onclick="editApiKey('NEWSDATA_API_KEY', 'newsdata-key')">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-secondary" type="button" disabled>
+                        <i class="bi bi-arrow-repeat"></i>
+                    </button>
+                </div>
+                <div class="config-status" id="newsdata-status"></div>
+            </div>
+        </div>
+        
+        <!-- Telegram Configuration -->
+        <div class="mb-4">
+            <h5 class="mb-3">
+                <i class="bi bi-telegram"></i>
+                Telegram Notifications
+            </h5>
+            <div class="config-item">
+                <label class="form-label fw-bold">Bot Token</label>
+                <div class="input-group">
+                    <input type="password" class="form-control" id="telegram-token" readonly>
+                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('telegram-token')">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-primary" type="button" onclick="editApiKey('TELEGRAM_TOKEN', 'telegram-token')">
+                        <i class="bi bi-pencil"></i> Edit
+                    </button>
+                    <button class="btn btn-success" type="button" onclick="testApiConnection('telegram')">
+                        <i class="bi bi-arrow-repeat"></i> Test
+                    </button>
+                </div>
+                <div class="config-status" id="telegram-status"></div>
+            </div>
+            <div class="config-item mt-2">
+                <label class="form-label fw-bold">Chat ID</label>
+                <input type="text" class="form-control" id="telegram-chat-id" readonly>
+            </div>
+        </div>
+        
+        <!-- Gemini AI Configuration -->
+        <div class="mb-4">
+            <h5 class="mb-3">
+                <i class="bi bi-robot"></i>
+                Gemini AI
+            </h5>
+            <div class="config-item">
+                <label class="form-label fw-bold">API Key</label>
+                <div class="input-group">
+                    <input type="password" class="form-control" id="gemini-key" readonly>
+                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('gemini-key')">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-primary" type="button" onclick="editApiKey('GEMINI_API_KEY', 'gemini-key')">
+                        <i class="bi bi-pencil"></i> Edit
+                    </button>
+                    <button class="btn btn-success" type="button" onclick="testApiConnection('gemini')">
+                        <i class="bi bi-arrow-repeat"></i> Test
+                    </button>
+                </div>
+                <div class="config-status" id="gemini-status"></div>
+            </div>
+        </div>
+        
+        <!-- API Usage Statistics -->
+        <div class="mt-4">
+            <h5 class="mb-3">
+                <i class="bi bi-bar-chart-fill"></i>
+                API Usage Statistics
+            </h5>
+            <div id="api-usage-stats">
+                <div class="usage-item mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>OANDA API</span>
+                        <span class="badge bg-success">0% used</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <small class="text-muted">0 / 10,000 calls remaining today</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Last Updated -->
+        <div class="mt-4 text-end">
+            <small class="text-muted">
+                Last updated: <span id="api-config-last-updated">Never</span>
+            </small>
+        </div>
+    </div>
+    
+    <!-- Error Display -->
+    <div id="api-config-error" class="alert alert-danger" style="display: none;">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span id="api-config-error-text"></span>
+    </div>
+</div>
+
+<style>
+.config-item {
+    background: rgba(255, 255, 255, 0.02);
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+}
+
+.config-status {
+    margin-top: 8px;
+}
+
+.usage-item {
+    background: rgba(255, 255, 255, 0.02);
+    padding: 12px;
+    border-radius: 6px;
+}
+
+.progress {
+    height: 8px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+</style>
+
+<script>
+// Global state
+let apiConfigData = null;
+
+// Load API configuration on page load
+async function loadApiConfiguration() {
+    try {
+        const response = await fetch('/api/config/credentials');
+        const data = await response.json();
+        
+        if (data.success) {
+            apiConfigData = data.credentials;
+            renderApiConfiguration(data.credentials);
+            document.getElementById('api-config-loading').style.display = 'none';
+            document.getElementById('api-config-content').style.display = 'block';
+        } else {
+            showApiConfigError('Failed to load API configuration');
+        }
+    } catch (error) {
+        console.error('Error loading API configuration:', error);
+        showApiConfigError('Error connecting to API: ' + error.message);
+    }
+}
+
+// Render API configuration
+function renderApiConfiguration(config) {
+    // OANDA
+    if (config.oanda) {
+        document.getElementById('oanda-api-key').value = config.oanda.api_key;
+        document.getElementById('oanda-environment').textContent = config.oanda.environment;
+        updateApiStatus('oanda-status', config.oanda.is_set);
+    }
+    
+    // Alpha Vantage
+    if (config.news_apis && config.news_apis.alpha_vantage) {
+        document.getElementById('alpha-vantage-key').value = config.news_apis.alpha_vantage.api_key;
+        updateApiStatus('alpha-vantage-status', config.news_apis.alpha_vantage.is_set);
+    }
+    
+    // Marketaux
+    if (config.news_apis && config.news_apis.marketaux) {
+        document.getElementById('marketaux-key').value = config.news_apis.marketaux.api_key;
+        updateApiStatus('marketaux-status', config.news_apis.marketaux.is_set);
+    }
+    
+    // NewsData
+    if (config.news_apis && config.news_apis.newsdata) {
+        document.getElementById('newsdata-key').value = config.news_apis.newsdata.api_key;
+        updateApiStatus('newsdata-status', config.news_apis.newsdata.is_set);
+    }
+    
+    // Telegram
+    if (config.telegram) {
+        document.getElementById('telegram-token').value = config.telegram.token;
+        document.getElementById('telegram-chat-id').value = config.telegram.chat_id;
+        updateApiStatus('telegram-status', config.telegram.is_set);
+    }
+    
+    // Gemini
+    if (config.gemini) {
+        document.getElementById('gemini-key').value = config.gemini.api_key;
+        updateApiStatus('gemini-status', config.gemini.is_set);
+    }
+    
+    // Last updated
+    document.getElementById('api-config-last-updated').textContent = new Date().toLocaleString();
+    
+    // Load usage stats
+    loadApiUsageStats();
+}
+
+// Update API status indicator
+function updateApiStatus(elementId, isSet) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        if (isSet) {
+            element.innerHTML = '<span class="badge bg-success">✓ Active</span>';
+        } else {
+            element.innerHTML = '<span class="badge bg-warning">⚠ Not Set</span>';
+        }
+    }
+}
+
+// Load API usage statistics
+async function loadApiUsageStats() {
+    try {
+        const response = await fetch('/api/config/usage');
+        const data = await response.json();
+        
+        if (data.success && data.usage) {
+            renderApiUsageStats(data.usage);
+        }
+    } catch (error) {
+        console.error('Error loading usage stats:', error);
+    }
+}
+
+// Render usage statistics
+function renderApiUsageStats(usage) {
+    const container = document.getElementById('api-usage-stats');
+    
+    // Clear existing content
+    container.innerHTML = '';
+    
+    // Render each API's usage
+    Object.keys(usage).forEach(apiKey => {
+        const stats = usage[apiKey];
+        const percentage = stats.percentage_used || 0;
+        const badgeClass = stats.status === 'green' ? 'success' : stats.status === 'yellow' ? 'warning' : 'danger';
+        
+        const html = `
+            <div class="usage-item mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <span>${apiKey.charAt(0).toUpperCase() + apiKey.slice(1)} API</span>
+                    <span class="badge bg-${badgeClass}">${percentage.toFixed(1)}% used</span>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar bg-${badgeClass}" role="progressbar" style="width: ${percentage}%"></div>
+                </div>
+                <small class="text-muted">${stats.calls_today || 0} / ${stats.daily_limit || 'N/A'} calls today</small>
+            </div>
+        `;
+        
+        container.insertAdjacentHTML('beforeend', html);
+    });
+}
+
+// Toggle password visibility
+function togglePassword(inputId) {
+    const input = document.getElementById(inputId);
+    const button = event.target.closest('button');
+    const icon = button.querySelector('i');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
+}
+
+// Edit API key
+function editApiKey(keyName, inputId) {
+    const input = document.getElementById(inputId);
+    const currentValue = input.value;
+    
+    // Prompt for new value
+    const newValue = prompt(`Enter new value for ${keyName}:`, currentValue);
+    
+    if (newValue !== null && newValue !== currentValue) {
+        updateApiKey(keyName, newValue);
+    }
+}
+
+// Update API key
+async function updateApiKey(keyName, newValue) {
+    try {
+        const response = await fetch(`/api/config/credentials/${keyName}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                value: newValue,
+                validate: true
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Reload configuration
+            await loadApiConfiguration();
+            
+            // Show success message
+            showApiConfigMessage('success', 'API key updated successfully');
+        } else {
+            showApiConfigError('Failed to update API key: ' + (data.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error updating API key:', error);
+        showApiConfigError('Error updating API key: ' + error.message);
+    }
+}
+
+// Test API connection
+async function testApiConnection(serviceName) {
+    const button = event.target.closest('button');
+    const originalText = button.innerHTML;
+    
+    // Show loading state
+    button.disabled = true;
+    button.innerHTML = '<i class="bi bi-hourglass-split"></i> Testing...';
+    
+    try {
+        const response = await fetch(`/api/config/test/${serviceName}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showApiConfigMessage('success', `✓ ${serviceName}: ${data.message}`);
+        } else {
+            showApiConfigMessage('warning', `⚠ ${serviceName}: ${data.message}`);
+        }
+    } catch (error) {
+        console.error('Error testing API:', error);
+        showApiConfigMessage('danger', `✗ ${serviceName}: Test failed - ${error.message}`);
+    } finally {
+        // Restore button
+        button.disabled = false;
+        button.innerHTML = originalText;
+    }
+}
+
+// Show error message
+function showApiConfigError(message) {
+    const errorDiv = document.getElementById('api-config-error');
+    const errorText = document.getElementById('api-config-error-text');
+    
+    errorText.textContent = message;
+    errorDiv.style.display = 'block';
+}
+
+// Show generic message
+function showApiConfigMessage(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.getElementById('api-config-content').insertAdjacentElement('afterbegin', alertDiv);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadApiConfiguration();
+    
+    // Refresh usage stats every 60 seconds
+    setInterval(loadApiUsageStats, 60000);
+});
+</script>
+

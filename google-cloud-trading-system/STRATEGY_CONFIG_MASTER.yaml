@@ -66,7 +66,7 @@ strategies:
   gold_trump_week:
     name: "Gold Trump Week"
     description: "Gold specialist with fundamental analysis"
-    instruments: ["XAU_USD", "EUR_USD", "GBP_USD"]  # Gold first!
+    instruments: ["XAU_USD"]  # Gold only
     risk_settings:
       max_risk_per_trade: 0.015
       max_portfolio_risk: 0.50

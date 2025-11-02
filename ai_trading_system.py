@@ -18,9 +18,9 @@ OANDA_API_KEY = "a3699a9d6b6d94d4e2c4c59748e73e2d-b6cbc64f16bcfb920e40f9117e6611
 OANDA_ACCOUNT_ID = "101-004-30719775-008"  # Demo account
 OANDA_BASE_URL = "https://api-fxpractice.oanda.com"
 
-# Telegram Configuration
-TELEGRAM_BOT_TOKEN = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-TELEGRAM_CHAT_ID = "6100678501"
+# Telegram Configuration (env-driven)
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -69,11 +69,35 @@ class AITradingSystem:
         self.surprise_threshold = 0.5
         self.throttle_until = None
         self.base_risk = self.risk_per_trade
+        # Adaptive store (online learning of parameters)
+        try:
+            from adaptive_store import AdaptiveStore
+            self.adaptive_store = AdaptiveStore()
+        except Exception:
+            self.adaptive_store = None  # type: ignore
+
+        # Dynamic signal parameters (env-configurable)
+        self.xau_ema_period = int(os.getenv('XAU_EMA_PERIOD', '50'))
+        self.xau_atr_period = int(os.getenv('XAU_ATR_PERIOD', '14'))
+        self.xau_k_atr = float(os.getenv('XAU_K_ATR', '1.5'))  # stricter distance from EMA in ATRs
+        # Generic defaults for all pairs
+        self.ema_period_default = int(os.getenv('EMA_PERIOD_DEFAULT', '50'))
+        self.atr_period_default = int(os.getenv('ATR_PERIOD_DEFAULT', '14'))
+        self.k_atr_default = float(os.getenv('K_ATR_DEFAULT', '1.0'))
+        # Per-instrument max units (prevents tiny P&L from low cap)
+        self.max_units_per_instrument = {
+            'EUR_USD': int(os.getenv('MAX_UNITS_EUR_USD', '50000')),
+            'GBP_USD': int(os.getenv('MAX_UNITS_GBP_USD', '50000')),
+            'AUD_USD': int(os.getenv('MAX_UNITS_AUD_USD', '50000')),
+            'USD_JPY': int(os.getenv('MAX_UNITS_USD_JPY', '200000')),
+            'XAU_USD': int(os.getenv('MAX_UNITS_XAU_USD', '500')),
+        }
         
         logger.info(f"🤖 AI Trading System initialized")
         logger.info(f"📊 Demo Account: {self.account_id}")
         logger.info(f"💰 Risk per trade: {self.risk_per_trade*100}%")
         logger.info(f"📱 Telegram commands: ENABLED")
+        self.performance_events = []  # type: ignore
         
     def should_send_bracket_notification(self, trade_id):
         """Check if we should send a bracket notification (rate limited)"""
@@ -700,11 +724,20 @@ class AITradingSystem:
                         counts['positions'] += 1
                         sym = p['instrument']
                         counts['by_symbol'][sym] = counts['by_symbol'].get(sym, 0) + 1
-            # Pending orders
-            r2 = requests.get(f"{OANDA_BASE_URL}/v3/accounts/{self.account_id}/pendingOrders",
-                              headers=self.headers, timeout=10)
+            # Pending orders (exclude dependent SL/TP orders)
+            r2 = requests.get(
+                f"{OANDA_BASE_URL}/v3/accounts/{self.account_id}/pendingOrders",
+                headers=self.headers,
+                timeout=10,
+            )
             if r2.status_code == 200:
-                for o in r2.json().get('orders', []):
+                orders = r2.json().get('orders', [])
+                for o in orders:
+                    otype = o.get('type', '').upper()
+                    # Only count entry orders towards caps; exclude dependent SL/TP orders
+                    is_entry_order = otype in ('LIMIT', 'STOP', 'MARKET_IF_TOUCHED')
+                    if not is_entry_order:
+                        continue
                     counts['pending'] += 1
                     sym = o.get('instrument')
                     if sym:
@@ -714,21 +747,30 @@ class AITradingSystem:
         return counts  # type: ignore
 
     def enforce_live_cap(self) -> None:
-        """Ensure positions+pending <= max_concurrent_trades; cancel excess pending by age."""
+        """Ensure positions+pending <= max_concurrent_trades; cancel excess entry orders by age.
+        Only entry orders (LIMIT/STOP/MARKET_IF_TOUCHED) are considered and cancelled. Dependent
+        bracket orders (TAKE_PROFIT/STOP_LOSS/TRAILING_STOP_LOSS) are ignored.
+        """
         try:
             counts = self.get_live_counts()
             total_live = counts['positions'] + counts['pending']
             if total_live <= self.max_concurrent_trades:
                 return
             to_cancel = total_live - self.max_concurrent_trades
-            r = requests.get(f"{OANDA_BASE_URL}/v3/accounts/{self.account_id}/pendingOrders",
-                             headers=self.headers, timeout=10)
+            r = requests.get(
+                f"{OANDA_BASE_URL}/v3/accounts/{self.account_id}/pendingOrders",
+                headers=self.headers,
+                timeout=10,
+            )
             if r.status_code != 200:
                 return
             orders = r.json().get('orders', [])
-            # Cancel oldest first
+            # Consider only entry orders for cancellation; cancel oldest first
             orders_sorted = sorted(orders, key=lambda o: o.get('createTime',''))
             for o in orders_sorted:
+                otype = o.get('type', '').upper()
+                if otype not in ('LIMIT', 'STOP', 'MARKET_IF_TOUCHED'):
+                    continue
                 if to_cancel <= 0:
                     break
                 oid = o.get('id')
@@ -771,16 +813,56 @@ class AITradingSystem:
             if response.status_code == 200:
                 data = response.json()
                 prices = {}
-                for price_data in data['prices']:
-                    instrument = price_data['instrument']
-                    bid = float(price_data['bids'][0]['price'])
-                    ask = float(price_data['asks'][0]['price'])
-                    prices[instrument] = {
-                        'bid': bid,
-                        'ask': ask,
-                        'mid': (bid + ask) / 2,
-                        'spread': ask - bid
-                    }
+                missing = []
+                stale = []
+                now = datetime.utcnow()
+                for price_data in data.get('prices', []):
+                    try:
+                        instrument = price_data.get('instrument')
+                        if not instrument:
+                            continue
+                        status = price_data.get('status', '').lower()
+                        t = price_data.get('time')
+                        ts_ok = True
+                        if t:
+                            try:
+                                # OANDA time is RFC3339; compare staleness > 30s
+                                pt = datetime.fromisoformat(t.replace('Z', '+00:00'))
+                                ts_ok = (now - pt).total_seconds() <= 30
+                            except Exception:
+                                ts_ok = True
+                        if status not in ('tradeable', 'tradable'):
+                            stale.append(instrument)
+                            continue
+                        bid = float(price_data.get('bids', [{'price': '0'}])[0]['price'])
+                        ask = float(price_data.get('asks', [{'price': '0'}])[0]['price'])
+                        if bid <= 0 or ask <= 0 or not ts_ok:
+                            stale.append(instrument)
+                            continue
+                        prices[instrument] = {
+                            'bid': bid,
+                            'ask': ask,
+                            'mid': (bid + ask) / 2,
+                            'spread': ask - bid
+                        }
+                    except Exception:
+                        continue
+
+                # Verify all requested instruments present
+                for inst in self.instruments:
+                    if inst not in prices:
+                        missing.append(inst)
+
+                if missing or stale:
+                    warn = []
+                    if missing:
+                        warn.append(f"missing={','.join(missing)}")
+                    if stale:
+                        warn.append(f"stale={','.join(stale)}")
+                    msg = f"⚠️ Live price verification issue: {'; '.join(warn)}. New entries temporarily halted."
+                    logger.warning(msg)
+                    self.news_halt_until = datetime.utcnow() + timedelta(minutes=5)
+                    self.send_telegram_message(msg)
                 return prices
             else:
                 logger.error(f"Failed to get prices: {response.status_code}")
@@ -788,6 +870,114 @@ class AITradingSystem:
         except Exception as e:
             logger.error(f"Error getting prices: {e}")
             return {}
+
+    def _fetch_candles(self, instrument: str, granularity: str = 'M5', count: int = 200):
+        try:
+            url = f"{OANDA_BASE_URL}/v3/instruments/{instrument}/candles"
+            params = {
+                'granularity': granularity,
+                'count': count,
+                'price': 'M'  # mid prices
+            }
+            r = requests.get(url, headers=self.headers, params=params, timeout=10)
+            if r.status_code != 200:
+                return []
+            return r.json().get('candles', [])
+        except Exception as e:
+            logger.warning(f"fetch_candles error for {instrument}: {e}")
+            return []
+
+    def _compute_ema(self, values, period: int) -> float:
+        if not values or period <= 0 or len(values) < period:
+            return 0.0
+        k = 2 / (period + 1)
+        ema = values[0]
+        for v in values[1:]:
+            ema = v * k + ema * (1 - k)
+        return float(ema)
+
+    def _compute_atr_from_mid(self, mids, period: int) -> float:
+        # For simplicity with mid-only candles, approximate TR with absolute diff between consecutive mids
+        if not mids or period <= 0 or len(mids) <= period:
+            return 0.0
+        trs = [abs(mids[i] - mids[i-1]) for i in range(1, len(mids))]
+        # Wilder's smoothing approximation
+        atr = sum(trs[:period]) / period
+        for tr in trs[period:]:
+            atr = (atr * (period - 1) + tr) / period
+        return float(atr)
+
+    def _get_xau_indicators(self) -> dict:
+        # Use adaptive params if available
+        ap = (self.adaptive_store.get('XAU_USD') if getattr(self, 'adaptive_store', None) else {})
+        ema_p = int(ap.get('ema', self.xau_ema_period)) if isinstance(ap, dict) else self.xau_ema_period
+        atr_p = int(ap.get('atr', self.xau_atr_period)) if isinstance(ap, dict) else self.xau_atr_period
+        kx = float(ap.get('k_atr', self.xau_k_atr)) if isinstance(ap, dict) else self.xau_k_atr
+        candles = self._fetch_candles('XAU_USD', granularity='M5', count=max(200, ema_p + atr_p + 20))
+        mids = []
+        for c in candles:
+            try:
+                m = float(c['mid']['c'])
+                mids.append(m)
+            except Exception:
+                continue
+        if not mids:
+            return {'ema': 0.0, 'atr': 0.0, 'upper': 0.0, 'lower': 0.0, 'slope_up': False, 'confirm_above': 0, 'confirm_below': 0, 'high_vol_spike': False}
+        ema = self._compute_ema(mids, ema_p)
+        atr = self._compute_atr_from_mid(mids, atr_p)
+        upper = ema + kx * atr
+        lower = ema - kx * atr
+        slope_up = len(mids) >= 4 and (mids[-1] > mids[-2] >= mids[-3])
+        last3 = mids[-3:]
+        confirm_above = sum(1 for v in last3 if v > upper)
+        confirm_below = sum(1 for v in last3 if v < lower)
+        if len(mids) >= 14:
+            recent_trs = [abs(mids[i] - mids[i-1]) for i in range(len(mids)-6, len(mids))]
+            prev_trs = [abs(mids[i] - mids[i-1]) for i in range(len(mids)-12, len(mids)-6)]
+            atr_recent = sum(recent_trs) / len(recent_trs) if recent_trs else 0.0
+            atr_prev = sum(prev_trs) / len(prev_trs) if prev_trs else 0.0
+            high_vol_spike = atr_prev > 0 and atr_recent > 1.5 * atr_prev
+        else:
+            high_vol_spike = False
+        return {'ema': ema, 'atr': atr, 'upper': upper, 'lower': lower, 'slope_up': slope_up, 'confirm_above': confirm_above, 'confirm_below': confirm_below, 'high_vol_spike': high_vol_spike}
+
+    def in_london_session(self) -> bool:
+        # Approximate London session 08:00–17:00 (UTC proxy)
+        h = datetime.utcnow().hour
+        return 8 <= h <= 17
+
+    def _get_indicators(self, instrument: str) -> dict:
+        # Prefer adaptive store; fallback to env defaults
+        ap = (self.adaptive_store.get(instrument) if getattr(self, 'adaptive_store', None) else {})
+        key = instrument.replace('/', '_')
+        ema_period = int(ap.get('ema', int(os.getenv(f'EMA_PERIOD_{key}', str(self.ema_period_default))))) if isinstance(ap, dict) else int(os.getenv(f'EMA_PERIOD_{key}', str(self.ema_period_default)))
+        atr_period = int(ap.get('atr', int(os.getenv(f'ATR_PERIOD_{key}', str(self.atr_period_default))))) if isinstance(ap, dict) else int(os.getenv(f'ATR_PERIOD_{key}', str(self.atr_period_default)))
+        k_atr = float(ap.get('k_atr', float(os.getenv(f'K_ATR_{key}', str(self.k_atr_default))))) if isinstance(ap, dict) else float(os.getenv(f'K_ATR_{key}', str(self.k_atr_default)))
+        candles = self._fetch_candles(instrument, granularity='M5', count=max(200, ema_period + atr_period + 5))
+        mids = []
+        for c in candles:
+            try:
+                mids.append(float(c['mid']['c']))
+            except Exception:
+                continue
+        if not mids:
+            return {'ema': 0.0, 'atr': 0.0, 'k': k_atr, 'slope_up': False, 'confirm_above': 0, 'confirm_below': 0, 'm15_ema': 0.0}
+        ema = self._compute_ema(mids, ema_period)
+        atr = self._compute_atr_from_mid(mids, atr_period)
+        slope_up = len(mids) >= 4 and (mids[-1] > mids[-2] >= mids[-3])
+        last3 = mids[-3:]
+        confirm_above = sum(1 for v in last3 if v > ema + k_atr * atr)
+        confirm_below = sum(1 for v in last3 if v < ema - k_atr * atr)
+        # M15 alignment
+        m15_candles = self._fetch_candles(instrument, granularity='M15', count=max(60, ema_period + 5))
+        m15_mids = []
+        for c in m15_candles:
+            try:
+                m15_mids.append(float(c['mid']['c']))
+            except Exception:
+                continue
+        m15_ema = self._compute_ema(m15_mids, ema_period) if m15_mids else 0.0
+        return {'ema': ema, 'atr': atr, 'k': k_atr, 'slope_up': slope_up, 'confirm_above': confirm_above, 'confirm_below': confirm_below, 'm15_ema': m15_ema}
 
     def in_london_overlap(self) -> bool:
         # Approximate London/NY overlap using UTC hour (13:00–17:00 London time)
@@ -826,71 +1016,84 @@ class AITradingSystem:
                         continue
                 
                 # Generate signals based on price levels and volatility
-                if instrument == 'EUR_USD':
-                    if mid_price > 1.0500:  # Above key level
-                        signals.append({
-                            'instrument': instrument,
-                            'side': 'BUY',
-                            'entry_price': price_data['ask'],
-                            'stop_loss': mid_price - 0.0020,  # 20 pips
-                            'take_profit': mid_price + 0.0040,  # 40 pips
-                            'confidence': 75,
-                            'strategy': 'momentum'
-                        })
-                    elif mid_price < 1.0400:  # Below key level
-                        signals.append({
-                            'instrument': instrument,
-                            'side': 'SELL',
-                            'entry_price': price_data['bid'],
-                            'stop_loss': mid_price + 0.0020,  # 20 pips
-                            'take_profit': mid_price - 0.0040,  # 40 pips
-                            'confidence': 75,
-                            'strategy': 'momentum'
-                        })
-                
-                elif instrument == 'GBP_USD':
-                    if mid_price > 1.2500:
-                        signals.append({
-                            'instrument': instrument,
-                            'side': 'BUY',
-                            'entry_price': price_data['ask'],
-                            'stop_loss': mid_price - 0.0025,  # 25 pips
-                            'take_profit': mid_price + 0.0050,  # 50 pips
-                            'confidence': 70,
-                            'strategy': 'momentum'
-                        })
-                    elif mid_price < 1.2300:
-                        signals.append({
-                            'instrument': instrument,
-                            'side': 'SELL',
-                            'entry_price': price_data['bid'],
-                            'stop_loss': mid_price + 0.0025,  # 25 pips
-                            'take_profit': mid_price - 0.0050,  # 50 pips
-                            'confidence': 70,
-                            'strategy': 'momentum'
-                        })
+                if instrument in ('EUR_USD', 'GBP_USD', 'USD_JPY', 'AUD_USD'):
+                    ind = self._get_indicators(instrument)
+                    ema = ind.get('ema', 0.0); atr = ind.get('atr', 0.0); k = ind.get('k', self.k_atr_default)
+                    slope_up = ind.get('slope_up', False)
+                    confirm_above = ind.get('confirm_above', 0)
+                    confirm_below = ind.get('confirm_below', 0)
+                    m15_ema = ind.get('m15_ema', 0.0)
+                    if instrument in ('EUR_USD', 'GBP_USD', 'AUD_USD'):
+                        k = max(k, 1.25)
+                    if ema > 0 and atr > 0:
+                        upper = ema + k * atr
+                        lower = ema - k * atr
+                        # adaptive SL/TP multipliers with spread-aware TP boost
+                        ap2 = (self.adaptive_store.get(instrument) if getattr(self, 'adaptive_store', None) else {})
+                        sl_mult_cfg = float(ap2.get('sl_mult', 0.5)) if isinstance(ap2, dict) else 0.5
+                        tp_mult_cfg = float(ap2.get('tp_mult', 1.0)) if isinstance(ap2, dict) else 1.0
+                        tp_mult = max(tp_mult_cfg, 1.0 if atr <= 0 else (1.5 if spread <= max(1e-9, 0.25 * atr) else tp_mult_cfg))
+                        sl = max(0.0005, sl_mult_cfg * atr)
+                        tp = max(0.0010, tp_mult * atr)
+                        if mid_price > upper and confirm_above >= 2 and slope_up and (m15_ema == 0.0 or mid_price > m15_ema):
+                            signals.append({
+                                'instrument': instrument,
+                                'side': 'BUY',
+                                'entry_price': price_data['ask'],
+                                'stop_loss': mid_price - sl,
+                                'take_profit': mid_price + tp,
+                                'confidence': 75,
+                                'strategy': 'ema_atr_breakout_confirmed'
+                            })
+                        elif mid_price < lower and confirm_below >= 2 and (m15_ema == 0.0 or mid_price < m15_ema):
+                            signals.append({
+                                'instrument': instrument,
+                                'side': 'SELL',
+                                'entry_price': price_data['bid'],
+                                'stop_loss': mid_price + sl,
+                                'take_profit': mid_price - tp,
+                                'confidence': 75,
+                                'strategy': 'ema_atr_breakout_confirmed'
+                            })
                 
                 elif instrument == 'XAU_USD':
-                    if mid_price > 2000:
-                        signals.append({
-                            'instrument': instrument,
-                            'side': 'BUY',
-                            'entry_price': price_data['ask'],
-                            'stop_loss': mid_price - 5.0,  # $5 stop
-                            'take_profit': mid_price + 10.0,  # $10 target
-                            'confidence': 80,
-                            'strategy': 'scalping'
-                        })
-                    elif mid_price < 1950:
-                        signals.append({
-                            'instrument': instrument,
-                            'side': 'SELL',
-                            'entry_price': price_data['bid'],
-                            'stop_loss': mid_price + 5.0,  # $5 stop
-                            'take_profit': mid_price - 10.0,  # $10 target
-                            'confidence': 80,
-                            'strategy': 'scalping'
-                        })
+                    ind = self._get_xau_indicators()
+                    ema = ind.get('ema', 0.0)
+                    atr = ind.get('atr', 0.0)
+                    upper = ind.get('upper', 0.0)
+                    lower = ind.get('lower', 0.0)
+                    slope_up = ind.get('slope_up', False)
+                    confirm_above = ind.get('confirm_above', 0)
+                    confirm_below = ind.get('confirm_below', 0)
+                    high_vol_spike = ind.get('high_vol_spike', False)
+                    if ema > 0 and atr > 0:
+                        if high_vol_spike:
+                            self.news_halt_until = datetime.utcnow() + timedelta(minutes=15)
+                            logger.info("XAU volatility spike; pausing new entries 15m")
+                            continue
+                        if not self.in_london_session():
+                            logger.info("XAU entry blocked: outside London session")
+                            continue
+                        if mid_price > upper and slope_up and confirm_above >= 2:
+                            signals.append({
+                                'instrument': instrument,
+                                'side': 'BUY',
+                                'entry_price': price_data['ask'],
+                                'stop_loss': mid_price - max(10.0, 0.5 * atr),
+                                'take_profit': mid_price + max(15.0, 1.0 * atr),
+                                'confidence': 80,
+                                'strategy': 'ema_atr_breakout_confirmed'
+                            })
+                        elif mid_price < lower and confirm_below >= 2:
+                            signals.append({
+                                'instrument': instrument,
+                                'side': 'SELL',
+                                'entry_price': price_data['bid'],
+                                'stop_loss': mid_price + max(10.0, 0.5 * atr),
+                                'take_profit': mid_price - max(15.0, 1.0 * atr),
+                                'confidence': 80,
+                                'strategy': 'ema_atr_breakout_confirmed'
+                            })
                 
                 # Track last mid for anti-chasing checks
                 self.prev_mid[instrument] = mid_price
@@ -919,8 +1122,13 @@ class AITradingSystem:
             else:
                 units = int(risk_amount / stop_distance)
             
-            # Limit position size
-            max_units = 10000
+            # Limit position size per instrument
+            max_units = self.max_units_per_instrument.get(signal['instrument'], 10000)
+            # XAU additional high-vol size cut
+            if signal['instrument'] == 'XAU_USD':
+                ind = self._get_xau_indicators()
+                if ind.get('high_vol_spike', False):
+                    units = max(1, int(units * 0.5))
             return min(units, max_units)
             
         except Exception as e:
@@ -975,6 +1183,25 @@ class AITradingSystem:
             if current_symbol in symbols_set and open_slots <= self.reserve_slots_for_diversification and distinct_symbols < 2:
                 logger.info("Reserving slots for diversification; skipping additional entries on same symbol")
                 return False
+
+            # Allow 2nd position in same symbol only if an existing one is at least 0.5R in profit
+            if current_symbol_count >= 1:
+                prices_now = self.get_current_prices() or {}
+                cur_mid = prices_now.get(current_symbol, {}).get('mid') if current_symbol in prices_now else None
+                r_ok = False
+                if cur_mid is not None:
+                    for _, t in self.active_trades.items():
+                        if t['instrument'] != current_symbol:
+                            continue
+                        entry = float(t['entry_price']); stop = float(t['stop_loss']); side = t['side']
+                        r_dist = max(1e-9, (entry - stop) if side == 'BUY' else (stop - entry))
+                        r_multiple = (cur_mid - entry) / r_dist if side == 'BUY' else (entry - cur_mid) / r_dist
+                        if r_multiple >= 0.5:
+                            r_ok = True
+                            break
+                if current_symbol_count >= 1 and not r_ok:
+                    logger.info("Second position blocked: no existing trade >= 0.5R")
+                    return False
             
             # Get account balance
             account_info = self.get_account_info()
@@ -985,6 +1212,35 @@ class AITradingSystem:
             
             # Calculate position size
             units = self.calculate_position_size(signal, balance)
+            # Pre-trade minimum profit checks (0.5R and min absolute $ profit)
+            try:
+                min_r = float(os.getenv('MIN_EXPECTED_R', '0.5'))
+                min_abs = float(os.getenv('MIN_ABS_PROFIT_USD', '0.5'))
+                entry = float(signal['entry_price'])
+                tpv = float(signal['take_profit'])
+                slv = float(signal['stop_loss'])
+                sl_dist = abs(entry - slv)
+                tp_dist = abs(tpv - entry)
+                # Require TP distance >= min_r * SL distance
+                if sl_dist <= 0 or tp_dist < (min_r * sl_dist):
+                    logger.info("Entry blocked: TP < minimum expected R threshold")
+                    return False
+                # Estimate absolute profit at TP in USD
+                inst = signal['instrument']
+                expected_abs = 0.0
+                if inst in ('EUR_USD', 'GBP_USD', 'AUD_USD'):
+                    expected_abs = abs(units) * tp_dist
+                elif inst == 'USD_JPY':
+                    # Convert JPY P&L to USD using entry price
+                    expected_abs = (abs(units) * tp_dist) / max(1e-9, entry)
+                elif inst == 'XAU_USD':
+                    # XAU units are in ounces; price in USD
+                    expected_abs = abs(units) * tp_dist
+                if expected_abs < min_abs:
+                    logger.info(f"Entry blocked: expected TP ${expected_abs:.2f} < min ${min_abs:.2f}")
+                    return False
+            except Exception as e:
+                logger.warning(f"min-profit check error: {e}")
             if units == 0:
                 logger.warning("Position size too small")
                 return False
@@ -1192,6 +1448,10 @@ class AITradingSystem:
                                     r = requests.post(close_url, headers=self.headers, json=payload, timeout=10)
                                     if r.status_code in (200, 201):
                                         t['tp25_done'] = True
+                                        try:
+                                            self.performance_events.append({'instrument': instrument, 'event': 'tp25', 'time': datetime.utcnow()})
+                                        except Exception:
+                                            pass
                                         logger.info(f"✅ 0.8R harvest on {instrument}: {payload}")
                                         # Only send harvest notification once per trade
                                         if not t.get('harvest_notified'):
@@ -1215,6 +1475,10 @@ class AITradingSystem:
                                     r = requests.post(close_url, headers=self.headers, json=payload, timeout=10)
                                     if r.status_code in (200, 201):
                                         t['tp50_done'] = True
+                                        try:
+                                            self.performance_events.append({'instrument': instrument, 'event': 'tp50', 'time': datetime.utcnow()})
+                                        except Exception:
+                                            pass
                                         logger.info(f"✅ 1R partial on {instrument}: {payload}")
                                         # Only send partial notification once per trade
                                         if not t.get('partial_notified'):
@@ -1236,6 +1500,10 @@ class AITradingSystem:
                                     r = requests.post(close_url, headers=self.headers, json=payload, timeout=10)
                                     if r.status_code in (200, 201):
                                         t['full_exit_done'] = True
+                                        try:
+                                            self.performance_events.append({'instrument': instrument, 'event': 'full_exit', 'time': datetime.utcnow()})
+                                        except Exception:
+                                            pass
                                         logger.info(f"✅ 1.5R full exit on {instrument}")
                                         self.send_telegram_message(f"Full Exit: Closed {instrument} @ ~{cur_mid:.5f} (>=1.5R)")
                             except Exception as e:
@@ -1303,6 +1571,56 @@ class AITradingSystem:
         except Exception as e:
             logger.error(f"Failed to send status update: {e}")
 
+    def adaptive_loop(self):
+        """Periodically adjust per-instrument parameters based on recent performance events."""
+        while True:
+            try:
+                if not getattr(self, 'adaptive_store', None):
+                    time.sleep(1800)
+                    continue
+                # Look back 6 hours
+                cutoff = datetime.utcnow() - timedelta(hours=6)
+                recent = [e for e in self.performance_events if e.get('time') and e['time'] >= cutoff]
+                by_inst: Dict[str, List[Dict[str, Any]]] = {}
+                for e in recent:
+                    by_inst.setdefault(e['instrument'], []).append(e)
+                changed = []
+                for inst, evs in by_inst.items():
+                    # proxy reward: tp25=0.25R, tp50=0.5R, full_exit=1.0R
+                    score = 0.0
+                    for e in evs:
+                        if e['event'] == 'tp25':
+                            score += 0.25
+                        elif e['event'] == 'tp50':
+                            score += 0.50
+                        elif e['event'] == 'full_exit':
+                            score += 1.00
+                    avg_r = score / max(1, len(evs))
+                    ap = self.adaptive_store.get(inst)
+                    k = float(ap.get('k_atr', 1.0))
+                    tp_mult = float(ap.get('tp_mult', 1.0))
+                    # Simple bounded adjustments
+                    if avg_r > 0.35:
+                        nk = max(0.9, round(k - 0.05, 2))
+                        ntp = min(2.0, round(tp_mult + 0.1, 2))
+                    elif avg_r < 0.1:
+                        nk = min(2.0, round(k + 0.1, 2))
+                        ntp = max(0.8, round(tp_mult - 0.1, 2))
+                    else:
+                        continue
+                    if abs(nk - k) >= 1e-6 or abs(ntp - tp_mult) >= 1e-6:
+                        self.adaptive_store.set_param(inst, 'k_atr', nk)
+                        self.adaptive_store.set_param(inst, 'tp_mult', ntp)
+                        changed.append((inst, k, nk, tp_mult, ntp))
+                if changed:
+                    msg = "🤖 Adaptive update:\n" + "\n".join(
+                        f"{i}: k_ATR {ok:.2f}->{nk:.2f}, TPx {otp:.2f}->{ntp:.2f}" for i, ok, nk, otp, ntp in changed
+                    )
+                    self.send_telegram_message(msg)
+            except Exception as e:
+                logger.warning(f"adaptive_loop error: {e}")
+            time.sleep(1800)  # 30 minutes
+
 def main():
     """Main trading loop"""
     logger.info("🚀 STARTING AI TRADING SYSTEM WITH TELEGRAM COMMANDS")
@@ -1326,6 +1644,9 @@ Type /help for available commands""")
     # Start Telegram command processor in separate thread
     telegram_thread = threading.Thread(target=system.telegram_command_loop, daemon=True)
     telegram_thread.start()
+    # Start adaptive loop in separate thread
+    adaptive_thread = threading.Thread(target=system.adaptive_loop, daemon=True)
+    adaptive_thread.start()
     
     # Run continuous trading
     cycle_count = 0

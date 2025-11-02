@@ -6,12 +6,13 @@ Setup Daily Alerts for Trump Gold Strategy
 import os
 import sys
 import json
+import os
 import requests
 from datetime import datetime, time, timedelta
 import pytz
 
 # Telegram config
-BOT_TOKEN = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
+BOT_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
 CHAT_ID = "6100678501"
 
 def send_telegram(message):

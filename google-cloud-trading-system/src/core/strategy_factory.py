@@ -245,6 +245,10 @@ class StrategyFactory:
         """Get list of currently loaded strategy names"""
         return list(self._strategy_cache.keys())
     
+    def list_all_strategies(self) -> List[str]:
+        """Get list of all available strategy names (from overrides)"""
+        return list(STRATEGY_OVERRIDES.keys())
+    
     def get_load_errors(self) -> Dict[str, Dict]:
         """Get dictionary of strategy loading errors"""
         return self._load_errors.copy()

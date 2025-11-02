@@ -6,6 +6,7 @@ Based on MULTI_STRATEGY_PORTFOLIO.yaml configuration
 """
 
 import logging
+import os
 import numpy as np
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
@@ -13,6 +14,8 @@ from dataclasses import dataclass
 
 from src.core.order_manager import TradeSignal, OrderSide
 from src.core.data_feed import MarketData
+from src.core.news_integration import safe_news_integration
+from src.core.telegram_notifier import TelegramNotifier
 
 # Import individual strategies
 from src.strategies.aud_usd_5m_high_return import get_aud_usd_high_return_strategy
@@ -56,21 +59,21 @@ class MultiStrategyPortfolio:
         if get_strategy_rank_1:
             self.strategies['GBP_USD_Champion'] = get_strategy_rank_1()
         
-        # Portfolio configuration from YAML
+        # Portfolio configuration (honor live config/env overrides)
         self.portfolio_config = {
             'initial_capital': 20000,
             'base_currency': 'USD',
             'broker': 'OANDA',
-            'account_type': 'DEMO',  # Start with DEMO
+            'account_type': os.getenv('ACCOUNT_TYPE', 'DEMO'),
             
             'risk_management': {
-                'risk_per_trade_pct': 1.5,
-                'max_total_positions': 5,
-                'max_positions_per_pair': 2,
-                'max_daily_trades_per_pair': 100,
-                'total_portfolio_risk_limit_pct': 10.0,
-                'max_account_drawdown_pct': 15.0,
-                'daily_loss_limit_pct': 5.0
+                'risk_per_trade_pct': float(os.getenv('PORTFOLIO_RISK_PER_TRADE_PCT', '1.5')),
+                'max_total_positions': int(os.getenv('PORTFOLIO_MAX_TOTAL_POSITIONS', '5')),
+                'max_positions_per_pair': int(os.getenv('PORTFOLIO_MAX_POSITIONS_PER_PAIR', '2')),
+                'max_daily_trades_per_pair': int(os.getenv('PER_PAIR_DAILY_CAP', '10')),
+                'total_portfolio_risk_limit_pct': float(os.getenv('PORTFOLIO_RISK_LIMIT_PCT', '10.0')),
+                'max_account_drawdown_pct': float(os.getenv('PORTFOLIO_MAX_DRAWDOWN_PCT', '15.0')),
+                'daily_loss_limit_pct': float(os.getenv('PORTFOLIO_DAILY_LOSS_LIMIT_PCT', '5.0'))
             },
             
             'capital_allocation': {
@@ -81,10 +84,10 @@ class MultiStrategyPortfolio:
             },
             
             'trading_sessions': {
-                'asian_session': {'enabled': True, 'start': '00:00', 'end': '08:00', 'pairs': ['AUD_USD']},
-                'london_session': {'enabled': True, 'start': '08:00', 'end': '17:00', 'pairs': ['GBP_USD', 'EUR_USD', 'XAU_USD', 'AUD_USD']},
-                'ny_session': {'enabled': True, 'start': '13:00', 'end': '20:00', 'pairs': ['GBP_USD', 'EUR_USD', 'XAU_USD', 'AUD_USD']},
-                'late_ny_session': {'enabled': False, 'start': '20:00', 'end': '24:00', 'pairs': []}
+                'asian_session': {'enabled': os.getenv('SESSION_ASIAN_ENABLED', 'true').lower() == 'true', 'start': '00:00', 'end': '08:00', 'pairs': ['AUD_USD']},
+                'london_session': {'enabled': os.getenv('SESSION_LONDON_ENABLED', 'true').lower() == 'true', 'start': '08:00', 'end': '17:00', 'pairs': ['GBP_USD', 'EUR_USD', 'XAU_USD', 'AUD_USD']},
+                'ny_session': {'enabled': os.getenv('SESSION_NY_ENABLED', 'true').lower() == 'true', 'start': '13:00', 'end': '20:00', 'pairs': ['GBP_USD', 'EUR_USD', 'XAU_USD', 'AUD_USD']},
+                'late_ny_session': {'enabled': os.getenv('SESSION_LATE_NY_ENABLED', 'false').lower() == 'true', 'start': '20:00', 'end': '24:00', 'pairs': []}
             }
         }
         
@@ -104,6 +107,17 @@ class MultiStrategyPortfolio:
         self.daily_trades = 0
         self.daily_pnl = 0.0
         self.last_reset_date = datetime.now().date()
+        self.per_pair_daily_counts: Dict[str, int] = {}
+        self.min_rr: float = float(os.getenv('MIN_RR', '3.0'))
+        self.session_filter_enabled: bool = os.getenv('SESSION_FILTER_ENABLED', 'true').lower() == 'true'
+        self.news_filter_enabled: bool = os.getenv('NEWS_FILTER_ENABLED', 'true').lower() == 'true'
+        
+        # Telegram notifier (best-effort)
+        try:
+            self.telegram = TelegramNotifier()
+        except Exception:
+            self.telegram = None
+        self._last_heartbeat: Optional[datetime] = None
         
         # All instruments across strategies
         self.all_instruments = []
@@ -125,6 +139,7 @@ class MultiStrategyPortfolio:
             self.daily_trades = 0
             self.daily_pnl = 0.0
             self.last_reset_date = current_date
+            self.per_pair_daily_counts = {}
     
     def _check_portfolio_risk_limits(self) -> Tuple[bool, str]:
         """Check portfolio-wide risk limits"""
@@ -166,6 +181,8 @@ class MultiStrategyPortfolio:
     
     def _filter_signals_by_session(self, signals: List[TradeSignal]) -> List[TradeSignal]:
         """Filter signals based on current trading session"""
+        if not self.session_filter_enabled:
+            return signals
         current_session = self._get_current_trading_session()
         session_config = self.portfolio_config['trading_sessions'][current_session]
         
@@ -215,6 +232,61 @@ class MultiStrategyPortfolio:
                 logger.info(f"🔒 Signal for {pair} filtered out - max {max_per_pair} per pair reached")
         
         return filtered_signals
+
+    def _filter_by_min_rr(self, signals: List[TradeSignal]) -> List[TradeSignal]:
+        """Keep only signals with RR >= configured minimum when TP/SL present"""
+        if not signals or self.min_rr <= 0:
+            return signals
+        kept: List[TradeSignal] = []
+        for s in signals:
+            if s.take_profit and s.stop_loss and s.entry_price:
+                risk = abs(s.entry_price - s.stop_loss)
+                reward = abs(s.take_profit - s.entry_price)
+                if risk > 0 and (reward / risk) >= self.min_rr:
+                    kept.append(s)
+                else:
+                    logger.info(f"🚫 RR filter: {s.instrument} {getattr(s, 'strategy_name', '')} RR<{self.min_rr} rejected")
+            else:
+                # If TP/SL not provided, keep as some strategies set after entry
+                kept.append(s)
+        return kept
+
+    def _filter_by_per_pair_daily_caps(self, signals: List[TradeSignal]) -> List[TradeSignal]:
+        """Limit signals per pair per day using configured caps"""
+        if not signals:
+            return signals
+        cap = self.portfolio_config['risk_management']['max_daily_trades_per_pair']
+        result: List[TradeSignal] = []
+        for s in signals:
+            c = self.per_pair_daily_counts.get(s.instrument, 0)
+            if c < cap:
+                result.append(s)
+                self.per_pair_daily_counts[s.instrument] = c + 1
+            else:
+                logger.info(f"🚫 Per-pair cap reached for {s.instrument}: {c}/{cap}")
+        return result
+
+    def _maybe_pause_for_news(self) -> bool:
+        """Return True if portfolio should pause due to news (real APIs only)."""
+        if not self.news_filter_enabled:
+            return False
+        try:
+            pairs = self.all_instruments
+            if safe_news_integration.should_pause_trading(pairs):
+                logger.warning("🚫 Trading paused by news gate")
+                # send one heartbeat status about pause per 5 minutes
+                now = datetime.now()
+                if self.telegram and getattr(self.telegram, 'enabled', False):
+                    if not self._last_heartbeat or (now - self._last_heartbeat) >= timedelta(minutes=5):
+                        try:
+                            self.telegram.send_system_status("paused", "High impact negative news detected")
+                            self._last_heartbeat = now
+                        except Exception:
+                            pass
+                return True
+        except Exception as e:
+            logger.error(f"❌ News gate check failed: {e}")
+        return False
     
     def analyze_market(self, market_data: Dict[str, MarketData]) -> List[TradeSignal]:
         """Analyze market using all strategies and return unified signals"""
@@ -223,6 +295,10 @@ class MultiStrategyPortfolio:
         can_trade, reason = self._check_portfolio_risk_limits()
         if not can_trade:
             logger.warning(f"⚠️ Portfolio risk limit: {reason}")
+            return []
+        
+        # News gate (real APIs only)
+        if self._maybe_pause_for_news():
             return []
         
         all_signals = []
@@ -245,14 +321,32 @@ class MultiStrategyPortfolio:
         # Filter by trading session
         session_filtered_signals = self._filter_signals_by_session(all_signals)
         logger.info(f"🕐 Session filtered: {len(session_filtered_signals)} signals")
-        
+
+        # Enforce minimum RR
+        rr_filtered = self._filter_by_min_rr(session_filtered_signals)
+        logger.info(f"🎯 RR filtered: {len(rr_filtered)} signals (min RR {self.min_rr}:1)")
+
+        # Enforce per-pair daily caps
+        capped = self._filter_by_per_pair_daily_caps(rr_filtered)
+        logger.info(f"📉 Per-pair capped: {len(capped)} signals")
+
         # Apply portfolio risk management
-        final_signals = self._apply_portfolio_risk_management(session_filtered_signals)
+        final_signals = self._apply_portfolio_risk_management(capped)
         logger.info(f"🔒 Risk managed: {len(final_signals)} final signals")
         
         # Update portfolio tracking
         self.daily_trades += len(final_signals)
         
+        # Heartbeat (best-effort)
+        try:
+            now = datetime.now()
+            if self.telegram and getattr(self.telegram, 'enabled', False):
+                if not self._last_heartbeat or (now - self._last_heartbeat) >= timedelta(minutes=int(os.getenv('HEARTBEAT_MINUTES', '10'))):
+                    self.telegram.send_system_status("running", f"Signals: {len(final_signals)} | Session: {self._get_current_trading_session()}")
+                    self._last_heartbeat = now
+        except Exception:
+            pass
+
         return final_signals
     
     def update_performance(self, trade_result: Dict):
