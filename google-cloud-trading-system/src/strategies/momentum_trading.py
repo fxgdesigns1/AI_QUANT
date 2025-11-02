@@ -781,8 +781,16 @@ class MomentumTradingStrategy:
                 logger.info(f"⏰ Skipping {instrument}: ATR or ADX is zero (ATR={atr:.2f}, ADX={adx:.2f})")
                 continue
             
+            # Apply session-aware local relaxations during London/NY overlap without mutating globals
+            current_hour = datetime.now().hour
+            local_min_adx = self.min_adx
+            local_min_momentum = self.min_momentum
+            if 13 <= current_hour <= 17:
+                local_min_adx = max(8.0, local_min_adx * 0.90)         # -10%
+                local_min_momentum = max(0.0003, local_min_momentum * 0.80)  # -20%
+
             # ADX filter - must be strong trend
-            if adx < self.min_adx:
+            if adx < local_min_adx:
                 logger.info(f"⏰ Skipping {instrument}: ADX too weak ({adx:.1f})")
                 continue
             
@@ -790,7 +798,7 @@ class MomentumTradingStrategy:
             recent_prices = prices[-self.momentum_period:]
             momentum = (recent_prices[-1] - recent_prices[0]) / recent_prices[0]
             
-            if abs(momentum) < self.min_momentum:
+            if abs(momentum) < local_min_momentum:
                 logger.info(f"⏰ Skipping {instrument}: momentum too weak ({momentum:.4f})")
                 continue
             

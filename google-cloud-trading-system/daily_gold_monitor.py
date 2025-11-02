@@ -18,9 +18,9 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from src.core.oanda_client import get_oanda_client
 from src.core.telegram_notifier import get_telegram_notifier
 
-# Telegram config
-BOT_TOKEN = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-CHAT_ID = "6100678501"
+# Telegram config (use environment variables)
+BOT_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
+CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 
 logger = logging.getLogger(__name__)
 

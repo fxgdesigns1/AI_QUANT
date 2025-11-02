@@ -11,6 +11,7 @@ Permanent, self-regulating gold trading system that:
 5. Self-learning and optimization
 """
 
+import os
 import requests
 import time
 import threading
@@ -32,8 +33,8 @@ headers = {
     'Content-Type': 'application/json'
 }
 
-BOT_TOKEN = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-CHAT_ID = "6100678501"
+BOT_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
+CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 
 class ContinuousAdaptiveGoldSystem:
     """Continuous adaptive gold trading system"""
@@ -95,8 +96,8 @@ class ContinuousAdaptiveGoldSystem:
     def send_telegram(self, message):
         """Send Telegram message"""
         try:
-            url = f'https://api.telegram.org/bot{self.BOT_TOKEN}/sendMessage'
-            data = {'chat_id': self.CHAT_ID, 'text': message, 'parse_mode': 'Markdown'}
+            url = f'https://api.telegram.org/bot{BOT_TOKEN}/sendMessage'
+            data = {'chat_id': CHAT_ID, 'text': message, 'parse_mode': 'Markdown'}
             requests.post(url, data=data, timeout=10)
         except Exception as e:
             logger.error(f"Telegram error: {e}")

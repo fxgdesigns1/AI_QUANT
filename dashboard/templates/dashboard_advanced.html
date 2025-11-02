@@ -922,9 +922,25 @@
             margin-top: 1rem;
         }
 
+        .nav-group-header {
+            color: var(--primary);
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0.75rem 1rem;
+            margin-top: 0.75rem;
+            border-bottom: 1px solid rgba(58, 134, 255, 0.3);
+            background: rgba(58, 134, 255, 0.05);
+        }
+
+        .nav-group-header:first-child {
+            margin-top: 0;
+        }
+
         .sidebar .nav-link {
             color: var(--text-secondary);
-            padding: 0.75rem 1rem;
+            padding: 0.75rem 1rem 0.75rem 2rem;
             border-radius: 0;
             transition: all 0.2s;
         }
@@ -1210,6 +1226,13 @@
         
         <div class="sidebar-heading">Navigation</div>
         <ul class="nav flex-column">
+            <!-- TRADING OPERATIONS -->
+            <li class="nav-item">
+                <div class="nav-group-header">
+                    <i class="bi bi-bullseye me-2"></i>
+                    Trading Operations
+                </div>
+            </li>
             <li class="nav-item">
                 <a class="nav-link active" href="#dashboard" data-section="dashboard">
                     <i class="bi bi-speedometer2 me-2"></i>
@@ -1220,12 +1243,6 @@
                 <a class="nav-link" href="#accounts" data-section="accounts">
                     <i class="bi bi-briefcase me-2"></i>
                     Accounts
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#strategies" data-section="strategies">
-                    <i class="bi bi-graph-up me-2"></i>
-                    Strategies
                 </a>
             </li>
             <li class="nav-item">
@@ -1241,21 +1258,23 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#news" data-section="news">
-                    <i class="bi bi-newspaper me-2"></i>
-                    News & Events
-                </a>
-            </li>
-            <li class="nav-item">
                 <a class="nav-link" href="#trade-manager" data-section="trade-manager">
                     <i class="bi bi-sliders me-2"></i>
                     Trade Manager
                 </a>
             </li>
+            
+            <!-- AI & INTELLIGENCE -->
             <li class="nav-item">
-                <a class="nav-link" href="#system-status" data-section="system-status">
-                    <i class="bi bi-heart-pulse me-2"></i>
-                    System Status
+                <div class="nav-group-header">
+                    <i class="bi bi-robot me-2"></i>
+                    AI & Intelligence
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#ai-copilot" data-section="ai-copilot">
+                    <i class="bi bi-robot me-2"></i>
+                    AI Copilot
                 </a>
             </li>
             <li class="nav-item">
@@ -1265,27 +1284,29 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link" href="#news" data-section="news">
+                    <i class="bi bi-newspaper me-2"></i>
+                    News & Events
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link" href="#strategy-switcher" data-section="strategy-switcher">
                     <i class="bi bi-shuffle me-2"></i>
                     Strategy Switcher
                 </a>
             </li>
+            
+            <!-- ANALYTICS & REPORTS -->
             <li class="nav-item">
-                <a class="nav-link" href="#analytics" data-section="analytics">
+                <div class="nav-group-header">
+                    <i class="bi bi-bar-chart-fill me-2"></i>
+                    Analytics & Reports
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#performance" data-section="performance">
                     <i class="bi bi-graph-up-arrow me-2"></i>
-                    Analytics
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#config" data-section="config">
-                    <i class="bi bi-gear me-2"></i>
-                    Configuration
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#ai-copilot" data-section="ai-copilot">
-                    <i class="bi bi-robot me-2"></i>
-                    AI Copilot
+                    Performance Monitoring
                 </a>
             </li>
             <li class="nav-item">
@@ -1295,9 +1316,29 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#performance" data-section="performance">
-                    <i class="bi bi-graph-up-arrow me-2"></i>
-                    Performance Monitoring
+                <a class="nav-link" href="#strategies" data-section="strategies">
+                    <i class="bi bi-graph-up me-2"></i>
+                    Strategy Performance
+                </a>
+            </li>
+            
+            <!-- SYSTEM & CONFIGURATION -->
+            <li class="nav-item">
+                <div class="nav-group-header">
+                    <i class="bi bi-gear me-2"></i>
+                    System & Configuration
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#system-status" data-section="system-status">
+                    <i class="bi bi-heart-pulse me-2"></i>
+                    System Status
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#config" data-section="config">
+                    <i class="bi bi-gear me-2"></i>
+                    Configuration
                 </a>
             </li>
         </ul>

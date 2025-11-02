@@ -49,6 +49,7 @@ class SimpleTimerScanner:
         self.no_signal_threshold_minutes = 60
         self.loosen_amount = 0.10
         self.tighten_amount = 0.05
+        self.small_loosen_step = 0.05  # 5% per no-signal scan
         
         # Load strategies DYNAMICALLY from accounts.yaml
         yaml_mgr = get_yaml_manager()
@@ -165,6 +166,7 @@ class SimpleTimerScanner:
             self._check_and_adapt_thresholds()
             
             total_signals = 0
+            aggregated_signals = []
             
             # Scan each strategy
             for strategy_name, account_id in self.accounts.items():
@@ -250,6 +252,9 @@ class SimpleTimerScanner:
                         total_signals += len(signals)
                         self.last_signal_time = datetime.now()
                         logger.info(f"🎯 {strategy_name}: {len(signals)} signals (history: {hist_len})")
+                        # Collect for assessment and classification
+                        for s in signals:
+                            aggregated_signals.append((strategy_name, s))
                         
                         # EXECUTE TRADES for signals
                         for signal in signals:
@@ -347,8 +352,22 @@ class SimpleTimerScanner:
                     f"🎯 SCAN COMPLETE\n{total_signals} signals generated!",
                     'trade_signal'
                 )
+                # Assess, validate, classify, and report
+                try:
+                    self._assess_validate_classify_and_report(aggregated_signals)
+                except Exception as e:
+                    logger.warning(f"⚠️ Classification/reporting failed: {e}")
             else:
                 logger.info(f"📊 SCAN #{self.scan_count}: No signals (all strategies waiting for better conditions)")
+                # Incrementally loosen criteria until signals start coming through (bounded)
+                try:
+                    self._incremental_loosen_small()
+                    self.notifier.send_message(
+                        "🔧 No signals. Incrementally loosening criteria slightly and re-scanning on schedule.",
+                        'system_status'
+                    )
+                except Exception as e:
+                    logger.warning(f"⚠️ Incremental loosen failed: {e}")
                 
         except Exception as e:
             logger.error(f"❌ Scan failed: {e}")
@@ -359,6 +378,39 @@ class SimpleTimerScanner:
         """ADAPTIVE SYSTEM: Auto-adjust thresholds based on market conditions"""
         now = datetime.now()
         
+        # Session-aware gentle relaxation during London/NY overlap to increase opportunities
+        # London prime time (user preference): 13:00-17:00 London time
+        # We approximate via UTC hour checks used elsewhere in the codebase
+        if 13 <= now.hour <= 17:
+            try:
+                # Apply a light session-based loosening without permanently drifting params
+                for name, strategy in self.strategies.items():
+                    # Loosen momentum and signal strength gates modestly
+                    if hasattr(strategy, 'min_momentum'):
+                        base_val = getattr(strategy, '_session_base_min_momentum', strategy.min_momentum)
+                        setattr(strategy, '_session_base_min_momentum', base_val)
+                        strategy.min_momentum = max(0.0003, base_val * 0.80)  # -20%
+                    if hasattr(strategy, 'min_signal_strength'):
+                        base_val = getattr(strategy, '_session_base_min_signal_strength', strategy.min_signal_strength)
+                        setattr(strategy, '_session_base_min_signal_strength', base_val)
+                        strategy.min_signal_strength = max(0.10, base_val * 0.90)  # -10%
+                    if hasattr(strategy, 'min_adx'):
+                        base_val = getattr(strategy, '_session_base_min_adx', strategy.min_adx)
+                        setattr(strategy, '_session_base_min_adx', base_val)
+                        strategy.min_adx = max(8.0, base_val * 0.90)  # -10%
+            except Exception:
+                # Non-fatal; continue with standard adaptation below
+                pass
+        else:
+            # Outside overlap window: restore any session-adjusted parameters to their baselines
+            for name, strategy in self.strategies.items():
+                if hasattr(strategy, '_session_base_min_momentum'):
+                    strategy.min_momentum = getattr(strategy, '_session_base_min_momentum')
+                if hasattr(strategy, '_session_base_min_signal_strength'):
+                    strategy.min_signal_strength = getattr(strategy, '_session_base_min_signal_strength')
+                if hasattr(strategy, '_session_base_min_adx'):
+                    strategy.min_adx = getattr(strategy, '_session_base_min_adx')
+
         # Only adapt every 30 minutes
         minutes_since_adaptation = (now - self.last_adaptation_time).total_seconds() / 60
         if minutes_since_adaptation < self.adaptation_interval_minutes:
@@ -424,6 +476,75 @@ class SimpleTimerScanner:
         self.signals_since_adaptation = 0
         self.wins_since_adaptation = 0
         self.losses_since_adaptation = 0
+
+    def _incremental_loosen_small(self):
+        """Loosen thresholds a small step, bounded by safe floors."""
+        for name, strategy in self.strategies.items():
+            try:
+                if hasattr(strategy, 'min_signal_strength'):
+                    base = strategy.min_signal_strength
+                    strategy.min_signal_strength = max(0.08, base * (1 - self.small_loosen_step))
+                    logger.info(f"📉 {name}: min_signal_strength {base:.3f} → {strategy.min_signal_strength:.3f}")
+                if hasattr(strategy, 'min_momentum'):
+                    base = strategy.min_momentum
+                    strategy.min_momentum = max(0.0003, base * (1 - self.small_loosen_step))
+                    logger.info(f"📉 {name}: min_momentum {base:.5f} → {strategy.min_momentum:.5f}")
+                if hasattr(strategy, 'min_adx'):
+                    base = strategy.min_adx
+                    strategy.min_adx = max(8.0, base * (1 - self.small_loosen_step))
+                    logger.info(f"📉 {name}: min_adx {base:.2f} → {strategy.min_adx:.2f}")
+            except Exception as e:
+                logger.debug(f"Incremental loosen skip for {name}: {e}")
+
+    def _assess_validate_classify_and_report(self, aggregated_signals):
+        """Assess, validate, classify signals and send a concise Telegram summary."""
+        if not aggregated_signals:
+            return
+        classes = { 'Elite': [], 'Good': [], 'Moderate': [], 'Reject': [] }
+        total = 0
+        for strat_name, sig in aggregated_signals:
+            try:
+                # Basic validation
+                entry = getattr(sig, 'entry_price', None)
+                sl = getattr(sig, 'stop_loss', None)
+                tp = getattr(sig, 'take_profit', None)
+                conf = float(getattr(sig, 'confidence', 0) or 0)
+                side = getattr(sig, 'side', None)
+                instrument = getattr(sig, 'instrument', 'UNKNOWN')
+                if entry is None or sl is None or tp is None:
+                    classes['Reject'].append((instrument, strat_name, 'invalid_prices'))
+                    continue
+                # RR calc
+                risk = abs(entry - sl)
+                reward = abs(tp - entry)
+                rr = (reward / risk) if risk > 0 else 0
+                # Classification
+                if rr >= 2.0 and conf >= 0.6:
+                    classes['Elite'].append((instrument, strat_name, rr, conf))
+                elif rr >= 1.8 and conf >= 0.4:
+                    classes['Good'].append((instrument, strat_name, rr, conf))
+                elif rr >= 1.5 and conf >= 0.2:
+                    classes['Moderate'].append((instrument, strat_name, rr, conf))
+                else:
+                    classes['Reject'].append((instrument, strat_name, f"rr={rr:.2f}", f"conf={conf:.2f}"))
+                total += 1
+            except Exception:
+                classes['Reject'].append((getattr(sig, 'instrument', 'UNKNOWN'), strat_name, 'exception'))
+        # Telegram summary
+        summary = [
+            "📊 Signal Assessment",
+            f"Total reviewed: {total}",
+            f"Elite: {len(classes['Elite'])}",
+            f"Good: {len(classes['Good'])}",
+            f"Moderate: {len(classes['Moderate'])}",
+            f"Reject: {len(classes['Reject'])}",
+        ]
+        # Include short top-lines
+        def fmt(items, n=3):
+            return ", ".join([f"{i}/{s} rr={rr:.2f} conf={cf:.2f}" for (i,s,rr,cf) in items[:n]]) if items else "-"
+        summary.append(f"Top Elite: {fmt(classes['Elite'])}")
+        summary.append(f"Top Good: {fmt(classes['Good'])}")
+        self.notifier.send_message("\n".join(summary), 'trade_signal')
 
 # Global instance
 _simple_scanner = None

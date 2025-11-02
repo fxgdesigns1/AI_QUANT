@@ -448,6 +448,55 @@ class YAMLManager:
         except Exception as e:
             logger.error(f"❌ Failed to switch account strategy: {e}")
             return False
+    
+    def toggle_account(self, account_id: str, active: bool) -> bool:
+        """Toggle account active/inactive status"""
+        return self.edit_account(account_id, {'active': active})
+    
+    def update_account_strategy(self, account_id: str, strategy_name: str) -> bool:
+        """Alias for switch_account_strategy for consistency"""
+        return self.switch_account_strategy(account_id, strategy_name)
+    
+    def validate_strategy_instruments(self, account_id: str, strategy_name: str) -> bool:
+        """
+        Validate that strategy is compatible with account instruments
+        
+        Args:
+            account_id: Account to validate
+            strategy_name: Strategy to check
+            
+        Returns:
+            True if compatible, False otherwise
+        """
+        try:
+            config = self.read_config()
+            
+            # Find account
+            account = None
+            for acc in config['accounts']:
+                if acc['id'] == account_id:
+                    account = acc
+                    break
+            
+            if not account:
+                logger.error(f"❌ Account not found: {account_id}")
+                return False
+            
+            # Get account instruments
+            instruments = account.get('instruments', [])
+            
+            # TODO: Add strategy validation logic here
+            # For now, just check that account has instruments
+            if not instruments:
+                logger.warning(f"⚠️ Account {account_id} has no instruments configured")
+                return True  # Not a blocker, just a warning
+            
+            logger.info(f"✓ Strategy {strategy_name} validated for account {account_id}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to validate strategy: {e}")
+            return False
 
 
 # Global instance

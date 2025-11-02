@@ -142,6 +142,65 @@ class TradingScanner:
                     'signals': []
                 }
                 
+                # Notify monitoring for high-probability candidates BEFORE execution
+                try:
+                    min_conf = float(os.getenv('MIN_SIGNAL_CONFIDENCE', '0.80'))
+                except Exception:
+                    min_conf = 0.80
+                try:
+                    max_entries_per_instrument = int(os.getenv('MAX_ENTRIES_PER_INSTRUMENT', '2'))
+                except Exception:
+                    max_entries_per_instrument = 2
+                # Prepare current open trades once
+                open_trades_cache = None
+                try:
+                    open_trades_cache = self.order_manager.oanda_client.get_open_trades()
+                except Exception:
+                    open_trades_cache = []
+
+                for sig in signals:
+                    try:
+                        conf = getattr(sig, 'confidence', 0.0) or 0.0
+                        if conf < min_conf:
+                            continue
+                        # Compute spread and mid
+                        md = market_data.get(sig.instrument)
+                        spread_pips = None
+                        price_mid = None
+                        if md is not None and hasattr(md, 'bid') and hasattr(md, 'ask'):
+                            bid = float(md.bid)
+                            ask = float(md.ask)
+                            price_mid = (bid + ask) / 2.0
+                            # Approx pips calc for FX pairs; for JPY use 2 decimal pips
+                            if sig.instrument.endswith('JPY'):
+                                spread_pips = (ask - bid) * 100
+                            else:
+                                spread_pips = (ask - bid) * 10000
+                        # Entries available check
+                        reasons = [f"Confidence ≥ {min_conf:.2f}"]
+                        try:
+                            if open_trades_cache is not None:
+                                inst_trades = [t for t in open_trades_cache if str(t.get('instrument')) == sig.instrument]
+                                if len(inst_trades) < max_entries_per_instrument:
+                                    reasons.append(f"Entries available ({len(inst_trades)}/{max_entries_per_instrument})")
+                                else:
+                                    # Skip monitoring if already at cap
+                                    continue
+                        except Exception:
+                            pass
+                        # Send monitoring alert
+                        self.telegram.send_monitoring_alert(
+                            instrument=sig.instrument,
+                            side=sig.side.value,
+                            confidence=conf,
+                            reasons=reasons,
+                            strategy=strategy_name,
+                            price=price_mid,
+                            spread_pips=spread_pips
+                        )
+                    except Exception as e:
+                        logger.debug(f"Monitoring alert skipped: {e}")
+
                 # Execute each signal
                 for signal in signals:
                     try:

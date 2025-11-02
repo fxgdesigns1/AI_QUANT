@@ -19,6 +19,10 @@ from dataclasses import dataclass, asdict
 import hashlib
 import aiohttp
 
+# Setup logging first (needed for imports below)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 # Import cloud system and API tracking
 try:
     from api_usage_tracker import get_usage_tracker
@@ -28,9 +32,15 @@ except ImportError:
     from .api_usage_tracker import get_usage_tracker
     from .cloud_system_client import get_cloud_client
 
-# Setup logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+# Import config API manager
+try:
+    import sys
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'google-cloud-trading-system', 'src', 'core'))
+    from config_api_manager import register_config_api
+    CONFIG_API_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"⚠️ Config API not available: {e}")
+    CONFIG_API_AVAILABLE = False
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'your-secret-key-here')
@@ -640,6 +650,65 @@ def get_daily_report():
             session_status = "Asian Session"
             next_session = "London Open (8:00 AM)"
         
+        # Build per-account daily metrics (today) from trades DB
+        try:
+            from src.analytics.trade_database import get_trade_database
+            db = get_trade_database()
+            from datetime import datetime as _dt
+            _today = _dt.now().strftime('%Y-%m-%d')
+
+            accounts_daily_metrics = {}
+            with db.get_connection() as conn:
+                cursor = conn.cursor()
+                for acc_id in accounts.keys():
+                    cursor.execute(
+                        """
+                        SELECT realized_pnl, is_closed, entry_time, exit_time
+                        FROM trades
+                        WHERE account_id = ? AND (
+                          (is_closed = 1 AND exit_time LIKE ? || '%') OR
+                          (is_closed = 0 AND entry_time LIKE ? || '%')
+                        )
+                        """,
+                        (acc_id, _today, _today)
+                    )
+                    rows = cursor.fetchall()
+                    wins = losses = be = total = 0
+                    gp = gl = net = 0.0
+                    open_today = 0
+                    for r in rows:
+                        if r['is_closed']:
+                            pnl = float(r['realized_pnl'] or 0.0)
+                            total += 1
+                            net += pnl
+                            if pnl > 0:
+                                wins += 1
+                                gp += pnl
+                            elif pnl < 0:
+                                losses += 1
+                                gl += abs(pnl)
+                            else:
+                                be += 1
+                        else:
+                            open_today += 1
+                    wr = (wins/total*100.0) if total else 0.0
+                    pf = (gp/gl) if gl>0 else None
+                    accounts_daily_metrics[acc_id] = {
+                        'total_trades': total,
+                        'wins': wins,
+                        'losses': losses,
+                        'break_even': be,
+                        'win_rate': wr,
+                        'net_pnl': net,
+                        'gross_profit': gp,
+                        'gross_loss': gl,
+                        'profit_factor': pf,
+                        'open_trades_today': open_today
+                    }
+        except Exception as _e:
+            logger.warning(f"⚠️ Unable to compute per-account daily metrics: {_e}")
+            accounts_daily_metrics = {}
+
         daily_report = {
             'status': 'success',
             'report': {
@@ -661,6 +730,7 @@ def get_daily_report():
                     'total_profit': total_profit,
                     'total_loss': total_loss
                 },
+                'accounts_daily_metrics': accounts_daily_metrics,
                 'daily_targets': {
                     'daily_target': 700,
                     'weekly_target': 2500,
@@ -680,6 +750,104 @@ def get_daily_report():
     except Exception as e:
         logger.error(f"Error getting daily report: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/account-daily-metrics')
+def get_account_daily_metrics():
+    """Get today's performance metrics for a specific account_id from trades DB"""
+    try:
+        account_id = request.args.get('account_id', '').strip()
+        if not account_id:
+            return jsonify({'status': 'error', 'message': 'account_id is required'}), 400
+
+        from src.analytics.trade_database import get_trade_database
+        from datetime import datetime
+
+        db = get_trade_database()
+        today = datetime.now().strftime('%Y-%m-%d')
+
+        # Query trades for today for this account
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                SELECT realized_pnl, pnl_pips, instrument, entry_time, exit_time, is_closed
+                FROM trades
+                WHERE account_id = ? AND (
+                    (is_closed = 1 AND exit_time LIKE ? || '%') OR
+                    (is_closed = 0 AND entry_time LIKE ? || '%')
+                )
+                ORDER BY COALESCE(exit_time, entry_time) ASC
+                """,
+                (account_id, today, today)
+            )
+            rows = cursor.fetchall()
+
+        # Compute metrics
+        total_trades = 0
+        wins = 0
+        losses = 0
+        break_even = 0
+        gross_profit = 0.0
+        gross_loss = 0.0
+        net_pnl = 0.0
+        open_trades_today = 0
+
+        equity = 0.0
+        peak = 0.0
+        max_drawdown = 0.0
+
+        for row in rows:
+            is_closed = bool(row['is_closed'])
+            if is_closed:
+                pnl = float(row['realized_pnl'] or 0.0)
+                total_trades += 1
+                net_pnl += pnl
+                if pnl > 0:
+                    wins += 1
+                    gross_profit += pnl
+                elif pnl < 0:
+                    losses += 1
+                    gross_loss += abs(pnl)
+                else:
+                    break_even += 1
+
+                equity += pnl
+                if equity > peak:
+                    peak = equity
+                dd = peak - equity
+                if dd > max_drawdown:
+                    max_drawdown = dd
+            else:
+                open_trades_today += 1
+
+        win_rate = (wins / total_trades * 100.0) if total_trades else 0.0
+        avg_win = (gross_profit / wins) if wins else 0.0
+        avg_loss = (gross_loss / losses) if losses else 0.0
+        profit_factor = (gross_profit / gross_loss) if gross_loss > 0 else None
+
+        return jsonify({
+            'status': 'success',
+            'account_id': account_id,
+            'date': today,
+            'metrics': {
+                'total_trades': total_trades,
+                'wins': wins,
+                'losses': losses,
+                'break_even': break_even,
+                'win_rate': win_rate,
+                'net_pnl': net_pnl,
+                'gross_profit': gross_profit,
+                'gross_loss': gross_loss,
+                'avg_win': avg_win,
+                'avg_loss': avg_loss,
+                'profit_factor': profit_factor,
+                'max_drawdown': max_drawdown,
+                'open_trades_today': open_trades_today
+            }
+        })
+    except Exception as e:
+        logger.error(f"Error getting account daily metrics: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @app.route('/api/weekly-roadmap')
 def get_weekly_roadmap():
@@ -2303,6 +2471,14 @@ def track_api_call(api_name):
     except Exception as e:
         logger.error(f"❌ Track API call error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
+# Register config API if available
+if CONFIG_API_AVAILABLE:
+    try:
+        register_config_api(app)
+        logger.info("✅ Configuration API registered in dashboard")
+    except Exception as e:
+        logger.error(f"❌ Failed to register config API: {e}")
 
 if __name__ == '__main__':
     print("📊 Advanced AI Trading Systems Dashboard")

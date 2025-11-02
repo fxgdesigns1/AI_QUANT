@@ -19,8 +19,9 @@ OANDA_BASE_URL = "https://api-fxpractice.oanda.com"
 OANDA_STREAM_URL = "https://stream-fxpractice.oanda.com"
 
 # Telegram Configuration
-TELEGRAM_BOT_TOKEN = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-TELEGRAM_CHAT_ID = "6100678501"
+import os
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

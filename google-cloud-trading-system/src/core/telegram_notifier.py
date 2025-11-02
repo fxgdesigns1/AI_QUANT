@@ -15,6 +15,13 @@ from dataclasses import dataclass
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# No hardcoded fallbacks: require env vars for production safety
+
+# Explicitly blacklist revoked/old tokens to prevent accidental reuse
+REVOKED_TOKENS = {
+    "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU",
+}
+
 @dataclass
 class TelegramMessage:
     """Telegram message structure"""
@@ -34,6 +41,9 @@ class TelegramNotifier:
         """Initialize Telegram notifier"""
         self.token = os.getenv('TELEGRAM_TOKEN')
         self.chat_id = os.getenv('TELEGRAM_CHAT_ID')
+        # Treat revoked tokens as invalid
+        if self.token in REVOKED_TOKENS:
+            self.token = None
         self.enabled = bool(self.token and self.chat_id and 
                           self.token != 'your_telegram_bot_token_here' and
                           self.chat_id != 'your_telegram_chat_id_here')
@@ -50,8 +60,21 @@ class TelegramNotifier:
             logger.info(f"📱 Chat ID: {self.chat_id}")
             logger.info(f"⏱️ Rate limit: {self.min_interval_seconds}s between similar messages")
             logger.info(f"📊 Daily limit: {self.max_daily_messages} messages")
+            # Validate credentials; if unauthorized, disable notifier
+            try:
+                test_url = f"{self.base_url}/getMe"
+                r = requests.get(test_url, timeout=5)
+                r.raise_for_status()
+                ok = r.json().get('ok', False)
+                if not ok:
+                    raise RuntimeError("getMe returned not ok")
+            except Exception:
+                logger.warning("⚠️ Env Telegram credentials failed auth - disabling Telegram notifier")
+                self.enabled = False
         else:
-            logger.warning("⚠️ Telegram notifier disabled - missing or invalid configuration")
+            # Disabled when env not set
+            self.enabled = False
+            logger.warning("⚠️ Telegram notifier disabled - missing TELEGRAM_TOKEN/TELEGRAM_CHAT_ID")
     
     def _should_send_message(self, message_type: str) -> bool:
         """Check if message should be sent based on rate limiting"""
@@ -75,9 +98,6 @@ class TelegramNotifier:
     
     def send_message(self, message, message_type: str = "general") -> bool:
         """Send message to Telegram with rate limiting"""
-        # EMERGENCY: Disable all Telegram messages to stop spam
-        logger.info(f"⚠️ Telegram disabled - would have sent: {message[:50] if isinstance(message, str) else 'TelegramMessage'}...")
-        return True
         
         if not self._should_send_message(message_type):
             return False
@@ -114,23 +134,97 @@ class TelegramNotifier:
         except Exception as e:
             logger.error(f"❌ Failed to send Telegram message: {e}")
             return False
+
+    def send_monitoring_alert(self, instrument: str, side: str, confidence: float,
+                               reasons: List[str], strategy: str,
+                               price: Optional[float] = None, spread_pips: Optional[float] = None) -> bool:
+        """Send alert when system starts monitoring a high-probability potential entry"""
+        try:
+            side_emoji = "📈" if side.upper() == "BUY" else "📉"
+            header = f"👀 <b>MONITORING POTENTIAL ENTRY</b> {side_emoji}"
+            details = [
+                f"<b>Strategy:</b> {strategy}",
+                f"<b>Instrument:</b> {instrument}",
+                f"<b>Direction:</b> {side.upper()}",
+                f"<b>Confidence:</b> {confidence:.2%}",
+            ]
+            if price is not None:
+                details.append(f"<b>Price:</b> {price:.5f}")
+            if spread_pips is not None:
+                details.append(f"<b>Spread:</b> {spread_pips:.1f} pips")
+            newline = "\n"
+            why = newline.join([f"• {r}" for r in reasons]) if reasons else "• High-probability setup detected"
+            message_text = f"""
+{header}
+
+{newline.join(details)}
+
+<b>Why:</b>
+{why}
+
+#Monitoring #{instrument.replace('_','')}
+            """.strip()
+            message = TelegramMessage(text=message_text)
+            return self.send_message(message, message_type="monitoring")
+        except Exception as e:
+            logger.error(f"❌ Failed to send monitoring alert: {e}")
+            return False
     
     def send_trade_alert(self, account_name: str, instrument: str, side: str, 
-                        price: float, confidence: float, strategy: str) -> bool:
+                        price: float, confidence: float, strategy: str,
+                        stop_loss: Optional[float] = None,
+                        take_profit: Optional[float] = None,
+                        position_size: Optional[float] = None,
+                        risk_amount: Optional[float] = None,
+                        reward_amount: Optional[float] = None,
+                        rr: Optional[float] = None,
+                        currency: str = "GBP") -> bool:
         """Send trade execution alert"""
         emoji = "🟢" if side.upper() == "BUY" else "🔴"
         side_emoji = "📈" if side.upper() == "BUY" else "📉"
         
+        # Derive RR if not provided
+        try:
+            if rr is None:
+                if risk_amount is not None and reward_amount is not None and risk_amount > 0:
+                    rr = reward_amount / risk_amount
+                elif stop_loss is not None and take_profit is not None and price is not None:
+                    risk_distance = abs(price - stop_loss)
+                    reward_distance = abs(take_profit - price)
+                    if risk_distance > 0:
+                        rr = reward_distance / risk_distance
+        except Exception:
+            # Do not block sending if RR calc fails
+            rr = rr
+
+        details_lines = [
+            f"<b>Account:</b> {account_name}",
+            f"<b>Strategy:</b> {strategy}",
+            f"<b>Instrument:</b> {instrument}",
+            f"<b>Side:</b> {side.upper()}",
+            f"<b>Price:</b> {price:.5f}",
+            f"<b>Confidence:</b> {confidence:.2%}",
+            f"<b>Time:</b> {datetime.now().strftime('%H:%M:%S')}"
+        ]
+
+        if stop_loss is not None:
+            details_lines.append(f"<b>Stop Loss:</b> {stop_loss:.5f}")
+        if take_profit is not None:
+            details_lines.append(f"<b>Take Profit:</b> {take_profit:.5f}")
+        if position_size is not None:
+            details_lines.append(f"<b>Position Size:</b> {position_size}")
+        if rr is not None:
+            details_lines.append(f"<b>RR:</b> 1:{rr:.2f}")
+        if risk_amount is not None:
+            details_lines.append(f"<b>Potential Loss:</b> {risk_amount:.2f} {currency}")
+        if reward_amount is not None:
+            details_lines.append(f"<b>Potential Win:</b> {reward_amount:.2f} {currency}")
+
+        newline = "\n"
         message_text = f"""
 {emoji} <b>TRADE EXECUTED</b> {side_emoji}
 
-<b>Account:</b> {account_name}
-<b>Strategy:</b> {strategy}
-<b>Instrument:</b> {instrument}
-<b>Side:</b> {side.upper()}
-<b>Price:</b> {price:.5f}
-<b>Confidence:</b> {confidence:.2%}
-<b>Time:</b> {datetime.now().strftime('%H:%M:%S')}
+{newline.join(details_lines)}
 
 #TradingAlert #{account_name.replace(' ', '')} #{instrument.replace('_', '')}
         """.strip()

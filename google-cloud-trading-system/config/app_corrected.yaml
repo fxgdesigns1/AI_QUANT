@@ -65,7 +65,7 @@ env_variables:
   STRATEGY_ALPHA_STRATEGY: "momentum_trading"
   
   # Telegram Configuration (optional)
-  TELEGRAM_TOKEN: "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
+  TELEGRAM_TOKEN: "7248728383:AAFpLNAlidybk7ed56bosfi8W_e1MaX7Oxs"
   TELEGRAM_CHAT_ID: "6100678501"
   
   # Google Cloud Configuration

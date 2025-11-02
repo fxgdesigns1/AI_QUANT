@@ -10,6 +10,7 @@ Real-time monitoring system that automatically enters trades when:
 4. Minimum $1,000 profit potential
 """
 
+import os
 import requests
 import numpy as np
 import time
@@ -31,7 +32,7 @@ headers = {
     'Content-Type': 'application/json'
 }
 
-BOT_TOKEN = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
+BOT_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
 CHAT_ID = "6100678501"
 
 class AutomatedSniperSystem:

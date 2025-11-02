@@ -408,3 +408,6 @@ Your **Gold position** is exceptional. The $7,565 gain represents a 19% return o
 
 
 
+
+
+

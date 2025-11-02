@@ -135,6 +135,16 @@ class DynamicAccountManager:
                 if not account_data.get('active', False):
                     logger.info(f"⏭️  Skipping inactive: {account_data.get('name', 'Unknown')}")
                     continue
+                # Optionally disable high-frequency strategies globally
+                try:
+                    if os.getenv('DISABLE_HIGH_FREQUENCY', 'true').lower() == 'true':
+                        strategy_name = account_data.get('strategy', '').lower()
+                        display_name = account_data.get('display_name', account_data.get('name', 'Unknown'))
+                        if strategy_name in ['high_frequency', 'high-frequency', 'scalper_hf', 'hf']:
+                            logger.info(f"⏸️  Disabled by policy (quality>quantity): {display_name}")
+                            continue
+                except Exception:
+                    pass
                 
                 account_id = account_data.get('id')
                 if not account_id:

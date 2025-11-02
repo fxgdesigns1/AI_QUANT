@@ -1823,8 +1823,7 @@
         <script>
         async function loadAccountsSection() {
             try {
-                const response = await fetch('/api/accounts');
-                const data = await response.json();
+                const data = await fetchJson('/api/accounts', { timeoutMs: 15000, retries: 2 });
                 
                 const grid = document.getElementById('accountsGrid');
                 if (grid) {
@@ -1861,8 +1860,7 @@
         <script>
         async function loadStrategiesSection() {
             try {
-                const response = await fetch('/api/strategies/overview');
-                const data = await response.json();
+                const data = await fetchJson('/api/strategies/overview', { timeoutMs: 15000, retries: 2 });
                 
                 const grid = document.getElementById('strategiesGrid');
                 if (grid) {
@@ -1899,8 +1897,7 @@
         <script>
         async function loadPositionsSection() {
             try {
-                const response = await fetch('/api/positions');
-                const data = await response.json();
+                const data = await fetchJson('/api/positions', { timeoutMs: 15000, retries: 2 });
                 
                 const grid = document.getElementById('positionsGrid');
                 if (grid) {
@@ -1941,8 +1938,7 @@
         <script>
         async function loadSignalsSection() {
             try {
-                const response = await fetch('/api/signals/pending');
-                const data = await response.json();
+                const data = await fetchJson('/api/signals/pending', { timeoutMs: 15000, retries: 2 });
                 
                 const grid = document.getElementById('signalsGrid');
                 if (grid) {
@@ -2022,8 +2018,7 @@
         <script>
         async function loadNewsSection() {
             try {
-                const response = await fetch('/api/news');
-                const data = await response.json();
+                const data = await fetchJson('/api/news', { timeoutMs: 15000, retries: 2 });
                 
                 const grid = document.getElementById('newsGrid');
                 if (grid) {
@@ -2059,9 +2054,10 @@
                 if (!content) return;
                 
                 // Fetch trade manager data
-                const response = await fetch('/api/trades/pending');
+                const response = await fetch('/api/trades/count');
                 const data = await response.json();
-                
+
+                const activeCount = (data && (data.active_trades || data.count || 0)) || 0;
                 content.innerHTML = `
                     <div class="row">
                         <div class="col-12">
@@ -2069,15 +2065,9 @@
                                 <div class="card-body">
                                     <h5>Active Trade Management</h5>
                                     <div id="activeTrades">
-                                        ${data.trades && data.trades.length > 0 ? 
-                                            data.trades.map(trade => `
-                                                <div class="mb-2 p-3 border rounded">
-                                                    <strong>${trade.instrument}</strong> - 
-                                                    ${trade.side} ${trade.units} units @ ${trade.price}
-                                                </div>
-                                            `).join('') :
-                                            '<div class="alert alert-info">No active trades</div>'
-                                        }
+                                        ${activeCount > 0 ?
+                                            `<div class="alert alert-success">${activeCount} active trade${activeCount===1?'':'s'}.</div>` :
+                                            '<div class="alert alert-info">No active trades</div>'}
                                     </div>
                                 </div>
                             </div>
@@ -2356,7 +2346,7 @@
             }
             
             try {
-                const response = await fetch('/api/strategy-switcher/switch-strategy', {
+                const response = await fetch('/api/strategies/switch', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -2462,34 +2452,34 @@
         
         async function loadPerformanceOverview() {
             try {
-                const response = await fetch('/api/performance/overview');
-                const data = await response.json();
-                
+                const data = await fetchJson('/api/performance/live', { timeoutMs: 15000 });
+
+                const totals = (data && data.totals) || {};
                 const overviewDiv = document.getElementById('performanceOverview');
                 if (overviewDiv) {
                     overviewDiv.innerHTML = `
                         <div class="row">
                             <div class="col-md-3 mb-3">
                                 <div class="text-center">
-                                    <h3 style="color: #06d6a0; margin: 0;">${data.total_trades || 0}</h3>
-                                    <p style="color: #ffffff; margin: 0;">Total Trades</p>
+                                    <h3 style="color: #06d6a0; margin: 0;">${totals.open_trades || 0}</h3>
+                                    <p style="color: #ffffff; margin: 0;">Open Trades</p>
                                 </div>
                             </div>
                             <div class="col-md-3 mb-3">
                                 <div class="text-center">
-                                    <h3 style="color: #06d6a0; margin: 0;">${data.total_pnl || 0}</h3>
-                                    <p style="color: #ffffff; margin: 0;">Total P&L</p>
+                                    <h3 style="color: #06d6a0; margin: 0;">${(totals.unrealized_pl || 0).toFixed ? totals.unrealized_pl.toFixed(2) : (totals.unrealized_pl || 0)}</h3>
+                                    <p style="color: #ffffff; margin: 0;">Unrealized P&L</p>
                                 </div>
                             </div>
                             <div class="col-md-3 mb-3">
                                 <div class="text-center">
-                                    <h3 style="color: #06d6a0; margin: 0;">${data.win_rate || 0}%</h3>
-                                    <p style="color: #ffffff; margin: 0;">Win Rate</p>
+                                    <h3 style="color: #06d6a0; margin: 0;">${data.trades_today || 0}</h3>
+                                    <p style="color: #ffffff; margin: 0;">Trades Today</p>
                                 </div>
                             </div>
                             <div class="col-md-3 mb-3">
                                 <div class="text-center">
-                                    <h3 style="color: #06d6a0; margin: 0;">${data.active_strategies || 0}</h3>
+                                    <h3 style="color: #06d6a0; margin: 0;">${(data.active_strategies || 0)}</h3>
                                     <p style="color: #ffffff; margin: 0;">Active Strategies</p>
                                 </div>
                             </div>
@@ -2507,25 +2497,25 @@
         
         async function loadStrategyPerformanceCards() {
             try {
-                const response = await fetch('/api/performance/strategies');
-                const data = await response.json();
+                const data = await fetchJson('/api/performance/live', { timeoutMs: 15000 });
                 
                 const cardsDiv = document.getElementById('strategyPerformanceCards');
                 if (cardsDiv) {
-                    if (data.strategies && data.strategies.length > 0) {
-                        cardsDiv.innerHTML = data.strategies.map(strategy => `
+                    const strategies = (data && data.accounts) ? Object.values(data.accounts) : [];
+                    if (strategies && strategies.length > 0) {
+                        cardsDiv.innerHTML = strategies.slice(0,6).map(strategy => `
                             <div class="col-md-6 mb-3">
                                 <div class="card" style="background: rgba(33, 37, 41, 0.6); border: 1px solid #495057;">
                                     <div class="card-body">
-                                        <h5 style="color: #ffffff;">${strategy.strategy_id}</h5>
+                                        <h5 style="color: #ffffff;">${strategy.display_name || strategy.account_id || 'Account'}</h5>
                                         <div class="row">
                                             <div class="col-6">
-                                                <small style="color: #adb5bd;">Trades: ${strategy.total_trades || 0}</small><br>
-                                                <small style="color: #adb5bd;">Win Rate: ${strategy.win_rate || 0}%</small>
+                                                <small style="color: #adb5bd;">Open Trades: ${strategy.open_trades || 0}</small><br>
+                                                <small style="color: #adb5bd;">Open Positions: ${strategy.open_positions || 0}</small>
                                             </div>
                                             <div class="col-6">
-                                                <small style="color: #adb5bd;">P&L: ${strategy.total_pnl || 0}</small><br>
-                                                <small style="color: #adb5bd;">Sharpe: ${strategy.sharpe_ratio || 'N/A'}</small>
+                                                <small style="color: #adb5bd;">Unrealized P&L: ${(strategy.unrealized_pl || 0)}</small><br>
+                                                <small style="color: #adb5bd;">NAV: ${(strategy.nav || 0)}</small>
                                             </div>
                                         </div>
                                     </div>
@@ -2547,12 +2537,12 @@
         
         async function loadTradeHistoryTable() {
             try {
-                const response = await fetch('/api/performance/trades');
-                const data = await response.json();
+                const data = await fetchJson('/api/performance/live', { timeoutMs: 15000 });
                 
                 const tableDiv = document.getElementById('tradeHistoryTable');
                 if (tableDiv) {
-                    if (data.trades && data.trades.length > 0) {
+                    const trades = (data && data.recent_trades) || [];
+                    if (trades.length > 0) {
                         tableDiv.innerHTML = `
                             <div class="table-responsive">
                                 <table class="table table-dark table-striped">
@@ -2567,7 +2557,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${data.trades.slice(0, 10).map(trade => `
+                                        ${trades.slice(0, 10).map(trade => `
                                             <tr>
                                                 <td style="color: #adb5bd;">${trade.trade_id}</td>
                                                 <td style="color: #adb5bd;">${trade.strategy_id}</td>
@@ -2596,24 +2586,24 @@
         
         async function loadKeyMetrics() {
             try {
-                const response = await fetch('/api/performance/metrics');
-                const data = await response.json();
+                const data = await fetchJson('/api/performance/live', { timeoutMs: 15000 });
                 
                 const metricsDiv = document.getElementById('keyMetrics');
                 if (metricsDiv) {
+                    const totals = (data && data.totals) || {};
                     metricsDiv.innerHTML = `
                         <div class="row">
                             <div class="col-12 mb-2">
-                                <small style="color: #adb5bd;">Profit Factor: <span style="color: #ffffff;">${data.profit_factor || 'N/A'}</span></small>
+                                <small style="color: #adb5bd;">Open Trades: <span style="color: #ffffff;">${totals.open_trades || 0}</span></small>
                             </div>
                             <div class="col-12 mb-2">
-                                <small style="color: #adb5bd;">Max Drawdown: <span style="color: #ffffff;">${data.max_drawdown || 'N/A'}</span></small>
+                                <small style="color: #adb5bd;">Unrealized P&L: <span style="color: #ffffff;">${(totals.unrealized_pl || 0)}</span></small>
                             </div>
                             <div class="col-12 mb-2">
-                                <small style="color: #adb5bd;">Avg Trade Duration: <span style="color: #ffffff;">${data.avg_trade_duration || 'N/A'}</span></small>
+                                <small style="color: #adb5bd;">Positions: <span style="color: #ffffff;">${totals.open_positions || 0}</span></small>
                             </div>
                             <div class="col-12 mb-2">
-                                <small style="color: #adb5bd;">Risk/Reward Ratio: <span style="color: #ffffff;">${data.risk_reward_ratio || 'N/A'}</span></small>
+                                <small style="color: #adb5bd;">Timestamp: <span style="color: #ffffff;">${data.timestamp || ''}</span></small>
                             </div>
                         </div>
                     `;
@@ -2629,24 +2619,24 @@
         
         async function loadDatabaseStats() {
             try {
-                const response = await fetch('/api/performance/database');
-                const data = await response.json();
+                const data = await fetchJson('/api/performance/live', { timeoutMs: 15000 });
                 
                 const statsDiv = document.getElementById('databaseStats');
                 if (statsDiv) {
+                    const totals = (data && data.totals) || {};
                     statsDiv.innerHTML = `
                         <div class="row">
                             <div class="col-12 mb-2">
-                                <small style="color: #adb5bd;">Database Size: <span style="color: #ffffff;">${data.db_size_mb || 0} MB</span></small>
+                                <small style="color: #adb5bd;">Open Trades: <span style="color: #ffffff;">${totals.open_trades || 0}</span></small>
                             </div>
                             <div class="col-12 mb-2">
-                                <small style="color: #adb5bd;">Total Records: <span style="color: #ffffff;">${data.total_trades || 0}</span></small>
+                                <small style="color: #adb5bd;">Open Positions: <span style="color: #ffffff;">${totals.open_positions || 0}</span></small>
                             </div>
                             <div class="col-12 mb-2">
-                                <small style="color: #adb5bd;">Strategies Tracked: <span style="color: #ffffff;">${data.strategies_count || 0}</span></small>
+                                <small style="color: #adb5bd;">Total NAV: <span style="color: #ffffff;">${(totals.total_nav || 0)}</span></small>
                             </div>
                             <div class="col-12 mb-2">
-                                <small style="color: #adb5bd;">Last Updated: <span style="color: #ffffff;">${data.latest_trade || 'Never'}</span></small>
+                                <small style="color: #adb5bd;">Last Updated: <span style="color: #ffffff;">${data.timestamp || '—'}</span></small>
                             </div>
                         </div>
                     `;
@@ -2902,7 +2892,51 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+      /* Minimal contrast fixes without altering layout */
+      body { color: #e5e7eb; }
+      .card h3, .card h4, .card h5, .sidebar .nav-link { color: #ffffff; }
+      .text-muted, .text-secondary, .text-body-secondary { color: #cbd5e1 !important; }
+      .nav-link { color: #d1d5db; }
+      .nav-link.active { color: #ffffff; }
+    </style>
     <script>
+        // Lightweight fetch helper with timeout, retries, and safe JSON parsing
+        async function fetchJson(url, options = {}) {
+            const {
+                method = 'GET',
+                headers = {},
+                body = null,
+                timeoutMs = 12000,
+                retries = 2,
+                backoffMs = 800
+            } = options;
+
+            for (let attempt = 0; attempt <= retries; attempt++) {
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), timeoutMs);
+                try {
+                    const res = await fetch(url, { method, headers, body, signal: controller.signal });
+                    clearTimeout(timeout);
+                    if (!res.ok) {
+                        // Surface status for caller UI messages
+                        const text = await res.text().catch(() => '');
+                        throw new Error(`HTTP ${res.status}: ${text.slice(0, 120)}`);
+                    }
+                    // Defensive JSON parse
+                    const text = await res.text();
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw new Error('Invalid JSON');
+                    }
+                } catch (err) {
+                    clearTimeout(timeout);
+                    if (attempt === retries) throw err;
+                    await new Promise(r => setTimeout(r, backoffMs * Math.pow(2, attempt)));
+                }
+            }
+        }
         // Chart Management
         let priceChart = null;
         let currentInstrument = 'EUR_USD';
@@ -3039,8 +3073,23 @@
         // Load cloud system performance data
         async function loadCloudPerformance() {
             try {
-                const response = await fetch('/api/cloud/performance');
-                const data = await response.json();
+                let response = await fetch('/api/cloud/performance');
+                // Fallbacks for older deployments or temporary backend errors
+                if (!response.ok) {
+                    response = await fetch('/api/performance/live');
+                }
+                let data;
+                if (response.ok) {
+                    data = await response.json();
+                } else {
+                    // Final fallback: use health to infer online status
+                    const health = await fetch('/api/health');
+                    if (health.ok) {
+                        data = { status: 'online', total_pnl: 0, win_rate: null, trades_today: 0, max_trades: 10 };
+                    } else {
+                        throw new Error('All cloud performance endpoints failed');
+                    }
+                }
                 
                 const container = document.getElementById('cloudPerformance');
                 if (container) {
@@ -3091,28 +3140,9 @@
                 const data = await response.json();
                 
                 const container = document.getElementById('apiUsage');
-                if (container && data.oanda) {
+                if (container) {
                     let html = '';
-                    
-                    // OANDA API
-                    const oanda = data.oanda;
-                    const oandaPercent = oanda.percentage_used;
-                    const oandaColor = oandaPercent < 70 ? 'green' : oandaPercent < 90 ? 'yellow' : 'red';
-                    
-                    html += `
-                        <div class="api-gauge">
-                            <div class="gauge-label">
-                                <span>${oanda.name}</span>
-                                <span>${oanda.calls_today.toLocaleString()}/${oanda.daily_limit.toLocaleString()}</span>
-                            </div>
-                            <div class="gauge-bar">
-                                <div class="gauge-fill ${oandaColor}" style="width: ${oandaPercent}%;">
-                                    ${oandaPercent.toFixed(1)}%
-                                </div>
-                            </div>
-                            <div class="gauge-remaining">${oanda.remaining.toLocaleString()} calls remaining</div>
-                        </div>
-                    `;
+                    // NOTE: Intentionally omitting OANDA usage display per user preference
                     
                     // Marketaux API
                     if (data.marketaux) {
@@ -3158,7 +3188,7 @@
                         `;
                     }
                     
-                    container.innerHTML = html;
+                    container.innerHTML = html || '<div style="color:#9ca3af">No non-OANDA API usage yet</div>';
                 }
             } catch (error) {
                 console.error('Error loading API usage:', error);
@@ -5101,11 +5131,11 @@
         // Load Daily Report
         async function loadDailyReport() {
             try {
-                const response = await fetch('/api/daily-report');
+                const response = await fetch('/api/reports');
                 const data = await response.json();
-                
-                if (data.status === 'success') {
-                    displayDailyReport(data.report);
+                const report = (data && data.reports && data.reports[0]) || null;
+                if (data.status === 'success' && report) {
+                    displayDailyReport(report);
                 } else {
                     document.getElementById('dailyReportContent').innerHTML = `
                         <div style="text-align: center; padding: 20px; color: #ef476f;">
@@ -5192,10 +5222,10 @@
         // Load Weekly Roadmap
         async function loadWeeklyRoadmap() {
             try {
-                const response = await fetch('/api/weekly-roadmap');
+                const response = await fetch('/api/roadmap');
                 const data = await response.json();
                 
-                if (data.status === 'success') {
+                if (data.status === 'success' && data.roadmap) {
                     displayWeeklyRoadmap(data.roadmap);
                 } else {
                     document.getElementById('weeklyRoadmapContent').innerHTML = `
