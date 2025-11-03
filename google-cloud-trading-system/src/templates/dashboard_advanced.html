@@ -12,6 +12,8 @@
     
     <!-- Socket.IO for Real-time Toast Notifications -->
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <!-- Chart.js for the price chart -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     
     <style>
         /* CSS Variables for Consistent Theming (Like Crypto Dashboard) */
@@ -1444,6 +1446,9 @@
                                     <button class="btn btn-sm btn-outline-primary active" data-timeframe="1h">1h</button>
                                     <button class="btn btn-sm btn-outline-primary" data-timeframe="4h">4h</button>
                                     <button class="btn btn-sm btn-outline-primary" data-timeframe="1d">1d</button>
+                                    <a id="tvLink" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener noreferrer" style="margin-left: 6px;">
+                                        TradingView ↗
+                                    </a>
                                 </div>
                             </div>
                             <div class="card-body">
@@ -2662,62 +2667,188 @@
         
         <section id="reports" class="content-section">
             <div class="container-fluid">
-                <h2>📊 Reports & Analytics</h2>
-                <div class="row">
-                    <!-- Daily Report -->
-                    <div class="col-md-6 mb-4">
-                        <div class="card" style="background: rgba(6, 214, 160, 0.1); border: 1px solid #06d6a0;">
-                            <div class="card-header" style="background: rgba(6, 214, 160, 0.2); border-bottom: 1px solid #06d6a0;">
-                                <h4 style="color: #06d6a0; margin: 0; font-size: 1.2rem;">
-                                    📊 Daily Report
-                                </h4>
-                            </div>
-                            <div class="card-body" id="dailyReportContent">
-                                <div style="text-align: center; padding: 20px; color: #666;">
-                                    <div style="font-size: 18px; margin-bottom: 10px;">📈</div>
-                                    <div>Loading daily report...</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Weekly Roadmap -->
-                    <div class="col-md-6 mb-4">
-                        <div class="card" style="background: rgba(131, 56, 236, 0.1); border: 1px solid #8338ec;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>📊 Reports & Analytics</h2>
+                    <button class="btn btn-primary" onclick="refreshReports()">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh Reports
+                    </button>
+                </div>
+                
+                <!-- Reports List -->
+                <div class="row mb-4" id="reportsList">
+                    <div class="col-12">
+                        <div class="card" style="background: rgba(15, 52, 96, 0.5); border: 1px solid #8338ec;">
                             <div class="card-header" style="background: rgba(131, 56, 236, 0.2); border-bottom: 1px solid #8338ec;">
                                 <h4 style="color: #8338ec; margin: 0; font-size: 1.2rem;">
-                                    🗺️ Weekly Roadmap
+                                    📋 Available Reports
                                 </h4>
                             </div>
-                            <div class="card-body" id="weeklyRoadmapContent">
-                                <div style="text-align: center; padding: 20px; color: #666;">
-                                    <div style="font-size: 18px; margin-bottom: 10px;">🎯</div>
-                                    <div>Loading weekly roadmap...</div>
+                            <div class="card-body">
+                                <div id="reportsListContent" style="text-align: center; padding: 20px; color: #666;">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-2">Loading reports...</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Additional Analytics -->
+                <!-- Report Viewer -->
                 <div class="row">
                     <div class="col-12">
-                        <div class="card" style="background: rgba(17, 138, 178, 0.1); border: 1px solid #118ab2;">
-                            <div class="card-header" style="background: rgba(17, 138, 178, 0.2); border-bottom: 1px solid #118ab2;">
-                                <h4 style="color: #118ab2; margin: 0; font-size: 1.2rem;">
-                                    📈 Performance Analytics
-                                </h4>
+                        <div class="card" style="background: rgba(15, 52, 96, 0.5); border: 1px solid #06d6a0;">
+                            <div class="card-header" style="background: rgba(6, 214, 160, 0.2); border-bottom: 1px solid #06d6a0;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h4 id="reportViewerTitle" style="color: #06d6a0; margin: 0; font-size: 1.2rem;">
+                                        Select a report to view
+                                    </h4>
+                                    <button class="btn btn-sm btn-secondary" id="downloadReportBtn" style="display: none;" onclick="downloadCurrentReport()">
+                                        <i class="bi bi-download"></i> Download
+                                    </button>
+                                </div>
                             </div>
-                            <div class="card-body">
-                                <p style="color: var(--text-secondary); text-align: center; padding: 20px;">
-                                    Advanced performance metrics and historical analysis will be displayed here.
-                                </p>
+                            <div class="card-body" style="max-height: 70vh; overflow-y: auto;">
+                                <div id="reportViewerContent" style="color: #ccc;">
+                                    <div style="text-align: center; padding: 40px; color: #666;">
+                                        <div style="font-size: 48px; margin-bottom: 20px;">📊</div>
+                                        <p>Click on a report above to view its contents</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
+        
+        <script>
+        let currentReportId = null;
+        
+        async function loadReportsList() {
+            try {
+                const response = await fetch('/api/reports');
+                const data = await response.json();
+                
+                const container = document.getElementById('reportsListContent');
+                if (!data.success || !data.reports) {
+                    container.innerHTML = '<p style="color: #ef476f;">Error loading reports</p>';
+                    return;
+                }
+                
+                if (data.reports.length === 0) {
+                    container.innerHTML = '<p style="color: #999;">No reports available</p>';
+                    return;
+                }
+                
+                const html = data.reports.map(report => `
+                    <div class="card mb-3 report-card" style="background: ${report.available ? 'rgba(6, 214, 160, 0.1)' : 'rgba(239, 71, 111, 0.1)'}; 
+                        border: 1px solid ${report.available ? '#06d6a0' : '#ef476f'}; cursor: ${report.available ? 'pointer' : 'default'};"
+                        onclick="${report.available ? `loadReport('${report.id}')` : ''}" data-report-id="${report.id}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div style="flex: 1;">
+                                    <h5 style="color: ${report.available ? '#06d6a0' : '#ef476f'}; margin-bottom: 10px;">
+                                        ${report.title}
+                                    </h5>
+                                    <p style="color: #999; font-size: 0.9em; margin-bottom: 5px;">
+                                        ${report.description}
+                                    </p>
+                                    ${report.available && report.modified ? `
+                                        <small style="color: #666;">
+                                            Last updated: ${new Date(report.modified).toLocaleString()}
+                                        </small>
+                                    ` : ''}
+                                    ${!report.available ? '<span class="badge bg-danger ms-2">Not Available</span>' : ''}
+                                </div>
+                                ${report.available ? `
+                                    <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); loadReport('${report.id}')">
+                                        <i class="bi bi-eye"></i> View
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading reports:', error);
+                document.getElementById('reportsListContent').innerHTML = 
+                    '<p style="color: #ef476f;">Error loading reports. Please try again.</p>';
+            }
+        }
+        
+        async function loadReport(reportId) {
+            currentReportId = reportId;
+            const viewer = document.getElementById('reportViewerContent');
+            const titleEl = document.getElementById('reportViewerTitle');
+            const downloadBtn = document.getElementById('downloadReportBtn');
+            
+            viewer.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner-border text-primary"></div><p class="mt-2">Loading report...</p></div>';
+            
+            try {
+                const response = await fetch(`/api/reports/${reportId}?format=html`);
+                const data = await response.json();
+                
+                if (!data.success || !data.content) {
+                    viewer.innerHTML = '<p style="color: #ef476f;">Error loading report content</p>';
+                    downloadBtn.style.display = 'none';
+                    return;
+                }
+                
+                titleEl.textContent = data.metadata.title;
+                viewer.innerHTML = `
+                    <div style="background: rgba(15, 52, 96, 0.3); padding: 20px; border-radius: 8px;">
+                        ${data.content}
+                    </div>
+                `;
+                downloadBtn.style.display = 'inline-block';
+                
+                // Highlight active report card
+                document.querySelectorAll('.report-card').forEach(card => {
+                    card.style.border = card.dataset.reportId === reportId ? '2px solid #8338ec' : '';
+                });
+            } catch (error) {
+                console.error('Error loading report:', error);
+                viewer.innerHTML = '<p style="color: #ef476f;">Error loading report. Please try again.</p>';
+                downloadBtn.style.display = 'none';
+            }
+        }
+        
+        function downloadCurrentReport() {
+            if (!currentReportId) return;
+            window.open(`/api/reports/${currentReportId}/download`, '_blank');
+        }
+        
+        function refreshReports() {
+            loadReportsList();
+        }
+        
+        // Load reports when section is activated
+        document.addEventListener('DOMContentLoaded', function() {
+            // Watch for reports section activation
+            const observer = new MutationObserver(function(mutations) {
+                const reportsSection = document.getElementById('reports');
+                if (reportsSection && reportsSection.classList.contains('active')) {
+                    loadReportsList();
+                }
+            });
+            
+            observer.observe(document.body, {
+                attributes: true,
+                attributeFilter: ['class'],
+                subtree: true
+            });
+            
+            // Also load if already active
+            const reportsSection = document.getElementById('reports');
+            if (reportsSection && reportsSection.classList.contains('active')) {
+                loadReportsList();
+            }
+        });
+        </script>
         
         <section id="performance" class="content-section">
             <div class="container-fluid">
@@ -2958,6 +3089,10 @@
         function updateChart(candles) {
             const ctx = document.getElementById('priceChart');
             if (!ctx) return;
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js not loaded yet');
+                return;
+            }
             
             const labels = candles.map(c => new Date(c.time).toLocaleString());
             const prices = candles.map(c => parseFloat(c.mid.c));
@@ -2992,18 +3127,14 @@
             });
         }
 
-        // Timeframe button handlers
-        document.querySelectorAll('[data-timeframe]').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('[data-timeframe]').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                currentTimeframe = this.getAttribute('data-timeframe');
-                loadChartData(currentInstrument, currentTimeframe);
-            });
-        });
-
-        // Initial load
-        loadChartData(currentInstrument, currentTimeframe);
+        // Helper to update TradingView link for current instrument
+        function updateTradingViewLink() {
+            const tv = document.getElementById('tvLink');
+            if (!tv) return;
+            // Use OANDA symbols on TradingView where possible
+            const symbol = currentInstrument.replace('_', '');
+            tv.href = `https://www.tradingview.com/chart/?symbol=OANDA:${symbol}`;
+        }
 
         // Sidebar Live Prices
         async function updateSidebarPrices() {
@@ -3302,6 +3433,21 @@
           
           // Then initialize dashboard
           initDashboard();
+
+          // Wire timeframe buttons after DOM is ready
+          document.querySelectorAll('[data-timeframe]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('[data-timeframe]').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentTimeframe = this.getAttribute('data-timeframe');
+                loadChartData(currentInstrument, currentTimeframe);
+                updateTradingViewLink();
+            });
+          });
+
+          // Initial chart load and TV link
+          loadChartData(currentInstrument, currentTimeframe);
+          updateTradingViewLink();
         });
         
         // Initialize navigation system
@@ -3926,11 +4072,33 @@
                     if (data.signals && data.signals.length > 0) {
                         console.log('🎯 Calling updateTradingSignals with', data.signals.length, 'signals');
                         updateTradingSignals(data);
-                    } else {
-                        console.log('🎯 No signals in data');
+                        return;
                     }
-                } else {
-                    console.log('❌ Response not ok:', response.status);
+                }
+
+                // Fallback: show recent signals if pending is empty
+                try {
+                    const recentRes = await fetch('/api/signals/recent');
+                    if (recentRes.ok) {
+                        const recent = await recentRes.json();
+                        if (recent && Array.isArray(recent.signals) && recent.signals.length > 0) {
+                            const mapped = {
+                                signals: recent.signals.map(s => ({
+                                    id: s.id || s.signal_id || Math.random().toString(36).slice(2),
+                                    instrument: s.instrument || s.pair || 'UNKNOWN',
+                                    direction: (s.side || s.signal_type || '').toUpperCase(),
+                                    entry_price: s.entry_price || s.price || s.current_price || '-',
+                                    stop_loss: s.stop_loss || s.sl || '-',
+                                    take_profit: s.take_profit || s.tp || '-',
+                                    quality_score: Math.round((s.confidence || 0.7) * 100)
+                                }))
+                            };
+                            updateTradingSignals(mapped);
+                            return;
+                        }
+                    }
+                } catch (fallbackErr) {
+                    console.warn('Recent signals fallback failed:', fallbackErr);
                 }
             } catch (error) {
                 console.error('❌ Trading signals error:', error);

@@ -4,6 +4,10 @@ Google Cloud Trading System - Main Entry Point - FULLY INTEGRATED VERSION
 Production-ready entry point with complete dashboard, WebSocket, and AI integration
 """
 
+# EVENTLET MONKEY PATCH - Must be first!
+import eventlet
+eventlet.monkey_patch(all=True, socket=True)
+
 import os
 import sys
 import logging
@@ -11,7 +15,7 @@ import json
 import time
 import threading
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import uuid
 from flask import Flask, jsonify, request, render_template, redirect, current_app
 from flask_socketio import SocketIO, emit
@@ -81,6 +85,10 @@ app.config['MARKET_DATA_UPDATE_INTERVAL'] = int(os.getenv('MARKET_DATA_UPDATE_IN
 # Response cache for performance optimization
 response_cache = {}
 cache_lock = threading.Lock()
+
+# Locks for thread-safe initialization
+_dashboard_init_lock = threading.Lock()
+_scanner_init_lock = threading.Lock()
 
 def get_cache_key(endpoint: str, params: Dict[str, Any] = None) -> str:
     """Generate cache key for endpoint and parameters"""
@@ -174,7 +182,7 @@ def safe_json(endpoint_name: str):
                     'endpoint': endpoint_name,
                     'error': str(e),
                     'timestamp': datetime.now().isoformat()
-                })
+                }), 200
         return wrapper
     return decorator
 
@@ -192,17 +200,36 @@ def _wire_manager_to_app(mgr):
         if mgr is None:
             return
         app.config['DATA_FEED'] = getattr(mgr, 'data_feed', None)
-        try:
-            app.config['ACTIVE_ACCOUNTS'] = list(getattr(mgr, 'active_accounts', []) or [])
-        except Exception:
-            app.config['ACTIVE_ACCOUNTS'] = []
-        app.config['TRADING_SYSTEMS'] = getattr(mgr, 'trading_systems', {}) or {}
+        app.config['ACTIVE_ACCOUNTS'] = list(getattr(mgr, 'active_accounts', []))
+        app.config['TRADING_SYSTEMS'] = getattr(mgr, 'trading_systems', {})
+        app.config['ACCOUNT_MANAGER'] = getattr(mgr, 'account_manager', None)
+        app.config['ORDER_MANAGER'] = getattr(mgr, 'order_manager', None)
+        app.config['TELEGRAM_NOTIFIER'] = getattr(mgr, 'telegram_notifier', None)
+        app.config['NEWS_INTEGRATION'] = getattr(mgr, 'news_integration', None)
+        app.config['AI_ASSISTANT'] = getattr(mgr, 'ai_assistant', None)
+        app.config['STRATEGIES'] = getattr(mgr, 'strategies', {})
+        app.config['YAML_MANAGER'] = getattr(mgr, 'yaml_manager', None)
+        app.config['CONFIG_RELOADER'] = getattr(mgr, 'config_reloader', None)
+        app.config['SESSION_MANAGER'] = getattr(mgr, 'session_manager', None)
+        app.config['QUALITY_SCORER'] = getattr(mgr, 'quality_scorer', None)
+        app.config['PRICE_ANALYZER'] = getattr(mgr, 'price_analyzer', None)
+        logger.info("✅ Dashboard manager properties wired to app.config")
     except Exception as e:
-        logger.warning(f"⚠️ Failed to wire manager to app: {e}")
+        logger.error(f"❌ Failed to wire manager to app config: {e}")
+        logger.exception("Full traceback:")
 
 def get_dashboard_manager():
-    """Get or create dashboard manager in Flask app context"""
-    if 'dashboard_manager' not in app.config:
+    """Get or create dashboard manager in Flask app context (thread-safe)"""
+    # Fast path: already initialized
+    if 'dashboard_manager' in app.config:
+        return app.config.get('dashboard_manager')
+    
+    # Thread-safe initialization
+    with _dashboard_init_lock:
+        # Double-check after acquiring lock (common pattern)
+        if 'dashboard_manager' in app.config:
+            return app.config.get('dashboard_manager')
+        
         try:
             logger.info("🔄 Initializing dashboard manager...")
             from src.dashboard.advanced_dashboard import AdvancedDashboardManager
@@ -225,11 +252,21 @@ def get_dashboard_manager():
             logger.error(f"❌ Failed to initialize dashboard: {e}")
             logger.exception("Full traceback:")
             app.config['dashboard_manager'] = None
-    return app.config.get('dashboard_manager')
+        
+        return app.config.get('dashboard_manager')
 
 def get_scanner():
-    """Get or create scanner in Flask app context"""
-    if 'scanner' not in app.config:
+    """Get or create scanner in Flask app context (thread-safe)"""
+    # Fast path: already initialized
+    if 'scanner' in app.config:
+        return app.config.get('scanner')
+    
+    # Thread-safe initialization
+    with _scanner_init_lock:
+        # Double-check after acquiring lock
+        if 'scanner' in app.config:
+            return app.config.get('scanner')
+        
         try:
             logger.info("🔄 Initializing scanner...")
             from src.core.simple_timer_scanner import get_simple_scanner
@@ -239,7 +276,8 @@ def get_scanner():
             logger.error(f"❌ Scanner init failed: {e}")
             logger.exception("Full traceback:")
             app.config['scanner'] = None
-    return app.config.get('scanner')
+        
+        return app.config.get('scanner')
 
 def get_news_integration():
     """Get or create news integration in Flask app context"""
@@ -448,7 +486,7 @@ except Exception as e:
 # Initialize SocketIO with proper configuration for Google Cloud
 socketio = SocketIO(app, 
                    cors_allowed_origins="*", 
-                   async_mode='threading',
+                   async_mode='eventlet',
                    logger=False,
                    engineio_logger=False,
                    ping_timeout=60,
@@ -565,6 +603,7 @@ def signals_dashboard():
 # ═══════════════════════════════════════════════════════════════
 
 @app.route('/api/signals')
+@safe_json('signals')
 def api_signals():
     """Get all active signals from strategies"""
     try:
@@ -596,6 +635,7 @@ def api_signals():
         })
 
 @app.route('/api/reports')
+@safe_json('reports')
 def api_reports():
     """Get all available reports"""
     try:
@@ -627,6 +667,7 @@ def api_reports():
         })
 
 @app.route('/api/weekly-reports')
+@safe_json('weekly_reports')
 def api_weekly_reports():
     """Get weekly performance reports"""
     try:
@@ -658,6 +699,7 @@ def api_weekly_reports():
         })
 
 @app.route('/api/roadmap')
+@safe_json('roadmap')
 def api_roadmap():
     """Get strategy roadmap and future plans"""
     try:
@@ -686,6 +728,7 @@ def api_roadmap():
         })
 
 @app.route('/api/strategy-reports')
+@safe_json('strategy_reports')
 def api_strategy_reports():
     """Get individual strategy reports"""
     try:
@@ -717,6 +760,7 @@ def api_strategy_reports():
         })
 
 @app.route('/api/performance-reports')
+@safe_json('performance_reports')
 def api_performance_reports():
     """Get performance analysis reports"""
     try:
@@ -748,6 +792,7 @@ def api_performance_reports():
         })
 
 @app.route('/api/signals/pending')
+@safe_json('signals_pending')
 def get_pending_signals():
     """Get all pending signals with pips to entry"""
     try:
@@ -843,6 +888,7 @@ def get_pending_signals():
         }), 500
 
 @app.route('/api/signals/active')
+@safe_json('signals_active')
 def get_active_signals():
     """Get all active trades with pips to exit and P/L"""
     try:
@@ -935,6 +981,7 @@ def get_active_signals():
         }), 500
 
 @app.route('/api/signals/all')
+@safe_json('signals_all')
 def get_all_signals_endpoint():
     """Get all signals with filtering"""
     try:
@@ -982,6 +1029,7 @@ def get_all_signals_endpoint():
         }), 500
 
 @app.route('/api/signals/<signal_id>')
+@safe_json('signals_detail')
 def get_signal_detail(signal_id):
     """Get detailed information for a specific signal"""
     try:
@@ -1010,6 +1058,7 @@ def get_signal_detail(signal_id):
         }), 500
 
 @app.route('/api/signals/statistics')
+@safe_json('signals_statistics')
 def get_signals_statistics():
     """Get signal statistics"""
     try:
@@ -1036,6 +1085,7 @@ def get_signals_statistics():
 # ═══════════════════════════════════════════════════════════════
 
 @app.route('/api/config/accounts')
+@safe_json('config_accounts')
 def get_config_accounts():
     """Get all accounts from YAML configuration"""
     try:
@@ -1057,6 +1107,7 @@ def get_config_accounts():
         }), 500
 
 @app.route('/api/config/strategies')
+@safe_json('config_strategies')
 def get_config_strategies():
     """Get all strategies from YAML configuration"""
     try:
@@ -1087,6 +1138,7 @@ def strategy_manager_page():
     return render_template('dashboard_advanced.html')
 
 @app.route('/api/strategies/config', methods=['GET'])
+@safe_json('strategies_config')
 def get_strategies_config():
     """Get current strategy configuration"""
     try:
@@ -1114,6 +1166,7 @@ def get_strategies_config():
         }), 500
 
 @app.route('/api/strategies/switch', methods=['POST'])
+@safe_json('strategies_switch')
 def switch_strategy():
     """Stage a strategy switch"""
     try:
@@ -1142,6 +1195,7 @@ def switch_strategy():
         }), 500
 
 @app.route('/api/strategies/toggle', methods=['POST'])
+@safe_json('strategies_toggle')
 def toggle_account():
     """Stage account enable/disable"""
     try:
@@ -1170,6 +1224,7 @@ def toggle_account():
         }), 500
 
 @app.route('/api/strategies/pending', methods=['GET'])
+@safe_json('strategies_pending')
 def get_pending_changes():
     """Get pending strategy changes"""
     try:
@@ -2276,23 +2331,50 @@ def force_execute_now():
         return jsonify({'status': 'error', 'error': str(e)}), 500
 
 @app.route('/api/health')
-def health():
-    """Health check route - must be fast and never fail"""
+def health_check():
+    """Health check endpoint - always returns 200 OK"""
     try:
-        # Quick check without blocking on full initialization
-        mgr = app.config.get('dashboard_manager')
+        mgr = get_dashboard_manager()
+        if mgr and hasattr(mgr, '_initialized'):
+            dashboard_status = "initialized" if mgr._initialized else "not_initialized"
+            data_feed_active = getattr(mgr, 'data_feed', None) is not None
+            active_accounts = getattr(mgr, 'active_accounts', [])
+            active_accounts_count = len(active_accounts) if active_accounts else 0
+        else:
+            dashboard_status = "not_initialized"
+            data_feed_active = False
+            active_accounts_count = 0
+            
+        status = {
+            "status": "ok",
+            "timestamp": datetime.now().isoformat(),
+            "dashboard_manager": dashboard_status,
+            "data_feed_active": data_feed_active,
+            "active_accounts_count": active_accounts_count
+        }
+        return jsonify(status), 200
+    except Exception as e:
+        logger.error(f"❌ Health check failed: {e}")
+        return jsonify({
+            "status": "ok",  # Return OK even on error for health check
+            "timestamp": datetime.now().isoformat(),
+            "warning": "partial_initialization",
+            "error": str(e)
+        }), 200
+
+@app.route('/ready')
+def ready_check():
+    """Lightweight readiness endpoint that never performs external calls."""
+    try:
+        # Only report minimal app state to satisfy load balancer checks
         return jsonify({
             "status": "ok",
-            "timestamp": str(datetime.now()),
-            "dashboard_manager": "initialized" if mgr else "pending"
-        })
+            "timestamp": datetime.now().isoformat(),
+            "service": "default"
+        }), 200
     except Exception:
-        # Health check should NEVER fail - return 200 even on error
-        return jsonify({
-            "status": "ok",
-            "timestamp": str(datetime.now()),
-            "dashboard_manager": "unknown"
-        })
+        # Never fail readiness checks
+        return jsonify({"status": "ok"}), 200
 
 @app.route('/api/contextual/<instrument>')
 def get_contextual_insights(instrument):
@@ -4421,6 +4503,7 @@ def get_chart_candles(instrument):
     gran = timeframe_map.get(granularity, 'H1')
     
     try:
+        from src.core.oanda_client import get_oanda_client
         # Use existing oanda_client.get_candles() method
         oanda_client = get_oanda_client()
         candles = oanda_client.get_candles(instrument, granularity=gran, count=count, price='M')
@@ -4467,6 +4550,19 @@ def cron_aggressive_scan():
     except Exception as e:
         logger.error(f"Aggressive scan error: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
+# ===============================================
+# REPORTS API ENDPOINTS
+# ===============================================
+
+try:
+    from src.utils.reports_api import register_reports_routes
+    register_reports_routes(app)
+    logger.info("✅ Reports API routes registered")
+except ImportError as e:
+    logger.warning(f"⚠️ Reports API not available: {e}")
+except Exception as e:
+    logger.error(f"❌ Failed to register reports routes: {e}")
 
 # ===============================================
 # ANALYTICS INTEGRATION ENDPOINTS

@@ -65,10 +65,35 @@ fi
 
 echo -n "1.2 Checking deployment version... "
 if command -v gcloud &> /dev/null; then
-    VERSION=$(gcloud app versions list --service=default --format="value(id)" --limit=1 2>/dev/null)
+    # Get the version with 100% traffic (active version)
+    VERSION=$(gcloud app versions list --service=default --format="value(id,traffic_split)" 2>/dev/null | awk -F'\t' '$2 == "1.00" {print $1; exit}')
+    if [ -z "$VERSION" ]; then
+        # Fallback: get most recent version if no traffic split found
+        VERSION=$(gcloud app versions list --service=default --format="value(id)" --limit=1 --sort-by=~id 2>/dev/null)
+    fi
+    
     if [ -n "$VERSION" ]; then
-        echo -e "${GREEN}✅ Current version: $VERSION${NC}"
-        ((PASSED++))
+        # Parse date from version string (format: YYYYMMDDtHHMMSS)
+        VERSION_DATE=$(echo "$VERSION" | cut -c1-8)
+        VERSION_TIME=$(echo "$VERSION" | cut -c10-15)
+        if [ -n "$VERSION_DATE" ] && [ -n "$VERSION_TIME" ]; then
+            # Format date nicely (YYYY-MM-DD HH:MM:SS)
+            FORMATTED_DATE="${VERSION_DATE:0:4}-${VERSION_DATE:4:2}-${VERSION_DATE:6:2} ${VERSION_TIME:0:2}:${VERSION_TIME:2:2}:${VERSION_TIME:4:2}"
+            echo -e "${GREEN}✅ Active version: $VERSION${NC}"
+            echo -e "   ${BLUE}   Deployed: $FORMATTED_DATE${NC}"
+            
+            # Check if deployment is recent (within last 7 days)
+            DAYS_OLD=$(( ($(date +%s) - $(date -j -f "%Y%m%d" "$VERSION_DATE" +%s 2>/dev/null || echo 0)) / 86400 ))
+            if [ "$DAYS_OLD" -lt 7 ]; then
+                echo -e "   ${GREEN}   Status: Recent deployment (${DAYS_OLD} day(s) old)${NC}"
+            else
+                echo -e "   ${YELLOW}   Status: Deployment is ${DAYS_OLD} days old${NC}"
+            fi
+            ((PASSED++))
+        else
+            echo -e "${GREEN}✅ Current version: $VERSION${NC}"
+            ((PASSED++))
+        fi
     else
         check_warning
         echo -e "${YELLOW}   → Could not retrieve version (check gcloud auth)${NC}"

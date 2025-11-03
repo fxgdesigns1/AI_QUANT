@@ -10,7 +10,7 @@ runtime: python311
 # Service Configuration
 # =============================================================================
 service: default
-entrypoint: python main.py
+entrypoint: gunicorn main:app --bind 0.0.0.0:8080 --workers 1 --worker-class eventlet --worker-connections 1000 --timeout 120
 
 # =============================================================================
 # F1 FREE TIER OPTIMIZATION
@@ -265,7 +265,7 @@ network:
 # Health Check Configuration - F1 OPTIMIZED
 # =============================================================================
 readiness_check:
-  path: "/api/health"
+  path: "/ready"
   check_interval_sec: 30
   timeout_sec: 10
   failure_threshold: 5
@@ -273,7 +273,7 @@ readiness_check:
   app_start_timeout_sec: 600
 
 liveness_check:
-  path: "/api/health"
+  path: "/ready"
   check_interval_sec: 60
   timeout_sec: 10
   failure_threshold: 5
