@@ -99,6 +99,25 @@ class TelegramNotifier:
     def send_message(self, message, message_type: str = "general") -> bool:
         """Send message to Telegram with rate limiting"""
         
+        # GLOBAL SPAM PREVENTION: Block ALL price verification messages
+        if isinstance(message, str):
+            text = message
+        else:
+            text = message.text if hasattr(message, 'text') else str(message)
+        
+        # Block price verification spam messages (exact match patterns only)
+        spam_patterns = [
+            'live price verification issue',
+            'price verification issue',
+            'missing=eur_usd,gbp_usd,usd_jpy,xau_usd,aud_usd',
+            'stale=eur_usd,gbp_usd,usd_jpy,xau_usd,aud_usd',
+            'new entries temporarily halted'
+        ]
+        
+        if any(pattern in text.lower() for pattern in spam_patterns):
+            logger.debug(f"🚫 BLOCKED price verification spam message (rate limited)")
+            return False
+        
         if not self._should_send_message(message_type):
             return False
         
