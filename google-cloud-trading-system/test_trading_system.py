@@ -14,8 +14,9 @@ from datetime import datetime
 
 # Test configuration
 CLOUD_URL = "https://ai-quant-trading.uc.r.appspot.com"
-TELEGRAM_TOKEN = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-TELEGRAM_CHAT_ID = "6100678501"
+import os
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 
 def send_telegram(message):
     """Send Telegram notification"""

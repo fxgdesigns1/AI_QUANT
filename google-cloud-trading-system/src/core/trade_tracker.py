@@ -93,8 +93,10 @@ class SystemLog:
 class TradeTracker:
     """Comprehensive trade tracking and logging system"""
     
-    def __init__(self, db_path: str = "trading_system.db"):
-        self.db_path = db_path
+    def __init__(self, db_path: str = None):
+        # Prefer GAE-writable tmp for cloud; allow override via env
+        default_db = os.getenv('TRADE_DB_PATH', '/tmp/trading_system.db')
+        self.db_path = db_path or default_db
         self.log_file = f"trading_system_{datetime.now().strftime('%Y%m%d')}.log"
         self.setup_database()
         self.setup_logging()
@@ -204,11 +206,12 @@ class TradeTracker:
     def setup_logging(self):
         """Setup file logging for system logs"""
         try:
-            # Create logs directory if it doesn't exist
-            os.makedirs("logs", exist_ok=True)
+            # Create logs directory; prefer tmp on cloud
+            logs_root = os.getenv('TRADE_LOG_DIR', '/tmp/logs')
+            os.makedirs(logs_root, exist_ok=True)
             
             # Setup file handler
-            file_handler = logging.FileHandler(f"logs/{self.log_file}")
+            file_handler = logging.FileHandler(os.path.join(logs_root, self.log_file))
             file_handler.setLevel(logging.INFO)
             
             # Setup formatter

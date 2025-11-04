@@ -47,14 +47,14 @@ class XAUUSDGoldHighReturnStrategy:
         self.timeframe = '5m'
         
         # Strategy parameters from YAML
-        self.ema_fast_period = 3
-        self.ema_slow_period = 12
+        self.ema_fast_period = 3  # OPTIMIZED Oct 31, 2025
+        self.ema_slow_period = 29  # OPTIMIZED Oct 31, 2025
         self.rsi_period = 14
-        self.rsi_oversold = 20
-        self.rsi_overbought = 80
+        self.rsi_oversold = 18.77  # OPTIMIZED Oct 31, 2025
+        self.rsi_overbought = 79.82  # OPTIMIZED Oct 31, 2025
         self.atr_period = 14
-        self.atr_multiplier = 1.5
-        self.risk_reward_ratio = 3.0
+        self.atr_multiplier = 2.88  # OPTIMIZED Oct 31, 2025
+        self.risk_reward_ratio = 3.71  # OPTIMIZED Oct 31, 2025
         
         # Risk management - Gold requires different approach due to higher volatility
         self.risk_per_trade_pct = 1.5

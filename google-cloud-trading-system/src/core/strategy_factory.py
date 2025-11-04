@@ -148,7 +148,23 @@ class StrategyFactory:
                 if hasattr(module, getter_name):
                     getter_func = getattr(module, getter_name)
                     logger.debug(f"📞 Calling getter: {getter_name}")
-                    return getter_func()
+                    
+                    # Pass instruments if available in account config
+                    instruments = None
+                    if account_config and 'instruments' in account_config:
+                        instruments = account_config['instruments']
+                        logger.info(f"✅ Passing instruments to {strategy_name}: {instruments}")
+                    
+                    # Try calling with instruments parameter if available
+                    if instruments:
+                        try:
+                            return getter_func(instruments=instruments)
+                        except TypeError:
+                            # Fallback if getter doesn't accept instruments parameter
+                            logger.debug(f"⚠️ Getter doesn't accept instruments, using default")
+                            return getter_func()
+                    else:
+                        return getter_func()
             
             # Fall back to class instantiation
             if 'class' in override:

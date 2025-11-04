@@ -94,20 +94,42 @@ class TradeExecutionHandler:
         """Map account reference to actual account ID"""
         account_ref = account_ref.lower()
         
-        if account_ref in ['001', '1', 'semi', 'semi-auto']:
-            return self.semi_auto_account_id
-        elif account_ref in ['002', '2']:
-            return "101-004-30719775-002"
-        elif account_ref in ['003', '3']:
-            return "101-004-30719775-003"
-        else:
-            # Try to find by account ID
-            for account in self.accounts_config:
-                if account_ref in account.get('id', '').lower():
-                    return account['id']
-            
-            # Default to semi-auto account
-            return self.semi_auto_account_id
+        # Map common account references
+        account_map = {
+            '001': '101-004-30719775-001',
+            '002': '101-004-30719775-002',
+            '003': '101-004-30719775-003',
+            '006': '101-004-30719775-006',
+            '007': '101-004-30719775-007',
+            '008': '101-004-30719775-008',  # AI-Enhanced Account
+            '009': '101-004-30719775-009',
+            '010': '101-004-30719775-010',
+            '011': '101-004-30719775-011',
+            '1': '101-004-30719775-001',
+            '2': '101-004-30719775-002',
+            '3': '101-004-30719775-003',
+            '6': '101-004-30719775-006',
+            '7': '101-004-30719775-007',
+            '8': '101-004-30719775-008',  # AI-Enhanced Account
+            '9': '101-004-30719775-009',
+            '10': '101-004-30719775-010',
+            '11': '101-004-30719775-011',
+            'semi': '101-004-30719775-001',
+            'semi-auto': '101-004-30719775-001',
+        }
+        
+        if account_ref in account_map:
+            return account_map[account_ref]
+        
+        # Try to find by account ID
+        for account in self.accounts_config:
+            account_id = account.get('id', '')
+            if account_ref in account_id.lower() or account_id.endswith(account_ref):
+                return account_id
+        
+        # Default to account 008 (AI-Enhanced)
+        logger.warning(f"⚠️ Account reference '{account_ref}' not found, defaulting to 008")
+        return '101-004-30719775-008'
     
     def execute_trade(self, parsed_command: Dict) -> Dict:
         """Execute the trade"""

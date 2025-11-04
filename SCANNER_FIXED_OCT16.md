@@ -285,3 +285,5 @@ gcloud app logs tail --service=default | grep -E "TRENDING|RANGING|CHOPPY|SNIPER
 
 
 
+
+

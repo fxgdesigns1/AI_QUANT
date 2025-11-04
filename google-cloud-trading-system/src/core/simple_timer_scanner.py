@@ -10,13 +10,14 @@ import time
 from datetime import datetime
 from typing import Dict, List
 
-from .oanda_client import get_oanda_client
+from .oanda_client import get_oanda_client, OandaClient
 from .telegram_notifier import get_telegram_notifier
 from .optimization_loader import load_optimization_results, apply_per_pair_to_ultra_strict, apply_per_pair_to_momentum, apply_per_pair_to_gold
 from .yaml_manager import get_yaml_manager
 from .economic_calendar import get_economic_calendar
 from .trump_dna_framework import get_trump_dna_planner
 from .adaptive_scanner_integration import AdaptiveScannerMixin
+from .signal_tracker import get_signal_tracker
 from src.strategies.ultra_strict_forex_optimized import get_ultra_strict_forex_strategy
 from src.strategies.momentum_trading import get_momentum_trading_strategy
 from src.strategies.gold_scalping_optimized import get_gold_scalping_strategy
@@ -25,6 +26,10 @@ from src.strategies.champion_75wr import get_champion_75wr_strategy
 from src.strategies.ultra_strict_v2 import get_ultra_strict_v2_strategy
 from src.strategies.momentum_v2 import get_momentum_v2_strategy
 from src.strategies.all_weather_70wr import get_all_weather_70wr_strategy
+from src.strategies.breakout_strategy import get_breakout_strategy
+from src.strategies.scalping_strategy import get_scalping_strategy
+from src.strategies.swing_strategy import get_swing_strategy
+from src.strategies.adaptive_trump_gold_strategy import get_adaptive_trump_gold_strategy
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +41,7 @@ class SimpleTimerScanner:
         self.notifier = get_telegram_notifier()
         self.economic_calendar = get_economic_calendar()
         self.trump_planner = get_trump_dna_planner()
+        self.signal_tracker = get_signal_tracker()
         self.is_running = False
         self.scan_count = 0
         
@@ -56,7 +62,7 @@ class SimpleTimerScanner:
         yaml_accounts = yaml_mgr.get_all_accounts()
         yaml_strategies = yaml_mgr.get_all_strategies()
         
-        # Strategy loader mapping
+        # Strategy loader mapping - includes all strategies
         strategy_loaders = {
             'gold_scalping': get_gold_scalping_strategy,
             'ultra_strict_forex': get_ultra_strict_forex_strategy,
@@ -68,6 +74,18 @@ class SimpleTimerScanner:
             'ultra_strict_v2': get_ultra_strict_v2_strategy,
             'momentum_v2': get_momentum_v2_strategy,
             'all_weather_70wr': get_all_weather_70wr_strategy,
+            'breakout': get_breakout_strategy,
+            'scalping': get_scalping_strategy,
+            'swing_trading': get_swing_strategy,
+            'adaptive_trump_gold': get_adaptive_trump_gold_strategy,
+        }
+        
+        # Strategies that accept instruments parameter
+        strategies_with_instruments = {
+            'breakout': True,
+            'scalping': True,
+            'swing_trading': True,
+            'momentum_trading': True,
         }
         
         self.strategies = {}
@@ -80,9 +98,25 @@ class SimpleTimerScanner:
                 display_name = acc.get('display_name', acc.get('name'))
                 
                 if strategy_name in strategy_loaders:
-                    self.strategies[display_name] = strategy_loaders[strategy_name]()
-                    self.accounts[display_name] = acc['id']
-                    logger.info(f"✅ Loaded: {display_name} ({strategy_name}) → {acc['id']}")
+                    try:
+                        # Get instruments from account config
+                        instruments = acc.get('instruments') or acc.get('trading_pairs', [])
+                        
+                        # Load strategy with instruments if supported
+                        if strategy_name in strategies_with_instruments and instruments:
+                            strategy = strategy_loaders[strategy_name](instruments=instruments)
+                            logger.info(f"✅ Loaded: {display_name} ({strategy_name}) with instruments {instruments} → {acc['id']}")
+                        else:
+                            # Load strategy without instruments
+                            strategy = strategy_loaders[strategy_name]()
+                            logger.info(f"✅ Loaded: {display_name} ({strategy_name}) → {acc['id']}")
+                        
+                        self.strategies[display_name] = strategy
+                        self.accounts[display_name] = acc['id']
+                    except Exception as e:
+                        logger.error(f"❌ Failed to load {display_name} ({strategy_name}): {e}")
+                else:
+                    logger.warning(f"⚠️ Strategy '{strategy_name}' not found in loader mapping for account {acc['id']}")
         
         logger.info(f"✅ SimpleTimerScanner initialized with {len(self.strategies)} strategies from accounts.yaml")
         
@@ -207,9 +241,14 @@ class SimpleTimerScanner:
                     if not market_data:
                         continue
                     
-                    # Update strategy price history if it has one
+                    # Update strategy price history if it has one (per-instrument)
                     if hasattr(strategy, '_update_price_history'):
-                        strategy._update_price_history(market_data)
+                        for inst in instruments:
+                            if inst in market_data:
+                                try:
+                                    strategy._update_price_history(market_data[inst])
+                                except Exception:
+                                    pass
                     
                     # Get price history length
                     hist_len = 0
@@ -316,7 +355,28 @@ class SimpleTimerScanner:
                                     tp_price = entry_price - tp_distance
                                     sl_price = entry_price + sl_distance
                                 
-                                result = self.oanda.place_market_order(
+                                # TRACK SIGNAL BEFORE EXECUTING TRADE (so dashboard can display it)
+                                try:
+                                    signal_id = self.signal_tracker.add_signal(
+                                        instrument=instrument,
+                                        side=direction.upper(),
+                                        strategy_name=strategy_name,
+                                        entry_price=entry_price,
+                                        stop_loss=sl_price,
+                                        take_profit=tp_price,
+                                        ai_insight=getattr(signal, 'reason', '') or signal.get('reason', '') if isinstance(signal, dict) else '',
+                                        confidence=confidence,
+                                        account_id=account_id,
+                                        units=units
+                                    )
+                                    logger.info(f"   📊 Signal tracked: {signal_id} - {instrument} {direction}")
+                                except Exception as track_error:
+                                    logger.warning(f"   ⚠️ Signal tracking failed: {track_error}")
+                                
+                                # Use account-specific OANDA client for this trade
+                                account_client = OandaClient(account_id=account_id)
+                                
+                                result = account_client.place_market_order(
                                     instrument=instrument,
                                     units=units,
                                     take_profit=tp_price,

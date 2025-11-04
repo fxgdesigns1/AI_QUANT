@@ -92,8 +92,14 @@ class EconomicIndicatorService:
                 return None
             
             url = f"{self.base_url}?function=FEDERAL_FUNDS_RATE&apikey={self.api_key}"
-            response = requests.get(url, timeout=10)
+            try:
+                response = requests.get(url, timeout=8)
             data = response.json()
+            except requests.exceptions.RequestException as e:
+                logger.error(f"❌ Fed Funds API error: {e}")
+                # Use cache if available
+                cached = self.cache.get('fed_funds_rate')
+                return cached[0] if cached else None
             
             self.last_api_call['fed_funds'] = datetime.now()
             
@@ -124,8 +130,13 @@ class EconomicIndicatorService:
                 return None
             
             url = f"{self.base_url}?function=CPI&apikey={self.api_key}"
-            response = requests.get(url, timeout=10)
+            try:
+                response = requests.get(url, timeout=8)
             data = response.json()
+            except requests.exceptions.RequestException as e:
+                logger.error(f"❌ CPI API error: {e}")
+                cached = self.cache.get('cpi')
+                return cached[0] if cached else None
             
             self.last_api_call['cpi'] = datetime.now()
             
@@ -182,8 +193,13 @@ class EconomicIndicatorService:
                 return None
             
             url = f"{self.base_url}?function=REAL_GDP&apikey={self.api_key}"
-            response = requests.get(url, timeout=10)
+            try:
+                response = requests.get(url, timeout=8)
             data = response.json()
+            except requests.exceptions.RequestException as e:
+                logger.error(f"❌ GDP API error: {e}")
+                cached = self.cache.get('gdp')
+                return cached[0] if cached else None
             
             self.last_api_call['gdp'] = datetime.now()
             
@@ -211,8 +227,13 @@ class EconomicIndicatorService:
                 return None
             
             url = f"{self.base_url}?function=UNEMPLOYMENT&apikey={self.api_key}"
-            response = requests.get(url, timeout=10)
+            try:
+                response = requests.get(url, timeout=8)
             data = response.json()
+            except requests.exceptions.RequestException as e:
+                logger.error(f"❌ Unemployment API error: {e}")
+                cached = self.cache.get('unemployment')
+                return cached[0] if cached else None
             
             self.last_api_call['unemployment'] = datetime.now()
             

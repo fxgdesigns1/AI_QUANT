@@ -18,13 +18,16 @@ from src.strategies.momentum_trading import get_momentum_trading_strategy
 
 # Telegram
 import requests
+import os
 
-TELEGRAM_TOKEN = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-TELEGRAM_CHAT_ID = "6100678501"
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 
 def send_telegram(message):
     """Send message to Telegram"""
     try:
+        if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
+            raise RuntimeError("Telegram credentials not set in environment")
         url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
         data = {
             "chat_id": TELEGRAM_CHAT_ID,

@@ -61,6 +61,18 @@ class SafeNewsIntegration:
     def _load_api_keys(self):
         """Safely load API keys from environment - PRODUCTION FOCUS"""
         try:
+            # Attempt to load supplemental news env file if present
+            try:
+                from dotenv import load_dotenv
+                import pathlib
+                project_root = pathlib.Path(__file__).resolve().parents[2]
+                news_env = project_root / 'news_api_config.env'
+                if news_env.exists():
+                    load_dotenv(dotenv_path=str(news_env), override=False)
+                    logger.info("✅ Loaded news_api_config.env for news credentials")
+            except Exception as e:
+                logger.info(f"ℹ️ Could not auto-load news_api_config.env: {e}")
+            
             # Load from environment variables - prioritize real APIs
             self.api_keys = {
                 'alpha_vantage': os.getenv('ALPHA_VANTAGE_API_KEY', ''),
@@ -73,7 +85,13 @@ class SafeNewsIntegration:
             }
             
             # Filter out empty keys and placeholder keys
-            self.api_keys = {k: v for k, v in self.api_keys.items() if v and v != 'your_' + k + '_api_key'}
+            placeholder_patterns = [
+                'your_', 'placeholder', 'pub_123456', 'test_', 'demo_', 'example_'
+            ]
+            self.api_keys = {
+                k: v for k, v in self.api_keys.items() 
+                if v and not any(pattern in v.lower() for pattern in placeholder_patterns)
+            }
             
             # Log available APIs
             if self.api_keys:
@@ -526,7 +544,20 @@ class SafeNewsIntegration:
     def get_news_analysis(self, currency_pairs: List[str] = None) -> Dict[str, Any]:
         """Get news analysis for trading decisions"""
         try:
-            news_data = asyncio.run(self.get_news_data(currency_pairs))
+            # Avoid asyncio.run if an event loop is already running
+            news_data = []
+            try:
+                loop = asyncio.get_event_loop()
+                if not loop.is_running():
+                    news_data = loop.run_until_complete(self.get_news_data(currency_pairs))
+                else:
+                    # In running loop context, skip news fetch to avoid breaking
+                    news_data = []
+            except Exception:
+                try:
+                    news_data = asyncio.run(self.get_news_data(currency_pairs))
+                except Exception:
+                    news_data = []
             
             if not news_data:
                 return {
@@ -679,9 +710,37 @@ class SafeNewsIntegration:
         """Cleanup resources"""
         try:
             if self.session:
-                asyncio.run(self.session.close())
+                try:
+                    loop = asyncio.get_event_loop()
+                    if not loop.is_running():
+                        loop.run_until_complete(self.session.close())
+                    else:
+                        # Defer closing; aiohttp will GC on process end
+                        pass
+                except Exception:
+                    asyncio.run(self.session.close())
         except Exception as e:
             logger.warning(f"⚠️ Cleanup failed: {e}")
 
 # Global instance
 safe_news_integration = SafeNewsIntegration()
+
+def get_news_data_sync(currency_pairs: List[str] = None) -> List[Dict[str, Any]]:
+    """Safe synchronous wrapper for fetching news data.
+    Never raises; returns [] on any failure or when an event loop is running.
+    """
+    try:
+        # Prefer using the shared instance; avoid event-loop conflicts
+        try:
+            loop = asyncio.get_event_loop()
+            if not loop.is_running():
+                return loop.run_until_complete(safe_news_integration.get_news_data(currency_pairs)) or []
+            # If we're already in an event loop (e.g., SocketIO), return cached or empty
+            if safe_news_integration._is_cache_valid():
+                return safe_news_integration.cache.get('news_data', []) or []
+            return []
+        except Exception:
+            # Fallback to asyncio.run in contexts without a current loop
+            return asyncio.run(safe_news_integration.get_news_data(currency_pairs)) or []
+    except Exception:
+        return []

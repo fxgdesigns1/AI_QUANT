@@ -123,6 +123,17 @@ class DataCollector:
         self.signal_data_buffer: List[SignalDataPoint] = []
         self.performance_data_buffer: List[PerformanceDataPoint] = []
         
+        # Health tracking
+        self.last_success: Dict[str, Optional[datetime]] = {
+            DataType.MARKET_DATA.value: None,
+            DataType.TRADE_DATA.value: None,
+            DataType.SIGNAL_DATA.value: None,
+            DataType.PERFORMANCE_DATA.value: None,
+            DataType.NEWS_DATA.value: None,
+            DataType.RISK_DATA.value: None,
+        }
+        self.consecutive_failures: Dict[str, int] = {dt.value: 0 for dt in DataType}
+        
         # Collection intervals
         self.collection_intervals = {
             DataType.MARKET_DATA: 5,      # 5 seconds
@@ -301,12 +312,43 @@ class DataCollector:
                 elif data_type == DataType.RISK_DATA:
                     self._collect_risk_data()
                 
-                # Sleep for collection interval
+                # Mark success and sleep with standard interval
+                self.last_success[data_type.value] = datetime.now()
+                self.consecutive_failures[data_type.value] = 0
                 time.sleep(self.collection_intervals[data_type])
                 
             except Exception as e:
                 logger.error(f"❌ Error collecting {data_type.value}: {e}")
-                time.sleep(60)
+                # Exponential backoff per data type, capped
+                self.consecutive_failures[data_type.value] += 1
+                backoff = min(60, 2 ** min(5, self.consecutive_failures[data_type.value]))
+                try:
+                    if self.consecutive_failures[data_type.value] in (3, 5):
+                        self.telegram_notifier.send_message(
+                            f"🚨 Collector '{data_type.value}' failures: {self.consecutive_failures[data_type.value]} (backoff {backoff}s)"
+                        )
+                except Exception:
+                    pass
+                time.sleep(backoff)
+
+    def get_health_summary(self) -> Dict[str, Any]:
+        """Summarize health for non-trading collectors with last success and failure streaks."""
+        try:
+            summary = {}
+            now = datetime.now()
+            for dt in DataType:
+                last = self.last_success.get(dt.value)
+                age = (now - last).total_seconds() if last else None
+                summary[dt.value] = {
+                    'last_success': last.isoformat() if last else None,
+                    'seconds_since_success': age,
+                    'consecutive_failures': self.consecutive_failures.get(dt.value, 0),
+                    'interval_seconds': self.collection_intervals.get(dt, None),
+                }
+            return summary
+        except Exception as e:
+            logger.error(f"❌ Failed to build collector health summary: {e}")
+            return {}
     
     def _collect_market_data(self):
         """Collect market data from all accounts"""

@@ -8,13 +8,16 @@ import schedule
 import time
 from datetime import datetime
 import json
+import os
 
-TELEGRAM_TOKEN = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-CHAT_ID = "6100678501"
-OANDA_API_KEY = "c01de9eb4d793c945ea0fcbb0620cc4e-d0c62eb93ed53e8db5a709089460794a"
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
+CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
+OANDA_API_KEY = os.getenv("OANDA_API_KEY", "")
 
 def send_telegram(message):
     """Send message to Telegram"""
+    if not TELEGRAM_TOKEN or not CHAT_ID:
+        return False
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     payload = {"chat_id": CHAT_ID, "text": message, "parse_mode": "HTML"}
     

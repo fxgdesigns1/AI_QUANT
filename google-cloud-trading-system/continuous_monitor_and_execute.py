@@ -13,18 +13,21 @@ import logging
 from datetime import datetime
 import pytz
 import requests
+import os
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Telegram credentials
-TELEGRAM_TOKEN = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIETq3Aqbyx6IU"
-TELEGRAM_CHAT_ID = "6100678501"
+# Telegram credentials (env only)
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 BASE_URL = "https://ai-quant-trading.uc.r.appspot.com"
 
 def send_telegram(message):
     """Send Telegram alert"""
     try:
+        if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
+            return False
         url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
         data = {"chat_id": TELEGRAM_CHAT_ID, "text": message}
         response = requests.post(url, json=data, timeout=10)

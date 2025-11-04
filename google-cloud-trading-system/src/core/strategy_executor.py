@@ -172,10 +172,24 @@ class StrategyExecutor:
                 
                 # Generate signals from strategy
                 signals = self._generate_strategy_signals(market_data)
+        try:
+            logger.info(f"📥 {self.strategy_config.strategy_name}: generated {len(signals)} signals this cycle")
+        except Exception:
+            pass
                 
                 # Process signals
+        before_exec = self.execution_metrics.signals_executed
+        before_rej = self.execution_metrics.signals_rejected
                 for signal in signals:
                     self._process_signal(signal)
+        try:
+            executed_delta = self.execution_metrics.signals_executed - before_exec
+            rejected_delta = self.execution_metrics.signals_rejected - before_rej
+            logger.info(
+                f"📊 {self.strategy_config.strategy_name}: cycle summary — generated={len(signals)}, executed={executed_delta}, rejected={rejected_delta}"
+            )
+        except Exception:
+            pass
                 
                 # Update positions
                 self._update_positions()

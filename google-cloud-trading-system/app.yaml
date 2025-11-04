@@ -183,7 +183,8 @@ env_variables:
 
   # AI Assistant Configuration - F1 OPTIMIZED
   AI_ASSISTANT_ENABLED: "true"
-  AI_MODEL_PROVIDER: "demo"
+  AI_MODEL_PROVIDER: "gemini"  # Using Gemini AI for intelligent responses
+  GEMINI_API_KEY: "AQ.Ab8RN6KGhGzuSnOmj9P7ncZdm35NK6mKsUy4y4Qq8qrkd4CT_A"
   AI_RATE_LIMIT_PER_MINUTE: "5"
   AI_REQUIRE_LIVE_CONFIRMATION: "true"
   

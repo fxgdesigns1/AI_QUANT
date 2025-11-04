@@ -529,3 +529,5 @@ Entry type: Momentum + sniper pullbacks
 
 
 
+
+
