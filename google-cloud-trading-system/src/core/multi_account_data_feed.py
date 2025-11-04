@@ -182,6 +182,39 @@ class MultiAccountDataFeed:
         """Get current market data for all accounts"""
         return self.market_data.copy()
     
+    def get_latest_prices(self, instruments: Optional[List[str]] = None) -> Dict[str, MarketData]:
+        """Return latest MarketData per instrument across all accounts.
+
+        If instruments is provided, only those instruments are returned (when available).
+        Chooses the most recently updated MarketData among accounts for each instrument.
+        """
+        try:
+            result: Dict[str, MarketData] = {}
+            # Iterate all accounts and collect best (most recent) data per instrument
+            for account_id, account_data in self.market_data.items():
+                for instrument, md in account_data.items():
+                    if instruments is not None and instrument not in instruments:
+                        continue
+                    # Pick if not present or newer
+                    if instrument not in result:
+                        result[instrument] = md
+                    else:
+                        try:
+                            current_ts = getattr(result[instrument], 'timestamp', None)
+                            new_ts = getattr(md, 'timestamp', None)
+                            if new_ts and (not current_ts or new_ts > current_ts):
+                                result[instrument] = md
+                        except Exception:
+                            # If timestamps not comparable, keep existing
+                            pass
+            # If specific instruments requested, ensure keys exist only for those found
+            if instruments is not None:
+                result = {k: v for k, v in result.items() if k in instruments}
+            return result
+        except Exception as e:
+            logger.error(f"❌ Failed to get latest prices: {e}")
+            return {}
+
     def get_instrument_data(self, account_id: str, instrument: str) -> Optional[MarketData]:
         """Get current data for specific instrument on specific account"""
         try:

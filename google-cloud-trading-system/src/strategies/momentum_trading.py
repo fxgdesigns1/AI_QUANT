@@ -68,11 +68,20 @@ class MomentumSignal:
 class MomentumTradingStrategy:
     """OPTIMIZED Momentum Trading Strategy - MAX 10 TRADES/DAY"""
     
-    def __init__(self):
-        """Initialize optimized strategy"""
+    def __init__(self, instruments: Optional[List[str]] = None):
+        """Initialize optimized strategy
+        
+        Args:
+            instruments: List of instruments to trade. If None, uses default multi-pair list.
+        """
         self.name = "Momentum Trading - Optimized"
-        # GOLD ONLY - MONTE CARLO OPTIMIZED (OCT 16 - Forex losing money, Gold profitable)
-        self.instruments = ['XAU_USD']  # Focus on 89% WR Gold, disable losing forex
+        # Use provided instruments from account config, or default to all pairs
+        if instruments:
+            self.instruments = instruments
+        else:
+            # Default: Trade all configured pairs (GBP_USD, NZD_USD, XAU_USD, and common forex pairs)
+            self.instruments = ['GBP_USD', 'NZD_USD', 'XAU_USD', 'EUR_USD', 'USD_JPY', 'AUD_USD', 'USD_CAD']
+        logger.info(f"✅ Momentum Trading Strategy initialized with instruments: {self.instruments}")
         
         # ===============================================
         # BALANCED STRATEGY PARAMETERS (OPTIMIZED OCT 23, 2025)
@@ -181,8 +190,8 @@ class MomentumTradingStrategy:
             'NZD_USD': 0.7   # Weakest (historical 0% win rate)
         }
         
-        # Quality score threshold (0-100 scale) - ULTRA RELAXED OCT 16, 2025
-        self.min_quality_score = 10  # REVERTED: Original worked better (was 15)
+        # Quality score threshold (0-100 scale)
+        self.min_quality_score = 75  # TEMP: Lowered for activity (Nov 4, 2025)
         
         # ===============================================
         # ADAPTIVE REGIME DETECTION (NEW OCT 16, 2025)
@@ -190,8 +199,8 @@ class MomentumTradingStrategy:
         self.adaptive_mode = ADAPTIVE_AVAILABLE  # Enable if available
         self.target_trades_per_day = 5           # Soft target (~5 trades/day)
         
-        # Base thresholds (will be adjusted by regime) - LOWERED FOR REAL MARKET
-        self.base_quality_threshold = 20     # AGGRESSIVE: Lower for more entries (was 40)
+        # Base thresholds (will be adjusted by regime)
+        self.base_quality_threshold = 75  # TEMP: Lowered for activity (Nov 4, 2025)
         self.base_confidence = 0.50          # Was 0.65, too strict
         self.base_momentum = 0.0010          # Optimized: 0.10% for stronger signals
         
@@ -534,22 +543,22 @@ class MomentumTradingStrategy:
         if regime_type == 'TRENDING':
             # Make it EASIER to enter in trends (catch pullbacks)
             adjusted_score = base_score * 1.15  # Boost scores
-            threshold = 20  # REALISTIC threshold (was 60)
+            threshold = max(65, self.min_quality_score - 10)  # Allow as low as 65 in strong trends
         
         elif regime_type == 'RANGING':
             # Make it HARDER in ranges (wait for key levels)
             adjusted_score = base_score * 0.85  # Reduce scores
-            threshold = 25  # REALISTIC (was 80)
+            threshold = max(70, self.min_quality_score - 5)   # Require 70+ in ranges
         
         elif regime_type == 'CHOPPY':
             # Make it MUCH HARDER in chop (very selective)
             adjusted_score = base_score * 0.70  # Significantly reduce
-            threshold = 30  # REALISTIC (was 90 - impossible!)
+            threshold = self.min_quality_score  # Quality Filter 85: Full 85 in chop
         
         else:
             # Unknown regime - use base
             adjusted_score = base_score
-            threshold = 25  # REALISTIC (was 70)
+            threshold = self.min_quality_score  # Quality Filter 85: Use base threshold
         
         # Apply sniper entry bonus
         if sniper_entry:
@@ -767,8 +776,24 @@ class MomentumTradingStrategy:
                 logger.debug(f"⏰ Skipping {instrument}: not in market_data")
                 continue
             if len(self.price_history[instrument]) < 5:
-                logger.info(f"⏰ Skipping {instrument}: insufficient history ({len(self.price_history[instrument])} < 5)")
-                continue
+                # On-demand backfill to avoid waiting for live accumulation
+                try:
+                    from src.core.dynamic_account_manager import get_account_manager
+                    mgr = get_account_manager()
+                    active_accounts = mgr.get_active_accounts()
+                    if active_accounts:
+                        client = mgr.get_account_client(active_accounts[0])
+                        raw = client.get_candles(instrument, granularity='M5', count=50, price='M')
+                        candles = raw.get('candles', [])
+                        closes = [float(c['mid']['c']) for c in candles if c.get('complete')]
+                        if len(closes) >= 5:
+                            self.price_history[instrument].extend(closes[-5:])
+                            logger.info(f"📥 Backfilled {instrument} with {len(closes)} candles; history={len(self.price_history[instrument])}")
+                except Exception as e:
+                    logger.warning(f"⚠️ Backfill failed for {instrument}: {e}")
+                if len(self.price_history[instrument]) < 5:
+                    logger.info(f"⏰ Skipping {instrument}: insufficient history ({len(self.price_history[instrument])} < 5)")
+                    continue
             
             current_data = market_data[instrument]
             prices = self.price_history[instrument]
@@ -1119,9 +1144,22 @@ class MomentumTradingStrategy:
             print(f'Error generating signals in {self.name}: {e}')
         
         return signals
-# Global strategy instance
+# Global strategy instance (for backward compatibility)
 momentum_trading = MomentumTradingStrategy()
 
-def get_momentum_trading_strategy() -> MomentumTradingStrategy:
-    """Get the global Momentum Trading strategy instance"""
-    return momentum_trading
+def get_momentum_trading_strategy(instruments: Optional[List[str]] = None) -> MomentumTradingStrategy:
+    """Get a Momentum Trading strategy instance
+    
+    Args:
+        instruments: List of instruments to trade. If provided, creates new instance with these instruments.
+                    If None, returns default global instance.
+    
+    Returns:
+        MomentumTradingStrategy instance
+    """
+    if instruments:
+        # Create new instance with specified instruments
+        return MomentumTradingStrategy(instruments=instruments)
+    else:
+        # Return default global instance
+        return momentum_trading

@@ -35,3 +35,5 @@ After restarting the system, check the code at line 893 - it should say:
 `logger.warning(f"Price verification: ...`) 
 and NOT have any `send_telegram_message` call.
 
+
+

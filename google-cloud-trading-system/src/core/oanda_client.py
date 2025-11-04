@@ -169,29 +169,42 @@ class OandaClient:
             return datetime.utcnow()
     
     def _make_request(self, method: str, url: str, data: Optional[Dict] = None) -> Dict:
-        """Make authenticated request to OANDA API with error handling"""
+        """Make authenticated request to OANDA API with retries and DNS-safe handling"""
         self._rate_limit()
-        
-        try:
-            if method.upper() == 'GET':
-                response = requests.get(url, headers=self.headers, timeout=10)
-            elif method.upper() == 'POST':
-                response = requests.post(url, headers=self.headers, json=data, timeout=10)
-            elif method.upper() == 'PUT':
-                response = requests.put(url, headers=self.headers, json=data, timeout=10)
-            elif method.upper() == 'DELETE':
-                response = requests.delete(url, headers=self.headers, timeout=10)
-            else:
-                raise ValueError(f"Unsupported HTTP method: {method}")
-            
-            response.raise_for_status()
-            return response.json()
-            
-        except requests.exceptions.RequestException as e:
-            logger.error(f"❌ OANDA API request failed: {e}")
-            if hasattr(e, 'response') and e.response is not None:
-                logger.error(f"Response: {e.response.text}")
-            raise
+        attempts = int(os.getenv('OANDA_HTTP_RETRIES', '3'))
+        backoff_base = float(os.getenv('OANDA_HTTP_BACKOFF', '0.5'))
+        last_exc = None
+        for i in range(1, attempts + 1):
+            try:
+                timeout = float(os.getenv('OANDA_HTTP_TIMEOUT', '8'))
+                if method.upper() == 'GET':
+                    response = requests.get(url, headers=self.headers, timeout=timeout)
+                elif method.upper() == 'POST':
+                    response = requests.post(url, headers=self.headers, json=data, timeout=timeout)
+                elif method.upper() == 'PUT':
+                    response = requests.put(url, headers=self.headers, json=data, timeout=timeout)
+                elif method.upper() == 'DELETE':
+                    response = requests.delete(url, headers=self.headers, timeout=timeout)
+                else:
+                    raise ValueError(f"Unsupported HTTP method: {method}")
+                response.raise_for_status()
+                return response.json()
+            except requests.exceptions.RequestException as e:
+                last_exc = e
+                # Log concise retry info; DNS/timeouts included here
+                logger.error(f"❌ OANDA request error (attempt {i}/{attempts}): {e}")
+                # No response body if DNS/timeout
+                if i < attempts:
+                    time.sleep(backoff_base * i)
+                else:
+                    break
+        # Exhausted retries
+        if hasattr(last_exc, 'response') and getattr(last_exc, 'response') is not None:
+            try:
+                logger.error(f"Response: {last_exc.response.text}")
+            except Exception:
+                pass
+        raise last_exc
     
     def get_account_info(self) -> OandaAccount:
         """Get account information"""
@@ -218,6 +231,10 @@ class OandaClient:
             
         except Exception as e:
             logger.error(f"❌ Failed to get account info: {e}")
+            # Fallback: return last known account_info if present to avoid crashing callers
+            if self.account_info is not None:
+                logger.warning("⚠️ Returning cached account_info due to API failure")
+                return self.account_info
             raise
     
     def get_current_price(self, instrument: str) -> OandaPrice:
@@ -294,7 +311,13 @@ class OandaClient:
             
         except Exception as e:
             logger.error(f"❌ Failed to get current prices: {e}")
-            raise
+            # Fallback to cached prices if available
+            if self.current_prices:
+                fallback = {inst: self.current_prices[inst] for inst in instruments if inst in self.current_prices}
+                if fallback:
+                    logger.warning(f"⚠️ Returning cached prices for {len(fallback)} instruments due to API failure")
+                    return fallback
+            return {}
 
     def get_candles(self, instrument: str, granularity: str = 'M1', count: int = 50, price: str = 'BA') -> Dict[str, Any]:
         """Fetch recent candles for an instrument.

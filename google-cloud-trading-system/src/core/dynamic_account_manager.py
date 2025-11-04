@@ -325,6 +325,64 @@ class DynamicAccountManager:
                 'status': 'error',
                 'error': str(e)
             }
+    
+    def reload(self):
+        """Reload account configuration from accounts.yaml"""
+        try:
+            logger.info("🔄 Reloading account configuration from accounts.yaml...")
+            
+            # Clear existing configs (but keep active OANDA clients for safety)
+            old_accounts = set(self.account_configs.keys())
+            
+            # Reload from YAML
+            self._load_from_yaml()
+            
+            # Reinitialize accounts (will update existing connections)
+            self._initialize_accounts()
+            
+            new_accounts = set(self.account_configs.keys())
+            
+            added = new_accounts - old_accounts
+            removed = old_accounts - new_accounts
+            
+            if added:
+                logger.info(f"✅ Added accounts: {added}")
+            if removed:
+                logger.info(f"⚠️  Removed accounts: {removed}")
+            
+            logger.info(f"✅ Account configuration reloaded: {len(self.account_configs)} accounts active")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to reload account configuration: {e}")
+            logger.exception("Full traceback:")
+            return False
+    
+    def register_config_callback(self):
+        """Register this manager to reload when accounts.yaml changes"""
+        try:
+            from .config_reloader import get_config_reloader
+            config_reloader = get_config_reloader()
+            
+            def on_config_change(change_info):
+                """Callback when accounts.yaml changes"""
+                if isinstance(change_info, dict):
+                    file_name = change_info.get('file', '')
+                    if 'accounts.yaml' in file_name.lower():
+                        logger.info(f"📝 Detected accounts.yaml change, reloading...")
+                        self.reload()
+                elif isinstance(change_info, str):
+                    if 'accounts.yaml' in change_info.lower():
+                        logger.info(f"📝 Detected accounts.yaml change, reloading...")
+                        self.reload()
+            
+            config_reloader.register_callback(on_config_change)
+            logger.info("✅ Registered config change callback for accounts.yaml")
+            return True
+            
+        except Exception as e:
+            logger.warning(f"⚠️  Could not register config callback: {e}")
+            return False
 
 
 # Global instance

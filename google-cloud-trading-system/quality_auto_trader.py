@@ -174,7 +174,12 @@ def quality_scan():
                     # Telegram
                     try:
                         msg = f"✅ QUALITY ENTRY\n\n{instrument} {signal}\nQuality: {quality_score}/5 ⭐\nMomentum: {momentum:+.2f}%\nUnits: {abs(units):,}\nEntry: {entry:.5f if 'XAU' not in instrument else entry:.2f}"
-                        tg_url = "https://api.telegram.org/bot7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU/sendMessage"
+                        import os
+                        token = os.getenv("TELEGRAM_TOKEN", "")
+                        if not token:
+                            tg_url = None
+                        else:
+                            tg_url = f"https://api.telegram.org/bot{token}/sendMessage"
                         requests.post(tg_url, json={"chat_id": "6100678501", "text": msg}, timeout=3)
                     except:
                         pass

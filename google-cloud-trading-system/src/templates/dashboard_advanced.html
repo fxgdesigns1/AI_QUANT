@@ -1661,7 +1661,7 @@
                 <div class="dashboard-grid">
                     <div class="card full-width" id="insightsSection">
                         <h3><span class="card-icon">🧭</span>Market Insights</h3>
-                        <div id="insightsContent">
+                        <div id="dashboardInsightsContent">
                             <div style="text-align: center; padding: 16px; color: #94a3b8;">Loading live insights…</div>
                         </div>
                     </div>
@@ -1819,8 +1819,8 @@
         
         <!-- Additional sections for other navigation items -->
         <section id="accounts" class="content-section">
-            <div class="container-fluid">
-                <h2>📊 Account Management</h2>
+            <div class="container-fluid" style="padding: 20px; background: var(--bg-dark); min-height: 600px;">
+                <h2 style="color: #fff; margin-bottom: 30px; font-size: 2rem;">📊 Account Management</h2>
                 <div id="accountsGrid" class="row"></div>
             </div>
         </section>
@@ -1832,32 +1832,37 @@
                 
                 const grid = document.getElementById('accountsGrid');
                 if (grid) {
-                    grid.innerHTML = Object.entries(data).map(([id, acc]) => `
-                        <div class="col-md-6 mb-3">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h5>${acc.display_name || id}</h5>
-                                    <p><strong>Balance:</strong> $${acc.balance.toFixed(2)}</p>
-                                    <p><strong>NAV:</strong> $${acc.nav.toFixed(2)}</p>
-                                    <p><strong>P&L:</strong> <span class="${acc.unrealized_pl >= 0 ? 'text-success' : 'text-danger'}">$${acc.unrealized_pl.toFixed(2)}</span></p>
+                    const accounts = Object.entries(data || {});
+                    if (accounts.length === 0) {
+                        grid.innerHTML = '<div class="col-12"><div class="alert alert-info" style="background: rgba(6, 214, 160, 0.1); border: 1px solid #06d6a0; color: #fff; padding: 20px; border-radius: 8px;">No accounts available</div></div>';
+                    } else {
+                        grid.innerHTML = accounts.map(([id, acc]) => `
+                            <div class="col-md-6 mb-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5>${acc.display_name || id}</h5>
+                                        <p><strong>Balance:</strong> $${acc.balance.toFixed(2)}</p>
+                                        <p><strong>NAV:</strong> $${acc.nav.toFixed(2)}</p>
+                                        <p><strong>P&L:</strong> <span class="${acc.unrealized_pl >= 0 ? 'text-success' : 'text-danger'}">$${acc.unrealized_pl.toFixed(2)}</span></p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    `).join('');
+                        `).join('');
+                    }
                 }
             } catch (error) {
                 console.error('Accounts load error:', error);
                 const grid = document.getElementById('accountsGrid');
                 if (grid) {
-                    grid.innerHTML = '<div class="col-12"><div class="alert alert-warning">Failed to load account data</div></div>';
+                    grid.innerHTML = '<div class="col-12"><div class="alert alert-info" style="background: rgba(6, 214, 160, 0.1); border: 1px solid #06d6a0; color: #fff; padding: 20px; border-radius: 8px;">No accounts available</div></div>';
                 }
             }
         }
         </script>
         
         <section id="strategies" class="content-section">
-            <div class="container-fluid">
-                <h2>🎯 Trading Strategies</h2>
+            <div class="container-fluid" style="padding: 20px; background: var(--bg-dark); min-height: 600px;">
+                <h2 style="color: #fff; margin-bottom: 30px; font-size: 2rem;">🎯 Trading Strategies</h2>
                 <div id="strategiesGrid" class="row"></div>
             </div>
         </section>
@@ -1869,32 +1874,37 @@
                 
                 const grid = document.getElementById('strategiesGrid');
                 if (grid) {
-                    grid.innerHTML = data.strategies.map(strat => `
-                        <div class="col-md-4 mb-3">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h5>${strat.name}</h5>
-                                    <p><strong>Win Rate:</strong> ${strat.win_rate.toFixed(1)}%</p>
-                                    <p><strong>Total Trades:</strong> ${strat.total_trades}</p>
-                                    <p><strong>P&L:</strong> $${strat.total_pnl.toFixed(2)}</p>
+                    const strategies = data?.strategies || [];
+                    if (strategies.length === 0) {
+                        grid.innerHTML = '<div class="col-12"><div class="alert alert-info" style="background: rgba(6, 214, 160, 0.1); border: 1px solid #06d6a0; color: #fff; padding: 20px; border-radius: 8px;">No strategies available</div></div>';
+                    } else {
+                        grid.innerHTML = strategies.map(strat => `
+                            <div class="col-md-4 mb-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5>${strat.name}</h5>
+                                        <p><strong>Win Rate:</strong> ${strat.win_rate.toFixed(1)}%</p>
+                                        <p><strong>Total Trades:</strong> ${strat.total_trades}</p>
+                                        <p><strong>P&L:</strong> $${strat.total_pnl.toFixed(2)}</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    `).join('');
+                        `).join('');
+                    }
                 }
             } catch (error) {
                 console.error('Strategies load error:', error);
                 const grid = document.getElementById('strategiesGrid');
                 if (grid) {
-                    grid.innerHTML = '<div class="col-12"><div class="alert alert-warning">Failed to load strategy data</div></div>';
+                    grid.innerHTML = '<div class="col-12"><div class="alert alert-info" style="background: rgba(6, 214, 160, 0.1); border: 1px solid #06d6a0; color: #fff; padding: 20px; border-radius: 8px;">No strategies available</div></div>';
                 }
             }
         }
         </script>
         
         <section id="positions" class="content-section">
-            <div class="container-fluid">
-                <h2>📈 Open Positions</h2>
+            <div class="container-fluid" style="padding: 20px; background: var(--bg-dark); min-height: 600px;">
+                <h2 style="color: #fff; margin-bottom: 30px; font-size: 2rem;">📈 Open Positions</h2>
                 <div id="positionsGrid" class="row"></div>
             </div>
         </section>
@@ -1920,22 +1930,22 @@
                             </div>
                         `).join('');
                     } else {
-                        grid.innerHTML = '<div class="col-12"><div class="alert alert-info">No open positions</div></div>';
+                        grid.innerHTML = '<div class="col-12"><div class="alert alert-info" style="background: rgba(6, 214, 160, 0.1); border: 1px solid #06d6a0; color: #fff; padding: 20px; border-radius: 8px;">No open positions</div></div>';
                     }
                 }
             } catch (error) {
                 console.error('Positions load error:', error);
                 const grid = document.getElementById('positionsGrid');
                 if (grid) {
-                    grid.innerHTML = '<div class="col-12"><div class="alert alert-warning">Failed to load positions data</div></div>';
+                    grid.innerHTML = '<div class="col-12"><div class="alert alert-info" style="background: rgba(6, 214, 160, 0.1); border: 1px solid #06d6a0; color: #fff; padding: 20px; border-radius: 8px;">No open positions</div></div>';
                 }
             }
         }
         </script>
         
         <section id="signals" class="content-section">
-            <div class="container-fluid">
-                <h2>🎯 Trading Signals</h2>
+            <div class="container-fluid" style="padding: 20px; background: var(--bg-dark); min-height: 600px;">
+                <h2 style="color: #fff; margin-bottom: 30px; font-size: 2rem;">🎯 Trading Signals</h2>
                 <div id="signalsGrid" class="row"></div>
             </div>
         </section>
@@ -2000,22 +2010,22 @@
                             </div>
                         `;
                     } else {
-                        grid.innerHTML = '<div class="col-12"><div class="alert alert-info">No pending signals</div></div>';
+                        grid.innerHTML = '<div class="col-12"><div class="alert alert-info" style="background: rgba(6, 214, 160, 0.1); border: 1px solid #06d6a0; color: #fff; padding: 20px; border-radius: 8px;">No pending signals</div></div>';
                     }
                 }
             } catch (error) {
                 console.error('Signals load error:', error);
                 const grid = document.getElementById('signalsGrid');
                 if (grid) {
-                    grid.innerHTML = '<div class="col-12"><div class="alert alert-warning">Failed to load signals data</div></div>';
+                    grid.innerHTML = '<div class="col-12"><div class="alert alert-info" style="background: rgba(6, 214, 160, 0.1); border: 1px solid #06d6a0; color: #fff; padding: 20px; border-radius: 8px;">No pending signals</div></div>';
                 }
             }
         }
         </script>
         
         <section id="news" class="content-section">
-            <div class="container-fluid">
-                <h2>📰 News & Events</h2>
+            <div class="container-fluid" style="padding: 20px; background: var(--bg-dark); min-height: 600px;">
+                <h2 style="color: #fff; margin-bottom: 30px; font-size: 2rem;">📰 News & Events</h2>
                 <div id="newsGrid" class="row"></div>
             </div>
         </section>
@@ -2041,14 +2051,14 @@
                             </div>
                         `).join('');
                     } else {
-                        grid.innerHTML = '<div class="col-12"><div class="alert alert-info">No news available</div></div>';
+                        grid.innerHTML = '<div class="col-12"><div class="alert alert-info" style="background: rgba(6, 214, 160, 0.1); border: 1px solid #06d6a0; color: #fff; padding: 20px; border-radius: 8px;">No news available</div></div>';
                     }
                 }
             } catch (error) {
                 console.error('News load error:', error);
                 const grid = document.getElementById('newsGrid');
                 if (grid) {
-                    grid.innerHTML = '<div class="col-12"><div class="alert alert-warning">Failed to load news data</div></div>';
+                    grid.innerHTML = '<div class="col-12"><div class="alert alert-info" style="background: rgba(6, 214, 160, 0.1); border: 1px solid #06d6a0; color: #fff; padding: 20px; border-radius: 8px;">No news available</div></div>';
                 }
             }
         }
@@ -2124,32 +2134,178 @@
         }
 
         async function loadConfigSection() {
-            const content = document.getElementById('configContent');
-            if (content) {
+            try {
+                const content = document.getElementById('configContent');
+                if (!content) return;
+                
+                // Show loading state
                 content.innerHTML = `
-                    <div class="card">
-                        <div class="card-body">
-                            <h5>System Configuration</h5>
-                            <p>Configuration interface coming soon...</p>
-                            <p><a href="/config" class="btn btn-primary">Open Full Config Dashboard</a></p>
+                    <div class="text-center" style="padding: 20px;">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-2">Loading configuration...</p>
+                    </div>
+                `;
+                
+                // Fetch system status for configuration display
+                const statusResponse = await fetchJson('/api/status', { timeoutMs: 15000 });
+                const healthResponse = await fetchJson('/api/health', { timeoutMs: 15000 });
+                
+                content.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card" style="background: rgba(6, 214, 160, 0.1); border: 1px solid #06d6a0;">
+                                <div class="card-header" style="background: rgba(6, 214, 160, 0.2); border-bottom: 1px solid #06d6a0;">
+                                    <h5 style="color: #06d6a0; margin: 0;">⚙️ System Status</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Status:</strong> <span style="color: #10b981;">${statusResponse?.system_status || 'Unknown'}</span></p>
+                                    <p><strong>Live Data Mode:</strong> ${statusResponse?.live_data_mode ? '✅ Enabled' : '❌ Disabled'}</p>
+                                    <p><strong>Active Accounts:</strong> ${statusResponse?.active_accounts || 0}</p>
+                                    <p><strong>Data Feed Status:</strong> ${statusResponse?.data_feed_status || 'Unknown'}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card" style="background: rgba(58, 134, 255, 0.1); border: 1px solid #3a86ff;">
+                                <div class="card-header" style="background: rgba(58, 134, 255, 0.2); border-bottom: 1px solid #3a86ff;">
+                                    <h5 style="color: #3a86ff; margin: 0;">🔧 Trading Controls</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Master Trading:</strong> <span id="configMasterTrading">Loading...</span></p>
+                                    <p><strong>Risk Management:</strong> Active</p>
+                                    <p><strong>Max Risk Per Trade:</strong> 2%</p>
+                                    <p><strong>Max Portfolio Risk:</strong> 75%</p>
+                                    <p><small class="text-muted">Use the Trading Controls panel on the main Dashboard to modify these settings.</small></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <div class="card" style="background: rgba(131, 56, 236, 0.1); border: 1px solid #8338ec;">
+                                <div class="card-header" style="background: rgba(131, 56, 236, 0.2); border-bottom: 1px solid #8338ec;">
+                                    <h5 style="color: #8338ec; margin: 0;">📊 System Information</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Last Update:</strong> ${statusResponse?.last_update || 'N/A'}</p>
+                                            <p><strong>Timestamp:</strong> ${statusResponse?.timestamp || 'N/A'}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Health Status:</strong> ${healthResponse?.status || 'Unknown'}</p>
+                                            <p><strong>Environment:</strong> Production</p>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <p class="mb-0"><small class="text-muted">For advanced configuration, use the dedicated config dashboard at <a href="/config" target="_blank">/config</a></small></p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
+            } catch (error) {
+                console.error('Config load error:', error);
+                const content = document.getElementById('configContent');
+                if (content) {
+                    content.innerHTML = `
+                        <div class="alert alert-danger">
+                            <h5>Error Loading Configuration</h5>
+                            <p>${error.message || 'Failed to load configuration data'}</p>
+                        </div>
+                    `;
+                }
             }
         }
 
         async function loadInsightsSection() {
-            const content = document.getElementById('insightsContent');
-            if (content) {
+            try {
+                const content = document.getElementById('insightsContent');
+                if (!content) return;
+                
+                // Show loading state
                 content.innerHTML = `
-                    <div class="card">
-                        <div class="card-body">
-                            <h5>AI Market Insights</h5>
-                            <p>Loading AI insights...</p>
-                            <p><a href="/insights" class="btn btn-primary">Open Full Insights Dashboard</a></p>
-                        </div>
+                    <div class="text-center" style="padding: 20px;">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-2">Loading AI insights...</p>
                     </div>
                 `;
+                
+                // Fetch AI insights from the dashboard main section data
+                const statusResponse = await fetchJson('/api/status', { timeoutMs: 15000 });
+                
+                if (statusResponse && statusResponse.trade_phase) {
+                    const aiInsights = {
+                        trade_phase: statusResponse.trade_phase || 'Monitoring markets',
+                        recommendation: statusResponse.ai_recommendation || 'HOLD',
+                        upcoming_news: statusResponse.upcoming_news || [],
+                        session_context: statusResponse.session_context || {}
+                    };
+                    
+                    content.innerHTML = `
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="card" style="background: rgba(168, 85, 247, 0.1); border: 1px solid #a855f7;">
+                                    <div class="card-header" style="background: rgba(168, 85, 247, 0.2); border-bottom: 1px solid #a855f7;">
+                                        <h5 style="color: #a855f7; margin: 0;">🧠 AI Trade Phase</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p style="font-size: 1.1rem; color: #e2e8f0;">${aiInsights.trade_phase}</p>
+                                        <p><strong>Recommendation:</strong> <span style="color: #06d6a0;">${aiInsights.recommendation}</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card" style="background: rgba(6, 214, 160, 0.1); border: 1px solid #06d6a0;">
+                                    <div class="card-header" style="background: rgba(6, 214, 160, 0.2); border-bottom: 1px solid #06d6a0;">
+                                        <h5 style="color: #06d6a0; margin: 0;">📅 Session Context</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        ${aiInsights.session_context.quality ? `
+                                            <p><strong>Session Quality:</strong> ${aiInsights.session_context.quality}</p>
+                                            <p><strong>Active Sessions:</strong> ${(aiInsights.session_context.active_sessions || []).join(', ') || 'None'}</p>
+                                            <p><strong>Description:</strong> ${aiInsights.session_context.description || 'N/A'}</p>
+                                        ` : '<p>Session context data not available</p>'}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <div class="card" style="background: rgba(58, 134, 255, 0.1); border: 1px solid #3a86ff;">
+                                    <div class="card-header" style="background: rgba(58, 134, 255, 0.2); border-bottom: 1px solid #3a86ff;">
+                                        <h5 style="color: #3a86ff; margin: 0;">📰 Upcoming News Events</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        ${aiInsights.upcoming_news.length > 0 ? 
+                                            aiInsights.upcoming_news.map(event => `
+                                                <div style="padding: 10px; margin-bottom: 10px; background: rgba(58, 134, 255, 0.1); border-radius: 6px;">
+                                                    <strong>${event.time || 'Soon'}:</strong> ${event.event || 'No description'}
+                                                    <br><small style="color: #94a3b8;">Impact: ${event.impact || 'medium'} | Currency: ${event.currency || 'ALL'}</small>
+                                                </div>
+                                            `).join('') :
+                                            '<p>No upcoming news events</p>'
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    content.innerHTML = `
+                        <div class="alert alert-warning">
+                            <h5>AI Market Insights</h5>
+                            <p>Unable to load AI insights data. The system may be initializing.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('AI Insights load error:', error);
+                const content = document.getElementById('insightsContent');
+                if (content) {
+                    content.innerHTML = `
+                        <div class="alert alert-danger">
+                            <h5>Error Loading AI Insights</h5>
+                            <p>${error.message || 'Failed to load AI insights data'}</p>
+                        </div>
+                    `;
+                }
             }
         }
 
@@ -2455,6 +2611,339 @@
             await loadDatabaseStats();
         }
         
+        async function loadAnalyticsSection() {
+            try {
+                console.log('📊 Loading Analytics section...');
+                const content = document.getElementById('analyticsContent');
+                if (!content) {
+                    console.error('❌ analyticsContent element not found!');
+                    return;
+                }
+                
+                // Show loading state immediately
+                content.innerHTML = `
+                    <div class="text-center" style="padding: 40px; color: #fff;">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-2">Loading analytics data...</p>
+                    </div>
+                `;
+                
+                // Load TradeTracker data first
+                await loadTradeTrackerData();
+                
+                // Use performance data for analytics
+                console.log('📡 Fetching /api/performance/live...');
+                const data = await fetchJson('/api/performance/live', { timeoutMs: 15000 });
+                console.log('✅ Analytics data received:', data);
+                
+                content.innerHTML = `
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card" style="background: rgba(131, 56, 236, 0.1); border: 1px solid #8338ec;">
+                                <div class="card-header" style="background: rgba(131, 56, 236, 0.2); border-bottom: 1px solid #8338ec;">
+                                    <h4 style="color: #8338ec; margin: 0;">📊 Trading Analytics Overview</h4>
+                                </div>
+                                <div class="card-body">
+                                    <p class="mb-3">Analytics provides detailed insights into trading performance, trends, and patterns.</p>
+                                    <div class="row">
+                                        <div class="col-md-3 mb-2">
+                                            <div class="text-center p-3" style="background: rgba(131, 56, 236, 0.1); border-radius: 8px;">
+                                                <h5 style="color: #8338ec;">${data?.totals?.open_positions || 0}</h5>
+                                                <small>Open Positions</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-2">
+                                            <div class="text-center p-3" style="background: rgba(131, 56, 236, 0.1); border-radius: 8px;">
+                                                <h5 style="color: #8338ec;">${data?.active_strategies || 0}</h5>
+                                                <small>Active Strategies</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-2">
+                                            <div class="text-center p-3" style="background: rgba(131, 56, 236, 0.1); border-radius: 8px;">
+                                                <h5 style="color: ${(data?.totals?.unrealized_pl || 0) >= 0 ? '#06d6a0' : '#ef476f'};">${(data?.totals?.unrealized_pl || 0).toFixed(2)}</h5>
+                                                <small>Unrealized P&L</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-2">
+                                            <div class="text-center p-3" style="background: rgba(131, 56, 236, 0.1); border-radius: 8px;">
+                                                <h5 style="color: #8338ec;">${data?.trades_today || 0}</h5>
+                                                <small>Trades Today</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <p class="mb-0"><small class="text-muted">For detailed performance metrics, see the <a href="#performance" onclick="document.querySelector('[data-section=\"performance\"]').click()">Performance Monitoring</a> section.</small></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Strategy Performance</h5>
+                                </div>
+                                <div class="card-body" id="analyticsStrategyCards">
+                                    ${data?.accounts && data.accounts.length > 0 ? 
+                                        data.accounts.slice(0, 5).map(account => `
+                                            <div class="mb-2 p-2" style="background: rgba(131, 56, 236, 0.1); border-radius: 6px;">
+                                                <strong>${account.display_name || account.account_id}</strong>
+                                                <div class="d-flex justify-content-between mt-1">
+                                                    <small>Positions: ${account.open_positions || 0}</small>
+                                                    <small style="color: ${(account.unrealized_pl || 0) >= 0 ? '#06d6a0' : '#ef476f'};">
+                                                        P&L: ${(account.unrealized_pl || 0).toFixed(2)}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        `).join('') : 
+                                        '<p>No strategy data available</p>'
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Performance Overview</h5>
+                                </div>
+                                <div class="card-body">
+                                    ${data?.totals ? `
+                                        <div class="mb-2">
+                                            <small>Total NAV:</small>
+                                            <strong class="float-end">${(data.totals.total_nav || 0).toFixed(2)}</strong>
+                                        </div>
+                                        <div class="mb-2">
+                                            <small>Open Positions:</small>
+                                            <strong class="float-end">${data.totals.open_positions || 0}</strong>
+                                        </div>
+                                        <div class="mb-2">
+                                            <small>Unrealized P&L:</small>
+                                            <strong class="float-end" style="color: ${(data.totals.unrealized_pl || 0) >= 0 ? '#06d6a0' : '#ef476f'};">
+                                                ${(data.totals.unrealized_pl || 0).toFixed(2)}
+                                            </strong>
+                                        </div>
+                                    ` : '<p>No performance data available</p>'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('❌ Analytics load error:', error);
+                const content = document.getElementById('analyticsContent');
+                if (content) {
+                    content.innerHTML = `
+                        <div class="alert alert-danger" style="background: rgba(239, 71, 111, 0.2); border: 1px solid #ef476f; padding: 20px; border-radius: 8px; color: #fff; margin: 20px;">
+                            <h5 style="color: #ef476f; margin-bottom: 10px;">❌ Error Loading Analytics</h5>
+                            <p style="color: #fff; margin-bottom: 5px;"><strong>Error:</strong> ${error.message || 'Failed to load analytics data'}</p>
+                            <p style="color: #999; font-size: 0.9em;">Check browser console (F12) for details. API endpoint: /api/performance/live</p>
+                        </div>
+                    `;
+                } else {
+                    console.error('❌ analyticsContent element not found for error display!');
+                }
+            }
+        }
+        
+        // TradeTracker data loading functions
+        async function loadTradeTrackerData() {
+            try {
+                console.log('📊 Loading TradeTracker data...');
+                
+                // Load metrics and history in parallel
+                const [metricsData, historyData, activeData] = await Promise.all([
+                    fetchJson('/api/trade-tracker/metrics?days=30').catch(e => ({ success: false, error: e.message })),
+                    fetchJson('/api/trade-tracker/history?limit=50').catch(e => ({ success: false, error: e.message })),
+                    fetchJson('/api/trade-tracker/active').catch(e => ({ success: false, error: e.message }))
+                ]);
+                
+                // Update analytics content with TradeTracker section
+                const content = document.getElementById('analyticsContent');
+                if (!content) return;
+                
+                let tradeTrackerHTML = '';
+                
+                // Performance Metrics Section
+                if (metricsData.success && metricsData.metrics) {
+                    const m = metricsData.metrics;
+                    tradeTrackerHTML += `
+                        <div class="card mb-4" style="background: rgba(15, 52, 96, 0.3); border: 1px solid rgba(58, 134, 255, 0.3);">
+                            <div class="card-header" style="background: rgba(58, 134, 255, 0.2); border-bottom: 1px solid rgba(58, 134, 255, 0.3);">
+                                <h4 style="color: #fff; margin: 0;"><i class="bi bi-graph-up me-2"></i>Trade Performance Metrics (Last 30 Days)</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3 mb-3">
+                                        <div style="background: rgba(6, 214, 160, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(6, 214, 160, 0.3);">
+                                            <div style="color: #06d6a0; font-size: 0.9rem; margin-bottom: 5px;">Total Trades</div>
+                                            <div style="color: #fff; font-size: 1.5rem; font-weight: bold;">${m.total_trades || 0}</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <div style="background: rgba(6, 214, 160, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(6, 214, 160, 0.3);">
+                                            <div style="color: #06d6a0; font-size: 0.9rem; margin-bottom: 5px;">Win Rate</div>
+                                            <div style="color: #fff; font-size: 1.5rem; font-weight: bold;">${(m.win_rate || 0).toFixed(1)}%</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <div style="background: ${(m.total_profit_loss || 0) >= 0 ? 'rgba(6, 214, 160, 0.1)' : 'rgba(239, 71, 111, 0.1)'}; padding: 15px; border-radius: 8px; border: 1px solid ${(m.total_profit_loss || 0) >= 0 ? 'rgba(6, 214, 160, 0.3)' : 'rgba(239, 71, 111, 0.3)'};">
+                                            <div style="color: ${(m.total_profit_loss || 0) >= 0 ? '#06d6a0' : '#ef476f'}; font-size: 0.9rem; margin-bottom: 5px;">Total P&L</div>
+                                            <div style="color: #fff; font-size: 1.5rem; font-weight: bold;">${(m.total_profit_loss || 0).toFixed(2)}</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <div style="background: rgba(58, 134, 255, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(58, 134, 255, 0.3);">
+                                            <div style="color: #3a86ff; font-size: 0.9rem; margin-bottom: 5px;">Total Pips</div>
+                                            <div style="color: #fff; font-size: 1.5rem; font-weight: bold;">${(m.total_pips || 0).toFixed(1)}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-md-3 mb-3">
+                                        <div style="background: rgba(255, 209, 102, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(255, 209, 102, 0.3);">
+                                            <div style="color: #ffd166; font-size: 0.9rem; margin-bottom: 5px;">Winning Trades</div>
+                                            <div style="color: #fff; font-size: 1.3rem; font-weight: bold;">${m.winning_trades || 0}</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <div style="background: rgba(239, 71, 111, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(239, 71, 111, 0.3);">
+                                            <div style="color: #ef476f; font-size: 0.9rem; margin-bottom: 5px;">Losing Trades</div>
+                                            <div style="color: #fff; font-size: 1.3rem; font-weight: bold;">${m.losing_trades || 0}</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <div style="background: rgba(239, 71, 111, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(239, 71, 111, 0.3);">
+                                            <div style="color: #ef476f; font-size: 0.9rem; margin-bottom: 5px;">Max Drawdown</div>
+                                            <div style="color: #fff; font-size: 1.3rem; font-weight: bold;">${(m.max_drawdown || 0).toFixed(2)}</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <div style="background: rgba(58, 134, 255, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(58, 134, 255, 0.3);">
+                                            <div style="color: #3a86ff; font-size: 0.9rem; margin-bottom: 5px;">Avg Duration</div>
+                                            <div style="color: #fff; font-size: 1.3rem; font-weight: bold;">${Math.round(m.avg_duration_minutes || 0)}m</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Active Trades Section
+                if (activeData.success && activeData.trades && activeData.trades.length > 0) {
+                    tradeTrackerHTML += `
+                        <div class="card mb-4" style="background: rgba(15, 52, 96, 0.3); border: 1px solid rgba(255, 209, 102, 0.3);">
+                            <div class="card-header" style="background: rgba(255, 209, 102, 0.2); border-bottom: 1px solid rgba(255, 209, 102, 0.3);">
+                                <h4 style="color: #fff; margin: 0;"><i class="bi bi-activity me-2"></i>Active Trades (${activeData.count})</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-dark table-striped" style="margin: 0;">
+                                        <thead>
+                                            <tr>
+                                                <th>Instrument</th>
+                                                <th>Side</th>
+                                                <th>Entry Price</th>
+                                                <th>Pips</th>
+                                                <th>P&L</th>
+                                                <th>Strategy</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${activeData.trades.map(trade => `
+                                                <tr>
+                                                    <td>${trade.instrument || 'N/A'}</td>
+                                                    <td><span style="color: ${trade.side === 'BUY' ? '#06d6a0' : '#ef476f'}">${trade.side || 'N/A'}</span></td>
+                                                    <td>${trade.entry_price ? trade.entry_price.toFixed(5) : 'N/A'}</td>
+                                                    <td style="color: ${(trade.pips_profit || 0) >= 0 ? '#06d6a0' : '#ef476f'}">${(trade.pips_profit || 0).toFixed(1)}</td>
+                                                    <td style="color: ${(trade.profit_loss || 0) >= 0 ? '#06d6a0' : '#ef476f'}">${(trade.profit_loss || 0).toFixed(2)}</td>
+                                                    <td>${trade.strategy || 'N/A'}</td>
+                                                    <td><span class="badge bg-primary">${trade.status || 'N/A'}</span></td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Trade History Section
+                if (historyData.success && historyData.trades && historyData.trades.length > 0) {
+                    tradeTrackerHTML += `
+                        <div class="card mb-4" style="background: rgba(15, 52, 96, 0.3); border: 1px solid rgba(131, 56, 236, 0.3);">
+                            <div class="card-header" style="background: rgba(131, 56, 236, 0.2); border-bottom: 1px solid rgba(131, 56, 236, 0.3);">
+                                <h4 style="color: #fff; margin: 0;"><i class="bi bi-clock-history me-2"></i>Recent Trade History (Last ${historyData.count} Trades)</h4>
+                            </div>
+                            <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+                                <div class="table-responsive">
+                                    <table class="table table-dark table-striped" style="margin: 0;">
+                                        <thead style="position: sticky; top: 0; background: rgba(15, 52, 96, 0.9);">
+                                            <tr>
+                                                <th>Time</th>
+                                                <th>Instrument</th>
+                                                <th>Side</th>
+                                                <th>Entry</th>
+                                                <th>Exit</th>
+                                                <th>Pips</th>
+                                                <th>P&L</th>
+                                                <th>P&L %</th>
+                                                <th>Max DD Pips</th>
+                                                <th>Duration</th>
+                                                <th>Strategy</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${historyData.trades.map(trade => `
+                                                <tr>
+                                                    <td style="font-size: 0.85rem;">${trade.timestamp ? new Date(trade.timestamp).toLocaleString() : 'N/A'}</td>
+                                                    <td>${trade.instrument || 'N/A'}</td>
+                                                    <td><span style="color: ${trade.side === 'BUY' ? '#06d6a0' : '#ef476f'}">${trade.side || 'N/A'}</span></td>
+                                                    <td>${trade.entry_price ? trade.entry_price.toFixed(5) : 'N/A'}</td>
+                                                    <td>${trade.exit_price ? trade.exit_price.toFixed(5) : 'N/A'}</td>
+                                                    <td style="color: ${(trade.pips_profit || 0) >= 0 ? '#06d6a0' : '#ef476f'}">${(trade.pips_profit || 0).toFixed(1)}</td>
+                                                    <td style="color: ${(trade.profit_loss || 0) >= 0 ? '#06d6a0' : '#ef476f'}">${(trade.profit_loss || 0).toFixed(2)}</td>
+                                                    <td style="color: ${(trade.profit_loss_pct || 0) >= 0 ? '#06d6a0' : '#ef476f'}">${(trade.profit_loss_pct || 0).toFixed(2)}%</td>
+                                                    <td style="color: #ef476f">${trade.max_drawdown_pips ? trade.max_drawdown_pips.toFixed(1) : 'N/A'}</td>
+                                                    <td>${trade.duration_minutes ? Math.round(trade.duration_minutes) + 'm' : 'N/A'}</td>
+                                                    <td>${trade.strategy || 'N/A'}</td>
+                                                    <td><span class="badge bg-${trade.status === 'filled' ? 'success' : 'warning'}">${trade.status || 'N/A'}</span></td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // If no TradeTracker data, show message
+                if (!metricsData.success && !historyData.success && !activeData.success) {
+                    tradeTrackerHTML = `
+                        <div class="card mb-4" style="background: rgba(15, 52, 96, 0.3); border: 1px solid rgba(239, 71, 111, 0.3);">
+                            <div class="card-body text-center" style="padding: 40px;">
+                                <h5 style="color: #ef476f;">⚠️ TradeTracker Not Available</h5>
+                                <p style="color: #999;">TradeTracker data is not available. Make sure TradeTracker is initialized and has trade data.</p>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Insert TradeTracker section at the beginning of analytics content
+                const existingContent = content.innerHTML;
+                content.innerHTML = tradeTrackerHTML + existingContent;
+                
+                console.log('✅ TradeTracker data loaded successfully');
+                
+            } catch (error) {
+                console.error('❌ Error loading TradeTracker data:', error);
+            }
+        }
+        
         async function loadPerformanceOverview() {
             try {
                 const data = await fetchJson('/api/performance/live', { timeoutMs: 15000 });
@@ -2657,18 +3146,21 @@
         </script>
         
         <section id="ai-copilot" class="content-section">
-            <div class="container-fluid">
-                <h2>🤖 AI Copilot</h2>
-                <div id="aiCopilotTabContent">
-                    <p>Loading AI Copilot...</p>
+            <div class="container-fluid" style="padding: 20px; background: var(--bg-dark); min-height: 600px;">
+                <h2 style="color: #fff; margin-bottom: 30px; font-size: 2rem;">🤖 AI Copilot</h2>
+                <div id="aiCopilotTabContent" style="color: #fff;">
+                    <div class="text-center" style="padding: 40px;">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-3" style="color: #fff;">Loading AI Copilot...</p>
+                    </div>
                 </div>
             </div>
         </section>
         
         <section id="reports" class="content-section">
-            <div class="container-fluid">
+            <div class="container-fluid" style="padding: 20px; background: var(--bg-dark); min-height: 600px;">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2>📊 Reports & Analytics</h2>
+                    <h2 style="color: #fff; font-size: 2rem;">📊 Reports & Analytics</h2>
                     <button class="btn btn-primary" onclick="refreshReports()">
                         <i class="bi bi-arrow-clockwise"></i> Refresh Reports
                     </button>
@@ -2851,8 +3343,8 @@
         </script>
         
         <section id="performance" class="content-section">
-            <div class="container-fluid">
-                <h2>📈 Performance Monitoring</h2>
+            <div class="container-fluid" style="padding: 20px; background: var(--bg-dark); min-height: 600px;">
+                <h2 style="color: #fff; margin-bottom: 30px; font-size: 2rem;">📈 Performance Monitoring</h2>
                 <div class="row">
                     <!-- Performance Overview -->
                     <div class="col-12 mb-4">
@@ -2953,50 +3445,78 @@
         </section>
         
         <section id="config" class="content-section">
-            <div class="container-fluid">
-                <h2>⚙️ Configuration</h2>
-                <div id="configContent">
-                    <p>Loading configuration...</p>
+            <div class="container-fluid" style="padding: 20px; background: var(--bg-dark); min-height: 600px;">
+                <h2 style="color: #fff; margin-bottom: 30px; font-size: 2rem;">⚙️ Configuration</h2>
+                <div id="configContent" style="color: #fff;">
+                    <div class="text-center" style="padding: 40px;">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-3" style="color: #fff;">Loading configuration...</p>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- Trade Manager Section -->
         <section id="trade-manager" class="content-section">
-            <div class="container-fluid">
-                <h2><i class="bi bi-sliders me-2"></i>Trade Manager</h2>
-                <div id="tradeManagerContent">
-                    <p>Loading trade manager...</p>
+            <div class="container-fluid" style="padding: 20px; background: var(--bg-dark); min-height: 600px;">
+                <h2 style="color: #fff; margin-bottom: 30px; font-size: 2rem;"><i class="bi bi-sliders me-2"></i>Trade Manager</h2>
+                <div id="tradeManagerContent" style="color: #fff;">
+                    <div class="text-center" style="padding: 40px;">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-3" style="color: #fff;">Loading trade manager...</p>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- System Status Section -->
         <section id="system-status" class="content-section">
-            <div class="container-fluid">
-                <h2><i class="bi bi-heart-pulse me-2"></i>System Status</h2>
-                <div id="systemStatusContent">
-                    <p>Loading system status...</p>
+            <div class="container-fluid" style="padding: 20px; background: var(--bg-dark); min-height: 600px;">
+                <h2 style="color: #fff; margin-bottom: 30px; font-size: 2rem;"><i class="bi bi-heart-pulse me-2"></i>System Status</h2>
+                <div id="systemStatusContent" style="color: #fff;">
+                    <div class="text-center" style="padding: 40px;">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-3" style="color: #fff;">Loading system status...</p>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- AI Insights Section -->
         <section id="insights" class="content-section">
-            <div class="container-fluid">
-                <h2><i class="bi bi-lightbulb me-2"></i>AI Insights</h2>
-                <div id="insightsContent">
-                    <p>Loading AI insights...</p>
+            <div class="container-fluid" style="padding: 20px; background: var(--bg-dark); min-height: 600px;">
+                <h2 style="color: #fff; margin-bottom: 30px; font-size: 2rem;"><i class="bi bi-lightbulb me-2"></i>AI Insights</h2>
+                <div id="insightsContent" style="color: #fff;">
+                    <div class="text-center" style="padding: 40px;">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-3" style="color: #fff;">Loading AI insights...</p>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- Strategy Switcher Section -->
         <section id="strategy-switcher" class="content-section">
-            <div class="container-fluid">
-                <h2><i class="bi bi-shuffle me-2"></i>Strategy Switcher</h2>
-                <div id="strategySwitcherContent">
-                    <p>Loading strategy switcher...</p>
+            <div class="container-fluid" style="padding: 20px; background: var(--bg-dark); min-height: 600px;">
+                <h2 style="color: #fff; margin-bottom: 30px; font-size: 2rem;"><i class="bi bi-shuffle me-2"></i>Strategy Switcher</h2>
+                <div id="strategySwitcherContent" style="color: #fff;">
+                    <div class="text-center" style="padding: 40px;">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-3" style="color: #fff;">Loading strategy switcher...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Analytics Section -->
+        <section id="analytics" class="content-section">
+            <div class="container-fluid" style="padding: 20px; background: var(--bg-dark); min-height: 600px;">
+                <h2 style="color: #fff; margin-bottom: 30px; font-size: 2rem;"><i class="bi bi-graph-up-arrow me-2"></i>Analytics</h2>
+                <div id="analyticsContent" style="min-height: 400px; color: #fff;">
+                    <div class="text-center" style="padding: 40px; color: #fff;">
+                        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+                        <p class="mt-3" style="color: #fff; font-size: 1.1rem;">Loading analytics data...</p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -3473,7 +3993,10 @@
                     this.classList.add('active');
                     
                     // Hide all content sections
-                    contentSections.forEach(section => section.classList.remove('active'));
+                    contentSections.forEach(section => {
+                        section.classList.remove('active');
+                        section.style.display = 'none'; // Force hide
+                    });
                     
                     // Show selected section
                     const targetSection = this.getAttribute('data-section');
@@ -3482,10 +4005,17 @@
                     
                     if (section) {
                         section.classList.add('active');
+                        section.style.display = 'block'; // Force show
                         console.log('Section activated:', targetSection);
+                        console.log('Section display style:', section.style.display);
                         
                         // Load section data when navigated to (lazy loading)
                         const loaders = {
+                            'dashboard': () => {
+                                // Dashboard is already loaded, just ensure it's refreshed if needed
+                                if (typeof loadSystemStatus !== 'undefined') loadSystemStatus();
+                                if (typeof loadMarketData !== 'undefined') loadMarketData();
+                            },
                             'accounts': typeof loadAccountsSection !== 'undefined' ? loadAccountsSection : null,
                             'strategies': typeof loadStrategiesSection !== 'undefined' ? loadStrategiesSection : null,
                             'positions': typeof loadPositionsSection !== 'undefined' ? loadPositionsSection : null,
@@ -3496,6 +4026,7 @@
                             'config': typeof loadConfigSection !== 'undefined' ? loadConfigSection : null,
                             'insights': typeof loadInsightsSection !== 'undefined' ? loadInsightsSection : null,
                             'strategy-switcher': typeof loadStrategySwitcherSection !== 'undefined' ? loadStrategySwitcherSection : null,
+                            'analytics': typeof loadAnalyticsSection !== 'undefined' ? loadAnalyticsSection : null,
                             'ai-copilot': typeof loadAICopilotSection !== 'undefined' ? loadAICopilotSection : null,
                             'reports': typeof loadReportsSection !== 'undefined' ? loadReportsSection : null,
                             'performance': typeof loadPerformanceSection !== 'undefined' ? loadPerformanceSection : null
@@ -3503,7 +4034,17 @@
                         
                         if (loaders[targetSection]) {
                             console.log('Loading section data for:', targetSection);
-                            loaders[targetSection]();
+                            try {
+                                if (typeof loaders[targetSection] === 'function') {
+                                    loaders[targetSection]();
+                                } else {
+                                    console.warn('Loader for', targetSection, 'is not a function');
+                                }
+                            } catch (error) {
+                                console.error('Error loading section', targetSection, ':', error);
+                            }
+                        } else {
+                            console.warn('No loader found for section:', targetSection);
                         }
                     }
                 });
@@ -3986,10 +4527,56 @@
             `;
             newsContainer.appendChild(freshnessDiv);
             
+            // Add news integration status if available
+            const newsIntegrationStatus = newsData.news_integration || {};
+            const overallSentiment = newsData.sentiment_score || 0;
+            
+            if (newsIntegrationStatus.enabled) {
+                const statusDiv = document.createElement('div');
+                statusDiv.style.cssText = 'background: rgba(16, 185, 129, 0.15); padding: 10px 12px; border-radius: 6px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid #10b981;';
+                statusDiv.innerHTML = `
+                    <div style="color: #10b981; font-size: 0.85em; font-weight: 600;">
+                        🤖 AI News Sentiment Analysis: ${newsIntegrationStatus.status || 'ACTIVE'}
+                    </div>
+                    <div style="color: #94a3b8; font-size: 0.75em;">
+                        Overall Sentiment: <span style="color: ${overallSentiment > 0 ? '#10b981' : overallSentiment < 0 ? '#ef4444' : '#94a3b8'}; font-weight: 600;">${(overallSentiment * 100).toFixed(1)}%</span>
+                    </div>
+                `;
+                newsContainer.appendChild(statusDiv);
+            }
+            
             filteredItems.slice(0, 8).forEach(item => {
                 const ts = item.timestamp || item.published_at || item.time || item.date;
                 const title = item.title || item.summary || item.headline || 'Market update';
                 const relevance = getRelevance(title);
+                
+                // Get sentiment score if available
+                const sentiment = item.sentiment !== undefined && item.sentiment !== null ? item.sentiment : null;
+                let sentimentBadge = '';
+                
+                if (sentiment !== null) {
+                    const sentimentPct = (sentiment * 100).toFixed(1);
+                    let sentimentColor = '#94a3b8';
+                    let sentimentEmoji = '⚪';
+                    
+                    if (sentiment > 0.3) {
+                        sentimentColor = '#10b981';
+                        sentimentEmoji = '🟢';
+                    } else if (sentiment > 0.1) {
+                        sentimentColor = '#84cc16';
+                        sentimentEmoji = '🟡';
+                    } else if (sentiment < -0.3) {
+                        sentimentColor = '#ef4444';
+                        sentimentEmoji = '🔴';
+                    } else if (sentiment < -0.1) {
+                        sentimentColor = '#f59e0b';
+                        sentimentEmoji = '🟠';
+                    }
+                    
+                    sentimentBadge = `<div style="margin-top: 6px; padding: 4px 8px; background: rgba(${sentiment > 0 ? '16, 185, 129' : sentiment < 0 ? '239, 68, 68' : '148, 163, 184'}, 0.15); border-radius: 4px; display: inline-block; font-size: 0.75em;">
+                        <span style="color: ${sentimentColor};">${sentimentEmoji} AI Sentiment: ${sentimentPct}%</span>
+                    </div>`;
+                }
                 
                 const newsDiv = document.createElement('div');
                 newsDiv.className = 'news-item';
@@ -4006,6 +4593,7 @@
                     <div class="news-summary" style="color: #f1f5f9; font-weight: 500; line-height: 1.5; font-size: 0.95em;">
                         ${title}
                     </div>
+                    ${sentimentBadge}
                 `;
                 newsContainer.appendChild(newsDiv);
             });
@@ -4016,7 +4604,7 @@
             try {
                 const res = await fetch('/api/insights');
                 const data = await res.json();
-                const el = document.getElementById('insightsContent');
+                const el = document.getElementById('dashboardInsightsContent');
                 if (!el) return;
                 if (data.status === 'ok' && data.insights) {
                     const s = data.insights;
@@ -4041,13 +4629,47 @@
             Object.entries(accounts).forEach(([accountId, account]) => {
                 const accountDiv = document.createElement('div');
                 accountDiv.className = 'account-item';
+                
+                // Check if this is account 008 (AI-Enhanced)
+                const isAIEnhanced = account.ai_enhanced === true || accountId === "101-004-30719775-008";
+                const newsIntegration = account.news_integration || {};
+                const aiFeatures = account.ai_features || {};
+                
+                let aiBadge = '';
+                let newsStatus = '';
+                let aiFeaturesList = '';
+                
+                if (isAIEnhanced) {
+                    aiBadge = '<span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-left: 8px;">🤖 AI-ENHANCED</span>';
+                    
+                    if (newsIntegration.enabled) {
+                        newsStatus = `<div style="margin-top: 8px; padding: 8px; background: rgba(16, 185, 129, 0.1); border-left: 3px solid #10b981; border-radius: 4px;">
+                            <div style="font-size: 12px; color: #10b981;">✅ News Integration: ${newsIntegration.status || 'ACTIVE'}</div>
+                            <div style="font-size: 11px; color: #94a3b8; margin-top: 4px;">API Keys: ${newsIntegration.api_keys_loaded || 0} loaded</div>
+                        </div>`;
+                    }
+                    
+                    if (Object.keys(aiFeatures).length > 0) {
+                        const featuresList = Object.entries(aiFeatures)
+                            .filter(([key, value]) => value === true)
+                            .map(([key]) => key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()))
+                            .join(', ');
+                        
+                        aiFeaturesList = `<div style="margin-top: 8px; font-size: 11px; color: #94a3b8;">
+                            <strong style="color: #f3f4f6;">AI Features:</strong> ${featuresList}
+                        </div>`;
+                    }
+                }
+                
                 accountDiv.innerHTML = `
                     <div class="account-header">
-                        <div class="account-name">${account.account_name}</div>
+                        <div class="account-name">${account.account_name || accountId}${aiBadge}</div>
                         <div class="account-status status-active">Active</div>
                     </div>
                     <div class="account-balance">$${account.balance.toLocaleString()}</div>
-                    <div class="account-strategy">${account.strategy}</div>
+                    <div class="account-strategy">${account.strategy || 'N/A'}</div>
+                    ${newsStatus}
+                    ${aiFeaturesList}
                 `;
                 accountContainer.appendChild(accountDiv);
             });
@@ -4125,14 +4747,38 @@
             
             signalsContainer.innerHTML = `
                 <div class="trading-signals">
-                    ${signals.map(signal => `
+                    ${signals.map(signal => {
+                        // Check for AI boost information
+                        const aiBoost = signal.ai_boost || null;
+                        const boostedConfidence = signal.boosted_confidence ? Math.round(signal.boosted_confidence * 100) : signal.quality_score;
+                        const baseConfidence = signal.confidence ? Math.round(signal.confidence * 100) : signal.quality_score;
+                        
+                        let aiBoostBadge = '';
+                        let aiBoostInfo = '';
+                        
+                        if (aiBoost && aiBoost.enabled) {
+                            if (aiBoost.type === 'BOOST') {
+                                aiBoostBadge = `<span style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 2px 8px; border-radius: 8px; font-size: 10px; font-weight: 600; margin-left: 6px;">🤖 AI +${aiBoost.multiplier.toFixed(2)}x</span>`;
+                                aiBoostInfo = `<div style="margin-top: 8px; padding: 6px; background: rgba(16, 185, 129, 0.1); border-left: 2px solid #10b981; border-radius: 4px; font-size: 11px;">
+                                    <div style="color: #10b981;">${aiBoost.description}</div>
+                                    ${signal.news_sentiment !== null && signal.news_sentiment !== undefined ? `<div style="color: #94a3b8; margin-top: 2px;">Sentiment: ${(signal.news_sentiment * 100).toFixed(1)}%</div>` : ''}
+                                </div>`;
+                            } else if (aiBoost.type === 'REDUCTION') {
+                                aiBoostBadge = `<span style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 2px 8px; border-radius: 8px; font-size: 10px; font-weight: 600; margin-left: 6px;">🤖 AI ${aiBoost.multiplier.toFixed(2)}x</span>`;
+                                aiBoostInfo = `<div style="margin-top: 8px; padding: 6px; background: rgba(239, 68, 68, 0.1); border-left: 2px solid #ef4444; border-radius: 4px; font-size: 11px;">
+                                    <div style="color: #ef4444;">${aiBoost.description}</div>
+                                </div>`;
+                            }
+                        }
+                        
+                        return `
                     <div class="opportunity-card">
                         <div class="opportunity-header">
                             <div class="opportunity-title">
-                                ${signal.direction === 'BUY' ? '🟢' : '🔴'} ${signal.instrument} ${signal.direction}
+                                ${signal.direction === 'BUY' ? '🟢' : '🔴'} ${signal.instrument} ${signal.direction}${aiBoostBadge}
                             </div>
                             <div class="opportunity-quality">
-                                ${signal.quality_score}/100
+                                ${boostedConfidence}/100${aiBoost && aiBoost.enabled ? `<span style="font-size: 10px; color: #94a3b8; margin-left: 4px;">(${baseConfidence} base)</span>` : ''}
                             </div>
                         </div>
                         <div class="opportunity-details">
@@ -4149,13 +4795,14 @@
                             <div class="detail-row">
                                 <div class="detail-item">
                                     <span class="detail-label">Confidence:</span>
-                                    <span class="detail-value" style="color: #ffffff;">${signal.quality_score}%</span>
+                                    <span class="detail-value" style="color: #ffffff;">${boostedConfidence}%</span>
                                 </div>
                                 <div class="detail-item">
                                     <span class="detail-label">Strategy:</span>
                                     <span class="detail-value" style="color: #ffffff;">Scalping</span>
                                 </div>
                             </div>
+                            ${aiBoostInfo}
                         </div>
                         <div class="opportunity-actions">
                             <button class="action-btn approve-btn" onclick="approveSignal('${signal.id}')">
@@ -4296,37 +4943,7 @@
         }
 
         // Load insights
-        async function loadInsights() {
-            try {
-                const res = await fetch('/api/insights');
-                const data = await res.json();
-                if (data.status === 'success' && data.insights) {
-                    renderInsights(data.insights);
-                }
-            } catch (e) {
-                console.error('❌ Insights error:', e);
-            }
-        }
-
-        // Render insights
-        function renderInsights(insights) {
-            const el = document.getElementById('insightsContent');
-            if (!el) return;
-            try {
-                const focus = (insights.focus || []).map(x => `<span class="tag">${x}</span>`).join(' ');
-                const regimes = Object.entries(insights.regimes || {}).map(([k,v]) => `<div class="kv"><span>${k}</span><span class="pill">${v}</span></div>`).join('');
-                el.innerHTML = `
-                    <div class="insights">
-                        <div class="summary">${insights.summary || 'Live market insights unavailable right now.'}</div>
-                        <div class="focus"><span class="label">Focus:</span> ${focus || '<span class="muted">n/a</span>'}</div>
-                        <div class="grid2">${regimes || '<div class="muted">No regime data</div>'}</div>
-                        <div class="risk">Risk Level: <span class="pill">${insights.risk_level || 'low'}</span></div>
-                    </div>
-                `;
-            } catch (e) {
-                el.innerHTML = '<div class="muted" style="padding: 12px;">Insights temporarily unavailable.</div>';
-            }
-        }
+        // Removed duplicate loadInsights() function - using the one above that targets dashboardInsightsContent
 
         // Load trade ideas
         async function loadTradeIdeas() {

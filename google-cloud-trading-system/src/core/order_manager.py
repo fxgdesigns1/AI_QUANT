@@ -320,6 +320,24 @@ class OrderManager:
     def execute_trade(self, signal: TradeSignal) -> TradeExecution:
         """Execute a trade signal"""
         try:
+            # Enforce PRACTICE environment only and disable dry-run
+            env_name = os.getenv('OANDA_ENV', 'practice').lower()
+            live_flag = os.getenv('LIVE_TRADING', 'false').lower() == 'true'
+            dry_run = os.getenv('DRY_RUN', 'false').lower() == 'true'
+            if env_name == 'live' or live_flag:
+                return TradeExecution(
+                    signal=signal,
+                    order=None,
+                    success=False,
+                    error_message="Live trading is disabled. Set OANDA_ENV=practice."
+                )
+            if dry_run:
+                return TradeExecution(
+                    signal=signal,
+                    order=None,
+                    success=False,
+                    error_message="Dry-run is disabled. Execute on OANDA Practice only."
+                )
             # Optional hard-disable via env for accounts/strategies (quality over quantity)
             if os.getenv('ACCOUNT_DISABLED', 'false').lower() == 'true':
                 return TradeExecution(

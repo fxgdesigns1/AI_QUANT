@@ -15,8 +15,8 @@ BASE_URL = 'https://api-fxpractice.oanda.com/v3'
 headers = {'Authorization': f'Bearer {API_KEY}'}
 
 # Telegram
-TELEGRAM_TOKEN = '7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU'
-TELEGRAM_CHAT_ID = '6100678501'
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN', '')
+TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID', '')
 
 # ALL 10 ACCOUNTS FOR SNIPER ENTRIES - HIGH RR FOR EVERYONE!
 SNIPER_ACCOUNTS = {

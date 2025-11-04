@@ -63,14 +63,14 @@ class GBP_USD_Optimized_Strategy:
         self.instrument = 'GBP_USD'
         
         # Strategy-specific parameters
-        self.ema_fast = strategy_params.get('ema_fast_period', 3)
-        self.ema_slow = strategy_params.get('ema_slow_period', 12)
+        self.ema_fast = 3  # OPTIMIZED Oct 31, 2025
+        self.ema_slow = 12  # OPTIMIZED Oct 31, 2025
         self.rsi_period = strategy_params.get('rsi_period', 14)
-        self.rsi_oversold = strategy_params.get('rsi_oversold', 20)
-        self.rsi_overbought = strategy_params.get('rsi_overbought', 80)
+        self.rsi_oversold = 19.94  # OPTIMIZED Oct 31, 2025
+        self.rsi_overbought = 80.74  # OPTIMIZED Oct 31, 2025
         self.atr_period = strategy_params.get('atr_period', 14)
-        self.atr_multiplier = strategy_params.get('atr_multiplier', 1.5)
-        self.risk_reward_ratio = strategy_params.get('take_profit_ratio', 3.0)
+        self.atr_multiplier = 1.43  # OPTIMIZED Oct 31, 2025
+        self.risk_reward_ratio = 2.53  # OPTIMIZED Oct 31, 2025
         
         # Performance targets (from backtest)
         self.target_sharpe = strategy_params.get('target_sharpe', 35.0)

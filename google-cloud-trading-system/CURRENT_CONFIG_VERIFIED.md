@@ -78,8 +78,8 @@ min_momentum = 0.1              # Very low (FORCED) ✅
 
 **VERIFIED SETTINGS:**
 ```python
-TELEGRAM_TOKEN = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU" ✅
-TELEGRAM_CHAT_ID = "6100678501" ✅
+TELEGRAM_TOKEN = "<from env>" ✅
+TELEGRAM_CHAT_ID = "<from env>" ✅
 ALWAYS_SEND = True              # Sends even if no trades ✅
 ```
 

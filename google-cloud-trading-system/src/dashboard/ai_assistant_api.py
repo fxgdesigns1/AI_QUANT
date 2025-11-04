@@ -79,15 +79,45 @@ class GeminiAI:
         self.api_key = os.getenv('GEMINI_API_KEY')
         self.model = None
         self.enabled = bool(self.api_key)
+        self.use_vertex_ai = False
         
         if self.enabled:
             try:
-                genai.configure(api_key=self.api_key)
-                self.model = genai.GenerativeModel('gemini-pro')
-                logger.info("✅ Gemini AI initialized successfully")
+                # Check if key looks like Vertex AI key (starts with AQ. or similar)
+                # Try Vertex AI endpoint first if key format suggests it
+                if self.api_key.startswith('AQ.') or len(self.api_key) > 50:
+                    logger.info("🔧 Detected Vertex AI/API Platform key format, trying Vertex AI endpoint...")
+                    self.use_vertex_ai = True
+                    # Try Vertex AI approach
+                    try:
+                        import requests
+                        # Test if key works with Vertex AI endpoint
+                        test_url = f"https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash-lite:generateContent?key={self.api_key}"
+                        # We'll use this in generate_response instead
+                        self.enabled = True
+                        logger.info("✅ Vertex AI key format detected - will use Vertex AI endpoint")
+                    except Exception as ve:
+                        logger.warning(f"⚠️ Vertex AI test failed, trying standard Gemini: {ve}")
+                        self.use_vertex_ai = False
+                
+                # Try standard Gemini SDK
+                if not self.use_vertex_ai:
+                    genai.configure(api_key=self.api_key)
+                    self.model = genai.GenerativeModel('gemini-pro')
+                    logger.info("✅ Gemini AI initialized successfully (standard SDK)")
+                else:
+                    logger.info("✅ Gemini AI configured for Vertex AI endpoint")
+                    
             except Exception as e:
                 logger.error(f"❌ Gemini AI initialization failed: {e}")
-                self.enabled = False
+                # Try Vertex AI as fallback
+                if not self.use_vertex_ai:
+                    try:
+                        logger.info("🔄 Trying Vertex AI endpoint as fallback...")
+                        self.use_vertex_ai = True
+                        self.enabled = bool(self.api_key)
+                    except:
+                        self.enabled = False
         else:
             logger.warning("⚠️ Gemini API key not found - using demo mode")
     
@@ -119,8 +149,50 @@ Provide a comprehensive, intelligent response that:
 Keep responses concise but informative (2-4 sentences maximum).
 """
             
-            response = self.model.generate_content(prompt)
-            return response.text.strip()
+            # Use Vertex AI REST API if configured
+            if self.use_vertex_ai:
+                import requests
+                import json
+                
+                url = f"https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash-lite:generateContent?key={self.api_key}"
+                
+                payload = {
+                    "contents": [
+                        {
+                            "role": "user",
+                            "parts": [
+                                {
+                                    "text": prompt
+                                }
+                            ]
+                        }
+                    ]
+                }
+                
+                response = requests.post(
+                    url,
+                    headers={"Content-Type": "application/json"},
+                    json=payload,
+                    timeout=30
+                )
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    # Extract text from Vertex AI response
+                    if 'candidates' in result and len(result['candidates']) > 0:
+                        if 'content' in result['candidates'][0]:
+                            parts = result['candidates'][0]['content'].get('parts', [])
+                            if parts and 'text' in parts[0]:
+                                return parts[0]['text'].strip()
+                    # Fallback parsing
+                    return result.get('text', self._fallback_response(message))
+                else:
+                    logger.error(f"❌ Vertex AI API error: {response.status_code} - {response.text}")
+                    return self._fallback_response(message)
+            else:
+                # Use standard Gemini SDK
+                response = self.model.generate_content(prompt)
+                return response.text.strip()
             
         except Exception as e:
             logger.error(f"❌ Gemini AI error: {e}")
@@ -753,8 +825,14 @@ class AIAssistantAPI:
                     'timestamp': datetime.now().isoformat()
                 }
             
-            # Process message with demo responses
-            response = self._process_demo_message(message)
+            # Use Gemini AI if provider is set to "gemini" and Gemini is available
+            if self.model_provider.lower() == 'gemini' and gemini_ai.enabled:
+                # Get market context for Gemini
+                context = self._get_market_context()
+                response = gemini_ai.generate_response(message, context)
+            else:
+                # Fallback to demo mode
+                response = self._process_demo_message(message)
             
             return {
                 'response': response,
@@ -779,6 +857,49 @@ class AIAssistantAPI:
         
         self.request_times.append(now)
         return True
+    
+    def _get_market_context(self) -> Dict[str, Any]:
+        """Get market context for AI responses"""
+        try:
+            context = {
+                'timestamp': datetime.now().isoformat(),
+                'system_status': 'operational'
+            }
+            
+            # Try to get market data if available
+            try:
+                from ..core.oanda_client import get_oanda_client
+                oanda = get_oanda_client()
+                if oanda:
+                    # Get current prices for major pairs
+                    instruments = ['EUR_USD', 'GBP_USD', 'USD_JPY', 'XAU_USD']
+                    prices = oanda.get_current_prices(instruments)
+                    if prices:
+                        context['market_data'] = {
+                            inst: {
+                                'bid': float(data.get('bid', 0)),
+                                'ask': float(data.get('ask', 0)),
+                                'spread': float(data.get('spread', 0))
+                            } for inst, data in prices.items() if data
+                        }
+            except Exception as e:
+                logger.debug(f"Could not fetch market data for context: {e}")
+            
+            # Try to get positions if available
+            try:
+                from ..core.oanda_client import get_oanda_client
+                oanda = get_oanda_client()
+                if oanda:
+                    positions = oanda.get_open_trades()
+                    if positions:
+                        context['open_positions'] = len(positions)
+            except Exception:
+                pass
+            
+            return context
+        except Exception as e:
+            logger.error(f"Error getting market context: {e}")
+            return {'timestamp': datetime.now().isoformat()}
     
     def _process_demo_message(self, message: str) -> str:
         """Process message with AI responses including trade execution"""

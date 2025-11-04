@@ -8,7 +8,8 @@ import os
 import requests
 import json
 
-TELEGRAM_TOKEN = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
+import os
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
 CHAT_ID = "6100678501"
 
 print("="*70)

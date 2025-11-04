@@ -599,6 +599,7 @@
             setupFilters();
             setupEventListeners();
             initializeWebSocket();
+            loadStrategies();
             fetchAllSignals();
             startAutoRefresh();
         });
@@ -667,6 +668,39 @@
                 });
             } catch (e) {
                 console.warn('WebSocket not available, using polling only');
+            }
+        }
+
+        async function loadStrategies() {
+            try {
+                const res = await fetch('/api/config/strategies');
+                const data = await res.json();
+                if (data.status !== 'success' || !data.strategies) return;
+
+                const select = document.getElementById('filterStrategy');
+                // Preserve the default "All Strategies" option
+                const existingFirst = select.firstElementChild;
+                select.innerHTML = '';
+                if (existingFirst && existingFirst.value === '') {
+                    select.appendChild(existingFirst);
+                } else {
+                    const opt = document.createElement('option');
+                    opt.value = '';
+                    opt.textContent = 'All Strategies';
+                    select.appendChild(opt);
+                }
+
+                // strategies is a dict keyed by id; use the human-readable name for filtering
+                Object.keys(data.strategies).forEach((key) => {
+                    const cfg = data.strategies[key] || {};
+                    const displayName = cfg.name || key;
+                    const option = document.createElement('option');
+                    option.value = displayName; // Must match signal.strategy (strategy_name)
+                    option.textContent = displayName;
+                    select.appendChild(option);
+                });
+            } catch (e) {
+                console.warn('Failed to load strategies for filter:', e);
             }
         }
 

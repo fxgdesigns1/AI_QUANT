@@ -30,6 +30,14 @@ class TradeSizeValidator:
         self.profit_scaling_enabled = True
         
         self._load_config()
+        # Calibrate sensible minimums for practice accounts
+        try:
+            if os.getenv('OANDA_ENV', 'practice').lower() == 'practice':
+                self.min_trade_size = int(os.getenv('PRACTICE_MIN_TRADE_SIZE', str(min(self.min_trade_size, 1000))))
+                self.min_profit_target = float(os.getenv('PRACTICE_MIN_PROFIT_TARGET', '10'))
+                logger.info(f"Practice mode: min_size={self.min_trade_size}, min_profit=${self.min_profit_target}")
+        except Exception:
+            pass
     
     def _load_config(self):
         """Load configuration from strategy_config.yaml"""

@@ -307,6 +307,16 @@ class LiveDataFeed:
             return {instrument: self.market_data.get(instrument)} if instrument in self.market_data else {}
         return self.market_data.copy()
     
+\    def get_latest_prices(self, instruments: Optional[List[str]] = None) -> Dict[str, MarketData]:
+        """Return latest MarketData per instrument, optionally filtered.
+        Matches callers that expect get_latest_prices([instrument, ...]).
+        """
+        if not self.market_data:
+            return {}
+        if instruments is None:
+            return self.market_data.copy()
+        return {sym: data for sym, data in self.market_data.items() if sym in instruments}
+    
     def get_latest_data(self) -> Dict[str, MarketData]:
         """Get latest market data for all instruments"""
         return self.market_data.copy()
