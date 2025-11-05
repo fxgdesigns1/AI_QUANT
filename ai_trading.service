@@ -5,16 +5,19 @@ After=network.target
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/opt/quant_system_clean
-ExecStart=/usr/bin/python3 ai_trading_system.py
+WorkingDirectory=/workspace
+ExecStart=/usr/bin/python3 /workspace/ai_trading_system.py
 Restart=always
 RestartSec=10
 StandardOutput=journal
 StandardError=journal
 
 # Environment variables
-Environment=PYTHONPATH=/opt/quant_system_clean
+Environment=PYTHONPATH=/workspace
 Environment=OANDA_API_KEY=REMOVED_SECRET
+Environment=OANDA_ACCOUNT_ID=101-004-30719775-008
+Environment=TELEGRAM_TOKEN=7248728383:AAFpLNAlidybk7ed56bosfi8W_e1MaX7Oxs
+Environment=TELEGRAM_CHAT_ID=6100678501
 Environment=OANDA_ENVIRONMENT=practice
 
 [Install]
