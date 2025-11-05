@@ -2501,3 +2501,18 @@ if __name__ == '__main__':
     
     # Start Flask app with SocketIO
     socketio.run(app, host='0.0.0.0', port=port, debug=False, allow_unsafe_werkzeug=True)
+
+# Ensure background updater starts when served by Gunicorn
+_update_thread_started = False
+
+@app.before_first_request
+def _start_background_updater_if_needed():
+    global _update_thread_started
+    if not _update_thread_started:
+        try:
+            t = threading.Thread(target=update_dashboard, daemon=True)
+            t.start()
+            _update_thread_started = True
+            logger.info("✅ Background updater started (gunicorn mode)")
+        except Exception as e:
+            logger.error(f"❌ Failed to start background updater: {e}")
