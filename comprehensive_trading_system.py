@@ -16,21 +16,20 @@ os.environ['OANDA_API_KEY'] = "REMOVED_SECRET"
 os.environ['OANDA_ENVIRONMENT'] = "practice"
 
 # Add the project path
-sys.path.append('/Users/mac/quant_system_clean/google-cloud-trading-system')
+sys.path.append('/workspace/google-cloud-trading-system')
+sys.path.append('/workspace')
 
-from src.core.dynamic_account_manager import get_account_manager
-from src.core.oanda_client import OandaClient
-
-# Import ALL available strategies
-from src.strategies.momentum_trading import MomentumTradingStrategy
-from src.strategies.gold_scalping import GoldScalpingStrategy
-from src.strategies.breakout_strategy import BreakoutStrategy
-from src.strategies.scalping_strategy import ScalpingStrategy
-from src.strategies.swing_strategy import SwingStrategy
-from src.strategies.ultra_strict_forex import UltraStrictForexStrategy
-from src.strategies.range_trading import RangeTradingStrategy
-from src.strategies.fibonacci_strategy import FibonacciStrategy
-from src.strategies.rsi_divergence_strategy import RSIDivergenceStrategy
+# Try to import from google-cloud-trading-system, fallback to simple implementation
+try:
+    from google_cloud_trading_system.src.core.dynamic_account_manager import get_account_manager
+    from google_cloud_trading_system.src.core.oanda_client import OandaClient
+    from google_cloud_trading_system.src.strategies.momentum_trading import MomentumTradingStrategy
+    from google_cloud_trading_system.src.strategies.gold_scalping import GoldScalpingStrategy
+    STRATEGIES_AVAILABLE = True
+except ImportError:
+    # Fallback: use simple AI trading system as comprehensive system
+    STRATEGIES_AVAILABLE = False
+    logger.warning("⚠️ Google Cloud Trading System not available, using AI trading system as comprehensive system")
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
