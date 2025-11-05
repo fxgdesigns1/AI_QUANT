@@ -1539,6 +1539,17 @@ def index():
     """Main dashboard page"""
     return render_template('dashboard_advanced.html')
 
+@app.route('/mockup')
+def mockup():
+    """View the improved dashboard mockup"""
+    import os
+    mockup_path = os.path.join(os.path.dirname(__file__), '../../dashboard_mockup_improved_dashboard.html')
+    if os.path.exists(mockup_path):
+        with open(mockup_path, 'r') as f:
+            return f.read()
+    else:
+        return f"Mockup file not found at: {mockup_path}", 404
+
 @app.route('/api/status')
 def api_status():
     """Get system status"""
