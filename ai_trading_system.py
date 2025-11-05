@@ -103,6 +103,9 @@ class AITradingSystem:
         logger.info(f"📱 Telegram commands: ENABLED")
         self.performance_events = []  # type: ignore
         
+        # CRITICAL: Run startup health check to clear any stale halts
+        self._startup_health_check()
+        
     def should_send_bracket_notification(self, trade_id):
         """Check if we should send a bracket notification (rate limited)"""
         now = datetime.now()
@@ -827,6 +830,88 @@ class AITradingSystem:
         except Exception:
             return False
     
+    def _startup_health_check(self):
+        """Run health check on startup to ensure system is ready"""
+        try:
+            logger.info("🔍 Running startup health check...")
+            now = datetime.utcnow()
+            weekday = now.weekday()
+            
+            # Clear any expired halts immediately
+            if self.news_halt_until and now >= self.news_halt_until:
+                logger.info("🧹 Clearing expired news halt on startup")
+                self.news_halt_until = None
+            
+            if self.throttle_until and now >= self.throttle_until:
+                logger.info("🧹 Clearing expired sentiment throttle on startup")
+                self.throttle_until = None
+                if hasattr(self, 'base_risk'):
+                    self.risk_per_trade = self.base_risk
+            
+            # On Monday mornings (0-12 UTC), clear any stale halts from weekend
+            if weekday == 0 and now.hour < 12:
+                logger.info("🌅 Monday morning detected - clearing any stale halts from weekend")
+                if self.news_halt_until:
+                    logger.info("🧹 Clearing stale news halt from weekend")
+                    self.news_halt_until = None
+                if self.throttle_until:
+                    logger.info("🧹 Clearing stale sentiment throttle from weekend")
+                    self.throttle_until = None
+                    if hasattr(self, 'base_risk'):
+                        self.risk_per_trade = self.base_risk
+            
+            # Ensure trading is enabled
+            if not self.trading_enabled:
+                logger.warning("⚠️ Trading is disabled on startup - enable with /start_trading")
+            else:
+                logger.info("✅ Trading enabled on startup")
+            
+            logger.info("✅ Startup health check complete")
+            
+        except Exception as e:
+            logger.warning(f"Error in startup health check: {e}")
+    
+    def _clear_stale_halts(self):
+        """Clear stale news halts and throttles (especially after weekends/Monday mornings)"""
+        try:
+            now = datetime.utcnow()
+            weekday = now.weekday()  # 0=Monday, 6=Sunday
+            
+            # Clear stale news halts
+            if self.news_halt_until:
+                # If halt expired, clear it
+                if now >= self.news_halt_until:
+                    logger.info(f"🧹 Clearing expired news halt (expired at {self.news_halt_until})")
+                    self.news_halt_until = None
+                # On Monday mornings, clear any halt older than 2 hours
+                elif weekday == 0:  # Monday
+                    halt_age = (now - self.news_halt_until).total_seconds() / 3600
+                    if halt_age < -2:  # Halt is more than 2 hours in the future
+                        logger.info(f"🧹 Clearing stale news halt from weekend (Monday morning recovery)")
+                        self.news_halt_until = None
+            
+            # Clear stale sentiment throttles
+            if self.throttle_until:
+                # If throttle expired, clear it
+                if now >= self.throttle_until:
+                    logger.info(f"🧹 Clearing expired sentiment throttle (expired at {self.throttle_until})")
+                    self.throttle_until = None
+                    # Restore risk
+                    if hasattr(self, 'base_risk'):
+                        self.risk_per_trade = self.base_risk
+                # On Monday mornings, clear any throttle older than 2 hours
+                elif weekday == 0:  # Monday
+                    throttle_age = (now - self.throttle_until).total_seconds() / 3600
+                    if throttle_age < -2:  # Throttle is more than 2 hours in the future
+                        logger.info(f"🧹 Clearing stale sentiment throttle from weekend (Monday morning recovery)")
+                        self.throttle_until = None
+                        # Restore risk
+                        if hasattr(self, 'base_risk'):
+                            self.risk_per_trade = self.base_risk
+                            
+        except Exception as e:
+            logger.warning(f"Error clearing stale halts: {e}")
+    
     def get_current_prices(self):
         """Get current prices for all instruments"""
         try:
@@ -1125,9 +1210,13 @@ class AITradingSystem:
                             self.news_halt_until = datetime.utcnow() + timedelta(minutes=15)
                             logger.info("XAU volatility spike; pausing new entries 15m")
                             continue
-                        if not self.in_london_session():
-                            logger.info("XAU entry blocked: outside London session")
+                        # FIXED: Relaxed London session check - allow trading during overlap and NY sessions too
+                        # Only block during Asian session (0-8 UTC) to avoid low liquidity
+                        current_hour = datetime.utcnow().hour
+                        if current_hour < 8:  # Asian session - low liquidity
+                            logger.info("XAU entry blocked: Asian session (low liquidity)")
                             continue
+                        # Allow trading during London (8-17), overlap (13-17), and NY (13-22)
                         if mid_price > upper and slope_up and confirm_above >= 2:
                             signals.append({
                                 'instrument': instrument,
@@ -1570,6 +1659,9 @@ class AITradingSystem:
         """Run one complete trading cycle"""
         if not self.trading_enabled:
             return
+        
+        # CRITICAL FIX: Clear stale halts on startup (especially after weekends)
+        self._clear_stale_halts()
             
         logger.info("🔍 Starting trading cycle...")
         # Update news halts if calendar enabled
