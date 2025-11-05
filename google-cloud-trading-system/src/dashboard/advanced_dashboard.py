@@ -952,64 +952,87 @@ class AdvancedDashboardManager:
             }
     
     def execute_trading_signals(self) -> Dict[str, Any]:
-        """Execute trading signals for all accounts"""
+        """Execute trading signals for all accounts - FIXED: Now calls scanner directly"""
         try:
-            results = {}
+            # FIX: Use scanner's _run_scan() method which handles all signal generation and execution
+            from ..core.simple_timer_scanner import get_simple_scanner
             
-            for account_id, system_info in self.trading_systems.items():
-                try:
-                    strategy_id = system_info['strategy_id']
-                    strategy = self.strategies.get(strategy_id)
-                    
-                    if not strategy:
-                        logger.error(f"❌ Strategy {strategy_id} not found for account {account_id}")
-                        continue
-                    
-                    # Get market data for this account
-                    market_data = self.data_feed.get_latest_data(account_id)
-                    if not market_data:
-                        logger.warning(f"⚠️ No market data available for {account_id}")
-                        continue
-                    
-                    # Generate signals
-                    signals = strategy.analyze_market(market_data)
-                    
-                    if signals:
-                        # Execute trades
-                        trade_results = self.order_manager.execute_trades(account_id, signals)
-                        
-                        # Convert TradeExecution objects to serializable format
-                        serializable_results = self._serialize_trade_results(trade_results)
-                        
-                        results[account_id] = {
-                            'signals_generated': len(signals),
-                            'trades_executed': len(trade_results.get('executed_trades', [])),
-                            'trade_results': serializable_results
-                        }
-                        
-                        # Send Telegram notification
-                        if self.telegram_notifier and trade_results.get('executed_trades'):
-                            message = f"🎯 {system_info['strategy_name']}: {len(trade_results['executed_trades'])} trades executed"
-                            self.telegram_notifier.send_message(message)
-                    else:
-                        results[account_id] = {
-                            'signals_generated': 0,
-                            'trades_executed': 0,
-                            'message': 'No signals generated'
-                        }
-                        
-                except Exception as e:
-                    logger.error(f"❌ Failed to execute signals for {account_id}: {e}")
+            scanner = get_simple_scanner()
+            if scanner and hasattr(scanner, '_run_scan'):
+                logger.info("🔄 Executing trading signals via scanner...")
+                scanner._run_scan()
+                
+                # Collect results from scanner
+                results = {}
+                for account_name, account_id in scanner.accounts.items():
                     results[account_id] = {
-                        'error': str(e),
-                        'signals_generated': 0,
-                        'trades_executed': 0
+                        'signals_generated': 0,  # Scanner logs this internally
+                        'trades_executed': 0,    # Scanner executes directly
+                        'message': 'Scanner executed scan - check logs for details'
                     }
-            
-            return results
+                
+                return results
+            else:
+                logger.warning("⚠️ Scanner not available, falling back to dashboard manager execution")
+                # Fallback to original method if scanner not available
+                results = {}
+                
+                for account_id, system_info in self.trading_systems.items():
+                    try:
+                        strategy_id = system_info['strategy_id']
+                        strategy = self.strategies.get(strategy_id)
+                        
+                        if not strategy:
+                            logger.error(f"❌ Strategy {strategy_id} not found for account {account_id}")
+                            continue
+                        
+                        # Get market data for this account
+                        market_data = self.data_feed.get_latest_data(account_id)
+                        if not market_data:
+                            logger.warning(f"⚠️ No market data available for {account_id}")
+                            continue
+                        
+                        # Generate signals
+                        signals = strategy.analyze_market(market_data)
+                        
+                        if signals:
+                            # Execute trades
+                            trade_results = self.order_manager.execute_trades(account_id, signals)
+                            
+                            # Convert TradeExecution objects to serializable format
+                            serializable_results = self._serialize_trade_results(trade_results)
+                            
+                            results[account_id] = {
+                                'signals_generated': len(signals),
+                                'trades_executed': len(trade_results.get('executed_trades', [])),
+                                'trade_results': serializable_results
+                            }
+                            
+                            # Send Telegram notification
+                            if self.telegram_notifier and trade_results.get('executed_trades'):
+                                message = f"🎯 {system_info['strategy_name']}: {len(trade_results['executed_trades'])} trades executed"
+                                self.telegram_notifier.send_message(message)
+                        else:
+                            results[account_id] = {
+                                'signals_generated': 0,
+                                'trades_executed': 0,
+                                'message': 'No signals generated'
+                            }
+                            
+                    except Exception as e:
+                        logger.error(f"❌ Failed to execute signals for {account_id}: {e}")
+                        results[account_id] = {
+                            'error': str(e),
+                            'signals_generated': 0,
+                            'trades_executed': 0
+                        }
+                
+                return results
             
         except Exception as e:
             logger.error(f"❌ Failed to execute trading signals: {e}")
+            import traceback
+            traceback.print_exc()
             return {
                 'error': str(e),
                 'timestamp': self._safe_timestamp(datetime.now())
