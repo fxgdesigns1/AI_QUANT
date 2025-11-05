@@ -5,16 +5,16 @@ After=network.target
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/opt/quant_system_clean
-ExecStart=/usr/bin/python3 ai_trading_system.py
+WorkingDirectory=/workspace
+ExecStart=/usr/bin/python3 /workspace/ai_trading_system.py
 Restart=always
 RestartSec=10
 StandardOutput=journal
 StandardError=journal
 
 # Environment variables
-Environment=PYTHONPATH=/opt/quant_system_clean
-Environment=OANDA_API_KEY=REMOVED_SECRET
+Environment=PYTHONPATH=/workspace
+# API credentials are managed in code/env; do not hardcode secrets here
 Environment=OANDA_ENVIRONMENT=practice
 
 [Install]
