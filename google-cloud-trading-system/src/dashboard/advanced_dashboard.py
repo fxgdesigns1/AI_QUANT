@@ -1543,12 +1543,17 @@ def index():
 def mockup():
     """View the improved dashboard mockup"""
     import os
-    mockup_path = os.path.join(os.path.dirname(__file__), '../../dashboard_mockup_improved_dashboard.html')
+    mockup_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'dashboard_mockup_improved_dashboard.html')
     if os.path.exists(mockup_path):
         with open(mockup_path, 'r') as f:
             return f.read()
     else:
-        return f"Mockup file not found at: {mockup_path}", 404
+        # Try alternative path
+        alt_path = os.path.join(os.path.dirname(__file__), '../../../dashboard_mockup_improved_dashboard.html')
+        if os.path.exists(alt_path):
+            with open(alt_path, 'r') as f:
+                return f.read()
+        return f"Mockup file not found. Tried: {mockup_path} and {alt_path}", 404
 
 @app.route('/api/status')
 def api_status():
@@ -1794,7 +1799,7 @@ def api_health():
     """Health check endpoint"""
     return jsonify({
         'status': 'ok',
-            'timestamp': self._safe_timestamp(datetime.now()),
+        'timestamp': datetime.now().isoformat(),
         'live_data_mode': dashboard_manager.use_live_data,
         'active_accounts': len(dashboard_manager.active_accounts)
     })
@@ -2003,6 +2008,306 @@ def api_performance_database():
     except Exception as e:
         logger.error(f"Error getting database stats: {e}")
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/performance/filtered')
+def api_performance_filtered():
+    """Get filtered performance data"""
+    try:
+        from src.analytics.trade_database import get_trade_database
+        db = get_trade_database()
+        
+        # Get filter parameters
+        strategy_id = request.args.get('strategy_id')
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
+        instrument = request.args.get('instrument')
+        status = request.args.get('status', 'all')  # 'all', 'open', 'closed'
+        period = request.args.get('period', 'month')  # 'today', 'week', 'month', '90days'
+        
+        # Calculate date range based on period
+        if not start_date or not end_date:
+            today = datetime.now()
+            if period == 'today':
+                start_date = today.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+                end_date = today.isoformat()
+            elif period == 'week':
+                start_date = (today - timedelta(days=7)).isoformat()
+                end_date = today.isoformat()
+            elif period == 'month':
+                start_date = (today - timedelta(days=30)).isoformat()
+                end_date = today.isoformat()
+            elif period == '90days':
+                start_date = (today - timedelta(days=90)).isoformat()
+                end_date = today.isoformat()
+            else:
+                start_date = (today - timedelta(days=30)).isoformat()
+                end_date = today.isoformat()
+        
+        # Get trades with filters
+        if strategy_id and strategy_id != 'all':
+            all_trades = db.get_trades_by_date_range(start_date, end_date, strategy_id)
+        else:
+            all_trades = db.get_trades_by_date_range(start_date, end_date)
+        
+        # Apply instrument filter
+        if instrument and instrument != 'all':
+            all_trades = [t for t in all_trades if t.get('instrument') == instrument]
+        
+        # Apply status filter
+        if status == 'open':
+            trades = [t for t in all_trades if t.get('is_closed', 0) == 0]
+        elif status == 'closed':
+            trades = [t for t in all_trades if t.get('is_closed', 0) == 1]
+        else:
+            trades = all_trades
+        
+        # Calculate metrics
+        closed_trades = [t for t in trades if t.get('is_closed', 0) == 1]
+        wins = sum(1 for t in closed_trades if (t.get('realized_pnl', 0) or 0) > 0)
+        losses = len(closed_trades) - wins
+        win_rate = (wins / len(closed_trades) * 100) if closed_trades else 0.0
+        
+        total_pnl = sum((t.get('realized_pnl', 0) or 0) for t in closed_trades)
+        total_profit = sum((t.get('realized_pnl', 0) or 0) for t in closed_trades if (t.get('realized_pnl', 0) or 0) > 0)
+        total_loss = abs(sum((t.get('realized_pnl', 0) or 0) for t in closed_trades if (t.get('realized_pnl', 0) or 0) < 0))
+        
+        profit_factor = (total_profit / total_loss) if total_loss > 0 else 0.0
+        
+        # Get strategy breakdown
+        strategy_breakdown = {}
+        for trade in closed_trades:
+            sid = trade.get('strategy_id', 'unknown')
+            if sid not in strategy_breakdown:
+                strategy_breakdown[sid] = {
+                    'strategy_id': sid,
+                    'trades': 0,
+                    'wins': 0,
+                    'losses': 0,
+                    'pnl': 0.0
+                }
+            
+            strategy_breakdown[sid]['trades'] += 1
+            pnl = trade.get('realized_pnl', 0) or 0
+            strategy_breakdown[sid]['pnl'] += pnl
+            if pnl > 0:
+                strategy_breakdown[sid]['wins'] += 1
+            else:
+                strategy_breakdown[sid]['losses'] += 1
+        
+        # Calculate win rates for each strategy
+        for sid, data in strategy_breakdown.items():
+            data['win_rate'] = (data['wins'] / data['trades'] * 100) if data['trades'] > 0 else 0.0
+        
+        # Get max drawdown (simplified - would need proper calculation)
+        if closed_trades:
+            pnl_values = [(t.get('realized_pnl', 0) or 0) for t in closed_trades]
+            running_total = 0
+            max_total = 0
+            max_drawdown = 0
+            for pnl in pnl_values:
+                running_total += pnl
+                if running_total > max_total:
+                    max_total = running_total
+                drawdown = max_total - running_total
+                if drawdown > max_drawdown:
+                    max_drawdown = drawdown
+        else:
+            max_drawdown = 0.0
+        
+        return jsonify({
+            'success': True,
+            'filters': {
+                'strategy_id': strategy_id,
+                'start_date': start_date,
+                'end_date': end_date,
+                'instrument': instrument,
+                'status': status,
+                'period': period
+            },
+            'metrics': {
+                'total_trades': len(trades),
+                'open_trades': len([t for t in trades if t.get('is_closed', 0) == 0]),
+                'closed_trades': len(closed_trades),
+                'wins': wins,
+                'losses': losses,
+                'win_rate': win_rate,
+                'total_pnl': total_pnl,
+                'total_profit': total_profit,
+                'total_loss': total_loss,
+                'profit_factor': profit_factor,
+                'avg_win': (total_profit / wins) if wins > 0 else 0.0,
+                'avg_loss': (total_loss / losses) if losses > 0 else 0.0,
+                'max_drawdown': max_drawdown
+            },
+            'strategies': list(strategy_breakdown.values()),
+            'trades': trades[:100],  # Limit to 100 most recent
+            'timestamp': datetime.now().isoformat()
+        })
+    except Exception as e:
+        logger.error(f"❌ Error getting filtered performance: {e}")
+        import traceback
+        logger.exception("Full traceback:")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'timestamp': datetime.now().isoformat()
+        }), 500
+
+@app.route('/api/roadmap/progress')
+def api_roadmap_progress():
+    """Get roadmap progress tracking"""
+    try:
+        from src.analytics.trade_database import get_trade_database
+        
+        # Try to import roadmap planner
+        try:
+            from src.core.trump_dna_framework import get_trump_dna_planner
+            planner = get_trump_dna_planner()
+            weekly_plans = planner.weekly_plans
+        except Exception as e:
+            logger.warning(f"⚠️ Roadmap planner not available: {e}")
+            weekly_plans = {}
+        
+        db = get_trade_database()
+        
+        # Get current week dates
+        today = datetime.now()
+        days_since_monday = today.weekday()
+        week_start = today - timedelta(days=days_since_monday)
+        week_end = week_start + timedelta(days=6)
+        
+        week_start_str = week_start.strftime('%Y-%m-%d')
+        week_end_str = week_end.strftime('%Y-%m-%d')
+        
+        # Calculate overall progress
+        total_weekly_target = sum(plan.weekly_target_dollars for plan in weekly_plans.values()) if weekly_plans else 0
+        
+        # Get all trades for this week
+        week_trades = db.get_trades_by_date_range(
+            f"{week_start_str}T00:00:00",
+            f"{week_end_str}T23:59:59"
+        )
+        
+        # Filter closed trades only
+        closed_trades = [t for t in week_trades if t.get('is_closed', 0) == 1]
+        
+        # Calculate current progress
+        current_progress = sum((t.get('realized_pnl', 0) or 0) for t in closed_trades)
+        
+        # Calculate expected progress (linear based on days passed)
+        days_passed = (datetime.now() - week_start).days + 1
+        expected_progress = (total_weekly_target / 7) * days_passed if total_weekly_target > 0 else 0
+        
+        # Calculate daily progress
+        daily_progress = []
+        for day_offset in range(7):
+            day_date = week_start + timedelta(days=day_offset)
+            day_name = day_date.strftime('%A')
+            day_start = day_date.strftime('%Y-%m-%dT00:00:00')
+            day_end = day_date.strftime('%Y-%m-%dT23:59:59')
+            
+            # Get trades for this day
+            day_trades = db.get_trades_by_date_range(day_start, day_end)
+            day_closed = [t for t in day_trades if t.get('is_closed', 0) == 1]
+            
+            # Calculate day metrics
+            day_pnl = sum((t.get('realized_pnl', 0) or 0) for t in day_closed)
+            day_wins = sum(1 for t in day_closed if (t.get('realized_pnl', 0) or 0) > 0)
+            day_win_rate = (day_wins / len(day_closed) * 100) if day_closed else 0.0
+            
+            # Get target for this day
+            daily_target = total_weekly_target / 7 if total_weekly_target > 0 else 0
+            
+            # Determine status
+            if day_date.date() < datetime.now().date():
+                status = 'complete'
+            elif day_date.date() == datetime.now().date():
+                status = 'current'
+            else:
+                status = 'upcoming'
+            
+            daily_progress.append({
+                'day': day_name,
+                'date': day_date.strftime('%Y-%m-%d'),
+                'target': daily_target,
+                'actual': day_pnl,
+                'trades': len(day_closed),
+                'wins': day_wins,
+                'losses': len(day_closed) - day_wins,
+                'win_rate': day_win_rate,
+                'status': status
+            })
+        
+        # Calculate strategy-specific progress
+        strategy_progress = []
+        for plan_key, plan in weekly_plans.items():
+            strategy_id = plan.strategy_name.lower().replace(' ', '_').replace('-', '_')
+            pair = plan.pair
+            
+            # Get trades for this strategy/pair this week
+            strategy_trades = [
+                t for t in closed_trades
+                if (t.get('strategy_id', '').lower() == strategy_id or 
+                    t.get('strategy_id', '').lower() in strategy_id or
+                    strategy_id in t.get('strategy_id', '').lower())
+                and t.get('instrument', '') == pair
+            ]
+            
+            strategy_pnl = sum((t.get('realized_pnl', 0) or 0) for t in strategy_trades)
+            strategy_target = plan.weekly_target_dollars
+            strategy_progress_pct = (strategy_pnl / strategy_target * 100) if strategy_target > 0 else 0.0
+            
+            # Check if on track
+            expected_strategy_progress = (strategy_target / 7) * days_passed if strategy_target > 0 else 0
+            on_track = strategy_pnl >= (expected_strategy_progress * 0.9)  # 90% tolerance
+            
+            strategy_progress.append({
+                'strategy_id': strategy_id,
+                'strategy_name': plan.strategy_name,
+                'pair': pair,
+                'target': strategy_target,
+                'current': strategy_pnl,
+                'progress_pct': strategy_progress_pct,
+                'trades': len(strategy_trades),
+                'on_track': on_track
+            })
+        
+        # Overall on-track calculation
+        weekly_progress_pct = (current_progress / total_weekly_target * 100) if total_weekly_target > 0 else 0.0
+        on_track = current_progress >= (expected_progress * 0.9)  # 90% tolerance
+        
+        return jsonify({
+            'success': True,
+            'week_info': {
+                'week_start': week_start_str,
+                'week_end': week_end_str,
+                'current_day': datetime.now().strftime('%A'),
+                'days_passed': days_passed,
+                'days_remaining': 7 - days_passed,
+                'week_progress_pct': (days_passed / 7) * 100
+            },
+            'targets': {
+                'weekly_target': total_weekly_target,
+                'current_progress': current_progress,
+                'expected_progress': expected_progress,
+                'weekly_progress_pct': weekly_progress_pct,
+                'on_track': on_track,
+                'variance': current_progress - expected_progress,
+                'variance_pct': ((current_progress - expected_progress) / expected_progress * 100) if expected_progress > 0 else 0.0
+            },
+            'daily_progress': daily_progress,
+            'strategy_progress': strategy_progress,
+            'timestamp': datetime.now().isoformat()
+        })
+    except Exception as e:
+        logger.error(f"❌ Error calculating roadmap progress: {e}")
+        import traceback
+        logger.exception("Full traceback:")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'timestamp': datetime.now().isoformat()
+        }), 500
 
 @app.route('/api/opportunities')
 def api_opportunities():
