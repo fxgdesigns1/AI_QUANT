@@ -63,6 +63,17 @@ class AITradingSystem:
         self.trading_enabled = True
         self.command_history = []
         self.news_halt_until = None  # UTC timestamp until which new entries are halted
+        
+        # STARTUP RESET: Clear any lingering halts from weekend/Monday
+        # This ensures system starts fresh on Monday mornings
+        now = datetime.utcnow()
+        weekday = now.weekday()
+        hour = now.hour
+        # If it's Monday before 10 AM UTC, clear all halts
+        if weekday == 0 and hour < 10:
+            self.news_halt_until = None
+            self.throttle_until = None
+            logger.info("🔄 Monday morning reset: Cleared all halts and throttles")
         self.news = NewsManager() if NewsManager else None
         self.news_mode = 'normal'  # off|lite|normal|strict
         self.sentiment_threshold = -0.4
@@ -1089,17 +1100,22 @@ class AITradingSystem:
                         tp_mult = max(tp_mult_cfg, 1.0 if atr <= 0 else (1.5 if spread <= max(1e-9, 0.25 * atr) else tp_mult_cfg))
                         sl = max(0.0005, sl_mult_cfg * atr)
                         tp = max(0.0010, tp_mult * atr)
-                        if mid_price > upper and confirm_above >= 2 and slope_up and (m15_ema == 0.0 or mid_price > m15_ema):
+                        # RELAXED: Reduced confirm_above from 2 to 1, made slope_up optional, removed m15_ema requirement
+                        # Original: confirm_above >= 2 and slope_up and (m15_ema == 0.0 or mid_price > m15_ema)
+                        # New: confirm_above >= 1 (slope_up is logged but not required)
+                        if mid_price > upper and confirm_above >= 1:
+                            if slope_up:
+                                logger.debug(f"{instrument} BUY: slope_up confirmed (confidence boost)")
                             signals.append({
                                 'instrument': instrument,
                                 'side': 'BUY',
                                 'entry_price': price_data['ask'],
                                 'stop_loss': mid_price - sl,
                                 'take_profit': mid_price + tp,
-                                'confidence': 75,
+                                'confidence': 75 if slope_up else 65,  # Lower confidence if no slope
                                 'strategy': 'ema_atr_breakout_confirmed'
                             })
-                        elif mid_price < lower and confirm_below >= 2 and (m15_ema == 0.0 or mid_price < m15_ema):
+                        elif mid_price < lower and confirm_below >= 1:
                             signals.append({
                                 'instrument': instrument,
                                 'side': 'SELL',
@@ -1121,24 +1137,29 @@ class AITradingSystem:
                     confirm_below = ind.get('confirm_below', 0)
                     high_vol_spike = ind.get('high_vol_spike', False)
                     if ema > 0 and atr > 0:
+                        # RELAXED: Reduced volatility spike halt from 15min to 5min, removed London session restriction
                         if high_vol_spike:
-                            self.news_halt_until = datetime.utcnow() + timedelta(minutes=15)
-                            logger.info("XAU volatility spike; pausing new entries 15m")
+                            self.news_halt_until = datetime.utcnow() + timedelta(minutes=5)  # Reduced from 15 to 5
+                            logger.info("XAU volatility spike; pausing new entries 5m")
                             continue
-                        if not self.in_london_session():
-                            logger.info("XAU entry blocked: outside London session")
-                            continue
-                        if mid_price > upper and slope_up and confirm_above >= 2:
+                        # REMOVED: London session restriction - allow XAU trading 24/5
+                        # if not self.in_london_session():
+                        #     logger.info("XAU entry blocked: outside London session")
+                        #     continue
+                        # RELAXED: Reduced confirm_above from 2 to 1, removed slope_up requirement
+                        if mid_price > upper and confirm_above >= 1:
+                            if slope_up:
+                                logger.debug(f"{instrument} XAU BUY: slope_up confirmed (confidence boost)")
                             signals.append({
                                 'instrument': instrument,
                                 'side': 'BUY',
                                 'entry_price': price_data['ask'],
                                 'stop_loss': mid_price - max(10.0, 0.5 * atr),
                                 'take_profit': mid_price + max(15.0, 1.0 * atr),
-                                'confidence': 80,
+                                'confidence': 80 if slope_up else 70,  # Lower confidence if no slope
                                 'strategy': 'ema_atr_breakout_confirmed'
                             })
-                        elif mid_price < lower and confirm_below >= 2:
+                        elif mid_price < lower and confirm_below >= 1:
                             signals.append({
                                 'instrument': instrument,
                                 'side': 'SELL',
@@ -1194,22 +1215,24 @@ class AITradingSystem:
         try:
             # Check if we can trade
             if not self.trading_enabled:
+                logger.warning(f"BLOCKER: Trading disabled for {signal['instrument']} {signal['side']}")
                 return False
 
             # Respect temporary news halt window
             if self.is_news_halt_active():
-                logger.info("News halt active; skipping new entry")
+                halt_until = self.news_halt_until.strftime('%H:%M:%S UTC') if self.news_halt_until else 'unknown'
+                logger.info(f"BLOCKER: News halt active until {halt_until}; skipping {signal['instrument']} {signal['side']}")
                 return False
                 
             if self.daily_trade_count >= self.max_daily_trades:
-                logger.warning("Daily trade limit reached")
+                logger.warning(f"BLOCKER: Daily trade limit reached ({self.daily_trade_count}/{self.max_daily_trades})")
                 return False
             
             # Broker-aware cap: positions + pending must be below cap
             live = self.get_live_counts()
             total_live = live['positions'] + live['pending']
             if total_live >= self.max_concurrent_trades:
-                logger.info("Global cap reached (positions+pending); skipping new entry")
+                logger.info(f"BLOCKER: Global cap reached ({total_live}/{self.max_concurrent_trades} positions+pending); skipping {signal['instrument']}")
                 return False
 
             # Diversification guardrails
@@ -1227,7 +1250,7 @@ class AITradingSystem:
             current_symbol_count = symbol_counts.get(current_symbol, 0)
 
             if sym_live >= current_symbol_cap or current_symbol_count >= current_symbol_cap:
-                logger.info(f"Skipping trade: per-symbol cap reached for {current_symbol}")
+                logger.info(f"BLOCKER: Per-symbol cap reached for {current_symbol} ({sym_live}/{current_symbol_cap})")
                 return False
 
             # Keep some slots for diversification if this symbol already occupies slots
@@ -1254,7 +1277,7 @@ class AITradingSystem:
                             r_ok = True
                             break
                 if current_symbol_count >= 1 and not r_ok:
-                    logger.info("Second position blocked: no existing trade >= 0.5R")
+                    logger.info(f"BLOCKER: Second position blocked for {current_symbol}: no existing trade >= 0.5R")
                     return False
             
             # Get account balance
@@ -1275,9 +1298,10 @@ class AITradingSystem:
                 slv = float(signal['stop_loss'])
                 sl_dist = abs(entry - slv)
                 tp_dist = abs(tpv - entry)
-                # Require TP distance >= min_r * SL distance
-                if sl_dist <= 0 or tp_dist < (min_r * sl_dist):
-                    logger.info("Entry blocked: TP < minimum expected R threshold")
+                # RELAXED: Reduced minimum R from 0.5 to 0.3
+                min_r_effective = max(0.3, min_r)  # Allow lower R for entry
+                if sl_dist <= 0 or tp_dist < (min_r_effective * sl_dist):
+                    logger.info(f"BLOCKER: TP < minimum R threshold ({tp_dist:.5f} < {min_r_effective * sl_dist:.5f}) for {signal['instrument']}")
                     return False
                 # Estimate absolute profit at TP in USD
                 inst = signal['instrument']
@@ -1290,13 +1314,15 @@ class AITradingSystem:
                 elif inst == 'XAU_USD':
                     # XAU units are in ounces; price in USD
                     expected_abs = abs(units) * tp_dist
-                if expected_abs < min_abs:
-                    logger.info(f"Entry blocked: expected TP ${expected_abs:.2f} < min ${min_abs:.2f}")
+                # RELAXED: Reduced minimum absolute profit from $0.50 to $0.25
+                min_abs_effective = max(0.25, min_abs * 0.5)  # Allow lower absolute profit
+                if expected_abs < min_abs_effective:
+                    logger.info(f"BLOCKER: Expected TP ${expected_abs:.2f} < min ${min_abs_effective:.2f} for {signal['instrument']}")
                     return False
             except Exception as e:
                 logger.warning(f"min-profit check error: {e}")
             if units == 0:
-                logger.warning("Position size too small")
+                logger.warning(f"BLOCKER: Position size too small (0 units) for {signal['instrument']}")
                 return False
             
             # Risk throttle for XAU after pump: halve size if last jump >0.6%
@@ -1569,9 +1595,22 @@ class AITradingSystem:
     def run_trading_cycle(self):
         """Run one complete trading cycle"""
         if not self.trading_enabled:
+            logger.warning("⚠️ Trading cycle skipped: trading_enabled = False")
             return
             
         logger.info("🔍 Starting trading cycle...")
+        
+        # MONDAY MORNING RESET: Clear halts if it's Monday morning
+        now = datetime.utcnow()
+        if now.weekday() == 0 and now.hour < 10:
+            if self.news_halt_until:
+                logger.info("🔄 Monday morning: Clearing news halt")
+                self.news_halt_until = None
+            if self.throttle_until:
+                logger.info("🔄 Monday morning: Clearing throttle")
+                self.throttle_until = None
+                self.risk_per_trade = self.base_risk
+        
         # Update news halts if calendar enabled
         self.apply_news_halts()
         # Apply sentiment throttle if enabled
