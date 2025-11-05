@@ -1302,6 +1302,18 @@
                     Performance Monitoring
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#roadmap" data-section="roadmap">
+                    <i class="bi bi-calendar-check me-2"></i>
+                    Weekly Roadmap
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#trade-history" data-section="trade-history">
+                    <i class="bi bi-clock-history me-2"></i>
+                    Trade History
+                </a>
+            </li>
         </ul>
     </div>
     
@@ -2610,6 +2622,287 @@
             await loadKeyMetrics();
             await loadDatabaseStats();
         }
+
+        async function loadRoadmapSection() {
+            try {
+                console.log('📅 Loading roadmap section...');
+                const data = await fetchJson('/api/roadmap/progress', { timeoutMs: 15000 });
+                
+                if (!data) {
+                    throw new Error('Failed to load roadmap data');
+                }
+                
+                // Handle both wrapped and direct response formats
+                const progress = (data.success && data.progress) ? data.progress : data;
+                
+                // Load week overview
+                const weekOverview = document.getElementById('roadmapWeekOverview');
+                if (weekOverview) {
+                    const weekInfo = progress.week_info || {};
+                    const targets = progress.targets || {};
+                    weekOverview.innerHTML = `
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <div class="text-center p-3" style="background: rgba(58, 134, 255, 0.1); border-radius: 8px;">
+                                    <h4 style="color: #3a86ff;">${weekInfo.current_day || 'N/A'}</h4>
+                                    <small style="color: #adb5bd;">Current Day</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="text-center p-3" style="background: rgba(58, 134, 255, 0.1); border-radius: 8px;">
+                                    <h4 style="color: #3a86ff;">${weekInfo.days_passed || 0}/${weekInfo.days_remaining !== undefined ? (7 - weekInfo.days_passed) : 0}</h4>
+                                    <small style="color: #adb5bd;">Days Passed / Remaining</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="text-center p-3" style="background: rgba(58, 134, 255, 0.1); border-radius: 8px;">
+                                    <h4 style="color: ${targets.on_track ? '#06d6a0' : '#ff6b6b'};">$${(targets.current_progress || 0).toFixed(2)}</h4>
+                                    <small style="color: #adb5bd;">Current Progress</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="text-center p-3" style="background: rgba(58, 134, 255, 0.1); border-radius: 8px;">
+                                    <h4 style="color: #3a86ff;">$${(targets.weekly_target || 0).toFixed(2)}</h4>
+                                    <small style="color: #adb5bd;">Weekly Target</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="progress" style="height: 25px; background: rgba(58, 134, 255, 0.1);">
+                                <div class="progress-bar" role="progressbar" style="width: ${(targets.weekly_progress_pct || 0)}%; background: ${targets.on_track ? '#06d6a0' : '#ff6b6b'};" aria-valuenow="${targets.weekly_progress_pct || 0}" aria-valuemin="0" aria-valuemax="100">
+                                    ${(targets.weekly_progress_pct || 0).toFixed(1)}%
+                                </div>
+                            </div>
+                            <p class="mt-2 mb-0" style="color: #adb5bd;">
+                                Status: <span style="color: ${targets.on_track ? '#06d6a0' : '#ff6b6b'};">${targets.on_track ? '✅ On Track' : '⚠️ Behind Target'}</span>
+                                | Variance: ${(targets.variance || 0) >= 0 ? '+' : ''}$${(targets.variance || 0).toFixed(2)}
+                            </p>
+                        </div>
+                    `;
+                }
+                
+                // Load daily progress
+                const dailyProgress = document.getElementById('roadmapDailyProgress');
+                if (dailyProgress) {
+                    const daily = progress.daily_progress || [];
+                    if (daily.length > 0) {
+                        dailyProgress.innerHTML = `
+                            <div class="table-responsive">
+                                <table class="table table-dark table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th style="color: #ffffff;">Day</th>
+                                            <th style="color: #ffffff;">Target</th>
+                                            <th style="color: #ffffff;">Actual</th>
+                                            <th style="color: #ffffff;">Trades</th>
+                                            <th style="color: #ffffff;">Win Rate</th>
+                                            <th style="color: #ffffff;">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${daily.map(day => `
+                                            <tr style="background: ${day.status === 'current' ? 'rgba(58, 134, 255, 0.2)' : ''};">
+                                                <td style="color: #ffffff;">${day.day}</td>
+                                                <td style="color: #adb5bd;">$${(day.target || 0).toFixed(2)}</td>
+                                                <td style="color: ${(day.actual || 0) >= (day.target || 0) ? '#06d6a0' : '#ff6b6b'};">$${(day.actual || 0).toFixed(2)}</td>
+                                                <td style="color: #adb5bd;">${day.trades || 0}</td>
+                                                <td style="color: #adb5bd;">${(day.win_rate || 0).toFixed(1)}%</td>
+                                                <td>
+                                                    <span class="badge" style="background: ${day.status === 'complete' ? '#06d6a0' : day.status === 'current' ? '#3a86ff' : '#6c757d'};">
+                                                        ${day.status || 'upcoming'}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        `;
+                    } else {
+                        dailyProgress.innerHTML = '<p style="color: #adb5bd; text-align: center;">No daily progress data available</p>';
+                    }
+                }
+                
+                // Load strategy progress
+                const strategyProgress = document.getElementById('roadmapStrategyProgress');
+                if (strategyProgress) {
+                    const strategies = progress.strategy_progress || [];
+                    if (strategies.length > 0) {
+                        strategyProgress.innerHTML = `
+                            <div class="row">
+                                ${strategies.map(strategy => `
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card" style="background: rgba(33, 37, 41, 0.6); border: 1px solid #495057;">
+                                            <div class="card-body">
+                                                <h5 style="color: #ffffff;">${strategy.strategy_name || strategy.strategy_id}</h5>
+                                                <p class="mb-2" style="color: #adb5bd;">Pair: ${strategy.pair}</p>
+                                                <div class="progress mb-2" style="height: 20px;">
+                                                    <div class="progress-bar" role="progressbar" style="width: ${strategy.progress_pct || 0}%; background: ${strategy.on_track ? '#06d6a0' : '#ff6b6b'};" aria-valuenow="${strategy.progress_pct || 0}" aria-valuemin="0" aria-valuemax="100">
+                                                        ${(strategy.progress_pct || 0).toFixed(1)}%
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex justify-content-between">
+                                                    <small style="color: #adb5bd;">Target: $${(strategy.target || 0).toFixed(2)}</small>
+                                                    <small style="color: #adb5bd;">Current: $${(strategy.current || 0).toFixed(2)}</small>
+                                                </div>
+                                                <div class="mt-2">
+                                                    <small style="color: #adb5bd;">Trades: ${strategy.trades || 0}</small>
+                                                    <span class="badge ms-2" style="background: ${strategy.on_track ? '#06d6a0' : '#ff6b6b'};">
+                                                        ${strategy.on_track ? '✅ On Track' : '⚠️ Behind'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                    } else {
+                        strategyProgress.innerHTML = '<p style="color: #adb5bd; text-align: center;">No strategy progress data available</p>';
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error loading roadmap section:', error);
+                const weekOverview = document.getElementById('roadmapWeekOverview');
+                if (weekOverview) {
+                    weekOverview.innerHTML = `<p style="color: #ff6b6b;">Error loading roadmap: ${error.message}</p>`;
+                }
+            }
+        }
+
+        async function loadTradeHistorySection() {
+            await loadFilteredTradeHistory();
+        }
+
+        async function loadFilteredTradeHistory() {
+            try {
+                console.log('📋 Loading filtered trade history...');
+                
+                const strategy = document.getElementById('filterStrategy')?.value || 'all';
+                const instrument = document.getElementById('filterInstrument')?.value || 'all';
+                const period = document.getElementById('filterPeriod')?.value || 'month';
+                const status = document.getElementById('filterStatus')?.value || 'all';
+                
+                const params = new URLSearchParams({
+                    strategy_id: strategy,
+                    instrument: instrument,
+                    period: period,
+                    status: status
+                });
+                
+                const data = await fetchJson(`/api/performance/filtered?${params.toString()}`, { timeoutMs: 15000 });
+                
+                if (!data || !data.success) {
+                    throw new Error(data?.error || 'Failed to load trade history');
+                }
+                
+                const performance = data.performance || data;
+                const metrics = performance.metrics || {};
+                const trades = performance.trades || [];
+                
+                // Update filter dropdowns with available options
+                const strategySelect = document.getElementById('filterStrategy');
+                const instrumentSelect = document.getElementById('filterInstrument');
+                
+                if (strategySelect && performance.strategies) {
+                    const currentValue = strategySelect.value;
+                    strategySelect.innerHTML = '<option value="all">All Strategies</option>';
+                    performance.strategies.forEach(s => {
+                        const option = document.createElement('option');
+                        option.value = s.strategy_id;
+                        option.textContent = s.strategy_id;
+                        if (s.strategy_id === currentValue) option.selected = true;
+                        strategySelect.appendChild(option);
+                    });
+                }
+                
+                if (instrumentSelect && trades.length > 0) {
+                    const instruments = [...new Set(trades.map(t => t.instrument).filter(Boolean))];
+                    const currentValue = instrumentSelect.value;
+                    instrumentSelect.innerHTML = '<option value="all">All Instruments</option>';
+                    instruments.forEach(inst => {
+                        const option = document.createElement('option');
+                        option.value = inst;
+                        option.textContent = inst;
+                        if (inst === currentValue) option.selected = true;
+                        instrumentSelect.appendChild(option);
+                    });
+                }
+                
+                // Display metrics
+                const content = document.getElementById('tradeHistoryContent');
+                if (content) {
+                    content.innerHTML = `
+                        <div class="mb-4">
+                            <div class="row">
+                                <div class="col-md-3 mb-2">
+                                    <div class="text-center p-3" style="background: rgba(58, 134, 255, 0.1); border-radius: 8px;">
+                                        <h5 style="color: #3a86ff;">${metrics.total_trades || 0}</h5>
+                                        <small style="color: #adb5bd;">Total Trades</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <div class="text-center p-3" style="background: rgba(58, 134, 255, 0.1); border-radius: 8px;">
+                                        <h5 style="color: #3a86ff;">${(metrics.win_rate || 0).toFixed(1)}%</h5>
+                                        <small style="color: #adb5bd;">Win Rate</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <div class="text-center p-3" style="background: rgba(58, 134, 255, 0.1); border-radius: 8px;">
+                                        <h5 style="color: ${(metrics.total_pnl || 0) >= 0 ? '#06d6a0' : '#ff6b6b'};">$${(metrics.total_pnl || 0).toFixed(2)}</h5>
+                                        <small style="color: #adb5bd;">Total P&L</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <div class="text-center p-3" style="background: rgba(58, 134, 255, 0.1); border-radius: 8px;">
+                                        <h5 style="color: #3a86ff;">${(metrics.profit_factor || 0).toFixed(2)}</h5>
+                                        <small style="color: #adb5bd;">Profit Factor</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-dark table-striped">
+                                <thead>
+                                    <tr>
+                                        <th style="color: #ffffff;">Trade ID</th>
+                                        <th style="color: #ffffff;">Strategy</th>
+                                        <th style="color: #ffffff;">Instrument</th>
+                                        <th style="color: #ffffff;">Direction</th>
+                                        <th style="color: #ffffff;">Entry Time</th>
+                                        <th style="color: #ffffff;">P&L</th>
+                                        <th style="color: #ffffff;">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${trades.length > 0 ? trades.slice(0, 50).map(trade => `
+                                        <tr>
+                                            <td style="color: #adb5bd;">${trade.trade_id || 'N/A'}</td>
+                                            <td style="color: #adb5bd;">${trade.strategy_id || 'N/A'}</td>
+                                            <td style="color: #adb5bd;">${trade.instrument || 'N/A'}</td>
+                                            <td style="color: ${trade.direction === 'BUY' ? '#06d6a0' : '#ff6b6b'};">${trade.direction || 'N/A'}</td>
+                                            <td style="color: #adb5bd;">${trade.entry_time ? new Date(trade.entry_time).toLocaleString() : 'N/A'}</td>
+                                            <td style="color: ${(trade.realized_pnl || 0) >= 0 ? '#06d6a0' : '#ff6b6b'};">$${(trade.realized_pnl || 0).toFixed(2)}</td>
+                                            <td>
+                                                <span class="badge" style="background: ${trade.is_closed ? '#06d6a0' : '#3a86ff'};">
+                                                    ${trade.is_closed ? 'Closed' : 'Open'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    `).join('') : '<tr><td colspan="7" style="text-align: center; color: #adb5bd;">No trades found</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('❌ Error loading filtered trade history:', error);
+                const content = document.getElementById('tradeHistoryContent');
+                if (content) {
+                    content.innerHTML = `<p style="color: #ff6b6b;">Error loading trade history: ${error.message}</p>`;
+                }
+            }
+        }
         
         async function loadAnalyticsSection() {
             try {
@@ -3520,6 +3813,137 @@
                 </div>
             </div>
         </section>
+
+        <!-- Weekly Roadmap Section -->
+        <section id="roadmap" class="content-section">
+            <div class="container-fluid" style="padding: 20px; background: var(--bg-dark); min-height: 600px;">
+                <h2 style="color: #fff; margin-bottom: 30px; font-size: 2rem;"><i class="bi bi-calendar-check me-2"></i>Weekly Roadmap Progress</h2>
+                
+                <!-- Week Overview -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card" style="background: rgba(58, 134, 255, 0.1); border: 1px solid #3a86ff;">
+                            <div class="card-header" style="background: rgba(58, 134, 255, 0.2); border-bottom: 1px solid #3a86ff;">
+                                <h4 style="color: #3a86ff; margin: 0;">📅 Week Overview</h4>
+                            </div>
+                            <div class="card-body" id="roadmapWeekOverview">
+                                <div class="text-center">
+                                    <div class="spinner-border text-primary" role="status"></div>
+                                    <p class="mt-2">Loading roadmap data...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daily Progress -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card" style="background: rgba(33, 37, 41, 0.8); border: 1px solid #495057;">
+                            <div class="card-header" style="background: rgba(33, 37, 41, 0.9); border-bottom: 1px solid #495057;">
+                                <h4 style="color: #ffffff; margin: 0;">📊 Daily Progress</h4>
+                            </div>
+                            <div class="card-body" id="roadmapDailyProgress">
+                                <div class="text-center">
+                                    <div class="spinner-border text-primary" role="status"></div>
+                                    <p class="mt-2">Loading daily progress...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Strategy Progress -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card" style="background: rgba(33, 37, 41, 0.8); border: 1px solid #495057;">
+                            <div class="card-header" style="background: rgba(33, 37, 41, 0.9); border-bottom: 1px solid #495057;">
+                                <h4 style="color: #ffffff; margin: 0;">🎯 Strategy Progress</h4>
+                            </div>
+                            <div class="card-body" id="roadmapStrategyProgress">
+                                <div class="text-center">
+                                    <div class="spinner-border text-primary" role="status"></div>
+                                    <p class="mt-2">Loading strategy progress...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Trade History Section -->
+        <section id="trade-history" class="content-section">
+            <div class="container-fluid" style="padding: 20px; background: var(--bg-dark); min-height: 600px;">
+                <h2 style="color: #fff; margin-bottom: 30px; font-size: 2rem;"><i class="bi bi-clock-history me-2"></i>Trade History</h2>
+                
+                <!-- Filters -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card" style="background: rgba(33, 37, 41, 0.8); border: 1px solid #495057;">
+                            <div class="card-header" style="background: rgba(33, 37, 41, 0.9); border-bottom: 1px solid #495057;">
+                                <h4 style="color: #ffffff; margin: 0;">🔍 Filters</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-3">
+                                        <label class="form-label" style="color: #fff;">Strategy</label>
+                                        <select class="form-select" id="filterStrategy" style="background: #1a1a1a; color: #fff; border: 1px solid #495057;">
+                                            <option value="all">All Strategies</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label" style="color: #fff;">Instrument</label>
+                                        <select class="form-select" id="filterInstrument" style="background: #1a1a1a; color: #fff; border: 1px solid #495057;">
+                                            <option value="all">All Instruments</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label" style="color: #fff;">Period</label>
+                                        <select class="form-select" id="filterPeriod" style="background: #1a1a1a; color: #fff; border: 1px solid #495057;">
+                                            <option value="today">Today</option>
+                                            <option value="week">Last 7 Days</option>
+                                            <option value="month" selected>Last 30 Days</option>
+                                            <option value="90days">Last 90 Days</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label" style="color: #fff;">Status</label>
+                                        <select class="form-select" id="filterStatus" style="background: #1a1a1a; color: #fff; border: 1px solid #495057;">
+                                            <option value="all">All</option>
+                                            <option value="open">Open Only</option>
+                                            <option value="closed">Closed Only</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2 d-flex align-items-end">
+                                        <button class="btn btn-primary w-100" onclick="loadFilteredTradeHistory()" style="background: #3a86ff; border: none;">
+                                            <i class="bi bi-search me-1"></i>Apply
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trade History Table -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card" style="background: rgba(33, 37, 41, 0.8); border: 1px solid #495057;">
+                            <div class="card-header" style="background: rgba(33, 37, 41, 0.9); border-bottom: 1px solid #495057;">
+                                <h4 style="color: #ffffff; margin: 0;">📋 Trade History</h4>
+                            </div>
+                            <div class="card-body" id="tradeHistoryContent">
+                                <div class="text-center">
+                                    <div class="spinner-border text-primary" role="status"></div>
+                                    <p class="mt-2">Loading trade history...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
 
     <!-- Floating AI Copilot Button -->
@@ -4029,7 +4453,9 @@
                             'analytics': typeof loadAnalyticsSection !== 'undefined' ? loadAnalyticsSection : null,
                             'ai-copilot': typeof loadAICopilotSection !== 'undefined' ? loadAICopilotSection : null,
                             'reports': typeof loadReportsSection !== 'undefined' ? loadReportsSection : null,
-                            'performance': typeof loadPerformanceSection !== 'undefined' ? loadPerformanceSection : null
+                            'performance': typeof loadPerformanceSection !== 'undefined' ? loadPerformanceSection : null,
+                            'roadmap': typeof loadRoadmapSection !== 'undefined' ? loadRoadmapSection : null,
+                            'trade-history': typeof loadTradeHistorySection !== 'undefined' ? loadTradeHistorySection : null
                         };
                         
                         if (loaders[targetSection]) {
