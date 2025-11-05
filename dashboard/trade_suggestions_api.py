@@ -22,12 +22,23 @@ import requests
 import threading
 import time
 
-# Add the project path
-sys.path.append('/Users/mac/quant_system_clean/google-cloud-trading-system')
+# Ensure project paths are importable relative to this repository
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, '..'))
+GCLOUD_DIR = os.path.join(REPO_ROOT, 'google-cloud-trading-system')
+SRC_DIR = os.path.join(GCLOUD_DIR, 'src')
+CORE_DIR = os.path.join(SRC_DIR, 'core')
 
-from src.core.yaml_manager import get_yaml_manager
-from src.core.oanda_client import OandaClient
-from src.core.data_feed import get_data_feed
+if CORE_DIR not in sys.path:
+    sys.path.insert(0, CORE_DIR)
+if SRC_DIR not in sys.path:
+    sys.path.insert(0, SRC_DIR)
+if GCLOUD_DIR not in sys.path:
+    sys.path.insert(0, GCLOUD_DIR)
+
+from src.core.yaml_manager import get_yaml_manager  # type: ignore
+from src.core.oanda_client import OandaClient  # type: ignore
+from src.core.data_feed import get_data_feed  # type: ignore
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -44,6 +55,17 @@ class TradeSuggestionsAPI:
         # Load accounts
         self.load_accounts()
         
+        # Start live data feed once to ensure suggestions have real prices
+        try:
+            self.data_feed = get_data_feed()
+            # Start only if not already running (best-effort)
+            if hasattr(self.data_feed, 'running') and not self.data_feed.running:
+                self.data_feed.start()
+                logger.info("✅ Live data feed started for trade suggestions")
+        except Exception as e:
+            logger.error(f"❌ Failed to start live data feed: {e}")
+            # We don't raise here to keep API available for health/status
+        
     def load_accounts(self):
         """Load all trading accounts"""
         try:
@@ -59,14 +81,14 @@ class TradeSuggestionsAPI:
         suggestions = []
         
         try:
-            # Get market data
-            data_feed = get_data_feed()
+            # Get market data (feed should already be running)
+            data_feed = getattr(self, 'data_feed', None) or get_data_feed()
             instruments = ['EUR_USD', 'GBP_USD', 'USD_JPY', 'XAU_USD', 'AUD_USD']
             
             for instrument in instruments:
                 try:
                     # Get current prices
-                    prices = data_feed.get_latest_prices([instrument])
+                    prices = data_feed.get_latest_prices([instrument]) if data_feed else {}
                     if instrument in prices:
                         price_data = prices[instrument]
                         mid_price = (price_data.bid + price_data.ask) / 2
@@ -178,7 +200,7 @@ class TradeSuggestionsAPI:
             if not pending_trade:
                 return {'success': False, 'error': 'Trade not found'}
             
-            # Execute the trade
+            # Execute the trade (reads API key/env from environment)
             client = OandaClient(account_id=pending_trade['account_id'])
             
             # Calculate position size
@@ -272,6 +294,21 @@ class TradeSuggestionsAPI:
 # Flask app for trade suggestions API
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
+
+# Health endpoint (define early so it's always registered before server starts)
+@app.route('/health', methods=['GET'])
+def health():
+    """Lightweight health endpoint to verify service readiness"""
+    try:
+        api_key_present = bool(os.getenv('OANDA_API_KEY'))
+        status = {
+            'status': 'ok',
+            'time': datetime.utcnow().isoformat() + 'Z',
+            'oanda_api_key_configured': api_key_present,
+        }
+        return jsonify(status)
+    except Exception as e:
+        return jsonify({'status': 'error', 'error': str(e)}), 500
 
 # Initialize API
 trade_api = TradeSuggestionsAPI()
@@ -405,11 +442,10 @@ def handle_disconnect():
 def start_trade_suggestions_api():
     """Start the trade suggestions API server"""
     logger.info("🚀 Starting Trade Suggestions API...")
-    
-    # Set up environment
-    os.environ['OANDA_API_KEY'] = "REMOVED_SECRET"
-    os.environ['OANDA_ENVIRONMENT'] = "practice"
-    
+    # Ensure minimal required configuration comes from environment
+    if not os.getenv('OANDA_API_KEY'):
+        logger.warning("⚠️ OANDA_API_KEY is not set. Live operations will fail until configured.")
+
     # Start the server
     socketio.run(app, host='0.0.0.0', port=8082, debug=False)
 
