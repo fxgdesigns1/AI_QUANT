@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance & Roadmap Dashboard - Mockup</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0a0e27;
+            color: #e0e0e0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            padding: 20px 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .refresh-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .section {
+            background: #1a1f3a;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid #2d3a5a;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #60a5fa;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .subsection {
+            background: #0f1629;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid #1e3a5a;
+        }
+
+        .subsection-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #93c5fd;
+        }
+
+        .week-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-card {
+            background: #0a0e27;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #60a5fa;
+        }
+
+        .progress-bar {
+            background: #1e3a5a;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            margin: 15px 0;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 15px;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+            transition: width 0.5s;
+        }
+
+        .progress-fill.warning {
+            background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%);
+        }
+
+        .progress-fill.danger {
+            background: linear-gradient(90deg, #ef4444 0%, #f87171 100%);
+        }
+
+        .daily-breakdown {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+
+        .day-card {
+            background: #0a0e27;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #1e3a5a;
+        }
+
+        .day-name {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .day-target {
+            font-size: 14px;
+            color: #60a5fa;
+            margin-bottom: 5px;
+        }
+
+        .day-actual {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .day-status {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .status-good {
+            background: #065f46;
+            color: #6ee7b7;
+        }
+
+        .status-warning {
+            background: #78350f;
+            color: #fbbf24;
+        }
+
+        .status-pending {
+            background: #1e3a5a;
+            color: #94a3b8;
+        }
+
+        .strategy-roadmap {
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #0a0e27;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .strategy-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .strategy-name {
+            font-weight: 700;
+            color: #93c5fd;
+        }
+
+        .strategy-progress {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .strategy-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        .detail-item {
+            color: #94a3b8;
+        }
+
+        .detail-value {
+            color: #e0e0e0;
+            font-weight: 600;
+        }
+
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-label {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 5px;
+        }
+
+        select, input {
+            background: #0a0e27;
+            border: 1px solid #1e3a5a;
+            color: #e0e0e0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .quick-filters {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .quick-filter-btn {
+            background: #1e3a5a;
+            border: 1px solid #2d3a5a;
+            color: #93c5fd;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .quick-filter-btn:hover {
+            background: #2d3a5a;
+            border-color: #3b82f6;
+        }
+
+        .quick-filter-btn.active {
+            background: #3b82f6;
+            border-color: #60a5fa;
+            color: white;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            background: #0a0e27;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #1e3a5a;
+        }
+
+        .summary-label {
+            font-size: 11px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .summary-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #60a5fa;
+        }
+
+        .summary-value.positive {
+            color: #34d399;
+        }
+
+        .summary-value.negative {
+            color: #f87171;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th {
+            background: #0a0e27;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #93c5fd;
+            border-bottom: 2px solid #1e3a5a;
+            font-size: 13px;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #1e3a5a;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: #0f1629;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-good-badge {
+            background: #065f46;
+            color: #6ee7b7;
+        }
+
+        .status-warning-badge {
+            background: #78350f;
+            color: #fbbf24;
+        }
+
+        .status-danger-badge {
+            background: #7f1d1d;
+            color: #f87171;
+        }
+
+        .chart-container {
+            background: #0a0e27;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #1e3a5a;
+        }
+
+        .chart-placeholder {
+            color: #94a3b8;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .trade-log {
+            margin-top: 15px;
+        }
+
+        .trade-row {
+            background: #0a0e27;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .trade-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .trade-id {
+            font-weight: 700;
+            color: #93c5fd;
+        }
+
+        .trade-pnl {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .trade-pnl.positive {
+            color: #34d399;
+        }
+
+        .trade-pnl.negative {
+            color: #f87171;
+        }
+
+        .trade-details {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .trade-detail-value {
+            color: #e0e0e0;
+            font-weight: 600;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .page-btn {
+            background: #1e3a5a;
+            border: 1px solid #2d3a5a;
+            color: #93c5fd;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .page-btn:hover {
+            background: #2d3a5a;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .export-btn {
+            background: #1e3a5a;
+            border: 1px solid #2d3a5a;
+            color: #93c5fd;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .export-btn:hover {
+            background: #2d3a5a;
+            border-color: #3b82f6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📊 Performance & Roadmap Dashboard</h1>
+            <button class="refresh-btn">🔄 Refresh</button>
+        </div>
+
+        <!-- Weekly Roadmap & Progress -->
+        <div class="section">
+            <div class="section-title">📅 Weekly Roadmap & Progress</div>
+            
+            <div class="subsection">
+                <div class="subsection-title">Week Overview</div>
+                <div class="week-info">
+                    <div class="info-card">
+                        <div class="info-label">Current Week</div>
+                        <div class="info-value">Oct 28 - Nov 3, 2025</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">Today</div>
+                        <div class="info-value">Wednesday (Day 3 of 7)</div>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <div>
+                            <div class="info-label">Weekly Target</div>
+                            <div class="info-value">$3,500</div>
+                        </div>
+                        <div>
+                            <div class="info-label">Current Progress</div>
+                            <div class="info-value">$1,250</div>
+                        </div>
+                        <div>
+                            <div class="info-label">Expected</div>
+                            <div class="info-value">$1,500</div>
+                        </div>
+                        <div>
+                            <div class="info-label">Status</div>
+                            <div class="info-value" style="color: #fbbf24;">⚠️ Off Track</div>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill warning" style="width: 35.7%;">35.7%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <div class="subsection-title">📊 Daily Breakdown</div>
+                <div class="daily-breakdown">
+                    <div class="day-card">
+                        <div class="day-name">Monday</div>
+                        <div class="day-target">Target: $500</div>
+                        <div class="day-actual" style="color: #34d399;">$450</div>
+                        <div class="day-status status-good">✅ 90%</div>
+                    </div>
+                    <div class="day-card">
+                        <div class="day-name">Tuesday</div>
+                        <div class="day-target">Target: $600</div>
+                        <div class="day-actual" style="color: #fbbf24;">$300</div>
+                        <div class="day-status status-warning">⚠️ 50%</div>
+                    </div>
+                    <div class="day-card">
+                        <div class="day-name">Wednesday</div>
+                        <div class="day-target">Target: $650</div>
+                        <div class="day-actual" style="color: #60a5fa;">$500</div>
+                        <div class="day-status status-good">🔄 77%</div>
+                    </div>
+                    <div class="day-card">
+                        <div class="day-name">Thursday</div>
+                        <div class="day-target">Target: $700</div>
+                        <div class="day-actual" style="color: #94a3b8;">$0</div>
+                        <div class="day-status status-pending">⏳ Pending</div>
+                    </div>
+                    <div class="day-card">
+                        <div class="day-name">Friday</div>
+                        <div class="day-target">Target: $550</div>
+                        <div class="day-actual" style="color: #94a3b8;">$0</div>
+                        <div class="day-status status-pending">⏳ Pending</div>
+                    </div>
+                    <div class="day-card">
+                        <div class="day-name">Saturday</div>
+                        <div class="day-target">Target: $500</div>
+                        <div class="day-actual" style="color: #94a3b8;">$0</div>
+                        <div class="day-status status-pending">⏳ Pending</div>
+                    </div>
+                    <div class="day-card">
+                        <div class="day-name">Sunday</div>
+                        <div class="day-target">Target: $0</div>
+                        <div class="day-actual" style="color: #94a3b8;">$0</div>
+                        <div class="day-status status-pending">⏳ Closed</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <div class="subsection-title">🎯 Strategy Roadmaps (This Week)</div>
+                
+                <div class="strategy-roadmap">
+                    <div class="strategy-header">
+                        <div class="strategy-name">EUR_USD - Ultra Strict V2</div>
+                        <div class="strategy-progress" style="color: #34d399;">✅ 52.5%</div>
+                    </div>
+                    <div class="strategy-details">
+                        <div class="detail-item">Target: <span class="detail-value">$800</span></div>
+                        <div class="detail-item">Progress: <span class="detail-value">$420</span></div>
+                        <div class="detail-item">Entry Zones: <span class="detail-value">1.0850, 1.0820, 1.0800</span></div>
+                    </div>
+                </div>
+
+                <div class="strategy-roadmap">
+                    <div class="strategy-header">
+                        <div class="strategy-name">XAU_USD - Gold High Return</div>
+                        <div class="strategy-progress" style="color: #fbbf24;">⚠️ 31.7%</div>
+                    </div>
+                    <div class="strategy-details">
+                        <div class="detail-item">Target: <span class="detail-value">$1,200</span></div>
+                        <div class="detail-item">Progress: <span class="detail-value">$380</span></div>
+                        <div class="detail-item">Entry Zones: <span class="detail-value">$2650, $2640, $2630</span></div>
+                    </div>
+                </div>
+
+                <div class="strategy-roadmap">
+                    <div class="strategy-header">
+                        <div class="strategy-name">GBP_USD - Champion 75WR</div>
+                        <div class="strategy-progress" style="color: #34d399;">✅ 50.0%</div>
+                    </div>
+                    <div class="strategy-details">
+                        <div class="detail-item">Target: <span class="detail-value">$900</span></div>
+                        <div class="detail-item">Progress: <span class="detail-value">$450</span></div>
+                        <div class="detail-item">Entry Zones: <span class="detail-value">1.2650, 1.2620, 1.2600</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Strategy Performance Tracker -->
+        <div class="section">
+            <div class="section-title">📈 Strategy Performance Tracker</div>
+            
+            <div class="subsection">
+                <div class="subsection-title">🔍 Filters</div>
+                <div class="filters">
+                    <div class="filter-group">
+                        <label class="filter-label">Strategy</label>
+                        <select>
+                            <option>All Strategies</option>
+                            <option>Ultra Strict V2</option>
+                            <option>Gold High Return</option>
+                            <option>Champion 75WR</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Date Range</label>
+                        <select>
+                            <option>Last 7 Days</option>
+                            <option>Last 30 Days</option>
+                            <option>This Week</option>
+                            <option>This Month</option>
+                            <option>Custom Range</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Instrument</label>
+                        <select>
+                            <option>All Instruments</option>
+                            <option>EUR_USD</option>
+                            <option>XAU_USD</option>
+                            <option>GBP_USD</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Status</label>
+                        <select>
+                            <option>All</option>
+                            <option>Open</option>
+                            <option>Closed</option>
+                            <option>Winners</option>
+                            <option>Losers</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="quick-filters">
+                    <button class="quick-filter-btn active">Today</button>
+                    <button class="quick-filter-btn">This Week</button>
+                    <button class="quick-filter-btn">This Month</button>
+                    <button class="quick-filter-btn">All Time</button>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <div class="subsection-title">📊 Performance Summary (Filtered)</div>
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <div class="summary-label">Total Trades</div>
+                        <div class="summary-value">47</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">Win Rate</div>
+                        <div class="summary-value">72.3%</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">Total Profit</div>
+                        <div class="summary-value positive">$1,250</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">Profit Factor</div>
+                        <div class="summary-value">2.1</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">Max Drawdown</div>
+                        <div class="summary-value negative">-$180</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">Sharpe Ratio</div>
+                        <div class="summary-value">1.8</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <div class="subsection-title">📋 Strategy Breakdown</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Strategy</th>
+                            <th>Trades</th>
+                            <th>Win Rate</th>
+                            <th>P&L</th>
+                            <th>Profit Factor</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Ultra Strict V2</td>
+                            <td>12</td>
+                            <td>75%</td>
+                            <td style="color: #34d399;">$420</td>
+                            <td>2.3</td>
+                            <td><span class="status-badge status-good-badge">✅ Good</span></td>
+                        </tr>
+                        <tr>
+                            <td>Gold High Return</td>
+                            <td>8</td>
+                            <td>62%</td>
+                            <td style="color: #34d399;">$380</td>
+                            <td>1.8</td>
+                            <td><span class="status-badge status-warning-badge">⚠️ Warning</span></td>
+                        </tr>
+                        <tr>
+                            <td>Champion 75WR</td>
+                            <td>15</td>
+                            <td>73%</td>
+                            <td style="color: #34d399;">$450</td>
+                            <td>2.1</td>
+                            <td><span class="status-badge status-good-badge">✅ Good</span></td>
+                        </tr>
+                        <tr>
+                            <td>Momentum V2</td>
+                            <td>7</td>
+                            <td>71%</td>
+                            <td style="color: #34d399;">$180</td>
+                            <td>1.9</td>
+                            <td><span class="status-badge status-good-badge">✅ Good</span></td>
+                        </tr>
+                        <tr>
+                            <td>All Weather 70WR</td>
+                            <td>5</td>
+                            <td>60%</td>
+                            <td style="color: #f87171;">-$180</td>
+                            <td>0.8</td>
+                            <td><span class="status-badge status-danger-badge">❌ Needs Attention</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <select style="margin-right: 10px;">
+                            <option>Sort by: P&L</option>
+                            <option>Sort by: Win Rate</option>
+                            <option>Sort by: Trades</option>
+                        </select>
+                    </div>
+                    <div class="export-buttons">
+                        <button class="export-btn">📥 Export CSV</button>
+                        <button class="export-btn">📄 View Details</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <div class="subsection-title">📈 Performance Charts</div>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <button class="quick-filter-btn active">Cumulative P&L</button>
+                    <button class="quick-filter-btn">Win Rate Trend</button>
+                    <button class="quick-filter-btn">Daily P&L</button>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-placeholder">
+                        📊 Chart visualization would appear here<br>
+                        (Cumulative P&L over time)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trade Log & History -->
+        <div class="section">
+            <div class="section-title">📋 Trade Log & History</div>
+            
+            <div class="subsection">
+                <div class="subsection-title">🔍 Search & Filter</div>
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <input type="text" placeholder="Search trades..." style="flex: 1;">
+                    <button class="export-btn">🔍 Filter</button>
+                    <button class="export-btn">✕ Clear</button>
+                </div>
+                <div class="quick-filters">
+                    <button class="quick-filter-btn">All</button>
+                    <button class="quick-filter-btn">Open</button>
+                    <button class="quick-filter-btn active">Closed</button>
+                    <button class="quick-filter-btn">Winners</button>
+                    <button class="quick-filter-btn">Losers</button>
+                </div>
+            </div>
+
+            <div class="trade-log">
+                <div class="trade-row">
+                    <div class="trade-header">
+                        <div class="trade-id">ultra_v2_001</div>
+                        <div class="trade-pnl positive">+$45.00</div>
+                    </div>
+                    <div class="trade-details">
+                        <div>
+                            <div style="color: #94a3b8;">Strategy</div>
+                            <div class="trade-detail-value">Ultra Strict V2</div>
+                        </div>
+                        <div>
+                            <div style="color: #94a3b8;">Instrument</div>
+                            <div class="trade-detail-value">EUR_USD</div>
+                        </div>
+                        <div>
+                            <div style="color: #94a3b8;">Entry → Exit</div>
+                            <div class="trade-detail-value">1.0850 → 1.0875</div>
+                        </div>
+                        <div>
+                            <div style="color: #94a3b8;">Time</div>
+                            <div class="trade-detail-value">Oct 28 09:15</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="trade-row">
+                    <div class="trade-header">
+                        <div class="trade-id">gold_hr_002</div>
+                        <div class="trade-pnl positive">+$80.00</div>
+                    </div>
+                    <div class="trade-details">
+                        <div>
+                            <div style="color: #94a3b8;">Strategy</div>
+                            <div class="trade-detail-value">Gold High Return</div>
+                        </div>
+                        <div>
+                            <div style="color: #94a3b8;">Instrument</div>
+                            <div class="trade-detail-value">XAU_USD</div>
+                        </div>
+                        <div>
+                            <div style="color: #94a3b8;">Entry → Exit</div>
+                            <div class="trade-detail-value">$2650 → $2658</div>
+                        </div>
+                        <div>
+                            <div style="color: #94a3b8;">Time</div>
+                            <div class="trade-detail-value">Oct 28 10:30</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="trade-row">
+                    <div class="trade-header">
+                        <div class="trade-id">champion_003</div>
+                        <div class="trade-pnl positive">+$30.00</div>
+                    </div>
+                    <div class="trade-details">
+                        <div>
+                            <div style="color: #94a3b8;">Strategy</div>
+                            <div class="trade-detail-value">Champion 75WR</div>
+                        </div>
+                        <div>
+                            <div style="color: #94a3b8;">Instrument</div>
+                            <div class="trade-detail-value">GBP_USD</div>
+                        </div>
+                        <div>
+                            <div style="color: #94a3b8;">Entry → Exit</div>
+                            <div class="trade-detail-value">1.2650 → 1.2620</div>
+                        </div>
+                        <div>
+                            <div style="color: #94a3b8;">Time</div>
+                            <div class="trade-detail-value">Oct 28 14:20</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pagination">
+                <button class="page-btn">← Prev</button>
+                <span style="color: #94a3b8;">Page 1 of 5</span>
+                <button class="page-btn">Next →</button>
+            </div>
+
+            <div class="export-buttons" style="justify-content: center;">
+                <button class="export-btn">📥 Export to CSV</button>
+                <button class="export-btn">📄 Export to PDF</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
