@@ -1,0 +1,21 @@
+🔍 VALIDATING TRADING SYSTEM
+==================================================
+
+📊 Checking Processes:
+  ✅ RUNNING: Automated Trading
+  ✅ RUNNING: AI Trading
+  ❌ NOT RUNNING: Dashboard
+
+🔗 Testing Connections:
+  ❌ Telegram API error: 401
+  ✅ OANDA connected - Balance: $44459.51
+  ⚠️ Dashboard not accessible (may not be started)
+
+==================================================
+⚠️ SYSTEM VALIDATION: ISSUES FOUND
+
+📱 Sending validation report to Telegram...
+⚠️ Failed to send report: 401
+
+==================================================
+Validation complete!

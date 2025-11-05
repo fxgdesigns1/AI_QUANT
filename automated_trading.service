@@ -5,15 +5,17 @@ After=network.target
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/opt/quant_system_clean
-ExecStart=/usr/bin/python3 automated_trading_system.py
+WorkingDirectory=/workspace
+ExecStart=/usr/bin/python3 /workspace/automated_trading_system.py
 Restart=always
 RestartSec=10
 StandardOutput=journal
 StandardError=journal
 
 # Environment variables
-Environment=PYTHONPATH=/opt/quant_system_clean
+Environment=PYTHONPATH=/workspace
+Environment=TELEGRAM_TOKEN=7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU
+Environment=TELEGRAM_CHAT_ID=6100678501
 Environment=OANDA_API_KEY=REMOVED_SECRET
 Environment=OANDA_ENVIRONMENT=practice
 
