@@ -11,13 +11,20 @@ import time
 import asyncio
 import threading
 from datetime import datetime, timedelta
+
+# Fix Python path for user-installed packages
+sys.path.insert(0, '/home/ubuntu/.local/lib/python3.12/site-packages')
+
 from flask import Flask, render_template, jsonify, request, Response, current_app
 from flask_socketio import SocketIO, emit
 from typing import Dict, List, Any, Optional
 import logging
 from dataclasses import dataclass, asdict
 import hashlib
-import aiohttp
+try:
+    import aiohttp
+except ImportError:
+    aiohttp = None  # type: ignore
 
 # Setup logging first (needed for imports below)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
