@@ -1539,6 +1539,16 @@ def index():
     """Main dashboard page"""
     return render_template('dashboard_advanced.html')
 
+@app.route('/mockup')
+def mockup():
+    """Performance & Roadmap Dashboard Mockup"""
+    mockup_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'dashboard_mockup_performance_roadmap.html')
+    if os.path.exists(mockup_path):
+        with open(mockup_path, 'r', encoding='utf-8') as f:
+            return f.read()
+    else:
+        return f"Mockup file not found at: {mockup_path}", 404
+
 @app.route('/api/status')
 def api_status():
     """Get system status"""
