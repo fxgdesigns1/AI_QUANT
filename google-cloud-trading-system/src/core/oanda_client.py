@@ -80,14 +80,30 @@ class OandaClient:
     """Production OANDA API Client for Google Cloud deployment"""
     
     def __init__(self, api_key: str = None, account_id: str = None, environment: str = None):
-        """Initialize OANDA client with credentials"""
-        self.api_key = api_key or os.getenv('OANDA_API_KEY')
-        self.account_id = account_id or os.getenv('OANDA_ACCOUNT_ID') or os.getenv('PRIMARY_ACCOUNT')
+        """Initialize OANDA client with credentials - FIXED: Uses unified credential loader"""
+        # Try unified credential loader first
+        try:
+            from .unified_credential_loader import get_oanda_api_key, get_oanda_account_id, ensure_credentials_loaded
+            ensure_credentials_loaded()
+            self.api_key = api_key or get_oanda_api_key()
+            self.account_id = account_id or get_oanda_account_id()
+        except Exception as e:
+            logger.debug(f"Unified credential loader not available: {e}")
+            # Fallback to environment variables
+            self.api_key = api_key or os.getenv('OANDA_API_KEY')
+            self.account_id = account_id or os.getenv('OANDA_ACCOUNT_ID') or os.getenv('PRIMARY_ACCOUNT')
+        
         self.environment = environment or os.getenv('OANDA_ENVIRONMENT', 'practice')
         
-        # Validate required credentials
+        # Final validation with helpful error message
         if not self.api_key or not self.account_id:
-            raise ValueError("API key and account ID must be provided")
+            error_msg = "API key and account ID must be provided. "
+            error_msg += "Tried: unified loader, environment variables, and hardcoded values."
+            if not self.api_key:
+                error_msg += " API_KEY missing."
+            if not self.account_id:
+                error_msg += " ACCOUNT_ID missing."
+            raise ValueError(error_msg)
         
         # Set base URL based on environment
         if self.environment == 'practice':
@@ -780,11 +796,17 @@ class OandaClient:
             return False
 
 # Global OANDA client instance (lazy initialization)
-oanda_client = None
+_oanda_client = None
 
 def get_oanda_client() -> OandaClient:
-    """Get the global OANDA client instance"""
-    global oanda_client
-    if oanda_client is None:
+    """Get the global OANDA client instance - FIXED: Uses unified credential loader"""
+    global _oanda_client
+    if _oanda_client is None:
+        # Ensure credentials are loaded before creating client
+        try:
+            from .unified_credential_loader import ensure_credentials_loaded
+            ensure_credentials_loaded()
+        except Exception:
+            pass  # Will try in OandaClient.__init__
         oanda_client = OandaClient()
     return oanda_client
