@@ -791,78 +791,92 @@ class AdvancedDashboardManager:
         return self._get_cached('news', _build)
     
     def _get_ai_insights(self) -> Dict[str, Any]:
-        """Get AI insights for dashboard (trade phase, upcoming news, recommendations)"""
+        """Get AI insights for dashboard (trade phase, upcoming news, recommendations) - FIXED with robust error handling"""
         try:
-            # Import news integration and economic indicators
-            from ..core.news_integration import safe_news_integration
-            from ..core.economic_indicators import get_economic_indicators
-            
+            # Default safe response
             insights = {
-                'trade_phase': 'Monitoring markets',
+                'trade_phase': 'System active - monitoring markets',
                 'upcoming_news': [],
                 'recommendation': 'HOLD',
                 'timestamp': self._safe_timestamp(datetime.now())
             }
             
-            # Get news sentiment
-            if safe_news_integration.enabled:
-                try:
-                    news_analysis = safe_news_integration.get_news_analysis(['XAU_USD', 'EUR_USD'])
-                    sentiment = news_analysis.get('overall_sentiment', 0)
-                    
-                    # Determine trade phase from sentiment
-                    if sentiment > 0.3:
-                        insights['trade_phase'] = '🟢 BULLISH - Strong buying opportunity'
-                        insights['recommendation'] = 'BUY'
-                    elif sentiment > 0.1:
-                        insights['trade_phase'] = '🟢 Moderately Bullish - Cautious buying'
-                        insights['recommendation'] = 'BUY (cautious)'
-                    elif sentiment < -0.3:
-                        insights['trade_phase'] = '🔴 BEARISH - Selling pressure detected'
-                        insights['recommendation'] = 'SELL'
-                    elif sentiment < -0.1:
-                        insights['trade_phase'] = '🔴 Moderately Bearish - Cautious selling'
-                        insights['recommendation'] = 'SELL (cautious)'
-                    else:
-                        insights['trade_phase'] = '⚪ NEUTRAL - Waiting for clear signals'
-                        insights['recommendation'] = 'HOLD'
-                    
-                    # News is available, note it in upcoming events
-                    if not insights['upcoming_news']:
-                        insights['upcoming_news'].append({
-                            'time': 'Live',
-                            'event': f"News monitoring active: {len(news_analysis.get('key_events', []))} events tracked",
-                            'impact': 'info',
-                            'currency': 'ALL'
-                        })
-                except Exception as e:
-                    logger.warning(f"⚠️ News analysis failed: {e}")
-            
-            # Get economic indicators for gold
+            # Get news sentiment - FIXED: More robust error handling
             try:
-                economic_service = get_economic_indicators()
-                if economic_service.enabled:
-                    gold_score = economic_service.get_gold_fundamental_score()
-                    
-                    # Enhance trade phase with economic data
-                    if gold_score.get('score', 0) > 0.2:
-                        insights['trade_phase'] += f" | 🥇 Gold fundamentals: BULLISH (Real rate: {gold_score.get('real_interest_rate', 'N/A')}%)"
-                    elif gold_score.get('score', 0) < -0.2:
-                        insights['trade_phase'] += f" | 🥇 Gold fundamentals: BEARISH"
-                    
-                    # Add economic news to upcoming events
-                    if not insights['upcoming_news']:
-                        insights['upcoming_news'].append({
-                            'time': 'Live',
-                            'event': f"Fed Funds Rate: {gold_score.get('fed_funds_rate', 'N/A')}% | CPI: {gold_score.get('inflation_rate', 'N/A')}%",
-                            'impact': 'high',
-                            'currency': 'USD'
-                        })
+                from ..core.news_integration import safe_news_integration
+                if safe_news_integration and hasattr(safe_news_integration, 'enabled') and safe_news_integration.enabled:
+                    try:
+                        news_analysis = safe_news_integration.get_news_analysis(['XAU_USD', 'EUR_USD'])
+                        if news_analysis and isinstance(news_analysis, dict):
+                            sentiment = float(news_analysis.get('overall_sentiment', 0))
+                            
+                            # Determine trade phase from sentiment
+                            if sentiment > 0.3:
+                                insights['trade_phase'] = '🟢 BULLISH - Strong buying opportunity'
+                                insights['recommendation'] = 'BUY'
+                            elif sentiment > 0.1:
+                                insights['trade_phase'] = '🟢 Moderately Bullish - Cautious buying'
+                                insights['recommendation'] = 'BUY (cautious)'
+                            elif sentiment < -0.3:
+                                insights['trade_phase'] = '🔴 BEARISH - Selling pressure detected'
+                                insights['recommendation'] = 'SELL'
+                            elif sentiment < -0.1:
+                                insights['trade_phase'] = '🔴 Moderately Bearish - Cautious selling'
+                                insights['recommendation'] = 'SELL (cautious)'
+                            
+                            # News is available, note it in upcoming events
+                            if isinstance(insights.get('upcoming_news'), list):
+                                key_events = news_analysis.get('key_events', [])
+                                event_count = len(key_events) if isinstance(key_events, list) else 0
+                                insights['upcoming_news'].append({
+                                    'time': 'Live',
+                                    'event': f"News monitoring active: {event_count} events tracked",
+                                    'impact': 'info',
+                                    'currency': 'ALL'
+                                })
+                    except Exception as e:
+                        logger.debug(f"⚠️ News analysis failed (non-critical): {e}")
+            except (ImportError, AttributeError) as e:
+                logger.debug(f"⚠️ News integration not available: {e}")
             except Exception as e:
-                logger.warning(f"⚠️ Economic indicators failed: {e}")
+                logger.debug(f"⚠️ News sentiment check failed: {e}")
+            
+            # Get economic indicators for gold - FIXED: More robust error handling
+            try:
+                from ..core.economic_indicators import get_economic_indicators
+                economic_service = get_economic_indicators()
+                if economic_service and hasattr(economic_service, 'enabled') and economic_service.enabled:
+                    try:
+                        gold_score = economic_service.get_gold_fundamental_score()
+                        if gold_score and isinstance(gold_score, dict):
+                            score = float(gold_score.get('score', 0))
+                            
+                            # Enhance trade phase with economic data
+                            if score > 0.2:
+                                real_rate = gold_score.get('real_interest_rate', 'N/A')
+                                insights['trade_phase'] += f" | 🥇 Gold fundamentals: BULLISH (Real rate: {real_rate}%)"
+                            elif score < -0.2:
+                                insights['trade_phase'] += f" | 🥇 Gold fundamentals: BEARISH"
+                            
+                            # Add economic news to upcoming events
+                            if isinstance(insights.get('upcoming_news'), list):
+                                fed_rate = gold_score.get('fed_funds_rate', 'N/A')
+                                cpi = gold_score.get('inflation_rate', 'N/A')
+                                insights['upcoming_news'].append({
+                                    'time': 'Live',
+                                    'event': f"Fed Funds Rate: {fed_rate}% | CPI: {cpi}%",
+                                    'impact': 'high',
+                                    'currency': 'USD'
+                                })
+                    except Exception as e:
+                        logger.debug(f"⚠️ Economic indicators failed (non-critical): {e}")
+            except (ImportError, AttributeError) as e:
+                logger.debug(f"⚠️ Economic indicators not available: {e}")
+            except Exception as e:
+                logger.debug(f"⚠️ Economic indicators check failed: {e}")
             
             # If no news data, show default AI status
-            if not insights['upcoming_news']:
+            if not insights.get('upcoming_news') or len(insights['upcoming_news']) == 0:
                 insights['upcoming_news'] = [
                     {
                         'time': 'Now',
@@ -876,9 +890,17 @@ class AdvancedDashboardManager:
             
         except Exception as e:
             logger.error(f"❌ Failed to get AI insights: {e}")
+            import traceback
+            logger.debug(f"AI insights traceback: {traceback.format_exc()}")
+            # Return safe default - never fail
             return {
                 'trade_phase': 'System active - monitoring markets',
-                'upcoming_news': [],
+                'upcoming_news': [{
+                    'time': 'Now',
+                    'event': 'AI monitoring active',
+                    'impact': 'info',
+                    'currency': 'ALL'
+                }],
                 'recommendation': 'HOLD',
                 'timestamp': self._safe_timestamp(datetime.now())
             }
@@ -952,64 +974,87 @@ class AdvancedDashboardManager:
             }
     
     def execute_trading_signals(self) -> Dict[str, Any]:
-        """Execute trading signals for all accounts"""
+        """Execute trading signals for all accounts - FIXED: Now calls scanner directly"""
         try:
-            results = {}
+            # FIX: Use scanner's _run_scan() method which handles all signal generation and execution
+            from ..core.simple_timer_scanner import get_simple_scanner
             
-            for account_id, system_info in self.trading_systems.items():
-                try:
-                    strategy_id = system_info['strategy_id']
-                    strategy = self.strategies.get(strategy_id)
-                    
-                    if not strategy:
-                        logger.error(f"❌ Strategy {strategy_id} not found for account {account_id}")
-                        continue
-                    
-                    # Get market data for this account
-                    market_data = self.data_feed.get_latest_data(account_id)
-                    if not market_data:
-                        logger.warning(f"⚠️ No market data available for {account_id}")
-                        continue
-                    
-                    # Generate signals
-                    signals = strategy.analyze_market(market_data)
-                    
-                    if signals:
-                        # Execute trades
-                        trade_results = self.order_manager.execute_trades(account_id, signals)
-                        
-                        # Convert TradeExecution objects to serializable format
-                        serializable_results = self._serialize_trade_results(trade_results)
-                        
-                        results[account_id] = {
-                            'signals_generated': len(signals),
-                            'trades_executed': len(trade_results.get('executed_trades', [])),
-                            'trade_results': serializable_results
-                        }
-                        
-                        # Send Telegram notification
-                        if self.telegram_notifier and trade_results.get('executed_trades'):
-                            message = f"🎯 {system_info['strategy_name']}: {len(trade_results['executed_trades'])} trades executed"
-                            self.telegram_notifier.send_message(message)
-                    else:
-                        results[account_id] = {
-                            'signals_generated': 0,
-                            'trades_executed': 0,
-                            'message': 'No signals generated'
-                        }
-                        
-                except Exception as e:
-                    logger.error(f"❌ Failed to execute signals for {account_id}: {e}")
+            scanner = get_simple_scanner()
+            if scanner and hasattr(scanner, '_run_scan'):
+                logger.info("🔄 Executing trading signals via scanner...")
+                scanner._run_scan()
+                
+                # Collect results from scanner
+                results = {}
+                for account_name, account_id in scanner.accounts.items():
                     results[account_id] = {
-                        'error': str(e),
-                        'signals_generated': 0,
-                        'trades_executed': 0
+                        'signals_generated': 0,  # Scanner logs this internally
+                        'trades_executed': 0,    # Scanner executes directly
+                        'message': 'Scanner executed scan - check logs for details'
                     }
-            
-            return results
+                
+                return results
+            else:
+                logger.warning("⚠️ Scanner not available, falling back to dashboard manager execution")
+                # Fallback to original method if scanner not available
+                results = {}
+                
+                for account_id, system_info in self.trading_systems.items():
+                    try:
+                        strategy_id = system_info['strategy_id']
+                        strategy = self.strategies.get(strategy_id)
+                        
+                        if not strategy:
+                            logger.error(f"❌ Strategy {strategy_id} not found for account {account_id}")
+                            continue
+                        
+                        # Get market data for this account
+                        market_data = self.data_feed.get_latest_data(account_id)
+                        if not market_data:
+                            logger.warning(f"⚠️ No market data available for {account_id}")
+                            continue
+                        
+                        # Generate signals
+                        signals = strategy.analyze_market(market_data)
+                        
+                        if signals:
+                            # Execute trades
+                            trade_results = self.order_manager.execute_trades(account_id, signals)
+                            
+                            # Convert TradeExecution objects to serializable format
+                            serializable_results = self._serialize_trade_results(trade_results)
+                            
+                            results[account_id] = {
+                                'signals_generated': len(signals),
+                                'trades_executed': len(trade_results.get('executed_trades', [])),
+                                'trade_results': serializable_results
+                            }
+                            
+                            # Send Telegram notification
+                            if self.telegram_notifier and trade_results.get('executed_trades'):
+                                message = f"🎯 {system_info['strategy_name']}: {len(trade_results['executed_trades'])} trades executed"
+                                self.telegram_notifier.send_message(message)
+                        else:
+                            results[account_id] = {
+                                'signals_generated': 0,
+                                'trades_executed': 0,
+                                'message': 'No signals generated'
+                            }
+                            
+                    except Exception as e:
+                        logger.error(f"❌ Failed to execute signals for {account_id}: {e}")
+                        results[account_id] = {
+                            'error': str(e),
+                            'signals_generated': 0,
+                            'trades_executed': 0
+                        }
+                
+                return results
             
         except Exception as e:
             logger.error(f"❌ Failed to execute trading signals: {e}")
+            import traceback
+            traceback.print_exc()
             return {
                 'error': str(e),
                 'timestamp': self._safe_timestamp(datetime.now())

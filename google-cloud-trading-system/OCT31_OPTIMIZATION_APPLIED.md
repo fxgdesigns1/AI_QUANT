@@ -177,3 +177,5 @@ risk_reward_ratio = 4.0   # Was: 3.0 (optimized)
 **🚀 Ready to deploy and test in live trading!**
 
 
+
+

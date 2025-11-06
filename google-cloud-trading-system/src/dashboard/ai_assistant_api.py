@@ -76,7 +76,15 @@ smart_cache = SmartCache()
 # Gemini AI integration
 class GeminiAI:
     def __init__(self):
+        # Prefer env var; fall back to Secret Manager if not set
         self.api_key = os.getenv('GEMINI_API_KEY')
+        if not self.api_key:
+            try:
+                from ..core.secret_manager import SecretManager
+                sm = SecretManager()
+                self.api_key = sm.get('GEMINI_API_KEY') or sm.get('gemini-api-key')
+            except Exception:
+                self.api_key = None
         self.model = None
         self.enabled = bool(self.api_key)
         self.use_vertex_ai = False
@@ -536,6 +544,9 @@ def interpret() -> tuple:
                 reply_msg = gemini_ai.generate_response(message, context)
                 intent = 'ai_analysis'
                 preview = {'summary': 'AI analysis with market context'}
+                # If Gemini is enabled and produced a reply, reflect correct mode
+                if gemini_ai.enabled and reply_msg:
+                    mode = 'gemini-vertex' if getattr(gemini_ai, 'use_vertex_ai', False) else 'gemini'
         else:
             # Handle specific commands
             reply_msg, requires_confirmation, confirmation_id, preview = _handle_trading_commands(text, context, account_manager, order_manager, active_accounts)

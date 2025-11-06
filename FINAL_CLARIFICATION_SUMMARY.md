@@ -144,3 +144,5 @@ The system IS more sophisticated than "just automated TA" - it includes AI-power
 
 
 
+
+

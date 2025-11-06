@@ -4,9 +4,12 @@ Google Cloud Trading System - Main Entry Point - FULLY INTEGRATED VERSION
 Production-ready entry point with complete dashboard, WebSocket, and AI integration
 """
 
-# EVENTLET MONKEY PATCH - Must be first!
-import eventlet
-eventlet.monkey_patch(all=True, socket=True)
+# EVENTLET MONKEY PATCH - Optional, disabled when EVENTLET_DISABLED=true
+import os as _os
+if _os.getenv('EVENTLET_DISABLED', 'false').lower() not in ('1', 'true', 'yes'):
+    _os.environ.setdefault('EVENTLET_NO_GREENDNS', 'yes')
+    import eventlet
+    eventlet.monkey_patch(all=True, socket=True)
 
 import os
 import sys
@@ -81,6 +84,33 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# Attach live log buffer handler for in-app monitoring
+try:
+    from src.utils.live_log_buffer import LiveLogBufferHandler
+    _live_log_handler = LiveLogBufferHandler(max_records=1000)
+    _live_log_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    logging.getLogger().addHandler(_live_log_handler)
+except Exception as _e:
+    # Non-fatal; monitoring dashboard will degrade gracefully
+    logger.warning(f"LiveLogBufferHandler not attached: {_e}")
+
+# ------------------------------
+# Lightweight Monitoring Helpers
+# ------------------------------
+def _get_live_logs(limit: int = 200):
+    """Return recent log records from the in-memory ring buffer if available."""
+    try:
+        handler = globals().get('_live_log_handler')
+        if not handler:
+            return []
+        # Handler returns newest-first when sliced via get_recent
+        records = handler.get_recent(limit=limit)
+        # Convert dataclass objects to plain dicts
+        return [asdict(r) for r in records]
+    except Exception:
+        # Never fail monitoring endpoint
+        return []
 
 # Import analytics modules
 try:
@@ -3780,123 +3810,85 @@ def ai_health():
 @app.route('/api/sidebar/live-prices', endpoint='api_sidebar_live_prices')
 @safe_json('sidebar_live_prices')
 def get_sidebar_live_prices():
-    """Get live prices for sidebar market overview with smart caching"""
+    """Get live prices for sidebar market overview - FIXED TO USE DASHBOARD MANAGER"""
     try:
-        # Check cache first
-        cache_key = f"sidebar_prices_{int(time.time() // 30)}"  # 30-second cache
+        # Check cache first (30-second cache)
+        cache_key = f"sidebar_prices_{int(time.time() // 30)}"
         cached_data = current_app.config.get('SIDEBAR_CACHE', {}).get(cache_key)
-        
         if cached_data:
             return jsonify(cached_data)
         
-        # Get fresh data
-        data_feed = current_app.config.get('DATA_FEED')
-        active_accounts = current_app.config.get('ACTIVE_ACCOUNTS', [])
-        if not data_feed:
-            # Fallback: try to wire manager now
-            mgr = get_dashboard_manager()
-            _wire_manager_to_app(mgr)
-            data_feed = current_app.config.get('DATA_FEED')
-            if not data_feed and mgr:
-                # Last-resort fallback: use manager market data snapshot
-                try:
-                    market_snapshot = getattr(mgr, 'get_market_data', lambda: {})()
-                except Exception:
-                    market_snapshot = {}
-                prices = {}
-                for pair in ['EUR_USD', 'GBP_USD', 'USD_JPY', 'AUD_USD', 'XAU_USD']:
-                    fields = market_snapshot.get(pair) or {}
-                    if isinstance(fields, dict) and fields.get('bid') is not None:
-                        prices[pair] = {
-                            'instrument': pair.replace('_', '/'),
-                            'bid': fields.get('bid', 0.0),
-                            'ask': fields.get('ask', 0.0),
-                            'spread': fields.get('spread', 0.0),
-                            'timestamp': fields.get('timestamp', datetime.now().isoformat()),
-                            'is_live': False
-                        }
-                return jsonify({
-                    'success': True,
-                    'prices': prices,
-                    'timestamp': datetime.now().isoformat(),
-                    'cached': False
-                })
+        # Get dashboard manager and use its market data (most reliable source)
+        mgr = get_dashboard_manager()
+        if not mgr:
+            logger.warning("⚠️ Dashboard manager not available for sidebar prices")
+            return jsonify({
+                'success': True,
+                'prices': {},
+                'timestamp': datetime.now().isoformat(),
+                'cached': False
+            })
         
-        prices = {}
-        if data_feed and active_accounts:
-            try:
-                # Get market data for major pairs
-                major_pairs = ['EUR_USD', 'GBP_USD', 'USD_JPY', 'AUD_USD', 'XAU_USD']
-                # Aggregate prices from all accounts
-                for account_id in active_accounts[:1] if active_accounts else []:  # Use first account for pricing
-                    try:
-                        account_data = data_feed.get_latest_data(account_id)
-                        if account_data:
-                            for pair in major_pairs:
-                                pair_upper = pair.upper()
-                                # Check if this account has data for this pair
-                                if pair_upper in account_data:
-                                    price_data = account_data[pair_upper]
-                                    if isinstance(price_data, dict):
-                                        prices[pair] = {
-                                            'instrument': pair.replace('_', '/'),
-                                            'bid': price_data.get('bid', 0.0),
-                                            'ask': price_data.get('ask', 0.0),
-                                            'spread': price_data.get('spread', 0.0),
-                                            'timestamp': price_data.get('timestamp', datetime.now().isoformat()),
-                                            'is_live': True
-                                        }
-                                elif hasattr(account_data, 'get') and pair_upper in str(account_data):
-                                    # Try alternative access pattern
-                                    for key, value in account_data.items():
-                                        if pair_upper in key.upper():
-                                            if isinstance(value, dict) and 'bid' in value:
-                                                prices[pair] = {
-                                                    'instrument': pair.replace('_', '/'),
-                                                    'bid': value.get('bid', 0.0),
-                                                    'ask': value.get('ask', 0.0),
-                                                    'spread': value.get('spread', 0.0),
-                                                    'timestamp': value.get('timestamp', datetime.now().isoformat()),
-                                                    'is_live': True
-                                                }
-                                                break
-                    except Exception as e:
-                        logger.warning(f"⚠️ Error getting price data for {account_id}: {e}")
-                        continue
+        # Get market data from dashboard manager
+        try:
+            market_data = mgr.get_market_data()
+            major_pairs = ['EUR_USD', 'GBP_USD', 'USD_JPY', 'AUD_USD', 'XAU_USD']
+            prices = {}
+            
+            # market_data is {account_id: {pair: price_data}} or {pair: price_data}
+            if isinstance(market_data, dict):
+                # Flatten account-based structure
+                all_pairs = {}
+                for key, value in market_data.items():
+                    if isinstance(value, dict):
+                        # Check if this is account-level data
+                        if any(pair in value for pair in major_pairs):
+                            # This is {pair: price_data}
+                            for pair, price_data in value.items():
+                                if pair in major_pairs and isinstance(price_data, dict):
+                                    all_pairs[pair] = price_data
+                        elif key in major_pairs:
+                            # This is direct {pair: price_data}
+                            all_pairs[key] = value
                 
-                # Fallback: try direct pair lookup if no prices found yet
-                if not prices:
-                    for pair in major_pairs:
-                        try:
-                            # Try getting from any available account data
-                            for account_id in active_accounts:
-                                account_data = data_feed.get_latest_data(account_id)
-                                if account_data and pair in account_data:
-                                    price_data = account_data[pair]
-                                    if isinstance(price_data, dict) and price_data.get('bid'):
+                # Extract prices
+                for pair in major_pairs:
+                    if pair in all_pairs:
+                        price_data = all_pairs[pair]
+                        if isinstance(price_data, dict) and price_data.get('bid') is not None:
+                            prices[pair] = {
+                                'instrument': pair.replace('_', '/'),
+                                'bid': float(price_data.get('bid', 0.0)),
+                                'ask': float(price_data.get('ask', 0.0)),
+                                'spread': float(price_data.get('spread', 0.0)),
+                                'timestamp': price_data.get('timestamp', datetime.now().isoformat()),
+                                'is_live': price_data.get('is_live', True)
+                            }
+            
+            # Fallback: try status endpoint market_data
+            if not prices:
+                try:
+                    status = mgr.get_system_status()
+                    status_market = status.get('market_data', {})
+                    for account_id, account_pairs in status_market.items():
+                        if isinstance(account_pairs, dict):
+                            for pair, price_data in account_pairs.items():
+                                if pair in major_pairs and pair not in prices:
+                                    if isinstance(price_data, dict) and price_data.get('bid') is not None:
                                         prices[pair] = {
                                             'instrument': pair.replace('_', '/'),
-                                            'bid': price_data.get('bid', 0.0),
-                                            'ask': price_data.get('ask', 0.0),
-                                            'spread': price_data.get('spread', 0.0),
+                                            'bid': float(price_data.get('bid', 0.0)),
+                                            'ask': float(price_data.get('ask', 0.0)),
+                                            'spread': float(price_data.get('spread', 0.0)),
                                             'timestamp': price_data.get('timestamp', datetime.now().isoformat()),
                                             'is_live': True
                                         }
-                                        break  # Found price, move to next pair
-                        except Exception as e:
-                            logger.warning(f"⚠️ Error getting price for {pair}: {e}")
-                            # Fallback to demo data if still no price
-                            if pair not in prices:
-                                prices[pair] = {
-                                    'instrument': pair.replace('_', '/'),
-                                    'bid': 1.2000 + hash(pair) % 100 / 10000,
-                                    'ask': 1.2000 + hash(pair) % 100 / 10000 + 0.0002,
-                                    'spread': 0.0002,
-                                    'timestamp': datetime.now().isoformat(),
-                                    'is_live': False
-                                }
-            except Exception as e:
-                logger.error(f"❌ Error getting market data: {e}")
+                except Exception as e:
+                    logger.warning(f"⚠️ Fallback status market_data failed: {e}")
+            
+        except Exception as e:
+            logger.error(f"❌ Error getting market data from manager: {e}")
+            prices = {}
         
         response_data = {
             'success': True,
@@ -3910,7 +3902,7 @@ def get_sidebar_live_prices():
             current_app.config['SIDEBAR_CACHE'] = {}
         current_app.config['SIDEBAR_CACHE'][cache_key] = response_data
         
-        # Clean old cache entries
+        # Clean old cache entries (keep last 10)
         if len(current_app.config['SIDEBAR_CACHE']) > 10:
             oldest_key = min(current_app.config['SIDEBAR_CACHE'].keys())
             del current_app.config['SIDEBAR_CACHE'][oldest_key]
@@ -3919,6 +3911,8 @@ def get_sidebar_live_prices():
         
     except Exception as e:
         logger.error(f"❌ Error getting sidebar prices: {e}")
+        import traceback
+        logger.exception("Full traceback:")
         return jsonify({
             'success': False,
             'error': str(e),
@@ -3932,6 +3926,7 @@ def ai_interpret():
     try:
         import requests
         from urllib.parse import urljoin
+        import os
 
         def fetch_live_status() -> Dict[str, Any]:
             try:
@@ -3950,7 +3945,84 @@ def ai_interpret():
                 return {}
 
         payload = request.get_json(silent=True) or {}
-        text = (payload.get('text') or payload.get('message') or '').lower().strip()
+        raw_message = (payload.get('message') or payload.get('text') or '')
+        text = raw_message.lower().strip()
+
+        # NEW: Force Gemini via Vertex AI REST if key is available
+        def _get_gemini_key() -> str:
+            key = os.getenv('GEMINI_API_KEY') or ''
+            if not key:
+                try:
+                    from src.core.secret_manager import SecretManager
+                    sm = SecretManager()
+                    key = sm.get('GEMINI_API_KEY') or sm.get('gemini-api-key') or ''
+                except Exception:
+                    key = ''
+            return key
+
+        def _vertex_ai_generate(prompt: str) -> str:
+            api_key = _get_gemini_key()
+            if not api_key:
+                return ''
+            url = f"https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash-lite:generateContent?key={api_key}"
+            payload = {
+                "contents": [{
+                    "role": "user",
+                    "parts": [{"text": prompt}]
+                }]
+            }
+            try:
+                r = requests.post(url, json=payload, timeout=8)
+                if r.ok:
+                    data = r.json()
+                    # Extract first candidate text if present
+                    return (
+                        data.get('candidates', [{}])[0]
+                            .get('content', {})
+                            .get('parts', [{}])[0]
+                            .get('text', '')
+                    )
+            except Exception:
+                pass
+            return ''
+
+        # Try Vertex AI directly first for guaranteed Gemini mode
+        if raw_message:
+            # Build a concise prompt with minimal context to avoid latency
+            prompt = f"You are an AI trading assistant. Answer concisely. Question: {raw_message}"
+            gemini_reply = _vertex_ai_generate(prompt)
+            if gemini_reply:
+                return jsonify({
+                    'reply': gemini_reply,
+                    'mode': 'gemini',
+                    'model_provider': 'gemini-vertex',
+                    'context_used': False,
+                    'preview': {'summary': 'AI analysis (Gemini Vertex)'}
+                })
+
+        # Otherwise, prefer the in-app Gemini-backed assistant when available
+        try:
+            ai_assistant = get_ai_assistant()
+        except Exception:
+            ai_assistant = None
+
+        if ai_assistant:
+            try:
+                result: Dict[str, Any] = ai_assistant.process_message(raw_message)
+                # If the Gemini-backed assistant produced a response, return it directly
+                if isinstance(result, dict) and ('response' in result or 'reply' in result):
+                    reply_text = result.get('response') or result.get('reply') or ''
+                    provider = result.get('model_provider', 'gemini')
+                    return jsonify({
+                        'reply': reply_text,
+                        'mode': 'gemini',
+                        'model_provider': provider,
+                        'preview': {'summary': 'AI analysis (Gemini)'},
+                        'context_used': True,
+                    })
+            except Exception:
+                # Fall through to demo mode logic below on any failure
+                pass
         
         if not text:
             return jsonify({"reply": "Hello! I'm your AI trading assistant. I can help you analyze market conditions, check account status, review trading performance, and provide insights. What would you like to know?"})
@@ -4699,9 +4771,13 @@ def trade_manager_dashboard_redirect():
 
 @app.route('/cron/quality-scan')
 def cron_quality_scan():
-    """Quality scanner - proper entries only, no chasing"""
+    """
+    Quality scanner - UNIFIED EXECUTION SYSTEM
+    Uses CandleBasedScanner with OrderManager for all automated trades
+    This is the SINGLE SOURCE OF TRUTH for automated trading
+    """
     try:
-        logger.info("🔄 Quality scanner triggered by cron")
+        logger.info("🔄 Quality scanner triggered by cron (UNIFIED EXECUTION SYSTEM)")
         
         # Ensure environment is set
         import os
@@ -4709,11 +4785,21 @@ def cron_quality_scan():
             logger.error("❌ OANDA_API_KEY not set")
             return jsonify({'status': 'error', 'message': 'OANDA_API_KEY not configured'}), 500
         
-        from strategy_based_scanner import strategy_scan
-        result = strategy_scan()
+        # UNIFIED: Use SimpleTimerScanner which integrates with OrderManager
+        # This is the main execution system used by cron
+        from src.core.simple_timer_scanner import SimpleTimerScanner
+        scanner = SimpleTimerScanner()
         
-        logger.info(f"✅ Quality scan completed: {result}")
-        return jsonify({'status': 'success', 'result': result}), 200
+        # Run unified scan (this uses OrderManager for all executions via strategies)
+        scanner._run_scan()
+        
+        logger.info("✅ Quality scan completed (UNIFIED EXECUTION SYSTEM)")
+        return jsonify({
+            'status': 'success', 
+            'message': 'Quality scan completed using unified execution system',
+            'scanner': 'CandleBasedScanner',
+            'execution': 'OrderManager'
+        }), 200
         
     except ImportError as e:
         logger.error(f"❌ Import error in quality scan: {e}")
@@ -4933,6 +5019,33 @@ def trigger_premium_scan():
         logger.error(f"Error triggering scan: {e}", exc_info=True)
         return jsonify({'error': str(e)}), 500
 
+
+@app.route('/monitor', methods=['GET'])
+def monitor_dashboard():
+    """Render read-only monitoring dashboard (startup, health, logs).
+    Non-intrusive: does not modify system state.
+    """
+    return render_template('monitor.html')
+
+@app.route('/api/monitor/logs', methods=['GET'])
+def api_monitor_logs():
+    """Read-only endpoint to fetch recent application logs from in-memory buffer.
+    Never mutates application state.
+    """
+    try:
+        try:
+            limit = int(request.args.get('limit', '200'))
+        except Exception:
+            limit = 200
+        logs = _get_live_logs(limit=limit)
+        return jsonify({
+            'success': True,
+            'count': len(logs),
+            'logs': logs,
+        })
+    except Exception as e:
+        logger.warning(f"/api/monitor/logs error: {e}")
+        return jsonify({'success': False, 'logs': []}), 200
 
 def initialize_premium_scanner():
     """Initialize premium scanner in background"""

@@ -195,3 +195,5 @@ curl https://ai-quant-trading.uc.r.appspot.com/api/signals/pending
 4. If still no signals, check logs to see if scanner is generating any
 
 
+
+

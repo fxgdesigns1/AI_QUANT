@@ -80,14 +80,30 @@ class OandaClient:
     """Production OANDA API Client for Google Cloud deployment"""
     
     def __init__(self, api_key: str = None, account_id: str = None, environment: str = None):
-        """Initialize OANDA client with credentials"""
-        self.api_key = api_key or os.getenv('OANDA_API_KEY')
-        self.account_id = account_id or os.getenv('OANDA_ACCOUNT_ID') or os.getenv('PRIMARY_ACCOUNT')
+        """Initialize OANDA client with credentials - FIXED: Uses unified credential loader"""
+        # Try unified credential loader first
+        try:
+            from .unified_credential_loader import get_oanda_api_key, get_oanda_account_id, ensure_credentials_loaded
+            ensure_credentials_loaded()
+            self.api_key = api_key or get_oanda_api_key()
+            self.account_id = account_id or get_oanda_account_id()
+        except Exception as e:
+            logger.debug(f"Unified credential loader not available: {e}")
+            # Fallback to environment variables
+            self.api_key = api_key or os.getenv('OANDA_API_KEY')
+            self.account_id = account_id or os.getenv('OANDA_ACCOUNT_ID') or os.getenv('PRIMARY_ACCOUNT')
+        
         self.environment = environment or os.getenv('OANDA_ENVIRONMENT', 'practice')
         
-        # Validate required credentials
+        # Final validation with helpful error message
         if not self.api_key or not self.account_id:
-            raise ValueError("API key and account ID must be provided")
+            error_msg = "API key and account ID must be provided. "
+            error_msg += "Tried: unified loader, environment variables, and hardcoded values."
+            if not self.api_key:
+                error_msg += " API_KEY missing."
+            if not self.account_id:
+                error_msg += " ACCOUNT_ID missing."
+            raise ValueError(error_msg)
         
         # Set base URL based on environment
         if self.environment == 'practice':
@@ -168,43 +184,83 @@ class OandaClient:
         except Exception:
             return datetime.utcnow()
     
+    def _is_cloud_environment(self) -> bool:
+        """Detect if running in Google Cloud environment"""
+        return bool(
+            os.getenv('GAE_ENV') or  # Google App Engine
+            os.getenv('GAE_INSTANCE') or  # Google App Engine instance
+            os.getenv('GOOGLE_CLOUD_PROJECT') or  # GCP project
+            os.getenv('GAE_SERVICE')  # GAE service name
+        )
+    
     def _make_request(self, method: str, url: str, data: Optional[Dict] = None) -> Dict:
         """Make authenticated request to OANDA API with retries and DNS-safe handling"""
         self._rate_limit()
         attempts = int(os.getenv('OANDA_HTTP_RETRIES', '3'))
         backoff_base = float(os.getenv('OANDA_HTTP_BACKOFF', '0.5'))
         last_exc = None
-        for i in range(1, attempts + 1):
-            try:
-                timeout = float(os.getenv('OANDA_HTTP_TIMEOUT', '8'))
-                if method.upper() == 'GET':
-                    response = requests.get(url, headers=self.headers, timeout=timeout)
-                elif method.upper() == 'POST':
-                    response = requests.post(url, headers=self.headers, json=data, timeout=timeout)
-                elif method.upper() == 'PUT':
-                    response = requests.put(url, headers=self.headers, json=data, timeout=timeout)
-                elif method.upper() == 'DELETE':
-                    response = requests.delete(url, headers=self.headers, timeout=timeout)
-                else:
-                    raise ValueError(f"Unsupported HTTP method: {method}")
-                response.raise_for_status()
-                return response.json()
-            except requests.exceptions.RequestException as e:
-                last_exc = e
-                # Log concise retry info; DNS/timeouts included here
-                logger.error(f"❌ OANDA request error (attempt {i}/{attempts}): {e}")
-                # No response body if DNS/timeout
-                if i < attempts:
-                    time.sleep(backoff_base * i)
-                else:
-                    break
+        
+        from urllib.parse import urlparse
+        parsed = urlparse(url)
+        host = parsed.hostname
+        
+        # CLOUD DEPLOYMENT FIX: Always use hostname, never substitute IP
+        # Reason: IP substitution breaks SSL certificate validation (cert is for hostname, not IP)
+        # Cloud environments: Platform handles DNS properly
+        # Local environments: requests library handles DNS properly
+        # 
+        # Previous DNS pre-resolution code was causing issues:
+        # 1. Picked DNS server IP (194.168.4.100) instead of resolved IPs
+        # 2. Even with correct IP, SSL validation fails (certificate mismatch)
+        # Solution: Use hostname directly, let requests/urllib handle DNS resolution
+        
+        if self._is_cloud_environment():
+            logger.debug(f"☁️ Cloud environment: using hostname {host} (platform DNS)")
+        else:
+            logger.debug(f"💻 Local environment: using hostname {host} (standard DNS)")
+        
+        # Use standard headers (no IP substitution)
+        headers_with_host = self.headers
+        
+        # Use standard requests (no custom adapter needed if we pre-resolved)
+        session = requests
+        
+        try:
+            for i in range(1, attempts + 1):
+                try:
+                    timeout = float(os.getenv('OANDA_HTTP_TIMEOUT', '8'))
+                    if method.upper() == 'GET':
+                        response = session.get(url, headers=headers_with_host, timeout=timeout)
+                    elif method.upper() == 'POST':
+                        response = session.post(url, headers=headers_with_host, json=data, timeout=timeout)
+                    elif method.upper() == 'PUT':
+                        response = session.put(url, headers=headers_with_host, json=data, timeout=timeout)
+                    elif method.upper() == 'DELETE':
+                        response = session.delete(url, headers=headers_with_host, timeout=timeout)
+                    else:
+                        raise ValueError(f"Unsupported HTTP method: {method}")
+                    response.raise_for_status()
+                    return response.json()
+                except requests.exceptions.RequestException as e:
+                    last_exc = e
+                    # Log concise retry info; DNS/timeouts included here
+                    logger.error(f"❌ OANDA request error (attempt {i}/{attempts}): {e}")
+                    # No response body if DNS/timeout
+                    if i < attempts:
+                        time.sleep(backoff_base * i)
+                    else:
+                        break
+        except Exception as e:
+            last_exc = e
         # Exhausted retries
-        if hasattr(last_exc, 'response') and getattr(last_exc, 'response') is not None:
-            try:
-                logger.error(f"Response: {last_exc.response.text}")
-            except Exception:
-                pass
-        raise last_exc
+        if last_exc:
+            if hasattr(last_exc, 'response') and getattr(last_exc, 'response') is not None:
+                try:
+                    logger.error(f"Response: {last_exc.response.text}")
+                except Exception:
+                    pass
+            raise last_exc
+        raise RuntimeError("Request failed but no exception was raised")
     
     def get_account_info(self) -> OandaAccount:
         """Get account information"""
@@ -780,11 +836,17 @@ class OandaClient:
             return False
 
 # Global OANDA client instance (lazy initialization)
-oanda_client = None
+_oanda_client = None
 
 def get_oanda_client() -> OandaClient:
-    """Get the global OANDA client instance"""
-    global oanda_client
-    if oanda_client is None:
+    """Get the global OANDA client instance - FIXED: Uses unified credential loader"""
+    global _oanda_client
+    if _oanda_client is None:
+        # Ensure credentials are loaded before creating client
+        try:
+            from .unified_credential_loader import ensure_credentials_loaded
+            ensure_credentials_loaded()
+        except Exception:
+            pass  # Will try in OandaClient.__init__
         oanda_client = OandaClient()
     return oanda_client

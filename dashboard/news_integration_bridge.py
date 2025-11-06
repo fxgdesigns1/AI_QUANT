@@ -58,13 +58,21 @@ class NewsIntegrationBridge:
                 logger.info(f"📰 Retrieved {len(news_data)} news items from Google Cloud")
                 return news_data
             else:
-                # Fallback to local news generation
-                logger.warning("⚠️ No news from Google Cloud, using local fallback")
-                return self._generate_local_news()
+                # Optional synthetic fallback controlled by env
+                allow_synthetic = os.getenv("ALLOW_SYNTHETIC_FALLBACK", "false").lower() in ("1", "true", "yes")
+                if allow_synthetic:
+                    logger.warning("⚠️ No news from Google Cloud, using local fallback (ALLOW_SYNTHETIC_FALLBACK=true)")
+                    return self._generate_local_news()
+                logger.error("❌ No news from Google Cloud and synthetic fallback disabled")
+                return []
                 
         except Exception as e:
+            allow_synthetic = os.getenv("ALLOW_SYNTHETIC_FALLBACK", "false").lower() in ("1", "true", "yes")
             logger.error(f"❌ News fetch failed: {e}")
-            return self._generate_local_news()
+            if allow_synthetic:
+                logger.warning("⚠️ Falling back to local news due to error (ALLOW_SYNTHETIC_FALLBACK=true)")
+                return self._generate_local_news()
+            return []
     
     def _is_cache_valid(self) -> bool:
         """Check if cache is still valid"""

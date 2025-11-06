@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoring Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        body { background: #0b1020; color: #e6e8ef; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .card { background: #161b2f; border: 1px solid #26304f; }
+        .card-header { background: #1b2140; border-bottom: 1px solid #26304f; color: #00d4aa; font-weight: 700; }
+        .metric { font-size: 28px; font-weight: 800; color: #fff; }
+        .label { color: #9aa3ba; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+        .badge-ok { background: rgba(0,212,170,.25); color: #00d4aa; }
+        .badge-warn { background: rgba(255,165,2,.25); color: #ffa502; }
+        .badge-err { background: rgba(255,71,87,.25); color: #ff4757; }
+        #logs { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; background: #0e1426; padding: 12px; border-radius: 8px; height: 380px; overflow-y: auto; white-space: pre-wrap; border: 1px solid #26304f; }
+        a { color: #00d4aa; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="m-0">🔍 Monitoring Dashboard</h2>
+        <div class="text-end small">
+            <div>Last update: <span id="lastUpdate">Never</span></div>
+            <div class="text-secondary">Auto-refresh: 5s (logs), 15s (status)</div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="card h-100">
+                <div class="card-header">Startup & Health</div>
+                <div class="card-body">
+                    <div class="row text-center g-3">
+                        <div class="col-6 col-md-3">
+                            <div class="label mb-1">App Readiness</div>
+                            <div class="metric" id="readyMetric">—</div>
+                            <span class="badge rounded-pill" id="readyBadge">checking…</span>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="label mb-1">Premium Scan</div>
+                            <div class="metric" id="scanMetric">—</div>
+                            <span class="badge rounded-pill" id="scanBadge">checking…</span>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="label mb-1">Socket.IO</div>
+                            <div class="metric" id="socketMetric">—</div>
+                            <span class="badge rounded-pill" id="socketBadge">connecting…</span>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="label mb-1">Live Data</div>
+                            <div class="metric" id="liveMetric">—</div>
+                            <span class="badge rounded-pill" id="liveBadge">checking…</span>
+                        </div>
+                    </div>
+                    <hr class="text-secondary"/>
+                    <div class="small text-secondary">
+                        This page is read-only and does not modify system state. It aggregates readiness, selected API checks, Socket.IO connectivity (polling), and live logs.
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header">Endpoints</div>
+                <div class="card-body">
+                    <div class="mb-2"><span class="label">Health</span><div><a href="/ready" target="_blank">/ready</a></div></div>
+                    <div class="mb-2"><span class="label">Premium Scan</span><div><a href="/api/premium/scan" target="_blank">/api/premium/scan</a></div></div>
+                    <div class="mb-2"><span class="label">Logs API</span><div><a href="/api/monitor/logs" target="_blank">/api/monitor/logs</a></div></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">Live Logs</div>
+                <div class="card-body">
+                    <div id="logs">Loading logs…</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const setBadge = (elt, ok) => {
+        elt.className = 'badge rounded-pill ' + (ok ? 'badge-ok' : 'badge-err');
+        elt.textContent = ok ? 'OK' : 'Error';
+    };
+
+    async function checkReady() {
+        try {
+            const res = await fetch('/ready', { method: 'GET', cache: 'no-store' });
+            document.getElementById('readyMetric').textContent = res.status;
+            setBadge(document.getElementById('readyBadge'), res.ok);
+        } catch (e) {
+            document.getElementById('readyMetric').textContent = 'ERR';
+            setBadge(document.getElementById('readyBadge'), false);
+        }
+    }
+
+    async function checkScan() {
+        try {
+            const res = await fetch('/api/premium/scan', { method: 'GET', cache: 'no-store' });
+            document.getElementById('scanMetric').textContent = res.status;
+            setBadge(document.getElementById('scanBadge'), res.ok);
+        } catch (e) {
+            document.getElementById('scanMetric').textContent = 'ERR';
+            setBadge(document.getElementById('scanBadge'), false);
+        }
+    }
+
+    async function loadLogs() {
+        try {
+            const res = await fetch('/api/monitor/logs?limit=200', { cache: 'no-store' });
+            const json = await res.json();
+            const logs = (json.logs || []).map(r => r.message).join('\n');
+            const el = document.getElementById('logs');
+            el.textContent = logs || 'No logs yet.';
+            // Keep scrolled to bottom
+            el.scrollTop = el.scrollHeight;
+        } catch (e) {
+            const el = document.getElementById('logs');
+            el.textContent = 'Failed to load logs. Retrying…';
+        }
+        document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+    }
+
+    function connectSocket() {
+        try {
+            const socket = io({ transports: ['polling'], upgrade: false });
+            socket.on('connect', () => {
+                document.getElementById('socketMetric').textContent = 'OK';
+                setBadge(document.getElementById('socketBadge'), true);
+            });
+            socket.on('connect_error', () => {
+                document.getElementById('socketMetric').textContent = 'ERR';
+                setBadge(document.getElementById('socketBadge'), false);
+            });
+            // If the server emits system updates, reflect live data mode
+            socket.on('systems_update', (data) => {
+                const live = !!(data && data.live_data_mode);
+                document.getElementById('liveMetric').textContent = live ? 'ON' : 'OFF';
+                const badge = document.getElementById('liveBadge');
+                badge.className = 'badge rounded-pill ' + (live ? 'badge-ok' : 'badge-warn');
+                badge.textContent = live ? 'Enabled' : 'Disabled';
+            });
+        } catch (e) {
+            document.getElementById('socketMetric').textContent = 'ERR';
+            setBadge(document.getElementById('socketBadge'), false);
+        }
+    }
+
+    // Initial load
+    checkReady();
+    checkScan();
+    loadLogs();
+    connectSocket();
+
+    // Intervals
+    setInterval(checkReady, 15000);
+    setInterval(checkScan, 15000);
+    setInterval(loadLogs, 5000);
+</script>
+</body>
+</html>

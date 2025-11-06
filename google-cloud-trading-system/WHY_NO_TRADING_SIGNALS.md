@@ -226,3 +226,5 @@ curl -X POST https://ai-quant-trading.uc.r.appspot.com/cron/quality-scan
 **Status:** 🔍 **INVESTIGATING** - Scanner may be running but not generating signals, or scanner may not be running at all.
 
 
+
+

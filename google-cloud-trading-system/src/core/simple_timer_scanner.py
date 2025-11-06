@@ -7,7 +7,7 @@ Scans every 5 minutes, generates signals, NO EXCUSES
 import logging
 import threading
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List
 
 from .oanda_client import get_oanda_client, OandaClient
@@ -168,8 +168,30 @@ class SimpleTimerScanner:
                                 
                                 # Add candles to history
                                 for candle in candle_list:
-                                    mid_price = float(candle['mid']['c'])
-                                    strategy.price_history[instrument].append(mid_price)
+                                    try:
+                                        # Handle both dict and object formats
+                                        if isinstance(candle, dict):
+                                            if 'mid' in candle and isinstance(candle['mid'], dict):
+                                                mid_price = float(candle['mid'].get('c', 0))
+                                            elif 'c' in candle:
+                                                mid_price = float(candle.get('c', 0))
+                                            else:
+                                                continue
+                                        elif hasattr(candle, 'mid'):
+                                            mid = candle.mid
+                                            if hasattr(mid, 'c'):
+                                                mid_price = float(mid.c)
+                                            elif isinstance(mid, dict):
+                                                mid_price = float(mid.get('c', 0))
+                                            else:
+                                                continue
+                                        else:
+                                            continue
+                                        if mid_price > 0:
+                                            strategy.price_history[instrument].append(mid_price)
+                                    except (KeyError, TypeError, ValueError, AttributeError) as e:
+                                        logger.debug(f"⚠️ Skipped invalid candle: {e}")
+                                        continue
                     
                 except Exception as e:
                     logger.error(f"❌ Backfill failed for {instrument}: {e}")
@@ -228,14 +250,30 @@ class SimpleTimerScanner:
                     if should_pause:
                         continue
                     
-                    # Get market data
+                    # Get market data - FIXED: Ensure we get OandaPrice objects, not lists
                     market_data = {}
                     for inst in instruments:
                         try:
-                            prices = self.oanda.get_current_prices([inst])
+                            prices = self.oanda.get_current_prices([inst], force_refresh=False)
                             if inst in prices:
-                                market_data[inst] = prices[inst]
-                        except:
+                                price_obj = prices[inst]
+                                # Ensure it's an OandaPrice object, not a list
+                                if hasattr(price_obj, 'bid') and hasattr(price_obj, 'ask'):
+                                    market_data[inst] = price_obj
+                                elif isinstance(price_obj, dict):
+                                    # Convert dict to OandaPrice-like object
+                                    from src.core.oanda_client import OandaPrice
+                                    # Use module-level datetime and timezone imports (no local imports)
+                                    market_data[inst] = OandaPrice(
+                                        instrument=inst,
+                                        bid=float(price_obj.get('bid', 0)),
+                                        ask=float(price_obj.get('ask', 0)),
+                                        timestamp=price_obj.get('timestamp', datetime.now(timezone.utc)),
+                                        spread=float(price_obj.get('spread', 0)),
+                                        is_live=price_obj.get('is_live', True)
+                                    )
+                        except Exception as e:
+                            logger.warning(f"⚠️ Error getting price for {inst}: {e}")
                             pass
                     
                     if not market_data:
@@ -246,15 +284,31 @@ class SimpleTimerScanner:
                         for inst in instruments:
                             if inst in market_data:
                                 try:
-                                    strategy._update_price_history(market_data[inst])
-                                except Exception:
+                                    price_obj = market_data[inst]
+                                    # Ensure we pass the right format
+                                    if hasattr(price_obj, 'bid'):
+                                        strategy._update_price_history(price_obj)
+                                except Exception as e:
+                                    logger.debug(f"⚠️ Price history update failed for {inst}: {e}")
                                     pass
                     
                     # Get price history length
                     hist_len = 0
                     if hasattr(strategy, 'price_history'):
-                        for inst in instruments:
-                            hist_len = max(hist_len, len(strategy.price_history.get(inst, [])))
+                        price_hist = strategy.price_history
+                        # Handle both dict and list formats
+                        if isinstance(price_hist, dict):
+                            for inst in instruments:
+                                hist_len = max(hist_len, len(price_hist.get(inst, [])))
+                        elif isinstance(price_hist, list):
+                            hist_len = len(price_hist)
+                        else:
+                            # Try to get length if it's a single list per instrument
+                            for inst in instruments:
+                                if hasattr(price_hist, inst):
+                                    inst_hist = getattr(price_hist, inst)
+                                    if isinstance(inst_hist, list):
+                                        hist_len = max(hist_len, len(inst_hist))
                     
                     # Try to generate signals from strategy logic
                     signals = []
@@ -270,7 +324,14 @@ class SimpleTimerScanner:
                     if not signals:
                         for inst in instruments:
                             if inst in market_data:
-                                current_price = market_data[inst].ask
+                                price_obj = market_data[inst]
+                                # FIXED: Safely access ask price
+                                if hasattr(price_obj, 'ask'):
+                                    current_price = price_obj.ask
+                                elif isinstance(price_obj, dict):
+                                    current_price = float(price_obj.get('ask', 0))
+                                else:
+                                    continue
                                 sniper_signal = self.trump_planner.get_entry_signal(inst, current_price, strategy_name)
                                 
                                 if sniper_signal:

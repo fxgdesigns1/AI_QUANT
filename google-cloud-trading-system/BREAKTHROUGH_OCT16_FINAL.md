@@ -287,3 +287,5 @@ if len(prices) >= self.trend_period:
 
 
 
+
+

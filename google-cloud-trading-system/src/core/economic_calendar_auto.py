@@ -5,6 +5,7 @@ Fetches upcoming economic events automatically
 No paid APIs required
 """
 
+import os
 import requests
 import logging
 from datetime import datetime, timedelta
@@ -42,10 +43,15 @@ class EconomicCalendarAuto:
         except Exception as e:
             logger.warning(f"⚠️ ForexFactory failed: {e}")
         
-        # Method 2: Fallback to hardcoded high-impact events (always works)
+        # Method 2: Optional synthetic fallback, disabled by default per production policy
+        allow_synthetic = os.getenv("ALLOW_SYNTHETIC_FALLBACK", "false").lower() in ("1", "true", "yes")
         if not events:
-            logger.info("📅 Using hardcoded high-impact events for this week")
-            events = self._get_hardcoded_events()
+            if allow_synthetic:
+                logger.warning("⚠️ Using hardcoded high-impact events due to empty real sources (ALLOW_SYNTHETIC_FALLBACK=true)")
+                events = self._get_hardcoded_events()
+            else:
+                logger.error("❌ No real economic events available and synthetic fallback disabled")
+                events = []
         
         self.calendar_cache = events
         self.last_fetch = datetime.now()

@@ -142,3 +142,5 @@ gcloud app logs read -s default | grep -i gemini
 
 
 
+
+

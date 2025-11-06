@@ -180,7 +180,13 @@ class PremiumSignalScanner:
                     continue
                 
                 price_data = prices[instrument]
-                current_price = price_data.get('bid', 0)
+                # MarketData is a dataclass with attributes, not a dict
+                if hasattr(price_data, 'bid'):
+                    current_price = price_data.bid
+                elif isinstance(price_data, dict):
+                    current_price = price_data.get('bid', 0)
+                else:
+                    current_price = 0
                 
                 if current_price == 0:
                     continue

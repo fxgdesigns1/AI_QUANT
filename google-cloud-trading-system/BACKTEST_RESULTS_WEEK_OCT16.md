@@ -248,3 +248,5 @@ The most important fix: **Stopped generating BEARISH signals in a BULLISH market
 
 
 
+
+

@@ -10,7 +10,7 @@ runtime: python311
 # Service Configuration
 # =============================================================================
 service: default
-entrypoint: gunicorn main:app --bind 0.0.0.0:8080 --workers 1 --worker-class eventlet --worker-connections 1000 --timeout 120
+entrypoint: gunicorn main:app --bind 0.0.0.0:8080 --workers 1 --threads 8 --timeout 120
 
 # =============================================================================
 # F1 FREE TIER OPTIMIZATION
@@ -175,6 +175,13 @@ env_variables:
   NEGATIVE_SENTIMENT_THRESHOLD: "-0.4"
   POSITIVE_SENTIMENT_THRESHOLD: "0.4"
   NEWS_CONFIDENCE_THRESHOLD: "0.7"
+  
+  # Synthetic data controls
+  ALLOW_SYNTHETIC_FALLBACK: "false"
+  
+  # Networking/DNS stability (fix Eventlet DNS timeouts to external APIs like OANDA)
+  EVENTLET_NO_GREENDNS: "true"
+  EVENTLET_DISABLED: "true"
   
   # News API Performance - REDUCED for F1
   NEWS_COLLECTION_INTERVAL: "600"
