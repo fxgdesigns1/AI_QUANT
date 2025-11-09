@@ -2806,8 +2806,8 @@ def update_strategy_params():
         logger.error(f"❌ Failed to update params: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@app.route('/api/strategy-switcher/switch-strategy', methods=['POST'])
-def switch_strategy():
+@app.route('/api/strategy-switcher/switch-strategy', methods=['POST'], endpoint='strategy_switcher_switch')
+def strategy_switcher_switch():
     """Change account's strategy (requires restart)"""
     try:
         from src.core.yaml_manager import get_yaml_manager
