@@ -5,8 +5,8 @@ Send comprehensive status update to Telegram
 
 import requests
 
-TELEGRAM_TOKEN = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-TELEGRAM_CHAT_ID = "6100678501"
+TELEGRAM_TOKEN = "${TELEGRAM_TOKEN}"
+TELEGRAM_CHAT_ID = "${TELEGRAM_CHAT_ID}"
 
 message = """🚀 <b>SYSTEM DEPLOYED - STATUS UPDATE</b>
 ⏰ 8:00 AM London Time

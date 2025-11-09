@@ -8,8 +8,8 @@
 
 ### 1. **Telegram Notifications** ✅ WORKING
 - **Status:** Message sent successfully
-- **Bot Token:** 7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU
-- **Chat ID:** 6100678501
+- **Bot Token:** ${TELEGRAM_TOKEN}
+- **Chat ID:** ${TELEGRAM_CHAT_ID}
 - **Test Message:** Delivered at 6:26 AM UTC
 - **Message ID:** 11982
 

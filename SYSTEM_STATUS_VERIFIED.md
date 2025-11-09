@@ -151,7 +151,7 @@ STRATEGY_ALPHA:
 4. ✅ **Multi-Account Trading** - All 3 accounts active
 5. ✅ **Stop-Loss Protection** - All trades protected
 6. ✅ **Auto-Scaling** - Cloud deployment scales 1-3 instances
-7. ✅ **Telegram Notifications** - Configured (Chat ID: 6100678501)
+7. ✅ **Telegram Notifications** - Configured (Chat ID: ${TELEGRAM_CHAT_ID})
 8. ✅ **Market Data Streaming** - Real-time OANDA feeds
 9. ✅ **Progressive Trading** - Relaxes criteria to ensure activity
 10. ✅ **Forced Trading Mode** - Minimum trades per account

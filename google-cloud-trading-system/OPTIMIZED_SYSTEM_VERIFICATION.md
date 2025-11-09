@@ -155,7 +155,7 @@ PRIMARY_STRATEGY: "ultra_strict_forex"   # ✅ Corrected
 - ✅ Sent successfully at 2025-10-02 (Message ID: 9860)
 - ✅ API Response: 200 OK
 - ✅ Bot: @Ai_Trading_Dashboard_bot
-- ✅ Chat ID: 6100678501
+- ✅ Chat ID: ${TELEGRAM_CHAT_ID}
 
 ### **Notification Content Delivered**
 ```

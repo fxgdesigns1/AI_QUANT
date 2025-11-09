@@ -56,7 +56,7 @@ class SimpleTradeSuggestions:
         
         try:
             # Set environment variables for OANDA
-            os.environ['OANDA_API_KEY'] = "a3699a9d6b6d94d4e2c4c59748e73e2d-b6cbc64f16bcfb920e40f9117e66111a"
+            os.environ['OANDA_API_KEY'] = "${OANDA_API_KEY}"
             os.environ['OANDA_ENVIRONMENT'] = "practice"
             
             # Get real market data
@@ -377,7 +377,7 @@ def start_dashboard():
     logger.info("🚀 Starting Simple Trade Suggestions Dashboard...")
     
     # Set environment
-    os.environ['OANDA_API_KEY'] = "a3699a9d6b6d94d4e2c4c59748e73e2d-b6cbc64f16bcfb920e40f9117e66111a"
+    os.environ['OANDA_API_KEY'] = "${OANDA_API_KEY}"
     os.environ['OANDA_ENVIRONMENT'] = "practice"
     
     # Start Flask app

@@ -17,8 +17,8 @@ import os
 from datetime import datetime, timedelta
 import pytz
 
-BOT_TOKEN = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-CHAT_ID = "6100678501"
+BOT_TOKEN = "${TELEGRAM_TOKEN}"
+CHAT_ID = "${TELEGRAM_CHAT_ID}"
 
 def send_telegram(message):
     """Send Telegram message"""

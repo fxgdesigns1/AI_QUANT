@@ -16,10 +16,19 @@ import uuid
 from flask import Flask, jsonify, request, render_template, redirect
 from flask_socketio import SocketIO, emit
 from flask_apscheduler import APScheduler
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Callable
 from dataclasses import dataclass, asdict
 from enum import Enum
 from functools import lru_cache
+
+from src.core.runtime_flags import (
+    is_live_trading_enabled,
+    is_market_data_enabled,
+    is_scheduler_enabled,
+    is_dashboard_warmup_enabled,
+    is_monitoring_enabled,
+    is_socketio_enabled,
+)
 import hashlib
 
 # Load environment variables from .env file
@@ -81,6 +90,13 @@ app.config['MARKET_DATA_UPDATE_INTERVAL'] = int(os.getenv('MARKET_DATA_UPDATE_IN
 # Response cache for performance optimization
 response_cache = {}
 cache_lock = threading.Lock()
+
+LIVE_TRADING_ENABLED = is_live_trading_enabled()
+MARKET_DATA_ENABLED = is_market_data_enabled()
+SCHEDULER_ENABLED = is_scheduler_enabled()
+DASHBOARD_WARMUP_ENABLED = is_dashboard_warmup_enabled()
+MONITORING_ENABLED = is_monitoring_enabled()
+SOCKETIO_ENABLED = is_socketio_enabled()
 
 def get_cache_key(endpoint: str, params: Dict[str, Any] = None) -> str:
     """Generate cache key for endpoint and parameters"""
@@ -184,6 +200,11 @@ def get_dashboard_manager():
 
 def get_scanner():
     """Get or create scanner in Flask app context"""
+    if not (MARKET_DATA_ENABLED and LIVE_TRADING_ENABLED):
+        logger.info("ℹ️ Scanner disabled (market data or live trading disabled)")
+        app.config['scanner'] = None
+        return None
+
     if 'scanner' not in app.config:
         try:
             logger.info("🔄 Initializing scanner...")
@@ -247,6 +268,10 @@ def get_weekend_optimizer():
 def run_scanner_job():
     """APScheduler job - runs scanner"""
     try:
+        if not (LIVE_TRADING_ENABLED and MARKET_DATA_ENABLED):
+            logger.info("ℹ️ Skipping scanner job because live trading or market data is disabled")
+            return
+
         scanner = get_scanner()
         if scanner:
             logger.info("🔄 APScheduler: Running scanner job...")
@@ -282,10 +307,13 @@ def initialize_dashboard_manager():
         logger.error(f"❌ Failed to pre-initialize dashboard: {e}")
         logger.exception("Full traceback:")
 
-# Start dashboard pre-initialization in background
-dashboard_init_thread = threading.Thread(target=initialize_dashboard_manager, daemon=True)
-dashboard_init_thread.start()
-logger.info("✅ Dashboard manager pre-initialization started")
+# Start dashboard pre-initialization in background (optional)
+if DASHBOARD_WARMUP_ENABLED:
+    dashboard_init_thread = threading.Thread(target=initialize_dashboard_manager, daemon=True)
+    dashboard_init_thread.start()
+    logger.info("✅ Dashboard manager pre-initialization started")
+else:
+    logger.info("ℹ️ Dashboard warmup disabled (ENABLE_DASHBOARD_WARMUP=0)")
 
 # Initialize daily monitor
 def initialize_monitor():
@@ -300,25 +328,30 @@ def initialize_monitor():
         logger.error(f"❌ Failed to initialize daily monitor: {e}")
         logger.exception("Full traceback:")
 
-# Start monitor in background thread
-monitor_thread = threading.Thread(target=initialize_monitor, daemon=True)
-monitor_thread.start()
-logger.info("✅ Daily monitor initialization scheduled")
+# Start monitor in background thread (optional)
+if MONITORING_ENABLED:
+    monitor_thread = threading.Thread(target=initialize_monitor, daemon=True)
+    monitor_thread.start()
+    logger.info("✅ Daily monitor initialization scheduled")
+else:
+    logger.info("ℹ️ Daily monitoring disabled (ENABLE_MONITORING=0)")
 
 # Initialize APScheduler (app and config already set up above)
-scheduler = APScheduler()
-scheduler.init_app(app)
+scheduler = APScheduler() if SCHEDULER_ENABLED else None
 
-# Add scanner job to scheduler - runs every 5 minutes
-scheduler.add_job(
-    id='trading_scanner',
-    func=run_scanner_job,
-    trigger='interval',
-    minutes=5,
-    max_instances=1,  # Only one scan at a time
-    coalesce=True,    # Skip if previous scan still running
-    replace_existing=True
-)
+if scheduler:
+    scheduler.init_app(app)
+
+    # Add scanner job to scheduler - runs every 5 minutes
+    scheduler.add_job(
+        id='trading_scanner',
+        func=run_scanner_job,
+        trigger='interval',
+        minutes=5,
+        max_instances=1,  # Only one scan at a time
+        coalesce=True,    # Skip if previous scan still running
+        replace_existing=True
+    )
 
 # Add performance snapshot job - runs every 15 minutes
 def capture_performance_snapshots():
@@ -380,34 +413,66 @@ def capture_performance_snapshots():
     except Exception as e:
         logger.error(f"❌ Performance snapshot job error: {e}")
 
-scheduler.add_job(
-    id='performance_snapshots',
-    func=capture_performance_snapshots,
-    trigger='interval',
-    minutes=15,
-    max_instances=1,
-    coalesce=True,
-    replace_existing=True
-)
+if scheduler:
+    scheduler.add_job(
+        id='performance_snapshots',
+        func=capture_performance_snapshots,
+        trigger='interval',
+        minutes=15,
+        max_instances=1,
+        coalesce=True,
+        replace_existing=True
+    )
 
-logger.info("✅ APScheduler configured - scanner every 5min, snapshots every 15min")
+    logger.info("✅ APScheduler configured - scanner every 5min, snapshots every 15min")
 
-# START SCHEDULER IMMEDIATELY (not in __main__ - for App Engine)
-try:
-    scheduler.start()
-    logger.info("✅ APScheduler STARTED on app initialization")
-except Exception as e:
-    logger.error(f"❌ Failed to start scheduler: {e}")
-    logger.exception("Full traceback:")
+    # START SCHEDULER IMMEDIATELY (not in __main__ - for App Engine)
+    try:
+        scheduler.start()
+        logger.info("✅ APScheduler STARTED on app initialization")
+    except Exception as e:
+        logger.error(f"❌ Failed to start scheduler: {e}")
+        logger.exception("Full traceback:")
+else:
+    logger.info("ℹ️ APScheduler disabled (ENABLE_SCHEDULER=0)")
+
+class SocketIODisabledStub:
+    """Minimal Socket.IO stub used when realtime features are disabled."""
+
+    def __init__(self, flask_app: Flask):
+        self.app = flask_app
+
+    def emit(self, *_args, **_kwargs) -> None:
+        logger.debug("SocketIO disabled - emit skipped")
+
+    def on(self, _event: str, **_kwargs: Any) -> Callable:
+        def decorator(func: Callable) -> Callable:
+            logger.debug("SocketIO disabled - event handler registration skipped")
+            return func
+
+        return decorator
+
+    def run(self, app: Flask, host: str = '0.0.0.0', port: int = 5000, **kwargs: Any) -> None:
+        logger.info("SocketIO disabled - starting Flask app without websocket support")
+        debug = kwargs.get("debug", False)
+        app.run(host=host, port=port, debug=debug)
+
 
 # Initialize SocketIO with proper configuration for Google Cloud
-socketio = SocketIO(app, 
-                   cors_allowed_origins="*", 
-                   async_mode='threading',
-                   logger=False,
-                   engineio_logger=False,
-                   ping_timeout=60,
-                   ping_interval=25)
+if SOCKETIO_ENABLED:
+    socketio = SocketIO(
+        app,
+        cors_allowed_origins="*",
+        async_mode='threading',
+        logger=False,
+        engineio_logger=False,
+        ping_timeout=60,
+        ping_interval=25,
+    )
+    logger.info("✅ Socket.IO initialised")
+else:
+    socketio = SocketIODisabledStub(app)
+    logger.info("ℹ️ Socket.IO disabled (ENABLE_SOCKETIO=0)")
 
 # Register AI Assistant Blueprint
 try:
@@ -3922,8 +3987,8 @@ def trigger_premium_scan():
         
         notifier = get_premium_notifier()
         if not notifier:
-            bot_token = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-            chat_id = "6100678501"
+            bot_token = "${TELEGRAM_TOKEN}"
+            chat_id = "${TELEGRAM_CHAT_ID}"
             notifier = get_premium_notifier(bot_token, chat_id)
         
         # Run scan
@@ -3974,8 +4039,8 @@ def initialize_premium_scanner():
         scanner = get_premium_scanner(oanda_client, data_feed)
         
         # Initialize notifier
-        bot_token = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-        chat_id = "6100678501"
+        bot_token = "${TELEGRAM_TOKEN}"
+        chat_id = "${TELEGRAM_CHAT_ID}"
         notifier = get_premium_notifier(bot_token, chat_id)
         
         if scanner and notifier:
@@ -3994,14 +4059,14 @@ if __name__ == '__main__':
     
     logger.info("🚀 Starting Google Cloud Trading System - FULLY INTEGRATED")
     logger.info("=" * 60)
-    logger.info("✅ WebSocket support enabled")
-    logger.info("✅ Dashboard manager initialized")
+    logger.info(f"🔌 WebSocket support: {'enabled' if SOCKETIO_ENABLED else 'disabled'}")
+    logger.info("✅ Dashboard manager ready")
     logger.info("✅ News integration enabled")
     logger.info("✅ AI assistant enabled")
-    logger.info("✅ APScheduler already started on app init")
+    logger.info(f"🕒 APScheduler: {'enabled' if scheduler else 'disabled'}")
     
     # Initialize analytics system
-    if ANALYTICS_ENABLED:
+    if ANALYTICS_ENABLED and scheduler:
         try:
             logger.info("🔄 Initializing analytics system...")
             
@@ -4040,17 +4105,22 @@ if __name__ == '__main__':
         except Exception as e:
             logger.error(f"❌ Failed to initialize analytics: {e}")
             logger.exception("Full traceback:")
+    elif ANALYTICS_ENABLED and not scheduler:
+        logger.info("ℹ️ Analytics modules detected but scheduler disabled; skipping archival job scheduling")
     
     logger.info("=" * 60)
     
     # Start dashboard updates in background
-    update_thread = threading.Thread(target=update_dashboard, daemon=True)
-    update_thread.start()
+    if SOCKETIO_ENABLED:
+        update_thread = threading.Thread(target=update_dashboard, daemon=True)
+        update_thread.start()
+        logger.info("✅ Dashboard updates started in background")
+    else:
+        logger.info("ℹ️ Dashboard update thread disabled (Socket.IO off)")
     
     logger.info(f"🌐 Starting server on port {port}")
-    logger.info("✅ Dashboard updates started in background")
     
-    # Start Flask app with SocketIO - production configuration
+    # Start Flask/Socket.IO server (falls back to plain Flask when disabled)
     socketio.run(app, host='0.0.0.0', port=port, debug=False, allow_unsafe_werkzeug=True)
 
 # ===============================================

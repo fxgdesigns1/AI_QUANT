@@ -5,7 +5,7 @@
 Your system has a built-in API endpoint to enable trading immediately:
 
 ```bash
-curl -X POST "https://ai-quant-trading.uc.r.appspot.com/api/enable-trading?token=scan_7d8f5c5f8b2a4a8f"
+curl -X POST "https://ai-quant-trading.uc.r.appspot.com/api/enable-trading?token=${SCAN_TRIGGER_TOKEN}"
 ```
 
 This will:
@@ -89,7 +89,7 @@ You should see:
 **Run this command NOW to enable trading:**
 
 ```bash
-curl -X POST "https://ai-quant-trading.uc.r.appspot.com/api/enable-trading?token=scan_7d8f5c5f8b2a4a8f"
+curl -X POST "https://ai-quant-trading.uc.r.appspot.com/api/enable-trading?token=${SCAN_TRIGGER_TOKEN}"
 ```
 
 This is the **fastest and safest** method - takes effect immediately without deployment!

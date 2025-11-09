@@ -206,7 +206,7 @@ The market is showing mixed signals with traders positioning for key economic da
 - ✅ Risk management: 75% CAP ACTIVE
 - ✅ Demo accounts: VERIFIED SAFE
 - ✅ Strategies loaded: 6 READY
-- ✅ Telegram configured: CHAT ID 6100678501
+- ✅ Telegram configured: CHAT ID ${TELEGRAM_CHAT_ID}
 
 ### Market Preparation:
 - ✅ Market conditions analyzed: FAVORABLE

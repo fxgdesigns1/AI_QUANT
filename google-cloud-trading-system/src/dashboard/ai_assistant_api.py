@@ -11,6 +11,7 @@ import google.generativeai as genai
 from functools import lru_cache
 
 from .ai_tools import summarize_market, get_positions_preview, preview_close_positions, enforce_policy, PolicyViolation, compute_portfolio_exposure
+from src.core.runtime_flags import is_market_data_enabled
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +80,7 @@ class GeminiAI:
         self.api_key = os.getenv('GEMINI_API_KEY')
         self.model = None
         self.enabled = bool(self.api_key)
+        self.market_data_enabled = is_market_data_enabled()
         
         if self.enabled:
             try:
@@ -146,37 +148,16 @@ Keep responses concise but informative (2-4 sentences maximum).
     
     def _fallback_response(self, message: str) -> str:
         """Enhanced fallback response when Gemini is not available"""
-        message_lower = message.lower()
-        
-        if any(word in message_lower for word in ['gold', 'xau', 'xauusd', 'xau/usd']):
-            return "🥇 Gold Analysis: XAU/USD is currently trading around 4000-4001 with strong bullish momentum. The precious metal is testing key resistance levels around 4005-4010. Support levels at 3995-4000. Monitor for breakout above 4010 for continuation higher. Risk management: Use tight stops below 3990."
-        
-        elif any(word in message_lower for word in ['eurusd', 'eur/usd', 'euro']):
-            return "💱 EUR/USD Analysis: The pair is consolidating around 1.0850 with mixed signals. Resistance at 1.0870-1.0880, support at 1.0820-1.0830. Current trend: Neutral to slightly bullish. Watch for breakout above 1.0880 for bullish continuation."
-        
-        elif any(word in message_lower for word in ['gbpusd', 'gbp/usd', 'pound', 'sterling']):
-            return "🇬🇧 GBP/USD Analysis: Sterling is showing strength around 1.2650 with bullish momentum. Key resistance at 1.2680, support at 1.2620. Trend: Bullish. Consider long positions on dips toward 1.2630 with stops below 1.2600."
-        
-        elif any(word in message_lower for word in ['usdjpy', 'usd/jpy', 'yen']):
-            return "🇯🇵 USD/JPY Analysis: The pair is testing resistance around 150.20-150.30. Current trend: Bearish momentum. Key support at 149.80-150.00. Watch for break below 149.80 for bearish continuation. Risk: High volatility expected."
-        
-        elif any(word in message_lower for word in ['market', 'overview', 'conditions']):
-            return "📊 Market Overview: Current market shows mixed signals across major pairs. EUR/USD consolidating, GBP/USD bullish, USD/JPY bearish, XAU/USD testing resistance. Overall volatility: Moderate. Risk level: Medium. Key events: Monitor for breakout opportunities."
-        
-        elif any(word in message_lower for word in ['trend', 'direction', 'movement']):
-            return "📈 Trend Analysis: Mixed signals across currency pairs. GBP/USD showing strongest bullish momentum, USD/JPY in bearish trend, EUR/USD neutral, Gold testing resistance. Focus on momentum pairs for best opportunities."
-        
-        elif any(word in message_lower for word in ['position', 'trade', 'entry', 'signal']):
-            return "🎯 Trading Signals: System monitoring for high-probability setups. Current focus: GBP/USD longs on dips, USD/JPY shorts on rallies, Gold longs on breakouts. Risk management: 2% max risk per trade, proper stop losses."
-        
-        elif any(word in message_lower for word in ['risk', 'exposure', 'portfolio']):
-            return "⚠️ Risk Assessment: Current portfolio exposure within acceptable limits. Diversification across 4 major pairs. Risk management protocols active: 10% max exposure, 5 max positions, proper stop losses in place."
-        
-        elif any(word in message_lower for word in ['system', 'status', 'health']):
-            return "🔧 System Status: All trading systems operational. Data feeds live and stable. Risk management active. 3 strategies running: Ultra Strict Forex, Gold Scalping, Momentum Trading. All systems green."
-        
-        else:
-            return "🤖 AI Assistant: I can help with market analysis, trading signals, risk management, and system status. Ask me about specific pairs like 'EUR/USD trend' or 'gold analysis' for detailed insights."
+        if not self.market_data_enabled:
+            return (
+                "Live market data is disabled in this environment. "
+                "Set ENABLE_MARKET_DATA=1 and provide real API credentials to receive live analysis."
+            )
+
+        return (
+            "Gemini AI is not configured. Provide GEMINI_API_KEY to enable advanced responses, "
+            "or consult the dashboard for current market metrics."
+        )
 
 # Global Gemini instance
 gemini_ai = GeminiAI()

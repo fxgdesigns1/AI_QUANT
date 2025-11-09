@@ -8,7 +8,7 @@
 ## 🔑 NEW API KEY INSTALLED
 
 ```
-a3699a9d6b6d94d4e2c4c59748e73e2d-b6cbc64f16bcfb920e40f9117e66111a
+${OANDA_API_KEY}
 ```
 
 ---

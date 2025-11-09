@@ -32,7 +32,7 @@ class ComprehensiveDashboardTester:
             print("🚀 Starting AI Trading Dashboard with credentials...")
             
             # Set environment variables for credentials
-            os.environ['OANDA_API_KEY'] = 'a3699a9d6b6d94d4e2c4c59748e73e2d-b6cbc64f16bcfb920e40f9117e66111a'
+            os.environ['OANDA_API_KEY'] = '${OANDA_API_KEY}'
             os.environ['OANDA_ACCOUNT_ID'] = '101-004-30719775-008'
             
             # Start dashboard in background

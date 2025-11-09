@@ -475,7 +475,7 @@
 
 **Dashboard URL:** https://ai-quant-trading.uc.r.appspot.com
 
-**Telegram Alerts:** Chat ID 6100678501
+**Telegram Alerts:** Chat ID ${TELEGRAM_CHAT_ID}
 - Trade entries/exits
 - Daily briefings (06:00 AM London time)
 - End-of-day summaries (21:30 PM London time)

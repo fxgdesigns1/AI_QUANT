@@ -100,8 +100,8 @@ class CloudNewsIntegration:
             # Add news API environment variables
             news_env_vars = """
   # News API Configuration
-  ALPHA_VANTAGE_API_KEY: "LSBZJ73J9W1G8FWB"
-  MARKETAUX_API_KEY: "qL23wrqpBdU908DrznhIpfINVOgDg4bPmpKzQfW2"
+  ALPHA_VANTAGE_API_KEY: "${ALPHA_VANTAGE_API_KEY}"
+  MARKETAUX_API_KEY: "${MARKETAUX_API_KEY}"
   NEWSDATA_API_KEY: "pub_1234567890abcdef"
   NEWSAPI_KEY: "your_newsapi_key"
   

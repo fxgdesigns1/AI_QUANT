@@ -132,8 +132,8 @@ gcloud app logs read --service=default --limit=50 | grep "scan completed"
 ## 📱 Your Telegram Credentials
 
 **Already configured in app.yaml:**
-- Token: `7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU`
-- Chat ID: `6100678501`
+- Token: `${TELEGRAM_TOKEN}`
+- Chat ID: `${TELEGRAM_CHAT_ID}`
 
 ## ✅ Expected Behavior After Fix
 

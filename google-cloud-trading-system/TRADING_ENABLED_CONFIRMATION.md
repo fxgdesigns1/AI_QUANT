@@ -83,7 +83,7 @@ You should see:
 
 ### Telegram Notifications
 - **Bot:** @your_trading_bot
-- **Chat ID:** 6100678501
+- **Chat ID:** ${TELEGRAM_CHAT_ID}
 - **Expected Messages:**
   - System startup notification
   - Signal generation alerts

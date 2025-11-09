@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 # Telegram credentials
 TELEGRAM_TOKEN = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIETq3Aqbyx6IU"
-TELEGRAM_CHAT_ID = "6100678501"
+TELEGRAM_CHAT_ID = "${TELEGRAM_CHAT_ID}"
 BASE_URL = "https://ai-quant-trading.uc.r.appspot.com"
 
 def send_telegram(message):

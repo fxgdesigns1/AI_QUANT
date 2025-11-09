@@ -11,8 +11,8 @@ from src.core.telegram_notifier import TelegramNotifier
 
 def send_update():
     notifier = TelegramNotifier(
-        bot_token="7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU",
-        chat_id="6100678501"
+        bot_token="${TELEGRAM_TOKEN}",
+        chat_id="${TELEGRAM_CHAT_ID}"
     )
     
     message = """

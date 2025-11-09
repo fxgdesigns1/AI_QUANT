@@ -2,7 +2,7 @@
 
 **Your Location:** London, UK  
 **Current Time Zone:** BST (UTC+1) - October 8, 2025  
-**Your Telegram:** Chat ID 6100678501 [[memory:7766103]]
+**Your Telegram:** Chat ID ${TELEGRAM_CHAT_ID} [[memory:7766103]]
 
 ---
 
@@ -234,7 +234,7 @@ Strategy: All systems green
 
 ### Current Configuration:
 - ✅ **Telegram Enabled:** Yes
-- ✅ **Chat ID:** 6100678501
+- ✅ **Chat ID:** ${TELEGRAM_CHAT_ID}
 - ✅ **Token:** Configured
 - ✅ **Rate Limiting:** 5 min between similar messages
 - ✅ **Daily Limit:** Max 20 messages/day

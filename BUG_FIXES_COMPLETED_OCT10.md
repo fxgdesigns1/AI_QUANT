@@ -15,7 +15,7 @@
 - Created comprehensive market report script
 - Includes live OANDA price data
 - Portfolio status, trading plan, and market analysis
-- **Sent successfully to Telegram** (Chat ID: 6100678501)
+- **Sent successfully to Telegram** (Chat ID: ${TELEGRAM_CHAT_ID})
 
 **File:** `/Users/mac/quant_system_clean/send_market_report.py`
 

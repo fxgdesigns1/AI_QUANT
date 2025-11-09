@@ -9,8 +9,8 @@ import time
 from datetime import datetime
 import json
 
-TELEGRAM_TOKEN = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-CHAT_ID = "6100678501"
+TELEGRAM_TOKEN = "${TELEGRAM_TOKEN}"
+CHAT_ID = "${TELEGRAM_CHAT_ID}"
 OANDA_API_KEY = "c01de9eb4d793c945ea0fcbb0620cc4e-d0c62eb93ed53e8db5a709089460794a"
 
 def send_telegram(message):

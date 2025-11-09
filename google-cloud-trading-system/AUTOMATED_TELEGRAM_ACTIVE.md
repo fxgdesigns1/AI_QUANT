@@ -8,7 +8,7 @@
 
 ## 📱 WHAT'S NOW AUTOMATED
 
-### Your Telegram (6100678501) Will Receive:
+### Your Telegram (${TELEGRAM_CHAT_ID}) Will Receive:
 
 #### 🌅 **Every Morning at 6:00 AM London:**
 ```
@@ -69,7 +69,7 @@ Sleep well! 😴
 - ✅ Status: Running in background
 - ✅ Log file: `/logs/daily_monitor.log`
 - ✅ Scheduled tasks: All configured
-- ✅ Telegram: Connected (6100678501)
+- ✅ Telegram: Connected (${TELEGRAM_CHAT_ID})
 
 **What's Monitoring:**
 - ✅ 5 Trading accounts (001, 006, 007, 008, 011)

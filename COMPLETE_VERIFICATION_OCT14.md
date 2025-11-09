@@ -70,7 +70,7 @@ Data: Live account balances, positions
 ### **✅ 8. TELEGRAM ALERTS**
 ```
 Token: CONFIGURED ✅
-Chat ID: 6100678501 ✅
+Chat ID: ${TELEGRAM_CHAT_ID} ✅
 Messages sent: 6 today ✅
 Status: OPERATIONAL ✅
 ```

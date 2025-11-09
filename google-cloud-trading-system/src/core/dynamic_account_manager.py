@@ -12,6 +12,7 @@ from dataclasses import dataclass
 
 from .oanda_client import OandaClient, OandaAccount
 from .config_loader import get_config_loader, AccountConfig as YAMLAccountConfig
+from .runtime_flags import is_live_trading_enabled, is_market_data_enabled
 
 logger = logging.getLogger(__name__)
 
@@ -68,10 +69,15 @@ class DynamicAccountManager:
             api_key = os.getenv('OANDA_API_KEY')
             environment = os.getenv('OANDA_ENVIRONMENT', 'practice')
             
-            # CRITICAL: Verify API key is loaded
+            # Verify API key when live trading is enabled
             if not api_key:
-                raise ValueError("OANDA_API_KEY not found in environment variables. Check .env file.")
-            logger.info(f"✅ API key loaded: {api_key[:20]}...")
+                if is_live_trading_enabled():
+                    raise ValueError(
+                        "OANDA_API_KEY not found in environment variables while live trading is enabled."
+                    )
+                logger.warning("⚠️ OANDA_API_KEY missing - running in read-only verification mode.")
+            else:
+                logger.info(f"✅ API key loaded: {api_key[:8]}... (hidden)")
             
             # Load accounts.yaml DIRECTLY (no config_loader middleman)
             config_path = os.path.join(os.path.dirname(__file__), '../../accounts.yaml')
@@ -159,13 +165,25 @@ class DynamicAccountManager:
                 
                 logger.info(f"✅ Configured: {config.display_name} ({account_id[-3:]}) → {config.strategy_name}")
             
-            logger.info(f"✅ Successfully loaded {len(self.account_configs)} active accounts from YAML")
+            if not self.account_configs:
+                logger.warning("⚠️ No active accounts configured in accounts.yaml")
+            else:
+                logger.info(f"✅ Successfully loaded {len(self.account_configs)} active accounts from YAML")
             
         except Exception as e:
             logger.error(f"❌ Failed to load accounts.yaml: {e}")
             logger.exception("Full traceback:")
-            # NO FALLBACK - if YAML fails, we should know about it
-            raise Exception(f"CRITICAL: Cannot load accounts.yaml - system cannot start. Error: {e}")
+            if not is_live_trading_enabled():
+                logger.warning(
+                    "⚠️ Proceeding without accounts.yaml because live trading is disabled."
+                )
+                self.account_configs = {}
+                self.strategy_mappings = {}
+                return
+            raise Exception(
+                "CRITICAL: Cannot load accounts.yaml while live trading is enabled. "
+                "Provide a valid configuration or disable ENABLE_LIVE_TRADING."
+            ) from e
     
     def _load_from_env_fallback(self):
         """Fallback: load from environment variables (backwards compatible)"""
@@ -242,6 +260,14 @@ class DynamicAccountManager:
     
     def _initialize_accounts(self):
         """Initialize OANDA clients for each account"""
+        if not self.account_configs:
+            logger.warning("⚠️ No accounts configured - skipping OANDA client initialisation")
+            return
+
+        if not is_market_data_enabled():
+            logger.info("ℹ️ Market data disabled - skipping OANDA client initialisation")
+            return
+
         for account_id, config in self.account_configs.items():
             try:
                 client = OandaClient(

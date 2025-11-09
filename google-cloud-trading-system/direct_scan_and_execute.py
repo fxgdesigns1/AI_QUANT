@@ -15,8 +15,8 @@ with open('accounts.yaml') as f:
     first_account = accounts_data['accounts'][0]
     os.environ['OANDA_ACCOUNT_ID'] = first_account['id']
 
-os.environ['TELEGRAM_TOKEN'] = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-os.environ['TELEGRAM_CHAT_ID'] = "6100678501"
+os.environ['TELEGRAM_TOKEN'] = "${TELEGRAM_TOKEN}"
+os.environ['TELEGRAM_CHAT_ID'] = "${TELEGRAM_CHAT_ID}"
 
 from src.core.simple_timer_scanner import SimpleTimerScanner
 from datetime import datetime

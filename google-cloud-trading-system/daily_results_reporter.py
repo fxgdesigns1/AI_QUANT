@@ -17,8 +17,8 @@ import yaml
 load_dotenv('oanda_config.env')
 
 # Telegram credentials
-TOKEN = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-CHAT_ID = "6100678501"
+TOKEN = "${TELEGRAM_TOKEN}"
+CHAT_ID = "${TELEGRAM_CHAT_ID}"
 
 def send_telegram(message):
     """Send message to Telegram"""

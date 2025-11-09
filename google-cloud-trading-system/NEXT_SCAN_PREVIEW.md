@@ -107,7 +107,7 @@ For EACH opportunity found:
 
 ### STEP 6: Telegram Notification (1 second)
 ```
-📱 Sending notification to: 6100678501
+📱 Sending notification to: ${TELEGRAM_CHAT_ID}
 
 IF TRADES EXECUTED:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -219,7 +219,7 @@ IF NO TRADES:
 
 ## 🎮 WHAT YOU'LL SEE
 
-### On Your Telegram (6100678501):
+### On Your Telegram (${TELEGRAM_CHAT_ID}):
 1. **Notification arrives** within 10 seconds of scan
 2. **Clear summary** of what happened
 3. **Timestamp** so you know when it ran

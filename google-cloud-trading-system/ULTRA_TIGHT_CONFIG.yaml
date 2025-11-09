@@ -139,8 +139,8 @@ monitoring:
   alert_on_profit_threshold: 0.001
   telegram:
     enabled: true
-    token: "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-    chat_id: "6100678501"
+    token: "${TELEGRAM_TOKEN}"
+    chat_id: "${TELEGRAM_CHAT_ID}"
     alert_on_entry: true
     alert_on_exit: true
     alert_on_early_close: true

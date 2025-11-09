@@ -22,8 +22,8 @@ print()
 # 1. Check Telegram Configuration
 print("1️⃣ CHECKING TELEGRAM CONFIGURATION...")
 print("-" * 80)
-telegram_token = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-telegram_chat_id = "6100678501"
+telegram_token = "${TELEGRAM_TOKEN}"
+telegram_chat_id = "${TELEGRAM_CHAT_ID}"
 
 if telegram_token and telegram_chat_id:
     print(f"✅ Telegram Token: {telegram_token[:10]}...")
