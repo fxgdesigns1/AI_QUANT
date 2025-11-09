@@ -27,8 +27,8 @@ class DailyMonitor:
     def __init__(self):
         """Initialize monitor with API credentials"""
         self.oanda_api_key = os.getenv('OANDA_API_KEY')
-        self.telegram_token = os.getenv('TELEGRAM_TOKEN', '7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU')
-        self.telegram_chat_id = os.getenv('TELEGRAM_CHAT_ID', '6100678501')
+        self.telegram_token = os.getenv('TELEGRAM_TOKEN', '${TELEGRAM_TOKEN}')
+        self.telegram_chat_id = os.getenv('TELEGRAM_CHAT_ID', '${TELEGRAM_CHAT_ID}')
         
         self.accounts = {
             '001': '101-004-30719775-001',

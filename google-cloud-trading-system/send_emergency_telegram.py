@@ -3,8 +3,8 @@
 import requests
 
 # Your Telegram credentials (from memory)
-TOKEN = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-CHAT_ID = "6100678501"
+TOKEN = "${TELEGRAM_TOKEN}"
+CHAT_ID = "${TELEGRAM_CHAT_ID}"
 
 message = """🚨 <b>URGENT: ACCOUNT 011 EMERGENCY</b>
 

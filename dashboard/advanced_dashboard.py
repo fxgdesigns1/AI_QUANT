@@ -55,13 +55,13 @@ def load_config():
     """Load dashboard configuration"""
     config = {
         'telegram': {
-            'token': os.getenv('TELEGRAM_TOKEN', '7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU'),
-            'chat_id': os.getenv('TELEGRAM_CHAT_ID', '6100678501')
+            'token': os.getenv('TELEGRAM_TOKEN', '${TELEGRAM_TOKEN}'),
+            'chat_id': os.getenv('TELEGRAM_CHAT_ID', '${TELEGRAM_CHAT_ID}')
         },
         'data_sources': {
             'api_keys': {
                 'oanda': {
-                    'api_key': os.getenv('OANDA_API_KEY', 'REMOVED_SECRET'),
+                    'api_key': os.getenv('OANDA_API_KEY', '${OANDA_API_KEY}'),
                     'account_id': os.getenv('OANDA_ACCOUNT_ID', '101-004-30719775-008'),
                     'environment': 'practice',
                     'base_url': 'https://api-fxpractice.oanda.com'
@@ -279,7 +279,7 @@ class AdvancedDashboardManager:
         try:
             # Get live market data from OANDA - NO MOCK DATA ALLOWED
             from src.core.oanda_client import OandaClient
-            api_key = os.getenv('OANDA_API_KEY', 'REMOVED_SECRET')
+            api_key = os.getenv('OANDA_API_KEY', '${OANDA_API_KEY}')
             account_id = "101-004-30719775-008"
             
             if not api_key:
@@ -1266,7 +1266,7 @@ def get_performance():
     try:
         # Get live account data from OANDA
         from src.core.oanda_client import OandaClient
-        api_key = os.getenv('OANDA_API_KEY', 'REMOVED_SECRET')
+        api_key = os.getenv('OANDA_API_KEY', '${OANDA_API_KEY}')
         account_id = "101-004-30719775-008"
         
         if not api_key:
@@ -1364,7 +1364,7 @@ def get_accounts():
     try:
         # Get live account data from OANDA
         from src.core.oanda_client import OandaClient
-        api_key = os.getenv('OANDA_API_KEY', 'REMOVED_SECRET')
+        api_key = os.getenv('OANDA_API_KEY', '${OANDA_API_KEY}')
         # Get all account IDs from the Google Cloud system
         all_accounts = {
             '101-004-30719775-008': 'Primary Trading Account',

@@ -4,7 +4,7 @@
 Updated: October 21, 2025, 17:55 BST
 
 CURRENT API KEY:
-REMOVED_SECRET
+${OANDA_API_KEY}
 
 STORED IN THESE FILES (ALL UPDATED):
 ───────────────────────────────────────────────────────────────

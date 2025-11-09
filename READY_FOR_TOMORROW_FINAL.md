@@ -225,7 +225,7 @@ This will:
 - ✅ All accounts configured
 - ✅ Risk management active (75% cap)
 - ✅ Demo mode verified
-- ✅ Telegram configured (6100678501)
+- ✅ Telegram configured (${TELEGRAM_CHAT_ID})
 
 ### Daily Updates:
 - ✅ Morning briefing: 6:00 AM London

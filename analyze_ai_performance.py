@@ -3,7 +3,7 @@ import requests
 import json
 
 # OANDA Configuration
-OANDA_API_KEY = 'REMOVED_SECRET'
+OANDA_API_KEY = '${OANDA_API_KEY}'
 OANDA_ACCOUNT_ID = '101-004-30719775-008'
 OANDA_BASE_URL = 'https://api-fxpractice.oanda.com'
 

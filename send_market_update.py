@@ -3,8 +3,8 @@ import requests
 from datetime import datetime
 
 # Telegram credentials
-BOT_TOKEN = '7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU'
-CHAT_ID = '6100678501'
+BOT_TOKEN = '${TELEGRAM_TOKEN}'
+CHAT_ID = '${TELEGRAM_CHAT_ID}'
 
 message = f"""📊 MARKET UPDATE
 🕐 {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}

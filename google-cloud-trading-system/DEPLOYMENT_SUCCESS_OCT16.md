@@ -38,7 +38,7 @@
 - Scans market: **Every 5 minutes**
 - Generates signals automatically
 - Enters trades on demo account
-- Sends Telegram alerts to: 6100678501
+- Sends Telegram alerts to: ${TELEGRAM_CHAT_ID}
 
 ---
 

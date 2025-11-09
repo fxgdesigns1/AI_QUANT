@@ -3,7 +3,7 @@
 **Date:** October 8, 2025  
 **Status:** ✅ **ACTIVE AND READY**  
 **Your Location:** London, UK (GMT/UTC+0)  
-**Your Telegram:** Chat ID 6100678501
+**Your Telegram:** Chat ID ${TELEGRAM_CHAT_ID}
 
 ---
 
@@ -188,7 +188,7 @@ schedule.every().day.at("21:30").do(self.end_of_day_report)
 
 ### Telegram Integration:
 - ✅ Token: Configured
-- ✅ Chat ID: 6100678501
+- ✅ Chat ID: ${TELEGRAM_CHAT_ID}
 - ✅ HTML formatting: Enabled
 - ✅ Rate limiting: Active
 
@@ -313,8 +313,8 @@ Send yourself a test message to verify Telegram is working.
 
 ## 📞 YOUR TELEGRAM CONFIGURATION
 
-**Token:** 7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU  
-**Chat ID:** 6100678501  
+**Token:** ${TELEGRAM_TOKEN}  
+**Chat ID:** ${TELEGRAM_CHAT_ID}  
 **Status:** ✅ Active and configured  
 **Format:** HTML with bold/emoji support
 

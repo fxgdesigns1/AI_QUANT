@@ -407,7 +407,7 @@ def start_trade_suggestions_api():
     logger.info("🚀 Starting Trade Suggestions API...")
     
     # Set up environment
-    os.environ['OANDA_API_KEY'] = "REMOVED_SECRET"
+    os.environ['OANDA_API_KEY'] = "${OANDA_API_KEY}"
     os.environ['OANDA_ENVIRONMENT'] = "practice"
     
     # Start the server

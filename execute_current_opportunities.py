@@ -15,7 +15,7 @@ OANDA_API_KEY = os.getenv('OANDA_API_KEY')
 BASE_URL = 'https://api-fxpractice.oanda.com/v3'
 
 TELEGRAM_TOKEN = '7248728383:AAEE7lkAAIUXBcK9iTPR5NIETq3Aqbyx6IU'
-TELEGRAM_CHAT_ID = '6100678501'
+TELEGRAM_CHAT_ID = '${TELEGRAM_CHAT_ID}'
 
 # Trades to execute (Trump DNA sniper style)
 TRADES = [

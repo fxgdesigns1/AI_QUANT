@@ -360,7 +360,7 @@ Or simply redeploy previous code from backup.
 
 **Dashboard:** https://trading-system-436119.ew.r.appspot.com/  
 **Logs:** `gcloud app logs tail`  
-**Telegram:** Chat ID 6100678501
+**Telegram:** Chat ID ${TELEGRAM_CHAT_ID}
 
 ---
 

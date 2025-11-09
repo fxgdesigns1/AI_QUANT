@@ -29,8 +29,8 @@
 
 ### **3. MONITORING & ALERTS** ✅ **SETUP**
 - **Telegram Bot:** Active and sending alerts
-- **Bot Token:** `7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU`
-- **Chat ID:** `6100678501`
+- **Bot Token:** `${TELEGRAM_TOKEN}`
+- **Chat ID:** `${TELEGRAM_CHAT_ID}`
 - **Test Alert:** Sent successfully ✅
 - **Monitoring Script:** `test_trading_system.py` created
 
@@ -194,7 +194,7 @@ Your trading system is:
 
 **Dashboard:** https://ai-quant-trading.uc.r.appspot.com  
 **Health Check:** https://ai-quant-trading.uc.r.appspot.com/api/health  
-**Telegram Chat ID:** 6100678501  
+**Telegram Chat ID:** ${TELEGRAM_CHAT_ID}  
 **Project:** ai-quant-trading  
 **Region:** us-central  
 

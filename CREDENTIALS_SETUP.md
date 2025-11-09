@@ -180,8 +180,8 @@ MARKETAUX_API_KEY=your-marketaux-key
 ### telegram_config.env
 Telegram bot settings:
 ```env
-TELEGRAM_BOT_TOKEN=7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU
-TELEGRAM_CHAT_ID=6100678501
+TELEGRAM_BOT_TOKEN=${TELEGRAM_TOKEN}
+TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
 ```
 
 ### google_cloud_credentials.json

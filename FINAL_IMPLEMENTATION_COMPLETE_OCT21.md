@@ -281,7 +281,7 @@ https://ai-quant-trading.uc.r.appspot.com
 
 **Dashboard:** https://ai-quant-trading.uc.r.appspot.com  
 **Health Check:** https://ai-quant-trading.uc.r.appspot.com/api/health  
-**Telegram Chat:** 6100678501  
+**Telegram Chat:** ${TELEGRAM_CHAT_ID}  
 **Verification:** `python3 google-cloud-trading-system/verify_learning_system.py`
 
 **Learning Data:**

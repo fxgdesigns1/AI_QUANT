@@ -25,8 +25,8 @@ async def test_news_apis():
     print()
     
     # Set environment variables from app.yaml
-    os.environ['ALPHA_VANTAGE_API_KEY'] = 'LSBZJ73J9W1G8FWB'
-    os.environ['MARKETAUX_API_KEY'] = 'qL23wrqpBdU908DrznhIpfINVOgDg4bPmpKzQfW2'
+    os.environ['ALPHA_VANTAGE_API_KEY'] = '${ALPHA_VANTAGE_API_KEY}'
+    os.environ['MARKETAUX_API_KEY'] = '${MARKETAUX_API_KEY}'
     
     from src.core.news_integration import SafeNewsIntegration
     

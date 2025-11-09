@@ -79,8 +79,8 @@ env_variables:
   UNUSED_STRATEGIES: "AUD_USD_High_Return,EUR_USD_Safe,XAU_USD_Gold_High_Return,Multi_Strategy_Portfolio"
   
   # Telegram Configuration
-  TELEGRAM_TOKEN: "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-  TELEGRAM_CHAT_ID: "6100678501"
+  TELEGRAM_TOKEN: "${TELEGRAM_TOKEN}"
+  TELEGRAM_CHAT_ID: "${TELEGRAM_CHAT_ID}"
   
   # Google Cloud Configuration
   GOOGLE_CLOUD_PROJECT: "ai-quant-trading"
@@ -123,8 +123,8 @@ env_variables:
   CORS_ORIGINS: "*"
   
   # News API Configuration - OPTIMIZED FREQUENCY
-  ALPHA_VANTAGE_API_KEY: "LSBZJ73J9W1G8FWB"
-  MARKETAUX_API_KEY: "qL23wrqpBdU908DrznhIpfINVOgDg4bPmpKzQfW2"
+  ALPHA_VANTAGE_API_KEY: "${ALPHA_VANTAGE_API_KEY}"
+  MARKETAUX_API_KEY: "${MARKETAUX_API_KEY}"
   
   # News Integration Settings - OPTIMIZED
   NEWS_TRADING_ENABLED: "True"
@@ -144,7 +144,7 @@ env_variables:
   ALLOW_LIVE_ACTIONS: "true"
   
   # Secure manual scan trigger token
-  SCAN_TRIGGER_TOKEN: "scan_7d8f5c5f8b2a4a8f"
+  SCAN_TRIGGER_TOKEN: "${SCAN_TRIGGER_TOKEN}"
 
 # =============================================================================
 # Resource Limits - ULTRA OPTIMIZED

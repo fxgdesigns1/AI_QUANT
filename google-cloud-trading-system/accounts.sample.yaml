@@ -1,0 +1,21 @@
+# Sample trading accounts configuration.
+# Copy this file to `accounts.yaml` and replace the placeholder values with your
+# own account identifiers, instruments and strategy assignments.
+
+accounts:
+  - id: "YOUR-OANDA-ACCOUNT-ID"
+    name: "Primary Account"
+    display_name: "Primary Strategy"
+    strategy: "gold_scalping"
+    instruments:
+      - XAU_USD
+    risk_settings:
+      max_risk_per_trade: 0.01
+      max_portfolio_risk: 0.10
+      max_positions: 2
+      daily_trade_limit: 10
+    active: false
+    priority: 1
+
+strategies: {}
+global_settings: {}

@@ -263,7 +263,7 @@ Your Google Cloud system is running automated scans every hour:
 - **Data Feed:** Live OANDA streaming
 
 ### Monitoring
-- **Telegram Alerts:** ✅ Active (sent to chat ID 6100678501)
+- **Telegram Alerts:** ✅ Active (sent to chat ID ${TELEGRAM_CHAT_ID})
 - **Position Monitoring:** ✅ Real-time
 - **Risk Checks:** ✅ Continuous
 - **Auto-Trading:** ✅ Enabled (demo accounts only)
@@ -314,7 +314,7 @@ Trigger Scan: /tasks/full_scan (POST)
 
 ### Telegram Bot
 ```
-Chat ID: 6100678501
+Chat ID: ${TELEGRAM_CHAT_ID}
 Token: 7248728383:***
 Updates: Automatic on trades, scans, alerts
 ```

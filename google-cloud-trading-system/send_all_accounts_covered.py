@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import requests
 
-TOKEN = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-CHAT_ID = "6100678501"
+TOKEN = "${TELEGRAM_TOKEN}"
+CHAT_ID = "${TELEGRAM_CHAT_ID}"
 
 message = """ALL ACCOUNTS NOW ANALYZED!
 

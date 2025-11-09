@@ -1,7 +1,7 @@
 #!/bin/bash
 # Setup environment variables for trading system
 
-export OANDA_API_KEY="REMOVED_SECRET"
+export OANDA_API_KEY="${OANDA_API_KEY}"
 export OANDA_ENVIRONMENT="practice"
 
 echo "✅ Environment variables set:"

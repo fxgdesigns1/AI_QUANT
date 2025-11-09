@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # OANDA config
-OANDA_API_KEY = "REMOVED_SECRET"
+OANDA_API_KEY = "${OANDA_API_KEY}"
 OANDA_BASE_URL = "https://api-fxpractice.oanda.com"
 
 headers = {
@@ -31,8 +31,8 @@ headers = {
     'Content-Type': 'application/json'
 }
 
-BOT_TOKEN = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-CHAT_ID = "6100678501"
+BOT_TOKEN = "${TELEGRAM_TOKEN}"
+CHAT_ID = "${TELEGRAM_CHAT_ID}"
 
 class AutomatedSniperSystem:
     """Automated sniper system for real-time trade execution"""

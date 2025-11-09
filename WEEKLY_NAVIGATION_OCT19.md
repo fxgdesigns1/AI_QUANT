@@ -174,7 +174,7 @@
 
 ## 📱 TELEGRAM DELIVERY CONFIRMATION
 
-**Chat ID:** 6100678501  
+**Chat ID:** ${TELEGRAM_CHAT_ID}  
 **Token:** Active and verified  
 **Messages Sent:** 4 parts (13,126 total characters)  
 **Delivery Status:** ✅ ALL PARTS DELIVERED SUCCESSFULLY

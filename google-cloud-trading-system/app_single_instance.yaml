@@ -74,8 +74,8 @@ env_variables:
   STRATEGY_ALPHA_STRATEGY: "gbp_usd_5m_strategy_rank_3"
   
   # Telegram Configuration
-  TELEGRAM_TOKEN: "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-  TELEGRAM_CHAT_ID: "6100678501"
+  TELEGRAM_TOKEN: "${TELEGRAM_TOKEN}"
+  TELEGRAM_CHAT_ID: "${TELEGRAM_CHAT_ID}"
   
   # Google Cloud Configuration
   GOOGLE_CLOUD_PROJECT: "ai-quant-trading"
@@ -128,8 +128,8 @@ env_variables:
   CORS_ORIGINS: "*"
   
   # News API Configuration
-  ALPHA_VANTAGE_API_KEY: "LSBZJ73J9W1G8FWB"
-  MARKETAUX_API_KEY: "qL23wrqpBdU908DrznhIpfINVOgDg4bPmpKzQfW2"
+  ALPHA_VANTAGE_API_KEY: "${ALPHA_VANTAGE_API_KEY}"
+  MARKETAUX_API_KEY: "${MARKETAUX_API_KEY}"
   NEWSDATA_API_KEY: "pub_1234567890abcdef"
   NEWSAPI_KEY: "your_newsapi_key"
   
@@ -160,7 +160,7 @@ env_variables:
   SIGNAL_GENERATION: "disabled"
 
   # Secure manual scan trigger token
-  SCAN_TRIGGER_TOKEN: "scan_7d8f5c5f8b2a4a8f"
+  SCAN_TRIGGER_TOKEN: "${SCAN_TRIGGER_TOKEN}"
 
 # =============================================================================
 # Handlers Configuration

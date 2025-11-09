@@ -70,8 +70,8 @@ curl -s -o /dev/null -w "%{http_code}" https://YOUR_PROJECT_ID.appspot.com
 ## 🔔 TELEGRAM NOTIFICATIONS
 
 ### Verify Telegram Setup
-- [ ] Bot token configured: `7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU`
-- [ ] Chat ID set: `6100678501`
+- [ ] Bot token configured: `${TELEGRAM_TOKEN}`
+- [ ] Chat ID set: `${TELEGRAM_CHAT_ID}`
 - [ ] Test notification sent successfully
 - [ ] Trade signals notifications enabled
 

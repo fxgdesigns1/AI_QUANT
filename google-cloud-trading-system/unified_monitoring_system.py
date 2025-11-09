@@ -61,8 +61,8 @@ class UnifiedMonitoringSystem:
     
     def __init__(self):
         # Telegram configuration
-        self.telegram_token = os.getenv('TELEGRAM_TOKEN', '7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU')
-        self.telegram_chat_id = os.getenv('TELEGRAM_CHAT_ID', '6100678501')
+        self.telegram_token = os.getenv('TELEGRAM_TOKEN', '${TELEGRAM_TOKEN}')
+        self.telegram_chat_id = os.getenv('TELEGRAM_CHAT_ID', '${TELEGRAM_CHAT_ID}')
         
         # System configuration
         self.semi_auto_account_id = "101-004-30719775-001"  # Strategy Zeta
@@ -387,7 +387,7 @@ def main():
     logger.info("🤖 Starting Unified Monitoring System...")
     
     # Set up environment
-    os.environ['OANDA_API_KEY'] = "REMOVED_SECRET"
+    os.environ['OANDA_API_KEY'] = "${OANDA_API_KEY}"
     os.environ['OANDA_ENVIRONMENT'] = "practice"
     
     # Start monitoring system

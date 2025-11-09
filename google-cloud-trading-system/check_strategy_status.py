@@ -11,7 +11,7 @@ from src.core.yaml_manager import get_yaml_manager
 from src.core.oanda_client import OandaClient
 
 # Set environment variables
-os.environ['OANDA_API_KEY'] = 'REMOVED_SECRET'
+os.environ['OANDA_API_KEY'] = '${OANDA_API_KEY}'
 os.environ['OANDA_ENVIRONMENT'] = 'practice'
 
 def main():

@@ -126,7 +126,7 @@
 6. Adaptive system explanation (8 messages)
 7. Deployment status updates (3 messages)
 
-**All successfully delivered to Chat ID: 6100678501**
+**All successfully delivered to Chat ID: ${TELEGRAM_CHAT_ID}**
 
 ---
 

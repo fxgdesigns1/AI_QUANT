@@ -17,6 +17,7 @@ from .yaml_manager import get_yaml_manager
 from .economic_calendar import get_economic_calendar
 from .trump_dna_framework import get_trump_dna_planner
 from .adaptive_scanner_integration import AdaptiveScannerMixin
+from .runtime_flags import is_market_data_enabled, is_live_trading_enabled
 from src.strategies.ultra_strict_forex_optimized import get_ultra_strict_forex_strategy
 from src.strategies.momentum_trading import get_momentum_trading_strategy
 from src.strategies.gold_scalping_optimized import get_gold_scalping_strategy
@@ -32,8 +33,11 @@ class SimpleTimerScanner:
     """Simple scanner that just scans every 5 minutes"""
     
     def __init__(self):
-        self.oanda = get_oanda_client()
-        self.notifier = get_telegram_notifier()
+        self.market_data_enabled = is_market_data_enabled()
+        self.live_trading_enabled = is_live_trading_enabled()
+
+        self.oanda = get_oanda_client() if self.market_data_enabled else None
+        self.notifier = get_telegram_notifier() if self.live_trading_enabled else None
         self.economic_calendar = get_economic_calendar()
         self.trump_planner = get_trump_dna_planner()
         self.is_running = False
@@ -86,12 +90,15 @@ class SimpleTimerScanner:
         logger.info(f"✅ SimpleTimerScanner initialized with {len(self.strategies)} strategies from accounts.yaml")
         
         # Backfill on initialization (APScheduler version)
-        logger.info("📥 Backfilling historical data on init...")
-        try:
-            self._backfill_all_strategies()
-            logger.info("✅ Backfill complete!")
-        except Exception as e:
-            logger.error(f"⚠️ Backfill failed (will retry): {e}")
+        if self.market_data_enabled and self.oanda:
+            logger.info("📥 Backfilling historical data on init...")
+            try:
+                self._backfill_all_strategies()
+                logger.info("✅ Backfill complete!")
+            except Exception as e:
+                logger.error(f"⚠️ Backfill failed (will retry): {e}")
+        else:
+            logger.info("ℹ️ Skipping historical backfill (market data disabled)")
         
         self.is_running = True
     
@@ -158,6 +165,14 @@ class SimpleTimerScanner:
     def _run_scan(self):
         """Run one complete scan - WITH TRUMP DNA + ADAPTIVE"""
         try:
+            if not self.market_data_enabled:
+                logger.info("ℹ️ Market data disabled - skipping scanner run")
+                return
+
+            if not self.live_trading_enabled:
+                logger.info("ℹ️ Live trading disabled - scanner in dry-run mode")
+                return
+
             self.scan_count += 1
             logger.info(f"⏰ TRUMP DNA SCAN #{self.scan_count} at {datetime.now().strftime('%H:%M:%S')}")
             
@@ -317,18 +332,19 @@ class SimpleTimerScanner:
                                     take_profit=tp_price,
                                     stop_loss=sl_price
                                 )
-                                
+
                                 if result:
                                     trade_id = result.trade_id if hasattr(result, 'trade_id') else 'N/A'
                                     logger.info(f"   ✅ ENTERED: {instrument} {direction} (ID: {trade_id})")
                                     # Send Telegram AFTER logging (don't let it block)
-                                    try:
-                                        self.notifier.send_message(
-                                            f"✅ {strategy_name}\n{instrument} {direction}\nID: {trade_id}\nConfidence: {confidence:.0%}",
-                                            'trade_entry'
-                                        )
-                                    except Exception as notif_error:
-                                        logger.warning(f"   ⚠️ Telegram notification failed: {notif_error}")
+                                    if self.notifier:
+                                        try:
+                                            self.notifier.send_message(
+                                                f"✅ {strategy_name}\n{instrument} {direction}\nID: {trade_id}\nConfidence: {confidence:.0%}",
+                                                'trade_entry'
+                                            )
+                                        except Exception as notif_error:
+                                            logger.warning(f"   ⚠️ Telegram notification failed: {notif_error}")
                                 else:
                                     error_msg = result.get('error', 'Unknown error') if result else 'No result returned'
                                     logger.warning(f"   ❌ Failed to enter {instrument} {direction}: {error_msg}")
@@ -341,7 +357,7 @@ class SimpleTimerScanner:
                 except Exception as e:
                     logger.error(f"❌ {strategy_name} error: {e}")
             
-            if total_signals > 0:
+            if total_signals > 0 and self.notifier:
                 logger.info(f"📊 SCAN #{self.scan_count}: {total_signals} TOTAL SIGNALS")
                 self.notifier.send_message(
                     f"🎯 SCAN COMPLETE\n{total_signals} signals generated!",

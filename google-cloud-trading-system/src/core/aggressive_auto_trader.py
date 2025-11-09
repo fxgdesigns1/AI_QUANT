@@ -144,8 +144,8 @@ class AggressiveAutoTrader:
                             try:
                                 message = f"✅ AUTO-TRADE\n\n{instrument} {signal}\nEntry: {entry:.5f if 'XAU' not in instrument else entry:.2f}\nUnits: {abs(units):,}\nMomentum: {momentum:+.2f}%"
                                 
-                                tg_url = "https://api.telegram.org/bot7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU/sendMessage"
-                                requests.post(tg_url, json={"chat_id": "6100678501", "text": message}, timeout=3)
+                                tg_url = "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage"
+                                requests.post(tg_url, json={"chat_id": "${TELEGRAM_CHAT_ID}", "text": message}, timeout=3)
                             except:
                                 pass
                         else:

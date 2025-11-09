@@ -11,8 +11,8 @@ from datetime import datetime, time, timedelta
 import pytz
 
 # Telegram config
-BOT_TOKEN = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-CHAT_ID = "6100678501"
+BOT_TOKEN = "${TELEGRAM_TOKEN}"
+CHAT_ID = "${TELEGRAM_CHAT_ID}"
 
 def send_telegram(message):
     """Send Telegram message"""
@@ -33,7 +33,7 @@ def get_current_gold_price():
     """Get current gold price from OANDA"""
     try:
         # OANDA config
-        OANDA_API_KEY = "REMOVED_SECRET"
+        OANDA_API_KEY = "${OANDA_API_KEY}"
         OANDA_BASE_URL = "https://api-fxpractice.oanda.com"
         
         headers = {

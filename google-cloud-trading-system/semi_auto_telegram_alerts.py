@@ -34,8 +34,8 @@ class SemiAutoTelegramAlerts:
     """Telegram alerts for semi-automatic trading"""
     
     def __init__(self):
-        self.telegram_token = os.getenv('TELEGRAM_TOKEN', '7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU')
-        self.telegram_chat_id = os.getenv('TELEGRAM_CHAT_ID', '6100678501')
+        self.telegram_token = os.getenv('TELEGRAM_TOKEN', '${TELEGRAM_TOKEN}')
+        self.telegram_chat_id = os.getenv('TELEGRAM_CHAT_ID', '${TELEGRAM_CHAT_ID}')
         self.semi_auto_account_id = "101-004-30719775-001"  # Strategy Zeta - Swing Trading
         self.alert_frequency = 300  # 5 minutes
         self.last_alert_time = {}
@@ -292,7 +292,7 @@ def main():
     logger.info("🤖 Starting Semi-Automatic Trading Telegram Alerts...")
     
     # Set up environment
-    os.environ['OANDA_API_KEY'] = "REMOVED_SECRET"
+    os.environ['OANDA_API_KEY'] = "${OANDA_API_KEY}"
     os.environ['OANDA_ENVIRONMENT'] = "practice"
     
     # Start alert system

@@ -37,14 +37,6 @@ from flask_socketio import SocketIO, emit
 from typing import Dict, List, Any, Optional
 import logging
 from dataclasses import dataclass, asdict
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv(os.path.join(os.path.dirname(__file__), '../../oanda_config.env'))
-
-# Add the project path
-sys.path.append('/Users/mac/quant_system_clean/google-cloud-trading-system')
-sys.path.append('/Users/mac/quant_system_clean/google-cloud-trading-system/src')
 
 # Import live trading components
 from src.core.dynamic_account_manager import get_account_manager
@@ -52,6 +44,7 @@ from src.core.multi_account_data_feed import get_multi_account_data_feed
 from src.core.multi_account_order_manager import get_multi_account_order_manager
 from src.core.telegram_notifier import get_telegram_notifier
 from src.core.daily_bulletin_generator import DailyBulletinGenerator
+from src.core.runtime_flags import is_market_data_enabled, is_live_trading_enabled
 from src.strategies.ultra_strict_forex_optimized import get_ultra_strict_forex_strategy
 from src.strategies.gold_scalping_optimized import get_gold_scalping_strategy
 from src.strategies.momentum_trading import get_momentum_trading_strategy
@@ -211,6 +204,8 @@ class AdvancedDashboardManager:
         self.last_update = datetime.now()
         self.data_validation_enabled = True
         self.playwright_testing_enabled = True
+        self.market_data_enabled = is_market_data_enabled()
+        self.live_trading_enabled = is_live_trading_enabled()
         
         # Short TTL cache (seconds)
         self._cache: Dict[str, Any] = {
@@ -247,6 +242,14 @@ class AdvancedDashboardManager:
     def _ensure_initialized(self):
         """Lazy initialization - only run once, on first use"""
         if self._initialized:
+            return
+        
+        if not self.market_data_enabled:
+            logger.info("ℹ️ Market data disabled - dashboard entering read-only mode")
+            self._strategies = {}
+            self._trading_systems = {}
+            self._active_accounts = []
+            self._initialized = True
             return
         
         logger.info("🔄 Initializing dashboard components (lazy)...")
@@ -292,8 +295,8 @@ class AdvancedDashboardManager:
         if get_strategy_rank_3:
             self._strategies['gbp_usd_5m_strategy_rank_3'] = get_strategy_rank_3()
         
-        # FORCE LIVE DATA ONLY
-        self.use_live_data = True
+        # Respect runtime flags for live data usage
+        self.use_live_data = self.market_data_enabled and self.live_trading_enabled
         
         # Get active accounts with error handling
         try:
@@ -306,8 +309,14 @@ class AdvancedDashboardManager:
         
         # Ensure we have at least one account
         if not self._active_accounts:
-            logger.error("❌ No active OANDA accounts found")
-            raise ValueError("No active OANDA accounts configured")
+            if self.market_data_enabled:
+                logger.error("❌ No active OANDA accounts found")
+                raise ValueError("No active OANDA accounts configured")
+            else:
+                logger.info("ℹ️ No active accounts but market data disabled - continuing without live accounts")
+                self._trading_systems = {}
+                self._initialized = True
+                return
         
         # Initialize trading systems
         self._trading_systems = {}

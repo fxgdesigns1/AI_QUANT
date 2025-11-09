@@ -98,7 +98,7 @@ All critical components are functioning correctly and the system is ready for de
 
 **Configuration**:
 - Bot Token: Configured  
-- Chat ID: 6100678501
+- Chat ID: ${TELEGRAM_CHAT_ID}
 - Rate Limiting: 300s between similar messages
 - Daily Limit: 20 messages
 - Status: Initialized successfully
@@ -271,7 +271,7 @@ python3 main.py
 ## 📱 MONITORING
 
 ### Telegram Alerts:
-- Chat ID: 6100678501
+- Chat ID: ${TELEGRAM_CHAT_ID}
 - Bot Token: Configured
 - Alert Types: Trade entries, exits, scan updates
 

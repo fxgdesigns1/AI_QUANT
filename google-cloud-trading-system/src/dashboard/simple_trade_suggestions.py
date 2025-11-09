@@ -7,7 +7,6 @@ Simplified dashboard for trade suggestions and execution
 """
 
 import os
-import sys
 import json
 import logging
 from datetime import datetime
@@ -16,12 +15,10 @@ from typing import Dict, List, Optional
 import requests
 import time
 
-# Add the project path
-sys.path.append('/Users/mac/quant_system_clean/google-cloud-trading-system')
-
 from src.core.yaml_manager import get_yaml_manager
 from src.core.oanda_client import OandaClient
 from src.core.data_feed import get_data_feed
+from src.core.runtime_flags import is_market_data_enabled
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -55,9 +52,12 @@ class SimpleTradeSuggestions:
         suggestions = []
         
         try:
-            # Set environment variables for OANDA
-            os.environ['OANDA_API_KEY'] = "REMOVED_SECRET"
-            os.environ['OANDA_ENVIRONMENT'] = "practice"
+            if not is_market_data_enabled():
+                logger.info("ℹ️ Market data disabled - returning empty suggestion list")
+                return suggestions
+
+            if not os.getenv('OANDA_API_KEY'):
+                raise RuntimeError("OANDA_API_KEY not configured. Cannot fetch live market data.")
             
             # Get real market data
             data_feed = get_data_feed()
@@ -377,7 +377,7 @@ def start_dashboard():
     logger.info("🚀 Starting Simple Trade Suggestions Dashboard...")
     
     # Set environment
-    os.environ['OANDA_API_KEY'] = "REMOVED_SECRET"
+    os.environ['OANDA_API_KEY'] = "${OANDA_API_KEY}"
     os.environ['OANDA_ENVIRONMENT'] = "practice"
     
     # Start Flask app

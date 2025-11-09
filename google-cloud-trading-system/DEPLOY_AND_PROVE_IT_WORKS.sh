@@ -38,8 +38,8 @@ echo "----------------------------------------------------------------"
 python3 -c "
 import requests
 
-token = '7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU'
-chat_id = '6100678501'
+token = '${TELEGRAM_TOKEN}'
+chat_id = '${TELEGRAM_CHAT_ID}'
 url = f'https://api.telegram.org/bot{token}/sendMessage'
 
 payload = {

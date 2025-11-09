@@ -9,8 +9,8 @@ from datetime import datetime, timezone
 import json
 
 # Telegram credentials
-TELEGRAM_TOKEN = '7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU'
-TELEGRAM_CHAT_ID = '6100678501'
+TELEGRAM_TOKEN = '${TELEGRAM_TOKEN}'
+TELEGRAM_CHAT_ID = '${TELEGRAM_CHAT_ID}'
 
 # OANDA credentials
 OANDA_API_KEY = 'c01de9eb4d6c5ec2dcae4c9a4bf27df5-4d6495d239eee35c0c70801e3e5bb3ab'

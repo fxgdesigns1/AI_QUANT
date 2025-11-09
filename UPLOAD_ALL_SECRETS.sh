@@ -68,7 +68,7 @@ create_or_update_secret() {
 
 echo ""
 echo "━━━ OANDA Trading ━━━"
-create_or_update_secret "oanda-api-key" "REMOVED_SECRET"
+create_or_update_secret "oanda-api-key" "${OANDA_API_KEY}"
 create_or_update_secret "oanda-environment" "practice"
 create_or_update_secret "oanda-primary-account" "101-004-30719775-001"
 create_or_update_secret "oanda-gold-scalp-account" "101-004-30719775-002"
@@ -76,8 +76,8 @@ create_or_update_secret "oanda-strategy-alpha-account" "101-004-30719775-003"
 
 echo ""
 echo "━━━ Telegram ━━━"
-create_or_update_secret "telegram-bot-token" "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-create_or_update_secret "telegram-chat-id" "6100678501"
+create_or_update_secret "telegram-bot-token" "${TELEGRAM_TOKEN}"
+create_or_update_secret "telegram-chat-id" "${TELEGRAM_CHAT_ID}"
 
 echo ""
 echo "━━━ SSH Access ━━━"
@@ -102,13 +102,13 @@ fi
 
 echo ""
 echo "━━━ Alpha Vantage (3 keys) ━━━"
-create_or_update_secret "alpha-vantage-key-1" "LSBZJ73J9W1G8FWB"
+create_or_update_secret "alpha-vantage-key-1" "${ALPHA_VANTAGE_API_KEY}"
 create_or_update_secret "alpha-vantage-key-2" "LB36ODU7500OUAHP"
 create_or_update_secret "alpha-vantage-key-3" "YXDNYDZ55K1248AR"
 
 echo ""
 echo "━━━ Marketaux (3 tokens) ━━━"
-create_or_update_secret "marketaux-token-1" "qL23wrqpBdU908DrznhIpfINVOgDg4bPmpKzQfW2"
+create_or_update_secret "marketaux-token-1" "${MARKETAUX_API_KEY}"
 create_or_update_secret "marketaux-token-2" "39Ss2ny2bfHy2XNZLGRCof1011G3LT7gyRFC4Vct"
 create_or_update_secret "marketaux-token-3" "MwHMtJge9xsol0Q2NKC731fZz2XIoM23220ukx6C"
 

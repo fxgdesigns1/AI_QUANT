@@ -8,7 +8,7 @@
 ## 🔑 NEW API KEY INSTALLED
 
 ```
-REMOVED_SECRET
+${OANDA_API_KEY}
 ```
 
 ---

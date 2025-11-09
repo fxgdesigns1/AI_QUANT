@@ -32,7 +32,7 @@ class FinalDashboardTester:
             print("🚀 Starting AI Trading Dashboard with OANDA integration...")
             
             # Set environment variables for credentials
-            os.environ['OANDA_API_KEY'] = 'REMOVED_SECRET'
+            os.environ['OANDA_API_KEY'] = '${OANDA_API_KEY}'
             os.environ['OANDA_ACCOUNT_ID'] = '101-004-30719775-008'
             
             # Start dashboard in background

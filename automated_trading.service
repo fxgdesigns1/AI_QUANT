@@ -14,7 +14,7 @@ StandardError=journal
 
 # Environment variables
 Environment=PYTHONPATH=/opt/quant_system_clean
-Environment=OANDA_API_KEY=REMOVED_SECRET
+Environment=OANDA_API_KEY=${OANDA_API_KEY}
 Environment=OANDA_ENVIRONMENT=practice
 
 [Install]

@@ -81,8 +81,8 @@ python3 send_gold_alert.py
 ## 📱 TELEGRAM ALERTS
 
 Your Telegram bot is **ACTIVE** and sending alerts to:
-- **Chat ID:** 6100678501
-- **Token:** 7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU
+- **Chat ID:** ${TELEGRAM_CHAT_ID}
+- **Token:** ${TELEGRAM_TOKEN}
 
 **What you'll receive:**
 - ✅ New trade executions

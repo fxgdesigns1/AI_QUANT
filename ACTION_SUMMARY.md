@@ -60,7 +60,7 @@ Checked spreads and regimes for 8 currency pairs:
 
 ### 5. ✅ SENT TELEGRAM ALERTS
 
-Two alerts sent to your Telegram (Chat ID: 6100678501):
+Two alerts sent to your Telegram (Chat ID: ${TELEGRAM_CHAT_ID}):
 
 1. **Full Portfolio Update**
    - Complete status of all accounts
@@ -368,7 +368,7 @@ This will show updated positions and P&L.
    https://ai-quant-trading.uc.r.appspot.com/dashboard
 
 4. **Review Telegram alerts:**
-   Already sent to chat ID 6100678501
+   Already sent to chat ID ${TELEGRAM_CHAT_ID}
 
 ---
 

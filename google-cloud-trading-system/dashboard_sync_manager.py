@@ -326,7 +326,7 @@ def main():
     logger.info("🤖 Starting Dashboard Sync Manager...")
     
     # Set up environment
-    os.environ['OANDA_API_KEY'] = "REMOVED_SECRET"
+    os.environ['OANDA_API_KEY'] = "${OANDA_API_KEY}"
     os.environ['OANDA_ENVIRONMENT'] = "practice"
     
     # Start sync manager

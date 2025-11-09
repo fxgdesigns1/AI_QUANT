@@ -21,10 +21,10 @@ def start_trade_suggestions():
     print()
     
     # Set environment variables
-    os.environ['OANDA_API_KEY'] = "REMOVED_SECRET"
+    os.environ['OANDA_API_KEY'] = "${OANDA_API_KEY}"
     os.environ['OANDA_ENVIRONMENT'] = "practice"
-    os.environ['TELEGRAM_TOKEN'] = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-    os.environ['TELEGRAM_CHAT_ID'] = "6100678501"
+    os.environ['TELEGRAM_TOKEN'] = "${TELEGRAM_TOKEN}"
+    os.environ['TELEGRAM_CHAT_ID'] = "${TELEGRAM_CHAT_ID}"
     
     print("✅ Environment variables set")
     print("✅ OANDA API configured")

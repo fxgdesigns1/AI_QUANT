@@ -358,8 +358,8 @@ class HonestyReporter:
             import os
             import requests
             
-            bot_token = os.environ.get('TELEGRAM_BOT_TOKEN', '7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU')
-            chat_id = os.environ.get('TELEGRAM_CHAT_ID', '6100678501')
+            bot_token = os.environ.get('TELEGRAM_BOT_TOKEN', '${TELEGRAM_TOKEN}')
+            chat_id = os.environ.get('TELEGRAM_CHAT_ID', '${TELEGRAM_CHAT_ID}')
             
             if bot_token and chat_id:
                 url = f'https://api.telegram.org/bot{bot_token}/sendMessage'

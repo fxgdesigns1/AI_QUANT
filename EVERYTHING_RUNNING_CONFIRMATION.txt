@@ -14,13 +14,13 @@ ACTIVE PROCESSES:
    - Scheduled: Daily 6 AM London
    - Action: Analyze Gold (XAU), EUR, GBP, JPY individually
    - Sends: Market conditions, economic factors, weekly predictions
-   - To: Your Telegram (6100678501)
+   - To: Your Telegram (${TELEGRAM_CHAT_ID})
 
 ✅ Daily Results Reporter:
    - Scheduled: Daily 9:30 PM London
    - Action: Report each strategy's performance
    - Sends: P&L, weekly progress (2-6%), tomorrow plan
-   - To: Your Telegram (6100678501)
+   - To: Your Telegram (${TELEGRAM_CHAT_ID})
 
 ✅ Profit Protection (5 processes):
    - Running: Every 30 seconds per account

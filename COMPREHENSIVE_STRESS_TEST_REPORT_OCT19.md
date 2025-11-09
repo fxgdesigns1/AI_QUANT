@@ -198,7 +198,7 @@
 - **Status:** Partially working
 
 **Test 7.3: Telegram Alerts**
-- Telegram credentials loaded (ID: 6100678501)
+- Telegram credentials loaded (ID: ${TELEGRAM_CHAT_ID})
 - ⚠️  Not tested (no signals to trigger alerts)
 - **Status:** Unknown - defer to live operation
 

@@ -47,8 +47,8 @@ env_variables:
   OANDA_ENVIRONMENT: practice
   
   # Telegram Configuration
-  TELEGRAM_CHAT_ID: '6100678501'
-  TELEGRAM_TOKEN: 7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU
+  TELEGRAM_CHAT_ID: '${TELEGRAM_CHAT_ID}'
+  TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}
   
   # Flask Configuration
   FLASK_SECRET_KEY: optimized-trading-system-2025

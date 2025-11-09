@@ -61,19 +61,19 @@ create_or_update_secret() {
 }
 
 # OANDA Credentials
-create_or_update_secret "oanda-api-key" "REMOVED_SECRET"
+create_or_update_secret "oanda-api-key" "${OANDA_API_KEY}"
 create_or_update_secret "oanda-environment" "practice"
 create_or_update_secret "oanda-primary-account" "101-004-30719775-008"
 create_or_update_secret "oanda-gold-scalp-account" "101-004-30719775-007"
 create_or_update_secret "oanda-strategy-alpha-account" "101-004-30719775-006"
 
 # Telegram
-create_or_update_secret "telegram-bot-token" "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-create_or_update_secret "telegram-chat-id" "6100678501"
+create_or_update_secret "telegram-bot-token" "${TELEGRAM_TOKEN}"
+create_or_update_secret "telegram-chat-id" "${TELEGRAM_CHAT_ID}"
 
 # News APIs
-create_or_update_secret "alpha-vantage-api-key" "LSBZJ73J9W1G8FWB"
-create_or_update_secret "marketaux-api-key" "qL23wrqpBdU908DrznhIpfINVOgDg4bPmpKzQfW2"
+create_or_update_secret "alpha-vantage-api-key" "${ALPHA_VANTAGE_API_KEY}"
+create_or_update_secret "marketaux-api-key" "${MARKETAUX_API_KEY}"
 
 # Flask
 create_or_update_secret "flask-secret-key" "your-secret-key-here"

@@ -16,8 +16,8 @@ BASE_URL = 'https://api-fxpractice.oanda.com/v3'
 headers = {'Authorization': f'Bearer {API_KEY}'}
 
 # Telegram
-TELEGRAM_TOKEN = '7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU'
-TELEGRAM_CHAT_ID = '6100678501'
+TELEGRAM_TOKEN = '${TELEGRAM_TOKEN}'
+TELEGRAM_CHAT_ID = '${TELEGRAM_CHAT_ID}'
 
 # Pairs to scan
 PAIRS = ['GBP_USD', 'EUR_USD', 'USD_JPY', 'AUD_USD', 'NZD_USD', 'USD_CAD', 

@@ -2,8 +2,8 @@
 import os, sys
 sys.path.insert(0, '.')
 
-os.environ['TELEGRAM_TOKEN'] = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-os.environ['TELEGRAM_CHAT_ID'] = "6100678501"
+os.environ['TELEGRAM_TOKEN'] = "${TELEGRAM_TOKEN}"
+os.environ['TELEGRAM_CHAT_ID'] = "${TELEGRAM_CHAT_ID}"
 
 from src.core.telegram_notifier import TelegramNotifier
 

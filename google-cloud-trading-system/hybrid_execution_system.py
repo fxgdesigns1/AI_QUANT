@@ -30,8 +30,8 @@ try:
     with open('accounts.yaml') as f:
         accounts = yaml.safe_load(f)
         os.environ['OANDA_ACCOUNT_ID'] = accounts['accounts'][0]['id']
-    os.environ['TELEGRAM_TOKEN'] = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-    os.environ['TELEGRAM_CHAT_ID'] = "6100678501"
+    os.environ['TELEGRAM_TOKEN'] = "${TELEGRAM_TOKEN}"
+    os.environ['TELEGRAM_CHAT_ID'] = "${TELEGRAM_CHAT_ID}"
     logger.info("✅ Credentials loaded")
 except Exception as e:
     logger.error(f"❌ Failed to load credentials: {e}")

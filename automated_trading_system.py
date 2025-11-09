@@ -13,14 +13,14 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Any
 
 # OANDA Configuration
-OANDA_API_KEY = "REMOVED_SECRET"
+OANDA_API_KEY = "${OANDA_API_KEY}"
 OANDA_ACCOUNT_ID = "101-004-30719775-008"  # Demo account
 OANDA_BASE_URL = "https://api-fxpractice.oanda.com"
 OANDA_STREAM_URL = "https://stream-fxpractice.oanda.com"
 
 # Telegram Configuration
-TELEGRAM_BOT_TOKEN = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-TELEGRAM_CHAT_ID = "6100678501"
+TELEGRAM_BOT_TOKEN = "${TELEGRAM_TOKEN}"
+TELEGRAM_CHAT_ID = "${TELEGRAM_CHAT_ID}"
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

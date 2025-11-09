@@ -243,8 +243,8 @@ news_integration:
 notifications:
   telegram:
     enabled: true
-    token: "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-    chat_id: "6100678501"
+    token: "${TELEGRAM_TOKEN}"
+    chat_id: "${TELEGRAM_CHAT_ID}"
     
     # Notification Settings
     notify_on_trade_entry: true
