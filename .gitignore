@@ -185,3 +185,10 @@ usd_jpy_*.csv
 
 # Local-only verification scripts
 verify_reports.py
+
+# Local-only service files / scratch docs
+ai_trading*.service
+CLEAN_ROOM_VERDICT.md
+DEEP_BACKTESTING_SETUP.md
+EVIDENCE_CITATIONS.md
+NOTIFICATION_CHANNELS.md
