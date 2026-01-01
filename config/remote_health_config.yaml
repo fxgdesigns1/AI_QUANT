@@ -1,0 +1,39 @@
+endpoints:
+  - name: remote_host_1
+    host: remote.example.com
+    user: ubuntu
+    port: 22
+    key_path: ~/.ssh/id_rsa
+  - name: remote_host_2
+    host: another.remote-host
+    user: ubuntu
+    port: 22
+    key_path: ~/.ssh/id_rsa
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

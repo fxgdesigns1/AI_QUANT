@@ -1,0 +1,116 @@
+ultra_strict_forex:
+  locked: false
+  enabled: true
+  account: '010'
+  parameters:
+    max_trades_per_day: 999
+    min_trades_today: 10
+    max_positions: 50
+    lot_size: 25000
+  entry:
+    confidence_threshold: 0.3
+    min_adx: 20
+    min_momentum: 0.5
+    use_news: true
+  risk:
+    stop_loss_pct: 0.005
+    take_profit_pct: 0.008
+    max_risk_per_trade: 0.015
+  instruments:
+  - EUR_USD
+  - GBP_USD
+  - USD_JPY
+  - AUD_USD
+gold_scalping:
+  locked: false
+  enabled: true
+  account: 009
+  parameters:
+    max_trades_per_day: 100
+    min_trades_today: 3
+    max_positions: 10
+    lot_size: 15000
+    min_warmup_prices: 2
+  entry:
+    confidence_threshold: 0.25
+    min_momentum: 0.003
+    use_volume: true
+  risk:
+    stop_loss_pct: 0.003
+    take_profit_pct: 0.005
+    max_risk_per_trade: 0.02
+  instruments:
+  - XAU_USD
+momentum_trading:
+  locked: false
+  enabled: true
+  account: '011'
+  parameters:
+    max_trades_per_day: 100
+    min_trades_today: 5
+    max_positions: 7
+    lot_size: 30000
+  entry:
+    confidence_threshold: 0.2
+    min_adx: 10
+    min_momentum: 0.1
+    min_volume: 0.1
+    use_news: true
+  risk:
+    stop_loss_pct: 0.006
+    take_profit_pct: 0.01
+    max_risk_per_trade: 0.025
+  instruments:
+  - EUR_USD
+  - GBP_USD
+  - USD_JPY
+  - AUD_USD
+  - USD_CAD
+  - NZD_USD
+system:
+  capacity: 0.75
+  telegram_alerts: true
+  log_all_changes: true
+  deployment: google-cloud
+
+alpha:
+  enabled: true
+  account: '012'
+  parameters:
+    lot_size: 10000
+
+dynamic_multi_pair_unified:
+  enabled: true
+  account: '013'
+  parameters:
+    lot_size: 15000
+
+eur_calendar_optimized:
+  enabled: true
+  account: '014'
+  parameters:
+    lot_size: 20000
+
+gold_scalping_winrate:
+  enabled: true
+  account: '009'
+  parameters:
+    lot_size: 5000
+
+gold_scalping_strict1:
+  enabled: true
+  account: '009'
+  parameters:
+    lot_size: 5000
+
+gold_scalping_topdown:
+  enabled: true
+  account: '009'
+  parameters:
+    lot_size: 5000
+
+trade_with_pat_orb_dual:
+  enabled: true
+  account: '015'
+  parameters:
+    lot_size: 10000

@@ -1,0 +1,27 @@
+# Minimal strategy config scaffold
+# Replace with actual strategy definitions and YAML structure as you migrate.
+default:
+  name: "example_strategy"
+  enabled: false
+  parameters:
+    risk_limit_percent: 0.5
+    max_trades_per_day: 5
+    max_concurrent_trades: 2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

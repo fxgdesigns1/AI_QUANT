@@ -1,0 +1,264 @@
+{
+  "audit_date": "2025-12-31",
+  "audit_type": "cloud_coupling_analysis",
+  
+  "google_cloud_dependencies": {
+    "firestore": {
+      "usage_level": "OPTIONAL",
+      "files_using": [
+        {
+          "file": "./tools/migrate_all_strategies.py",
+          "line": 3,
+          "import": "from google.cloud import firestore",
+          "purpose": "Strategy migration tool",
+          "required_for_main": false
+        },
+        {
+          "file": "./tools/migrate_config_to_firestore.py",
+          "line": 3,
+          "import": "from google.cloud import firestore",
+          "purpose": "Config migration tool",
+          "required_for_main": false
+        },
+        {
+          "file": "./src/strategies/trade_with_pat_orb_dual.py",
+          "line": 23,
+          "import": "from google.cloud import firestore",
+          "purpose": "Strategy config loading",
+          "required_for_main": false,
+          "fallback": "YAML file loading",
+          "evidence": "Line 70-93: _load_firestore_config() with try/except wrapper"
+        }
+      ],
+      "project_id": "ai-quant-trading (inferred from code)",
+      "database": "FIRESTORE_DB environment variable",
+      "authentication": "Service account JSON key",
+      "can_run_without": true,
+      "fallback_mechanism": "YAML file configuration"
+    },
+    "secret_manager": {
+      "usage_level": "NOT_USED_IN_MAIN",
+      "files_using": [
+        {
+          "file": "./cloud_declutter_v2/planned_deployment/ai_trading_system.py",
+          "line": 21,
+          "import": "from google.cloud import secretmanager",
+          "purpose": "Planned refactor - not deployed",
+          "required_for_main": false
+        }
+      ],
+      "can_run_without": true,
+      "evidence": "Only in planned_deployment folder, not in active ai_trading_system.py"
+    },
+    "app_engine": {
+      "usage_level": "SEPARATE_SYSTEM",
+      "files_using": [
+        {
+          "file": "./Sync folder MAC TO PC/DESKTOP_HANDOFF_PACKAGE/google-cloud-trading-system/app.yaml",
+          "purpose": "Dashboard deployment (separate system)",
+          "required_for_main": false
+        }
+      ],
+      "can_run_without": true,
+      "evidence": "Dashboard is separate system, not required for trading"
+    },
+    "compute_engine": {
+      "usage_level": "DEPLOYMENT_TARGET",
+      "evidence": "System deployed on GCE VM at /opt/quant_system_clean",
+      "required": false,
+      "alternative": "Can run on any Linux VM or local machine"
+    }
+  },
+  
+  "external_api_dependencies": {
+    "oanda_api": {
+      "required": true,
+      "endpoint": "https://api-fxpractice.oanda.com",
+      "authentication": "API key",
+      "environment_variable": "OANDA_API_KEY",
+      "hardcoded_fallback": "REDACTED - use OANDA_API_KEY environment variable",
+      "usage": "Market data and trade execution",
+      "can_run_without": false,
+      "evidence": "Core trading functionality depends on OANDA"
+    },
+    "telegram_api": {
+      "required": false,
+      "endpoint": "https://api.telegram.org",
+      "authentication": "Bot token",
+      "environment_variable": "TELEGRAM_BOT_TOKEN",
+      "hardcoded_fallback": "REDACTED - use TELEGRAM_BOT_TOKEN environment variable",
+      "usage": "Notifications and remote commands",
+      "can_run_without": true,
+      "evidence": "System can run without Telegram (notifications disabled)"
+    },
+    "marketaux_api": {
+      "required": false,
+      "endpoint": "https://api.marketaux.com",
+      "authentication": "API keys (5 keys configured)",
+      "environment_variable": "MARKETAUX_KEYS",
+      "usage": "News data for sentiment analysis",
+      "can_run_without": true,
+      "evidence": "News integration is optional"
+    }
+  },
+  
+  "hardcoded_cloud_references": {
+    "gcp_project_paths": [
+      {
+        "path": "/opt/quant_system_clean/google-cloud-trading-system",
+        "file": "ai_trading.service",
+        "type": "DEPLOYMENT_PATH",
+        "impact": "Service file must be updated for new deployment path"
+      }
+    ],
+    "dashboard_urls": [
+      {
+        "url": "https://ai-quant-trading.uc.r.appspot.com",
+        "files": [
+          "./tools/incremental_relax_loop.py:39",
+          "./tools/debug_generate_signals.py:28",
+          "./tools/force_demo_orders.py:98"
+        ],
+        "type": "DASHBOARD_ENDPOINT",
+        "impact": "Dashboard URL hardcoded in monitoring tools"
+      }
+    ],
+    "metadata_service": {
+      "usage": "NOT_FOUND",
+      "evidence": "No references to metadata.google.internal found"
+    }
+  },
+  
+  "configuration_coupling": {
+    "environment_variables": {
+      "required": [
+        "OANDA_API_KEY",
+        "OANDA_ACCOUNT_ID (or loaded from YAML)"
+      ],
+      "optional": [
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID",
+        "MARKETAUX_KEYS",
+        "OANDA_BASE_URL",
+        "OANDA_ENVIRONMENT"
+      ],
+      "cloud_specific": [
+        "FIRESTORE_PROJECT (optional)",
+        "FIRESTORE_DB (optional)"
+      ]
+    },
+    "config_files": {
+      "accounts.yaml": {
+        "required": true,
+        "location": "MISSING - only in backups",
+        "purpose": "Account and strategy configuration",
+        "cloud_dependency": false
+      },
+      "oanda_config.env": {
+        "required": false,
+        "location": "Found in backups only",
+        "purpose": "Environment variable storage",
+        "cloud_dependency": false
+      }
+    }
+  },
+  
+  "service_account_keys": {
+    "found": true,
+    "location": "./Key/",
+    "files": [
+      "ai-quant-trading-8a361154ea6f.json",
+      "ai-quant-trading-16dce887794e.json",
+      "ai-quant-trading-137871e38bfa(full access).json",
+      "ai-quant-trading-a6a12e886a80.json",
+      "ai-quant-trading-7670c038c609.json",
+      "ai-quant-trading-9c378d2b5f16.json"
+    ],
+    "purpose": "Firestore and GCP service authentication",
+    "required_for_main": false,
+    "evidence": "Only needed if using Firestore for config"
+  },
+  
+  "cloud_portability": {
+    "can_run_locally": true,
+    "can_run_on_aws": true,
+    "can_run_on_azure": true,
+    "can_run_on_any_linux": true,
+    "requirements_for_portability": [
+      "Python 3.8+",
+      "Internet access for OANDA API",
+      "Environment variables configured",
+      "accounts.yaml file present"
+    ],
+    "cloud_specific_features": {
+      "firestore_config": "OPTIONAL - Can use YAML files",
+      "secret_manager": "NOT_USED",
+      "gcp_logging": "NOT_USED - Uses standard Python logging",
+      "gcp_monitoring": "NOT_USED"
+    }
+  },
+  
+  "decoupling_analysis": {
+    "tight_coupling": [
+      {
+        "component": "OANDA API",
+        "reason": "Core trading functionality",
+        "can_decouple": false,
+        "alternative": "Would need different broker adapter"
+      }
+    ],
+    "loose_coupling": [
+      {
+        "component": "Firestore",
+        "reason": "Optional config storage with YAML fallback",
+        "can_decouple": true,
+        "alternative": "YAML files (already implemented)"
+      },
+      {
+        "component": "Telegram",
+        "reason": "Optional notifications",
+        "can_decouple": true,
+        "alternative": "System runs without Telegram"
+      },
+      {
+        "component": "MarketAux",
+        "reason": "Optional news data",
+        "can_decouple": true,
+        "alternative": "System runs without news"
+      }
+    ],
+    "no_coupling": [
+      "Google Cloud Storage",
+      "Google Cloud Pub/Sub",
+      "Google Cloud Functions",
+      "Google Cloud Run",
+      "BigQuery",
+      "Cloud SQL"
+    ]
+  },
+  
+  "verdict": {
+    "cloud_coupling_level": "LOW",
+    "gcp_specific_features": "MINIMAL",
+    "can_redeploy_to_new_gcp_project": true,
+    "can_run_outside_gcp": true,
+    "blockers": [
+      "OANDA API dependency (not GCP-specific)",
+      "Hardcoded dashboard URL in monitoring tools",
+      "Hardcoded deployment path in service file"
+    ],
+    "portability_score": "HIGH",
+    "recommendations": [
+      "Make dashboard URL configurable via environment variable",
+      "Make deployment path configurable in service file",
+      "Document Firestore as optional dependency",
+      "Consider abstracting broker API for multi-broker support"
+    ],
+    "redeployment_requirements": [
+      "Update service file with new deployment path",
+      "Update dashboard URL if using monitoring tools",
+      "Provide new service account keys if using Firestore",
+      "Configure environment variables"
+    ]
+  }
+}
