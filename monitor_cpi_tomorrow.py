@@ -1,21 +1,32 @@
 #!/usr/bin/env python3
+from src.core.settings import settings
 """
 Monitor CPI and other economic news releases - TOMORROW (Wednesday)
 """
 
+import os
 import time
 import requests
 from datetime import datetime, timedelta
 import schedule
 
-# Telegram credentials
-TELEGRAM_TOKEN = '7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU'
-TELEGRAM_CHAT_ID = '6100678501'
+# Telegram credentials - from environment variables
+TELEGRAM_TOKEN = settings.telegram_bot_token
+TELEGRAM_CHAT_ID = settings.telegram_chat_id
 
-# OANDA credentials
-OANDA_API_KEY = 'c01de9eb4d6c5ec2dcae4c9a4bf27df5-4d6495d239eee35c0c70801e3e5bb3ab'
-OANDA_ACCOUNT = '101-004-30719775-001'
-OANDA_URL = f'https://api-fxpractice.oanda.com/v3/accounts/{OANDA_ACCOUNT}/pricing'
+# OANDA credentials - from environment variables
+OANDA_API_KEY = settings.oanda_api_key
+OANDA_ACCOUNT = os.getenv("OANDA_ACCOUNT_ID", "101-004-30719775-001")
+OANDA_ENV = os.getenv("OANDA_ENV", "practice")
+OANDA_URL = f'https://api-fx{OANDA_ENV}.oanda.com/v3/accounts/{OANDA_ACCOUNT}/pricing' if OANDA_ENV == "practice" else f"https://api-fxtrade.oanda.com/v3/accounts/{OANDA_ACCOUNT}/pricing"
+
+# Fail-closed: require critical env vars
+if not TELEGRAM_TOKEN:
+    raise ValueError("TELEGRAM_BOT_TOKEN environment variable is required")
+if not TELEGRAM_CHAT_ID:
+    raise ValueError("TELEGRAM_CHAT_ID environment variable is required")
+if not OANDA_API_KEY:
+    raise ValueError("OANDA_API_KEY environment variable is required")
 
 def send_telegram(message):
     """Send message to Telegram"""

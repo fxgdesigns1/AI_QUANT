@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from src.core.settings import settings
 """
 Setup Daily Alerts for Trump Gold Strategy
 """
@@ -10,9 +11,15 @@ import requests
 from datetime import datetime, time, timedelta
 import pytz
 
-# Telegram config
-BOT_TOKEN = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-CHAT_ID = "6100678501"
+# Telegram config - from environment variables
+BOT_TOKEN = settings.telegram_bot_token
+CHAT_ID = settings.telegram_chat_id
+
+# Fail-closed: require Telegram credentials
+if not BOT_TOKEN:
+    raise ValueError("TELEGRAM_BOT_TOKEN environment variable is required")
+if not CHAT_ID:
+    raise ValueError("TELEGRAM_CHAT_ID environment variable is required")
 
 def send_telegram(message):
     """Send Telegram message"""
@@ -32,9 +39,13 @@ def send_telegram(message):
 def get_current_gold_price():
     """Get current gold price from OANDA"""
     try:
-        # OANDA config
-        OANDA_API_KEY = "REMOVED_SECRET"
-        OANDA_BASE_URL = "https://api-fxpractice.oanda.com"
+        # OANDA config - from environment variables
+        OANDA_API_KEY = settings.oanda_api_key
+        OANDA_ENV = os.getenv("OANDA_ENV", "practice")
+        OANDA_BASE_URL = f"https://api-fx{OANDA_ENV}.oanda.com" if OANDA_ENV == "practice" else "https://api-fxtrade.oanda.com"
+        
+        if not OANDA_API_KEY:
+            raise ValueError("OANDA_API_KEY environment variable is required")
         
         headers = {
             'Authorization': f'Bearer {OANDA_API_KEY}',

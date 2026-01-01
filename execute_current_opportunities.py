@@ -12,10 +12,19 @@ import requests
 from datetime import datetime
 
 OANDA_API_KEY = os.getenv('OANDA_API_KEY')
-BASE_URL = 'https://api-fxpractice.oanda.com/v3'
+OANDA_ENV = os.getenv('OANDA_ENV', 'practice')
+BASE_URL = f'https://api-fx{OANDA_ENV}.oanda.com/v3' if OANDA_ENV == 'practice' else 'https://api-fxtrade.oanda.com/v3'
 
-TELEGRAM_TOKEN = '7248728383:AAEE7lkAAIUXBcK9iTPR5NIETq3Aqbyx6IU'
-TELEGRAM_CHAT_ID = '6100678501'
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
+
+# Fail-closed: require critical env vars
+if not OANDA_API_KEY:
+    raise ValueError("OANDA_API_KEY environment variable is required")
+if not TELEGRAM_TOKEN:
+    raise ValueError("TELEGRAM_BOT_TOKEN environment variable is required")
+if not TELEGRAM_CHAT_ID:
+    raise ValueError("TELEGRAM_CHAT_ID environment variable is required")
 
 # Trades to execute (Trump DNA sniper style)
 TRADES = [

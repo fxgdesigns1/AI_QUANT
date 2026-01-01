@@ -1,17 +1,27 @@
 #!/usr/bin/env python3
+from src.core.settings import settings
 """
 Daily Telegram Updates - Morning Briefing & Evening Summary
 Runs continuously, sends updates at scheduled times
 """
+import os
 import requests
 import schedule
 import time
 from datetime import datetime
 import json
 
-TELEGRAM_TOKEN = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-CHAT_ID = "6100678501"
-OANDA_API_KEY = "REMOVED_SECRET"
+TELEGRAM_TOKEN = settings.telegram_bot_token
+CHAT_ID = settings.telegram_chat_id
+OANDA_API_KEY = settings.oanda_api_key
+
+# Fail-closed: require critical env vars
+if not TELEGRAM_TOKEN:
+    raise ValueError("TELEGRAM_BOT_TOKEN environment variable is required")
+if not CHAT_ID:
+    raise ValueError("TELEGRAM_CHAT_ID environment variable is required")
+if not OANDA_API_KEY:
+    raise ValueError("OANDA_API_KEY environment variable is required")
 
 def send_telegram(message):
     """Send message to Telegram"""

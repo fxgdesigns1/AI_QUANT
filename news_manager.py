@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from src.core.settings import settings
 import os
 import time
 import json

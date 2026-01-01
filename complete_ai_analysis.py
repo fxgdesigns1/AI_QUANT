@@ -1,11 +1,18 @@
 #!/usr/bin/env python3
+from src.core.settings import settings
+import os
 import requests
 import json
 
-# OANDA Configuration
-OANDA_API_KEY = 'REMOVED_SECRET'
-OANDA_ACCOUNT_ID = '101-004-30719775-008'
-OANDA_BASE_URL = 'https://api-fxpractice.oanda.com'
+# OANDA Configuration - from environment variables
+OANDA_API_KEY = settings.oanda_api_key
+OANDA_ACCOUNT_ID = os.getenv("OANDA_ACCOUNT_ID", "101-004-30719775-008")
+OANDA_ENV = os.getenv("OANDA_ENV", "practice")
+OANDA_BASE_URL = f'https://api-fx{OANDA_ENV}.oanda.com' if OANDA_ENV == "practice" else "https://api-fxtrade.oanda.com"
+
+# Fail-closed: require API key
+if not OANDA_API_KEY:
+    raise ValueError("OANDA_API_KEY environment variable is required")
 
 headers = {
     'Authorization': f'Bearer {OANDA_API_KEY}',

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from src.core.settings import settings
 """
 Automated Sniper System - Auto-Entry on Economic Events
 =====================================================
@@ -10,6 +11,7 @@ Real-time monitoring system that automatically enters trades when:
 4. Minimum $1,000 profit potential
 """
 
+import os
 import requests
 import numpy as np
 import time
@@ -22,17 +24,28 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# OANDA config
-OANDA_API_KEY = "REMOVED_SECRET"
-OANDA_BASE_URL = "https://api-fxpractice.oanda.com"
+# OANDA config - from environment variables
+OANDA_API_KEY = settings.oanda_api_key
+OANDA_ENV = os.getenv("OANDA_ENV", "practice")
+OANDA_BASE_URL = f"https://api-fx{OANDA_ENV}.oanda.com" if OANDA_ENV == "practice" else "https://api-fxtrade.oanda.com"
+
+# Fail-closed: require API key
+if not OANDA_API_KEY:
+    raise ValueError("OANDA_API_KEY environment variable is required")
 
 headers = {
     'Authorization': f'Bearer {OANDA_API_KEY}',
     'Content-Type': 'application/json'
 }
 
-BOT_TOKEN = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-CHAT_ID = "6100678501"
+BOT_TOKEN = settings.telegram_bot_token
+CHAT_ID = settings.telegram_chat_id
+
+# Fail-closed: require Telegram credentials
+if not BOT_TOKEN:
+    raise ValueError("TELEGRAM_BOT_TOKEN environment variable is required")
+if not CHAT_ID:
+    raise ValueError("TELEGRAM_CHAT_ID environment variable is required")
 
 class AutomatedSniperSystem:
     """Automated sniper system for real-time trade execution"""

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from src.core.settings import settings
 """
 FULL AUTOMATED TRADING SYSTEM - DEMO ACCOUNT ONLY
 This system will scan markets and execute trades automatically in paper trading
@@ -12,15 +13,24 @@ import json
 from datetime import datetime, timedelta
 from typing import Dict, List, Any
 
-# OANDA Configuration
-OANDA_API_KEY = "REMOVED_SECRET"
-OANDA_ACCOUNT_ID = "101-004-30719775-008"  # Demo account
-OANDA_BASE_URL = "https://api-fxpractice.oanda.com"
-OANDA_STREAM_URL = "https://stream-fxpractice.oanda.com"
+# OANDA Configuration - from environment variables
+OANDA_API_KEY = settings.oanda_api_key
+OANDA_ACCOUNT_ID = os.getenv("OANDA_ACCOUNT_ID", "101-004-30719775-008")  # Demo account default
+OANDA_ENV = os.getenv("OANDA_ENV", "practice")
+OANDA_BASE_URL = f"https://api-fx{OANDA_ENV}.oanda.com" if OANDA_ENV == "practice" else "https://api-fxtrade.oanda.com"
+OANDA_STREAM_URL = f"https://stream-fx{OANDA_ENV}.oanda.com" if OANDA_ENV == "practice" else "https://stream-fxtrade.oanda.com"
 
-# Telegram Configuration
-TELEGRAM_BOT_TOKEN = "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
-TELEGRAM_CHAT_ID = "6100678501"
+# Telegram Configuration - from environment variables
+TELEGRAM_BOT_TOKEN = settings.telegram_bot_token
+TELEGRAM_CHAT_ID = settings.telegram_chat_id
+
+# Fail-closed: require critical env vars
+if not OANDA_API_KEY:
+    raise ValueError("OANDA_API_KEY environment variable is required")
+if not TELEGRAM_BOT_TOKEN:
+    raise ValueError("TELEGRAM_BOT_TOKEN environment variable is required")
+if not TELEGRAM_CHAT_ID:
+    raise ValueError("TELEGRAM_CHAT_ID environment variable is required")
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
