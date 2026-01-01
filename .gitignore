@@ -182,3 +182,6 @@ usd_jpy_*.csv
 # Local backups
 *.tar.gz
 *.bak
+
+# Local-only verification scripts
+verify_reports.py
