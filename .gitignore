@@ -68,3 +68,117 @@ credentials_access_guide.md
 
 
 
+
+# ===== FXG SAFETY HARDENING =====
+# Env / secrets (allow .env.example as safe template)
+.env*
+!.env.example
+**/*.env
+**/*secret*
+**/*token*
+**/*apikey*
+**/*api_key*
+**/*credentials*
+**/*google*credentials*.json
+**/*firebase*.json
+
+# Keys
+**/*.pem
+**/*.key
+**/*id_rsa*
+**/*id_ed25519*
+
+# Node / Playwright
+node_modules/
+playwright-report/
+test-results/
+
+# Data / artifacts
+*.db
+*.sqlite
+*.sqlite3
+runtime/
+reports/
+backups/
+archives/
+*.tar.gz
+*.bak
+*.csv
+*.txt
+
+# Cloud-drive / sync folders
+Sync folder MAC TO PC/
+
+# Credential directories / known sensitive folders
+AI_QUANT_credentials/
+Key/
+google-cloud-credentials/
+cloud_declutter_v2/keys/
+
+# Local credential notes (keep generic docs only if verified)
+CREDENTIALS_QUICK_REFERENCE.md
+credentials_access_guide.md
+
+# ===== FXG SAFETY HARDENING (LOCAL ARTIFACTS / CLOUD SYNC) =====
+.DS_Store
+.cursor/
+
+# Env / secrets (allow .env.example)
+.env*
+!.env.example
+
+# Common secret/key patterns
+**/*google*credentials*.json
+**/*firebase*.json
+**/*token*
+**/*apikey*
+**/*api_key*
+**/*secret*
+**/*credentials*
+**/*.pem
+**/*.key
+
+# Data / caches / DBs
+*.db
+*.sqlite*
+runtime/
+reports/
+backups/
+archives/
+
+# Bulky / local-only directories observed in this repo
+backtest_blotter_sync/
+cloud_declutter_v2/
+google-cloud-trading-system/
+monitoring/
+remote_sync/
+Quant_phase2/
+
+# "Strategies here" folders (space + possible leading quote)
+Strategies here/
+"Strategies here/
+
+# Local forensic + inventory artifacts (keep out of git)
+FORENSIC_AUDIT_REPORT.json
+secrets_analysis.json
+state_inventory.json
+structure_inventory.json
+dependency_runtime_check.json
+execution_model.json
+execution_entrypoints.json
+local_run_feasibility.json
+side_effects.json
+trading_triggers.json
+config_sprawl.json
+
+# Local performance / analysis artifacts
+strategy_analysis_raw.txt
+strategy_performance_*.txt
+strategy_performance_*.csv
+strategy_performance_*.json
+usd_jpy_*.txt
+usd_jpy_*.csv
+
+# Local backups
+*.tar.gz
+*.bak

@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Fail-closed secret detector on STAGED diff.
+# Exclude hook scripts themselves from the scan.
+STAGED_FILES="$(git diff --cached --name-only)"
+HOOK_FILES="$(echo "$STAGED_FILES" | grep -E "(git-hooks/pre-commit|install_git_hooks\.sh)" || true)"
+
+PATTERN="-----BEGIN|PRIVATE KEY|OPENSSH|AIza|xox[baprs]-|bot[0-9]+:|OANDA_API_KEY\s*=\s*[\"']|TELEGRAM_BOT_TOKEN\s*=\s*[\"']|api[_-]?key\s*=\s*[\"']|token\s*=\s*[\"']|secret\s*=\s*[\"']|password\s*=\s*[\"']"
+
+# Scan only non-hook files
+for file in $STAGED_FILES; do
+  if echo "$HOOK_FILES" | grep -q "^$file$"; then
+    continue  # Skip hook files
+  fi
+  DIFF="$(git diff --cached -- "$file")"
+  if echo "$DIFF" | grep -En -- "$PATTERN" >/dev/null; then
+    echo "ERROR: possible secret detected in staged diff. Commit blocked." >&2
+    echo "$DIFF" | grep -En -- "$PATTERN" || true
+    exit 1
+  fi
+done
+
+exit 0
