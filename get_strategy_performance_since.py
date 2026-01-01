@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from src.core.settings import settings
 """
 Get performance metrics for each strategy over the last 24 hours.
 Queries OANDA API for transactions and calculates P&L, win rate, etc.
@@ -16,7 +17,7 @@ from collections import defaultdict
 import re
 
 # OANDA Configuration
-OANDA_API_KEY = os.getenv("OANDA_API_KEY")
+OANDA_API_KEY = settings.oanda_api_key
 if not OANDA_API_KEY:
     raise ValueError("OANDA_API_KEY environment variable must be set")
 OANDA_BASE_URL = os.getenv("OANDA_BASE_URL", "https://api-fxpractice.oanda.com")
@@ -533,8 +534,8 @@ def send_telegram_message(text: str) -> None:
     if os.getenv("CANARY_DRY_RUN", "false").lower() == "true":
         print("CANARY: Telegram alert suppressed.")
         return
-    token = os.getenv("TELEGRAM_BOT_TOKEN")
-    chat_id = os.getenv("TELEGRAM_CHAT_ID")
+    token = settings.telegram_bot_token
+    chat_id = settings.telegram_chat_id
     if not token or not chat_id:
         return
     url = f"https://api.telegram.org/bot{token}/sendMessage"
@@ -644,7 +645,7 @@ def main():
         print(f"\n⚠️  Could not save report to file: {e}")
 
     # Send Telegram message if credentials are provided
-    if os.getenv("TELEGRAM_BOT_TOKEN") and os.getenv("TELEGRAM_CHAT_ID"):
+    if settings.telegram_bot_token and settings.telegram_chat_id:
         summary_text = format_performance_report(performance_data, hours, last_change_dt)
         send_telegram_message(summary_text)
 

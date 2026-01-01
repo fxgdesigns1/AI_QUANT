@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from src.core.settings import settings
 """
 Background monitor: run verify_strategies_running.py every 5 minutes until stop time,
 send Telegram summary if signals or errors appear, and save logs.
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
 
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_BOT_TOKEN = settings.telegram_bot_token
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "6100678501")
 VERIFY_SCRIPT = "/opt/quant_system_clean/google-cloud-trading-system/verify_strategies_running.py"
 REPORT_PATH = "/tmp/incremental_relax_report.json"

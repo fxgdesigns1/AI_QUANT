@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from src.core.settings import settings
 """
 Verify each strategy is running correctly
 """
@@ -13,7 +14,7 @@ from typing import Dict, List, Any
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'Sync folder MAC TO PC', 'DESKTOP_HANDOFF_PACKAGE', 'google-cloud-trading-system'))
 
 # OANDA Configuration
-OANDA_API_KEY = os.getenv("OANDA_API_KEY")
+OANDA_API_KEY = settings.oanda_api_key
 if not OANDA_API_KEY:
     raise ValueError("OANDA_API_KEY environment variable must be set")
 OANDA_BASE_URL = os.getenv("OANDA_BASE_URL", "https://api-fxpractice.oanda.com")
@@ -264,7 +265,7 @@ def generate_report(results):
 def send_to_telegram(report, results):
     """Send report to Telegram"""
     try:
-        TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+        TELEGRAM_BOT_TOKEN = settings.telegram_bot_token
         TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "6100678501")
         
         # Create summary message

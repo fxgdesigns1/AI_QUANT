@@ -1,3 +1,4 @@
+from src.core.settings import settings
 import os
 import yaml
 from google.cloud import firestore
@@ -47,7 +48,7 @@ global:
     secondary: "oanda"
   telemetry:
     telegram_alerts: true
-    telegram_token: os.getenv("TELEGRAM_BOT_TOKEN") or "REDACTED - use TELEGRAM_BOT_TOKEN environment variable"
+    telegram_token: settings.telegram_bot_token or "REDACTED - use TELEGRAM_BOT_TOKEN environment variable"
     telegram_chat_id: "6100678501"
     log_level: "INFO"
 

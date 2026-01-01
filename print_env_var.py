@@ -1,2 +1,3 @@
+from src.core.settings import settings
 import os
-print(os.getenv("MARKETAUX_KEYS"))
+print((",".join(settings.marketaux_keys) if settings.marketaux_keys else None))

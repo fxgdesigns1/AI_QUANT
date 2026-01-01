@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from src.core.settings import settings
 """
 USD/JPY Pattern Analysis - Last 3 Months
 Analyzes weekly and intraday patterns, news correlations, and trading opportunities.
@@ -15,7 +16,7 @@ from collections import defaultdict
 import pytz
 
 # OANDA Configuration
-OANDA_API_KEY = os.getenv("OANDA_API_KEY")
+OANDA_API_KEY = settings.oanda_api_key
 if not OANDA_API_KEY:
     raise ValueError("OANDA_API_KEY environment variable must be set")
 OANDA_BASE_URL = os.getenv("OANDA_BASE_URL", "https://api-fxpractice.oanda.com")
@@ -724,7 +725,7 @@ def main():
     # Fetch and correlate news
     print("Step 5: Fetching news events...")
     # Set Marketaux key from GCloud secrets for this run
-    if not os.getenv("MARKETAUX_KEY") and not os.getenv("MARKETAUX_KEYS"):
+    if not (settings.marketaux_keys[0] if settings.marketaux_keys else None) and not (",".join(settings.marketaux_keys) if settings.marketaux_keys else None):
         try:
             import subprocess
             result = subprocess.run(

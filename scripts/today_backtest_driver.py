@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from src.core.settings import settings
 """
 Today intraday backtest driver (M5) - skeleton driver designed to be executed on the VM.
 
@@ -40,7 +41,7 @@ def load_accounts_yaml(path: str) -> List[Dict[str, Any]]:
     return accounts
 
 def fetch_today_candles(instrument: str, start_iso: str, end_iso: str, gran: str="M5"):
-    API_KEY = os.environ.get("OANDA_API_KEY")
+    API_KEY = settings.oanda_api_key
     if not API_KEY:
         raise ValueError("OANDA_API_KEY environment variable must be set")
     BASE = "https://api-fxpractice.oanda.com"
@@ -207,7 +208,7 @@ except Exception:
     pass
 
 # === Config ===
-OANDA_API_KEY = os.environ.get("OANDA_API_KEY")
+OANDA_API_KEY = settings.oanda_api_key
 if not OANDA_API_KEY:
     raise ValueError("OANDA_API_KEY environment variable must be set")
 OANDA_BASE = "https://api-fxpractice.oanda.com"

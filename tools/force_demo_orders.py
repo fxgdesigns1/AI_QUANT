@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from src.core.settings import settings
 """
 Force place small demo MARKET orders (paper) for each active strategy once.
 - Places up to 1 small MARKET order per active strategy (demo accounts only).
@@ -85,7 +86,7 @@ def place_market_order(account_id: str, token: str, instrument: str, units: int,
         return {"status": r.status_code, "body": r.text}
 
 def main():
-    token = os.environ.get("OANDA_API_KEY")
+    token = settings.oanda_api_key
     if not token:
         logger.error("OANDA_API_KEY missing in environment; aborting demo order placement.")
         return

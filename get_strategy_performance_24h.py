@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from src.core.settings import settings
 """
 Get performance metrics for each strategy over the last 24 hours.
 Queries OANDA API for transactions and calculates P&L, win rate, etc.
@@ -14,7 +15,7 @@ from collections import defaultdict
 import re
 
 # OANDA Configuration
-OANDA_API_KEY = os.getenv("OANDA_API_KEY")
+OANDA_API_KEY = settings.oanda_api_key
 if not OANDA_API_KEY:
     raise ValueError("OANDA_API_KEY environment variable must be set")
 OANDA_BASE_URL = os.getenv("OANDA_BASE_URL", "https://api-fxpractice.oanda.com")

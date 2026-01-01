@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from src.core.settings import settings
 """
 BRUTAL HONESTY: Fetch ALL trades from OANDA API and update blotter
 This script will:
@@ -18,7 +19,7 @@ from collections import defaultdict
 import pytz
 
 # OANDA Configuration
-OANDA_API_KEY = os.getenv("OANDA_API_KEY")
+OANDA_API_KEY = settings.oanda_api_key
 if not OANDA_API_KEY:
     raise ValueError("OANDA_API_KEY environment variable must be set")
 OANDA_BASE_URL = os.getenv("OANDA_BASE_URL", "https://api-fxpractice.oanda.com")

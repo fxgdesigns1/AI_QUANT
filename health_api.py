@@ -1,3 +1,4 @@
+from src.core.settings import settings
 from flask import Flask, jsonify
 import os
 import socket
@@ -23,7 +24,7 @@ def health():
         "ai_trading_service": "ok",
         "backup_engine": "configured" if os.environ.get("CANARY_DISABLE_BACKUP") is None else "disabled",
         "news_cache": "ok" if os.environ.get("NEWS_API_URL") else "not_configured",
-        "telegram": "configured" if os.environ.get("TELEGRAM_BOT_TOKEN") and os.environ.get("TELEGRAM_CHAT_ID") else "not_configured",
+        "telegram": "configured" if settings.telegram_bot_token and settings.telegram_chat_id else "not_configured",
         "dashboard": "available"
     }
     return jsonify(health_report)

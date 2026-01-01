@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from src.core.settings import settings
 """
 Fetch latest Marketaux articles and populate the deployed news article cache file.
 Intended to run on the VM as root so it writes to /opt/quant_system_clean/runtime/news_articles_cache.json.

@@ -1,3 +1,4 @@
+from src.core.settings import settings
 import os
 import requests
 import logging
@@ -15,7 +16,7 @@ def verify_oanda_connection():
     """
     Checks for OANDA credentials and attempts a simple API call to verify them.
     """
-    OANDA_API_KEY = os.getenv("OANDA_API_KEY")
+    OANDA_API_KEY = settings.oanda_api_key
     # Use PRIMARY_ACCOUNT from the .env file as the account ID for this test
     OANDA_ACCOUNT_ID = os.getenv("PRIMARY_ACCOUNT")
     OANDA_BASE_URL = os.getenv("OANDA_BASE_URL", "https://api-fxpractice.oanda.com")

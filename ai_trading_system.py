@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from src.core.settings import settings
 """
 AI-POWERED TRADING SYSTEM WITH TELEGRAM COMMAND INTERFACE
 This system can read Telegram messages and execute commands
@@ -42,17 +43,17 @@ except ImportError:
     yaml = None
 
 # OANDA Configuration
-OANDA_API_KEY = os.getenv("OANDA_API_KEY")
+OANDA_API_KEY = settings.oanda_api_key
 if not OANDA_API_KEY:
     raise ValueError("OANDA_API_KEY environment variable must be set")
-OANDA_ACCOUNT_ID = os.getenv("OANDA_ACCOUNT_ID")
+OANDA_ACCOUNT_ID = settings.oanda_account_id
 if not OANDA_ACCOUNT_ID:
     raise ValueError("OANDA_ACCOUNT_ID environment variable must be set")
 OANDA_BASE_URL = os.getenv("OANDA_BASE_URL", "https://api-fxpractice.oanda.com")
 
 # Telegram Configuration
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+TELEGRAM_BOT_TOKEN = settings.telegram_bot_token
+TELEGRAM_CHAT_ID = settings.telegram_chat_id
 
 # Risk controls (fallback to micro settings if not provided)
 DEFAULT_RISK_PER_TRADE = float(os.getenv("AI_RISK_PER_TRADE", "0.005"))

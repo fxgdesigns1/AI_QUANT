@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from src.core.settings import settings
 """
 Send daily summary to Telegram
 """
@@ -7,7 +8,7 @@ import requests
 from datetime import datetime
 
 # Telegram Configuration
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_BOT_TOKEN = settings.telegram_bot_token
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "6100678501")
 
 def send_telegram_message(message):

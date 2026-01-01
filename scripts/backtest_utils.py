@@ -7,6 +7,7 @@ This module is intentionally lightweight so a cheaper model can implement
 the heavy lifting later. It provides clear entry points and typings.
 """
 from __future__ import annotations
+from src.core.settings import settings
 
 import json
 import random
