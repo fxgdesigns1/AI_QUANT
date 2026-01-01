@@ -97,3 +97,56 @@ ai_trading_copilot_starter_*.zip
 *_prod.yaml
 
 *.bak*
+
+# ===== AI_QUANT SAFETY HARDENING =====
+.DS_Store
+.cursor/
+
+# Env / secrets (allow .env.example)
+.env*
+!.env.example
+
+# Common secret/key patterns
+**/*google*credentials*.json
+**/*firebase*.json
+**/*token*
+**/*apikey*
+**/*api_key*
+**/*secret*
+**/*credentials*
+**/*.pem
+**/*.key
+
+# Data / caches / DBs
+*.db
+*.sqlite*
+runtime/
+reports/
+backups/
+archives/
+playwright-report/
+test-results/
+
+# Common large local folders
+node_modules/
+Sync folder MAC TO PC/
+
+# Forensics / inventories / local diagnostics
+FORENSIC_*.json
+secrets_analysis.json
+state_inventory.json
+structure_inventory.json
+dependency_runtime_check.json
+execution_model.json
+execution_entrypoints.json
+local_run_feasibility.json
+side_effects.json
+trading_triggers.json
+config_sprawl.json
+
+# Local backups
+*.tar.gz
+*.bak
+
+# Local-only service files (keep templates in repo under deploy/ if needed)
+ai_trading*.service

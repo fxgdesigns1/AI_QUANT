@@ -11,8 +11,9 @@ import logging
 from datetime import datetime, timedelta
 
 # Set up environment
-os.environ['OANDA_API_KEY'] = "a3699a9d6b6d94d4e2c4c59748e73e2d-b6cbc64f16bcfb920e40f9117e66111a"
-os.environ['OANDA_ENVIRONMENT'] = "practice"
+if 'OANDA_API_KEY' not in os.environ:
+    raise ValueError("OANDA_API_KEY environment variable must be set")
+os.environ['OANDA_ENVIRONMENT'] = os.environ.get('OANDA_ENVIRONMENT', 'practice')
 
 # Add the project path
 sys.path.append('/Users/mac/quant_system_clean/google-cloud-trading-system')
