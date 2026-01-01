@@ -1,3 +1,4 @@
+from src.core.settings import settings
 import time
 from src.strategies.gold_scalping import get_gold_scalping_strategy
 from src.core.data_feed import get_data_feed
@@ -24,7 +25,7 @@ for i in range(30):
 if signal:
     # Use PRIMARY account for gold scalping as configured
     import os
-    primary = os.getenv("PRIMARY_ACCOUNT") or os.getenv("OANDA_ACCOUNT_ID")
+    primary = os.getenv("PRIMARY_ACCOUNT") or settings.oanda_account_id
     om = get_order_manager(primary)
     result = om.execute_trades([signal])
     print("Execution:", {k: (len(v) if isinstance(v, list) else v) for k,v in result.items() if k in ("total_executed","total_failed","error")})

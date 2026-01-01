@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from src.core.settings import settings
 """
 Quick Aggressive Scanner - Optimized for Cloud Scheduler
 Executes in < 30 seconds to avoid timeouts
@@ -97,9 +98,12 @@ def quick_aggressive_scan():
                     
                     # Quick Telegram
                     try:
-                        msg = f"✅ {instrument} {signal}\n{abs(units):,} units @ {entry:.5f if 'XAU' not in instrument else entry:.2f}"
-                        tg_url = "https://api.telegram.org/bot7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU/sendMessage"
-                        requests.post(tg_url, json={"chat_id": "6100678501", "text": msg}, timeout=3)
+                        bot_token = settings.telegram_bot_token
+                        chat_id = settings.telegram_chat_id
+                        if bot_token and chat_id:
+                            msg = f"✅ {instrument} {signal}\n{abs(units):,} units @ {entry:.5f if 'XAU' not in instrument else entry:.2f}"
+                            tg_url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+                            requests.post(tg_url, json={"chat_id": chat_id, "text": msg}, timeout=3)
                     except:
                         pass
         except:

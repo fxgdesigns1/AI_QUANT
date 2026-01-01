@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from src.core.settings import settings
 """
 Test current market conditions against strategy thresholds
 Get real data and see if strategies SHOULD generate signals
@@ -9,8 +10,11 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 
-OANDA_API_KEY = "e3edfff00fbf6e6bdc8d0fa917e5481c-7bb4c0bb9906ec028dfb66323a862086"
-ACCOUNT_ID = "101-004-30719775-009"
+import os
+OANDA_API_KEY = settings.oanda_api_key
+ACCOUNT_ID = os.getenv("OANDA_ACCOUNT_ID", "101-004-30719775-009")
+if not OANDA_API_KEY:
+    raise ValueError("OANDA_API_KEY environment variable is required")
 
 headers = {"Authorization": f"Bearer {OANDA_API_KEY}"}
 

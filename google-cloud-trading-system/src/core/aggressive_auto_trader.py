@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from src.core.settings import settings
 """
 AGGRESSIVE AUTO-TRADER - Catches ALL moves automatically
 No hesitation, no waiting - executes immediately on ANY signal
@@ -142,10 +143,13 @@ class AggressiveAutoTrader:
                             
                             # Send Telegram alert
                             try:
-                                message = f"✅ AUTO-TRADE\n\n{instrument} {signal}\nEntry: {entry:.5f if 'XAU' not in instrument else entry:.2f}\nUnits: {abs(units):,}\nMomentum: {momentum:+.2f}%"
-                                
-                                tg_url = "https://api.telegram.org/bot7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU/sendMessage"
-                                requests.post(tg_url, json={"chat_id": "6100678501", "text": message}, timeout=3)
+                                import os
+                                bot_token = settings.telegram_bot_token
+                                chat_id = settings.telegram_chat_id
+                                if bot_token and chat_id:
+                                    message = f"✅ AUTO-TRADE\n\n{instrument} {signal}\nEntry: {entry:.5f if 'XAU' not in instrument else entry:.2f}\nUnits: {abs(units):,}\nMomentum: {momentum:+.2f}%"
+                                    tg_url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+                                    requests.post(tg_url, json={"chat_id": chat_id, "text": message}, timeout=3)
                             except:
                                 pass
                         else:

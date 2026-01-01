@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
+from src.core.settings import settings
 """Place test trades on ALL accounts"""
 
+import os
 import requests
 import json
 
-OANDA_API_KEY = 'c01de9eb4d793c945ea0fcbb0620cc4e-d0c62eb93ed53e8db5a709089460794a'
+OANDA_API_KEY = settings.oanda_api_key
+if not OANDA_API_KEY:
+    raise ValueError("OANDA_API_KEY environment variable is required")
 TELEGRAM_TOKEN = '7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU'
 TELEGRAM_CHAT_ID = '6100678501'
 BASE_URL = 'https://api-fxpractice.oanda.com/v3'
