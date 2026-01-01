@@ -1,24 +1,28 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Fail-closed secret detector on STAGED diff.
-# Exclude hook scripts themselves from the scan.
-STAGED_FILES="$(git diff --cached --name-only)"
-HOOK_FILES="$(echo "$STAGED_FILES" | grep -E "(git-hooks/pre-commit|install_git_hooks\.sh)" || true)"
+# Fail-closed scan of STAGED *ADDED* lines only.
+# We scan only lines beginning with '+' (excluding '+++') so deletions are not flagged.
+# If grep errors, block commit.
 
-PATTERN="-----BEGIN|PRIVATE KEY|OPENSSH|AIza|xox[baprs]-|bot[0-9]+:|OANDA_API_KEY\s*=\s*[\"']|TELEGRAM_BOT_TOKEN\s*=\s*[\"']|api[_-]?key\s*=\s*[\"']|token\s*=\s*[\"']|secret\s*=\s*[\"']|password\s*=\s*[\"']"
+PATTERN='-----BEGIN|PRIVATE KEY|OPENSSH|AIza|xox[baprs]-|bot[0-9]+:|OANDA_API_KEY[[:space:]]*=[[:space:]]*["\x27]|TELEGRAM_BOT_TOKEN[[:space:]]*=[[:space:]]*["\x27]|api[_-]?key[[:space:]]*=[[:space:]]*["\x27]|token[[:space:]]*=[[:space:]]*["\x27]|secret[[:space:]]*=[[:space:]]*["\x27]|password[[:space:]]*=[[:space:]]*["\x27]'
 
-# Scan only non-hook files
-for file in $STAGED_FILES; do
-  if echo "$HOOK_FILES" | grep -q "^$file$"; then
-    continue  # Skip hook files
-  fi
-  DIFF="$(git diff --cached -- "$file")"
-  if echo "$DIFF" | grep -En -- "$PATTERN" >/dev/null; then
-    echo "ERROR: possible secret detected in staged diff. Commit blocked." >&2
-    echo "$DIFF" | grep -En -- "$PATTERN" || true
-    exit 1
-  fi
-done
+ADDED_LINES="$(git diff --cached --unified=0 | grep -E '^\+' | grep -vE '^\+\+\+')"
 
-exit 0
+# If there are no added lines, allow commit.
+if [ -z "$ADDED_LINES" ]; then
+  exit 0
+fi
+
+echo "$ADDED_LINES" | grep -nE -- "$PATTERN" >/dev/null
+RC=$?
+if [ $RC -eq 0 ]; then
+  echo "ERROR: possible secret-like content ADDED in staged diff. Commit blocked." >&2
+  echo "$ADDED_LINES" | grep -nE -- "$PATTERN" || true
+  exit 1
+elif [ $RC -eq 1 ]; then
+  exit 0
+else
+  echo "ERROR: secret scan failed (grep rc=$RC). Commit blocked." >&2
+  exit 2
+fi
