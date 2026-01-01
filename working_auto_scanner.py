@@ -12,8 +12,9 @@ import threading
 from datetime import datetime
 
 # Set up environment
-os.environ['OANDA_API_KEY'] = "REMOVED_SECRET"
-os.environ['OANDA_ENVIRONMENT'] = "practice"
+if 'OANDA_API_KEY' not in os.environ:
+    raise ValueError("OANDA_API_KEY environment variable must be set")
+os.environ['OANDA_ENVIRONMENT'] = os.environ.get('OANDA_ENVIRONMENT', 'practice')
 
 # Add the project path
 sys.path.append('/Users/mac/quant_system_clean/google-cloud-trading-system')
