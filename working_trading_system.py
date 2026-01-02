@@ -11,18 +11,21 @@ import logging
 from datetime import datetime, timedelta
 
 # Set up environment
-if 'OANDA_API_KEY' not in os.environ:
-    raise ValueError("OANDA_API_KEY environment variable must be set")
 os.environ['OANDA_ENVIRONMENT'] = os.environ.get('OANDA_ENVIRONMENT', 'practice')
 
-# Add the project path
-sys.path.append('/Users/mac/quant_system_clean/google-cloud-trading-system')
-
+# Path setup is handled by src.runner.main
+# All imports from google-cloud-trading-system/src/
 from src.core.dynamic_account_manager import get_account_manager
 from src.core.trading_scanner import TradingScanner
 from src.core.order_manager import OrderManager
+from src.core.execution_gate import ExecutionGate
 from src.strategies.momentum_trading import MomentumTradingStrategy
-from src.strategies.gold_scalping import GoldScalpingStrategy
+# Note: Using gold_scalping_optimized as gold_scalping doesn't exist
+try:
+    from src.strategies.gold_scalping_optimized import GoldScalpingOptimizedStrategy as GoldScalpingStrategy
+except ImportError:
+    # Fallback: use momentum if gold scalping not available
+    GoldScalpingStrategy = MomentumTradingStrategy
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -30,6 +33,10 @@ logger = logging.getLogger(__name__)
 
 class WorkingTradingSystem:
     def __init__(self):
+        # Defer OANDA_API_KEY check to runtime (allows paper-mode testing)
+        if 'OANDA_API_KEY' not in os.environ:
+            logger.warning("⚠️ OANDA_API_KEY not set - paper mode only")
+        
         self.account_manager = get_account_manager()
         self.active_accounts = self.account_manager.get_active_accounts()
         self.strategies = {
@@ -95,12 +102,19 @@ class WorkingTradingSystem:
                 position_size = risk_amount / stop_distance if stop_distance > 0 else 10000
                 
                 # Place the order
-                result = order_manager.oanda_client.place_market_order(
+                gate = ExecutionGate()
+                result = gate.place_market_order(
                     instrument=signal.instrument,
-                    side=signal.side.value,
                     units=int(position_size),
-                    stop_loss=signal.stop_loss,
-                    take_profit=signal.take_profit
+                    account_id=account_id,
+                    exec_fn=lambda: order_manager.oanda_client.place_market_order(
+                        instrument=signal.instrument,
+                        side=signal.side.value,
+                        units=int(position_size),
+                        stop_loss=signal.stop_loss,
+                        take_profit=signal.take_profit
+                    ),
+                    meta={"source": "working_trading_system", "path": "place_market_order"}
                 )
                 
                 if result:
@@ -115,17 +129,24 @@ class WorkingTradingSystem:
         logger.info(f"🎯 EXECUTED {executed_trades} TRADES")
         return executed_trades
 
-def main():
-    """Main trading loop"""
+def run_forever(max_iterations: int = 0) -> None:
+    """Run continuous scanning"""
     logger.info("🚀 STARTING WORKING TRADING SYSTEM")
     
     system = WorkingTradingSystem()
     
     # Run continuous scanning
+    i = 0
     while True:
         try:
             executed = system.scan_and_execute()
             logger.info(f"⏰ Next scan in 30 seconds... (Executed {executed} trades)")
+            
+            i += 1
+            if max_iterations > 0 and i >= max_iterations:
+                logger.info(f"🛑 Reached max iterations ({max_iterations}), stopping.")
+                break
+            
             time.sleep(30)
         except KeyboardInterrupt:
             logger.info("🛑 Trading system stopped by user")
@@ -133,6 +154,10 @@ def main():
         except Exception as e:
             logger.error(f"❌ System error: {e}")
             time.sleep(10)
+
+def main():
+    """Main trading loop"""
+    run_forever()
 
 if __name__ == "__main__":
     main()

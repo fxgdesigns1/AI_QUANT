@@ -2144,50 +2144,53 @@ def reload_config():
 
 def update_dashboard():
     """Update dashboard data periodically"""
-    while True:
-        try:
-            logger.info(f"🔄 Updating dashboard data - {datetime.now()}")
-            
-            # Create event loop for async operations
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            
-            # Run updates
-            loop.run_until_complete(asyncio.gather(
-                dashboard_manager.update_system_status(),
-                dashboard_manager.update_market_data(),
-                dashboard_manager.update_news_data(),
-                dashboard_manager.update_portfolio_risk()
-            ))
-            
-            # Emit updates via WebSocket
-            socketio.emit('systems_update', 
-                        {k: asdict(v) for k, v in dashboard_manager.trading_systems.items()})
-            socketio.emit('market_update', 
-                        {k: asdict(v) for k, v in dashboard_manager.market_data.items()})
-            socketio.emit('news_update', 
-                        [asdict(item) for item in dashboard_manager.news_data[-5:]])
-            socketio.emit('alerts_update', 
-                        dashboard_manager.system_alerts[-10:])
-            socketio.emit('risk_update',
-                        dashboard_manager.portfolio_risk_metrics)
-            # Agent metrics update
+    ENABLE_BG = os.getenv("ENABLE_DASHBOARD_BACKGROUND_LOOPS", "false").lower() == "true"
+
+    if ENABLE_BG:
+        while True:
             try:
-                socketio.emit('agent_metrics_update', agent_controller.get_metrics())
-            except Exception:
-                pass
-            
-            dashboard_manager.last_update = datetime.now()
-            
-            # Close event loop
-            loop.close()
-            
-            # Wait before next update
-            time.sleep(15)
-            
-        except Exception as e:
-            logger.error(f"❌ Dashboard update error: {e}")
-            time.sleep(30)
+                logger.info(f"🔄 Updating dashboard data - {datetime.now()}")
+                
+                # Create event loop for async operations
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                
+                # Run updates
+                loop.run_until_complete(asyncio.gather(
+                    dashboard_manager.update_system_status(),
+                    dashboard_manager.update_market_data(),
+                    dashboard_manager.update_news_data(),
+                    dashboard_manager.update_portfolio_risk()
+                ))
+                
+                # Emit updates via WebSocket
+                socketio.emit('systems_update', 
+                            {k: asdict(v) for k, v in dashboard_manager.trading_systems.items()})
+                socketio.emit('market_update', 
+                            {k: asdict(v) for k, v in dashboard_manager.market_data.items()})
+                socketio.emit('news_update', 
+                            [asdict(item) for item in dashboard_manager.news_data[-5:]])
+                socketio.emit('alerts_update', 
+                            dashboard_manager.system_alerts[-10:])
+                socketio.emit('risk_update',
+                            dashboard_manager.portfolio_risk_metrics)
+                # Agent metrics update
+                try:
+                    socketio.emit('agent_metrics_update', agent_controller.get_metrics())
+                except Exception:
+                    pass
+                
+                dashboard_manager.last_update = datetime.now()
+                
+                # Close event loop
+                loop.close()
+                
+                # Wait before next update
+                time.sleep(15)
+                
+            except Exception as e:
+                logger.error(f"❌ Dashboard update error: {e}")
+                time.sleep(30)
 
 # ===============================================
 # NEW: CLOUD SYSTEM INTEGRATION ENDPOINTS

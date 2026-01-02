@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+import os as _os
+
+if _os.getenv("ALLOW_LEGACY_RUNNERS", "false").lower() != "true":
+    raise RuntimeError("Legacy runner disabled. Use: python -m src.runner.main")
+
 from src.core.settings import settings
 """
 FULL AUTOMATED TRADING SYSTEM - DEMO ACCOUNT ONLY
