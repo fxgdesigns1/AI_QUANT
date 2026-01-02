@@ -70,31 +70,36 @@ def _call_gemini(prompt: str, timeout_s: int = DEFAULT_TIMEOUT_S) -> str:
 
     # Lazy import to avoid dependency unless used
     try:
-        import google.generativeai as genai
+        from google import genai
     except Exception as e:
         raise RuntimeError(
-            "Gemini SDK not installed. Install: pip install google-generativeai"
+            "Gemini SDK not installed. Install: pip install google-genai"
         ) from e
 
-    genai.configure(api_key=settings.google_api_key)
-    model_name = settings.gemini_model
-    model = genai.GenerativeModel(model_name)
-
-    # google-generativeai does not accept a strict 'timeout' on all methods consistently;
-    # keep calls lightweight.
-    resp = model.generate_content(
-        prompt,
-        generation_config={
+    client = genai.Client(api_key=settings.google_api_key)
+    
+    # Normalize model name: strip "models/" prefix if present, default to gemini-2.0-flash-lite
+    model_name = settings.gemini_model or "gemini-2.0-flash-lite"
+    if model_name.startswith("models/"):
+        model_name = model_name[7:]  # Strip "models/" prefix
+    
+    # Use google-genai API: client.models.generate_content
+    resp = client.models.generate_content(
+        model=model_name,
+        contents=prompt,
+        config={
             "temperature": 0.2,
             "max_output_tokens": 400,
         },
     )
+    
+    # Extract text safely: prefer resp.text, fallback to candidates structure
     text = getattr(resp, "text", None)
     if text is None:
         # fall back to candidate extraction if needed
         try:
             text = resp.candidates[0].content.parts[0].text
-        except Exception:
+        except (AttributeError, IndexError, KeyError):
             text = ""
     return (text or "").strip()
 
