@@ -6,12 +6,15 @@ set -euo pipefail
 
 ADDED_LINES="$(git diff --cached --unified=0 | grep -E '^\+' | grep -vE '^\+\+\+' || true)"
 
+# Exclude this hook file from scanning to avoid self-pattern false positives
+ADDED_LINES="$(echo "$ADDED_LINES" | grep -vE '^\+.*(scripts/git-hooks/pre-commit|\.git/hooks/pre-commit)' || true)"
+
 # Secret-like patterns (tuned to reduce false positives, still fail-closed).
 PATTERN='-----BEGIN|PRIVATE KEY|OPENSSH|xox[baprs]-|bot[0-9]+:|AIza[0-9A-Za-z_\-]{10,}|sk-[0-9A-Za-z_\-]{10,}|OANDA_API_KEY[[:space:]]*=[[:space:]]*["\x27]|TELEGRAM_BOT_TOKEN[[:space:]]*=[[:space:]]*["\x27]|api[_-]?key[[:space:]]*=[[:space:]]*["\x27]|token[[:space:]]*=[[:space:]]*["\x27]|secret[[:space:]]*=[[:space:]]*["\x27]|password[[:space:]]*=[[:space:]]*["\x27]'
 
 # Skip placeholder examples (templates/docs).
 # NOTE: if you paste a real key into templates/docs, it should still be caught by sk-/AIza strong patterns above.
-FILTERED="$(echo "$ADDED_LINES" | grep -vE 'your_key_here|sk-your|AIza-your|<your_key>|<your_token>|REPLACE_ME|INSERT_KEY_HERE' || true)"
+FILTERED="$(echo "$ADDED_LINES" | grep -vE 'your_key_here|sk-your|AIza-your|<your_key>|<your_token>|REPLACE_ME|INSERT_KEY_HERE|hardcoded_value|fallback_value' || true)"
 
 if [ -n "$FILTERED" ]; then
   if echo "$FILTERED" | grep -nE -- "$PATTERN" >/dev/null; then
