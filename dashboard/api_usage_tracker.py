@@ -76,15 +76,18 @@ class APIUsageTracker:
     def _start_reset_thread(self):
         """Start thread to reset daily counters at midnight"""
         def reset_check():
-            while True:
-                try:
-                    import time
-                    time.sleep(60)  # Check every minute
-                    now = datetime.now()
-                    if now.hour == 0 and now.minute == 0:
-                        self.reset_daily_counts()
-                except Exception as e:
-                    logger.error(f"Reset thread error: {e}")
+            ENABLE_BG = os.getenv("ENABLE_DASHBOARD_BACKGROUND_LOOPS", "false").lower() == "true"
+
+            if ENABLE_BG:
+                while True:
+                    try:
+                        import time
+                        time.sleep(60)  # Check every minute
+                        now = datetime.now()
+                        if now.hour == 0 and now.minute == 0:
+                            self.reset_daily_counts()
+                    except Exception as e:
+                        logger.error(f"Reset thread error: {e}")
         
         thread = threading.Thread(target=reset_check, daemon=True)
         thread.start()
