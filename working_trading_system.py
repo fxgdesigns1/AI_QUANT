@@ -61,6 +61,11 @@ class WorkingTradingSystem:
         """Scan for opportunities and EXECUTE trades immediately"""
         logger.info("🔍 SCANNING FOR OPPORTUNITIES...")
         
+        # Handle case with no active accounts (paper mode without broker)
+        if not self.active_accounts:
+            logger.info("ℹ️ No active accounts available - paper mode scan complete (0 signals)")
+            return 0
+        
         all_signals = []
         
         # Get market data for all accounts
