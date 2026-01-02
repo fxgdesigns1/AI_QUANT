@@ -32,6 +32,20 @@ class Settings:
     marketaux_keys: List[str]
     alphavantage_api_key: Optional[str]
 
+    # AI Insights (OpenAI)
+    openai_api_key: Optional[str]
+    openai_model: str
+    ai_insights_enabled: bool
+    ai_insights_mode: str
+
+    # AI Insights (Gemini/Google)
+    google_api_key: Optional[str]
+    gemini_model: str
+
+    # AI Provider Routing
+    ai_provider: str
+    ai_provider_chain: List[str]
+
     def require_oanda(self) -> None:
         if not self.oanda_api_key:
             raise RuntimeError("Missing OANDA_API_KEY")
@@ -44,6 +58,14 @@ class Settings:
     def require_telegram(self) -> None:
         if not self.telegram_configured():
             raise RuntimeError("Missing TELEGRAM_BOT_TOKEN and/or TELEGRAM_CHAT_ID")
+
+    def require_openai(self) -> None:
+        if not self.openai_api_key:
+            raise RuntimeError("OPENAI_API_KEY is required when using OpenAI AI insights")
+
+    def require_gemini(self) -> None:
+        if not self.google_api_key:
+            raise RuntimeError("GOOGLE_API_KEY (or GEMINI_API_KEY) is required when using Gemini AI insights")
 
 def load_settings() -> Settings:
     # Keep env var NAMES stable; accept minimal aliases for backwards compatibility.
@@ -66,6 +88,25 @@ def load_settings() -> Settings:
 
     alphavantage_api_key = _get_env("ALPHAVANTAGE_API_KEY")
 
+    # AI Insights (OpenAI)
+    openai_api_key = _get_env("OPENAI_API_KEY")
+    openai_model = _get_env("OPENAI_MODEL") or "gpt-4o-mini"
+    ai_insights_enabled = _get_env("AI_INSIGHTS_ENABLED") == "1"
+    ai_insights_mode = _get_env("AI_INSIGHTS_MODE") or "advisory"
+
+    # AI Insights (Gemini/Google)
+    google_api_key = _get_env("GOOGLE_API_KEY") or _get_env("GEMINI_API_KEY")
+    gemini_model = _get_env("GEMINI_MODEL") or "gemini-1.5-flash"
+
+    # AI Provider Routing
+    ai_provider = (_get_env("AI_PROVIDER") or "openai").lower()
+    ai_provider_chain_raw = _get_env("AI_PROVIDER_CHAIN")
+    ai_provider_chain = (
+        [p.strip().lower() for p in ai_provider_chain_raw.split(',') if p.strip()]
+        if ai_provider_chain_raw
+        else [ai_provider]
+    )
+
     return Settings(
         oanda_api_key=oanda_api_key,
         oanda_account_id=oanda_account_id,
@@ -75,6 +116,14 @@ def load_settings() -> Settings:
         newsapi_api_key=newsapi_api_key,
         marketaux_keys=marketaux_keys,
         alphavantage_api_key=alphavantage_api_key,
+        openai_api_key=openai_api_key,
+        openai_model=openai_model,
+        ai_insights_enabled=ai_insights_enabled,
+        ai_insights_mode=ai_insights_mode,
+        google_api_key=google_api_key,
+        gemini_model=gemini_model,
+        ai_provider=ai_provider,
+        ai_provider_chain=ai_provider_chain,
     )
 
 # Canonical singleton
