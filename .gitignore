@@ -192,3 +192,7 @@ CLEAN_ROOM_VERDICT.md
 DEEP_BACKTESTING_SETUP.md
 EVIDENCE_CITATIONS.md
 NOTIFICATION_CHANNELS.md
+
+# local/generated artifacts
+SYSTEM_MAP_GCLOUD_SYSTEM.json
+scripts/verify_ai_insights_no_leak.py
