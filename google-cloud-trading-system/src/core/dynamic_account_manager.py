@@ -74,7 +74,7 @@ class DynamicAccountManager:
                 logger.warning("   Set OANDA_API_KEY to enable live broker access")
                 # Continue with empty api_key; accounts will be loaded but broker calls blocked
             else:
-                logger.info(f"✅ API key loaded: {api_key[:20]}...")
+                logger.info("✅ API key loaded from environment")
             
             # Load accounts.yaml DIRECTLY (no config_loader middleman)
             config_path = os.path.join(os.path.dirname(__file__), '../../accounts.yaml')
@@ -244,8 +244,26 @@ class DynamicAccountManager:
         logger.info(f"✅ Loaded {len(self.account_configs)} accounts from environment variables")
     
     def _initialize_accounts(self):
-        """Initialize OANDA clients for each account"""
+        """Initialize OANDA clients for each account
+        
+        In paper mode (missing OANDA_API_KEY), accounts are loaded from YAML
+        but broker clients are not initialized. This is expected behavior.
+        """
+        # Check if we have broker credentials
+        has_broker_creds = bool(os.getenv('OANDA_API_KEY'))
+        
+        if not has_broker_creds:
+            logger.warning("⚠️ No broker credentials - accounts loaded but broker calls unavailable")
+            logger.info(f"📋 Loaded {len(self.account_configs)} account configs (paper-mode only)")
+            return
+        
+        # Initialize broker clients only if we have credentials
         for account_id, config in self.account_configs.items():
+            # Skip if missing required broker credentials
+            if not config.api_key or not account_id:
+                logger.warning(f"⚠️ Skipping broker init for {config.display_name}: missing credentials")
+                continue
+            
             try:
                 client = OandaClient(
                     api_key=config.api_key,
@@ -261,7 +279,7 @@ class DynamicAccountManager:
                 logger.info(f"✅ Connected: {config.display_name} - Balance: {account_info.balance} {account_info.currency}")
                 
             except Exception as e:
-                logger.error(f"❌ Failed to initialize account {account_id}: {e}")
+                logger.warning(f"⚠️ Failed to initialize broker for {account_id}: {e}")
     
     def get_account_client(self, account_id: str) -> Optional[OandaClient]:
         """Get OANDA client for specific account"""
