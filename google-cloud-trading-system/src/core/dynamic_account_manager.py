@@ -68,10 +68,13 @@ class DynamicAccountManager:
             api_key = os.getenv('OANDA_API_KEY')
             environment = os.getenv('OANDA_ENVIRONMENT', 'practice')
             
-            # CRITICAL: Verify API key is loaded
+            # Paper-mode friendly: warn if missing but continue
             if not api_key:
-                raise ValueError("OANDA_API_KEY not found in environment variables. Check .env file.")
-            logger.info(f"✅ API key loaded: {api_key[:20]}...")
+                logger.warning("⚠️ OANDA_API_KEY not found - paper mode only, broker calls unavailable")
+                logger.warning("   Set OANDA_API_KEY to enable live broker access")
+                # Continue with empty api_key; accounts will be loaded but broker calls blocked
+            else:
+                logger.info(f"✅ API key loaded: {api_key[:20]}...")
             
             # Load accounts.yaml DIRECTLY (no config_loader middleman)
             config_path = os.path.join(os.path.dirname(__file__), '../../accounts.yaml')
@@ -145,7 +148,7 @@ class DynamicAccountManager:
                     account_id=account_id,
                     account_name=account_data.get('name', f'Account_{account_id[-3:]}'),
                     display_name=account_data.get('display_name', account_data.get('name', 'Unknown')),
-                    api_key=api_key,
+                    api_key=api_key or '',  # Empty string if missing (broker calls will fail gracefully)
                     environment=environment,
                     strategy_name=account_data.get('strategy', 'unknown'),
                     risk_settings=account_data.get('risk_settings', {}),

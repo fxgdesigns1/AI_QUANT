@@ -1,9 +1,13 @@
-# src/runner/main.py
+# runner_src/runner/main.py
 
 from __future__ import annotations
 
 import os
+import sys
 import uuid
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def _env_int(name: str, default: int = 0) -> int:
@@ -16,17 +20,41 @@ def _env_int(name: str, default: int = 0) -> int:
         return default
 
 
+def _load_env_files() -> None:
+    """Load environment files opportunistically (no failure if missing)"""
+    try:
+        from dotenv import load_dotenv
+    except ImportError:
+        logger.warning("⚠️ python-dotenv not available; skipping .env file loading")
+        return
+    
+    # Try loading env files in order (override=False means first wins)
+    env_candidates = [
+        '.env',
+        '.env.local',
+        'google-cloud-trading-system/oanda_config.env',
+        'google-cloud-trading-system/.env',
+    ]
+    
+    for env_file in env_candidates:
+        if os.path.exists(env_file):
+            load_dotenv(env_file, override=False)
+            logger.info(f"✅ Loaded environment from: {env_file}")
+
+
 def main() -> int:
     # RUN_ID propagates into ExecutionGate logs
     os.environ.setdefault("RUN_ID", f"run_{uuid.uuid4().hex[:12]}")
 
+    # Load environment files before anything else
+    _load_env_files()
+
     # Optional for safe verification:
-    #   MAX_ITERATIONS=1 python -m src.runner.main
+    #   MAX_ITERATIONS=1 python -m runner_src.runner.main
     max_iter = _env_int("MAX_ITERATIONS", 0)
 
     # Add google-cloud-trading-system to path if it exists
     # CRITICAL: Must prioritize google-cloud-trading-system/src over repo-root/src
-    import sys
     _gcloud_path = os.path.join(os.getcwd(), 'google-cloud-trading-system')
     _repo_root = os.getcwd()
     
