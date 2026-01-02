@@ -12,6 +12,7 @@ from dataclasses import dataclass
 
 from .oanda_client import OandaClient, OandaAccount
 from .config_loader import get_config_loader, AccountConfig as YAMLAccountConfig
+from .paper_broker import PaperBroker
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +37,7 @@ class DynamicAccountManager:
     
     def __init__(self):
         """Initialize account manager from YAML configuration"""
-        self.accounts: Dict[str, OandaClient] = {}
+        self.accounts: Dict[str, Any] = {}  # Can be OandaClient or PaperBroker
         self.account_configs: Dict[str, AccountConfig] = {}
         self.strategy_mappings: Dict[str, str] = {}
         
@@ -52,29 +53,23 @@ class DynamicAccountManager:
             logger.info(f"   • {config.display_name}: {account_id[-3:]} - {config.strategy_name}")
     
     def _load_from_yaml(self):
-        """Load ALL accounts directly from accounts.yaml - FIXED OCT 13, 2025"""
+        """Load ALL accounts directly from accounts.yaml
+        
+        NOTE: Environment variables should be loaded by runner_src/runner/main.py
+        This method only reads from os.environ (no dotenv loading here).
+        """
         import yaml
         
         try:
-            # Load .env file if available
-            try:
-                from dotenv import load_dotenv
-                load_dotenv()
-                logger.info("✅ Loaded .env file for API keys")
-            except ImportError:
-                logger.info("⚠️ python-dotenv not available, using system environment")
-            
-            # Get API credentials from environment
+            # Get API credentials from environment (already loaded by runner)
             api_key = os.getenv('OANDA_API_KEY')
             environment = os.getenv('OANDA_ENVIRONMENT', 'practice')
             
             # Paper-mode friendly: warn if missing but continue
             if not api_key:
-                logger.warning("⚠️ OANDA_API_KEY not found - paper mode only, broker calls unavailable")
-                logger.warning("   Set OANDA_API_KEY to enable live broker access")
-                # Continue with empty api_key; accounts will be loaded but broker calls blocked
+                logger.info("ℹ️ OANDA_API_KEY not found - will use paper broker (no network calls)")
             else:
-                logger.info("✅ API key loaded from environment")
+                logger.info("ℹ️ OANDA_API_KEY found in environment")
             
             # Load accounts.yaml DIRECTLY (no config_loader middleman)
             config_path = os.path.join(os.path.dirname(__file__), '../../accounts.yaml')
@@ -244,45 +239,81 @@ class DynamicAccountManager:
         logger.info(f"✅ Loaded {len(self.account_configs)} accounts from environment variables")
     
     def _initialize_accounts(self):
-        """Initialize OANDA clients for each account
+        """Initialize broker clients for each account
         
-        In paper mode (missing OANDA_API_KEY), accounts are loaded from YAML
-        but broker clients are not initialized. This is expected behavior.
+        In paper mode (TRADING_MODE=paper), uses PaperBroker by default unless
+        PAPER_ALLOW_OANDA_NETWORK=true is set.
+        
+        In live mode, requires valid OANDA credentials and dual-confirm flags.
         """
-        # Check if we have broker credentials
+        trading_mode = os.getenv('TRADING_MODE', 'paper').lower()
+        allow_network = os.getenv('PAPER_ALLOW_OANDA_NETWORK', 'false').lower() == 'true'
         has_broker_creds = bool(os.getenv('OANDA_API_KEY'))
         
-        if not has_broker_creds:
-            logger.warning("⚠️ No broker credentials - accounts loaded but broker calls unavailable")
-            logger.info(f"📋 Loaded {len(self.account_configs)} account configs (paper-mode only)")
-            return
+        # Determine broker type
+        use_paper_broker = (
+            trading_mode == 'paper' and not allow_network
+        ) or (
+            not has_broker_creds
+        )
         
-        # Initialize broker clients only if we have credentials
+        if use_paper_broker:
+            logger.info(f"📄 Using PAPER BROKER for all accounts (no network calls)")
+            logger.info(f"   Set PAPER_ALLOW_OANDA_NETWORK=true to enable OANDA calls in paper mode")
+        
+        # Initialize broker clients
         for account_id, config in self.account_configs.items():
-            # Skip if missing required broker credentials
-            if not config.api_key or not account_id:
-                logger.warning(f"⚠️ Skipping broker init for {config.display_name}: missing credentials")
-                continue
-            
-            try:
-                client = OandaClient(
-                    api_key=config.api_key,
-                    account_id=account_id,
-                    environment=config.environment
-                )
+            if use_paper_broker:
+                # Use PaperBroker (no network calls)
+                try:
+                    client = PaperBroker(
+                        account_id=account_id,
+                        currency=config.instruments[0].split('_')[1] if config.instruments else "USD",
+                        initial_balance=10000.0
+                    )
+                    self.accounts[account_id] = client
+                    logger.info(f"📄 Paper broker initialized: {config.display_name} ({account_id[-3:]})")
+                except Exception as e:
+                    logger.warning(f"⚠️ Failed to initialize paper broker for {account_id}: {e}")
+            else:
+                # Use real OANDA client (requires credentials)
+                if not config.api_key or not account_id:
+                    logger.warning(f"⚠️ Skipping broker init for {config.display_name}: missing credentials")
+                    continue
                 
-                # Test connection
-                account_info = client.get_account_info()
-                
-                self.accounts[account_id] = client
-                
-                logger.info(f"✅ Connected: {config.display_name} - Balance: {account_info.balance} {account_info.currency}")
-                
-            except Exception as e:
-                logger.warning(f"⚠️ Failed to initialize broker for {account_id}: {e}")
+                try:
+                    client = OandaClient(
+                        api_key=config.api_key,
+                        account_id=account_id,
+                        environment=config.environment
+                    )
+                    
+                    # Test connection
+                    account_info = client.get_account_info()
+                    
+                    self.accounts[account_id] = client
+                    
+                    logger.info(f"✅ Connected: {config.display_name} - Balance: {account_info.balance} {account_info.currency}")
+                    
+                except Exception as e:
+                    # In paper mode, fall back to paper broker on error
+                    if trading_mode == 'paper':
+                        logger.warning(f"⚠️ OANDA init failed for {account_id}, using paper broker: {e}")
+                        try:
+                            client = PaperBroker(
+                                account_id=account_id,
+                                currency=config.instruments[0].split('_')[1] if config.instruments else "USD",
+                                initial_balance=10000.0
+                            )
+                            self.accounts[account_id] = client
+                        except Exception as e2:
+                            logger.warning(f"⚠️ Failed to initialize paper broker fallback: {e2}")
+                    else:
+                        # In live mode, log as warning but don't crash
+                        logger.warning(f"⚠️ Failed to initialize broker for {account_id}: {e}")
     
-    def get_account_client(self, account_id: str) -> Optional[OandaClient]:
-        """Get OANDA client for specific account"""
+    def get_account_client(self, account_id: str):
+        """Get broker client for specific account (OandaClient or PaperBroker)"""
         return self.accounts.get(account_id)
     
     def get_account_config(self, account_id: str) -> Optional[AccountConfig]:
