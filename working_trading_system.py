@@ -45,9 +45,15 @@ class WorkingTradingSystem:
         }
         self.order_managers = {}
         
-        # Initialize order managers for each account
-        for account_id in self.active_accounts:
-            self.order_managers[account_id] = OrderManager(account_id=account_id)
+        # Initialize order managers for each account (if any)
+        if self.active_accounts:
+            for account_id in self.active_accounts:
+                try:
+                    self.order_managers[account_id] = OrderManager(account_id=account_id)
+                except Exception as e:
+                    logger.warning(f"⚠️ Could not initialize OrderManager for {account_id}: {e}")
+        else:
+            logger.warning("⚠️ No active accounts available; paper mode will run without broker")
         
         logger.info(f"✅ Working Trading System initialized with {len(self.active_accounts)} accounts")
     
