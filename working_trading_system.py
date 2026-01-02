@@ -39,43 +39,88 @@ class WorkingTradingSystem:
         
         self.account_manager = get_account_manager()
         self.active_accounts = self.account_manager.get_active_accounts()
+        
+        # Get account configs from YAML (even if broker not initialized)
+        # This allows scanning to run with paper accounts
+        self.account_configs = self.account_manager.account_configs
+        self.account_ids_for_scanning = list(self.account_configs.keys()) if self.account_configs else []
+        
         self.strategies = {
             'momentum': MomentumTradingStrategy(),
             'gold': GoldScalpingStrategy()
         }
         self.order_managers = {}
         
-        # Initialize order managers for each account (if any)
+        # Initialize order managers for each account (if broker is available)
         if self.active_accounts:
             for account_id in self.active_accounts:
                 try:
                     self.order_managers[account_id] = OrderManager(account_id=account_id)
                 except Exception as e:
                     logger.warning(f"⚠️ Could not initialize OrderManager for {account_id}: {e}")
-        else:
-            logger.warning("⚠️ No active accounts available; paper mode will run without broker")
         
-        logger.info(f"✅ Working Trading System initialized with {len(self.active_accounts)} accounts")
+        if not self.account_ids_for_scanning:
+            logger.info("ℹ️ No accounts configured in YAML - scanning will run with default instruments")
+        else:
+            logger.info(f"✅ Working Trading System initialized")
+            logger.info(f"   Accounts for scanning: {len(self.account_ids_for_scanning)}")
+            logger.info(f"   Accounts with broker: {len(self.active_accounts)}")
     
     def scan_and_execute(self):
-        """Scan for opportunities and EXECUTE trades immediately"""
-        logger.info("🔍 SCANNING FOR OPPORTUNITIES...")
+        """Scan for opportunities and EXECUTE trades immediately
         
-        # Handle case with no active accounts (paper mode without broker)
-        if not self.active_accounts:
-            logger.info("ℹ️ No active accounts available - paper mode scan complete (0 signals)")
-            return 0
+        Always runs scanning even if no broker accounts are available.
+        Uses account configs from YAML to determine which accounts/strategies to test.
+        """
+        logger.info("🔍 SCANNING FOR OPPORTUNITIES...")
         
         all_signals = []
         
-        # Get market data for all accounts
-        for account_id in self.active_accounts:
+        # Use account_ids from configs (paper accounts work even without broker)
+        accounts_to_scan = self.account_ids_for_scanning if self.account_ids_for_scanning else ['default']
+        
+        # Get market data for all accounts (or use paper broker if no real broker)
+        for account_id in accounts_to_scan:
             try:
+                # Get broker client (may be PaperBroker or OandaClient)
                 client = self.account_manager.get_account_client(account_id)
-                market_data = client.get_current_prices(['EUR_USD', 'GBP_USD', 'XAU_USD', 'USD_JPY', 'AUD_USD'])
                 
-                # Test each strategy
-                for strategy_name, strategy in self.strategies.items():
+                # If no client available, create a temporary paper broker for scanning
+                if not client:
+                    from src.core.paper_broker import PaperBroker
+                    config = self.account_configs.get(account_id)
+                    currency = config.instruments[0].split('_')[1] if config and config.instruments else "USD"
+                    client = PaperBroker(account_id=account_id, currency=currency)
+                    logger.debug(f"📄 Using temporary paper broker for scanning: {account_id[-3:]}")
+                
+                # Get instruments from account config, or use defaults
+                if account_id in self.account_configs:
+                    config = self.account_configs[account_id]
+                    instruments = config.instruments if config.instruments else ['EUR_USD', 'GBP_USD', 'XAU_USD', 'USD_JPY', 'AUD_USD']
+                else:
+                    instruments = ['EUR_USD', 'GBP_USD', 'XAU_USD', 'USD_JPY', 'AUD_USD']
+                
+                market_data = client.get_current_prices(instruments)
+                
+                # Get strategy for this account (from config or default)
+                if account_id in self.account_configs:
+                    config = self.account_configs[account_id]
+                    strategy_name = config.strategy_name
+                    # Map strategy name to strategy instance
+                    if strategy_name == 'momentum':
+                        strategy = self.strategies['momentum']
+                    elif strategy_name in ('gold_scalping', 'gold_scalping_optimized'):
+                        strategy = self.strategies['gold']
+                    else:
+                        strategy = self.strategies['momentum']  # Default
+                else:
+                    # Test all strategies if no specific account config
+                    strategy = None
+                    strategies_to_test = self.strategies
+                
+                # Test strategy(ies)
+                if strategy:
+                    # Single strategy for this account
                     try:
                         signals = strategy.analyze_market(market_data)
                         if signals:
@@ -84,15 +129,31 @@ class WorkingTradingSystem:
                                 signal.account_id = account_id
                                 all_signals.append(signal)
                     except Exception as e:
-                        logger.error(f"❌ {strategy_name} failed for account {account_id[-3:]}: {e}")
+                        logger.warning(f"⚠️ {strategy_name} failed for account {account_id[-3:]}: {e}")
+                else:
+                    # Test all strategies (fallback)
+                    for strategy_name, strategy in strategies_to_test.items():
+                        try:
+                            signals = strategy.analyze_market(market_data)
+                            if signals:
+                                logger.info(f"📊 {strategy_name} generated {len(signals)} signals")
+                                for signal in signals:
+                                    signal.account_id = account_id
+                                    all_signals.append(signal)
+                        except Exception as e:
+                            logger.warning(f"⚠️ {strategy_name} failed: {e}")
                         
             except Exception as e:
-                logger.error(f"❌ Failed to get market data for account {account_id[-3:]}: {e}")
+                logger.warning(f"⚠️ Failed to get market data for account {account_id[-3:]}: {e}")
         
         logger.info(f"📊 Total signals generated: {len(all_signals)}")
         
-        # EXECUTE TRADES
+        # EXECUTE TRADES (only if order managers are available)
         executed_trades = 0
+        if not self.order_managers:
+            logger.info("ℹ️ No order managers available - signals generated but not executed (paper mode)")
+            return len(all_signals)  # Return signal count, not executed count
+        
         for signal in all_signals:
             try:
                 account_id = signal.account_id
