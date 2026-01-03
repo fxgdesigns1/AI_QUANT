@@ -31,6 +31,73 @@ except ImportError:
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+def _can_execute() -> tuple[bool, str]:
+    """Determine if execution is enabled based on trading mode and flags.
+    
+    Returns:
+        (can_execute: bool, reason: str)
+    """
+    gate = ExecutionGate()
+    decision = gate.decision()
+    
+    # Live mode: requires dual-confirm
+    if decision.mode == 'live':
+        if decision.allowed:
+            return (True, "live_dual_enabled")
+        else:
+            return (False, f"live_blocked_{decision.reason}")
+    
+    # Paper mode: requires PAPER_EXECUTION_ENABLED=true
+    paper_execution = os.getenv('PAPER_EXECUTION_ENABLED', 'false').lower() == 'true'
+    if paper_execution:
+        return (True, "paper_execution_enabled")
+    else:
+        return (False, "paper_signals_only")
+
+
+def _is_placeholder_account_id(account_id: str) -> bool:
+    """Check if account_id is clearly a placeholder/invalid value."""
+    if not account_id or not account_id.strip():
+        return True
+    
+    account_id_lower = account_id.lower().strip()
+    
+    # Common placeholder prefixes
+    placeholder_prefixes = ['test-', 'demo-', 'placeholder-', 'replace_', 'example-', 'sample-']
+    if any(account_id_lower.startswith(prefix) for prefix in placeholder_prefixes):
+        return True
+    
+    # Too short to be a real OANDA account ID
+    if len(account_id.strip()) <= 3:
+        return True
+    
+    # Contains placeholder keywords
+    placeholder_keywords = ['placeholder', 'demo', 'test', 'example', 'sample', 'replace']
+    if any(keyword in account_id_lower for keyword in placeholder_keywords):
+        return True
+    
+    return False
+
+
+def _has_valid_broker(account_id: str, account_manager) -> bool:
+    """Check if account has a valid (non-placeholder) broker client for execution."""
+    # Placeholder account_ids cannot have valid brokers
+    if _is_placeholder_account_id(account_id):
+        return False
+    
+    # Check if broker client exists and is not PaperBroker (for execution purposes)
+    client = account_manager.get_account_client(account_id)
+    if not client:
+        return False
+    
+    # PaperBroker is not a valid execution broker
+    from src.core.paper_broker import PaperBroker
+    if isinstance(client, PaperBroker):
+        return False
+    
+    return True
+
+
 class WorkingTradingSystem:
     def __init__(self):
         # Defer OANDA_API_KEY check to runtime (allows paper-mode testing)
@@ -51,28 +118,34 @@ class WorkingTradingSystem:
         }
         self.order_managers = {}
         
-        # CRITICAL: Only initialize OrderManager if execution is actually enabled
-        # Paper mode should NEVER initialize execution components
-        gate = ExecutionGate()
-        decision = gate.decision()
+        # Determine execution eligibility
+        can_execute, exec_reason = _can_execute()
+        self.execution_enabled = can_execute
         
-        if decision.mode == 'live' and decision.allowed:
-            # Only initialize order managers when live execution is enabled
-            if self.active_accounts:
-                for account_id in self.active_accounts:
+        # Count accounts with valid execution brokers (non-placeholder, non-PaperBroker)
+        execution_ready_accounts = []
+        if can_execute:
+            for account_id in self.active_accounts:
+                if _has_valid_broker(account_id, self.account_manager):
+                    execution_ready_accounts.append(account_id)
                     try:
                         self.order_managers[account_id] = OrderManager(account_id=account_id)
                     except Exception as e:
                         logger.warning(f"⚠️ Could not initialize OrderManager for {account_id}: {e}")
+        
+        if not can_execute:
+            logger.info(f"📄 Execution disabled ({exec_reason}) - signals-only mode")
+        elif not execution_ready_accounts:
+            logger.info(f"📄 Execution enabled but no valid brokers available - signals-only mode")
         else:
-            logger.debug("📄 Paper mode: OrderManager initialization skipped (execution components not needed)")
+            logger.info(f"✅ Execution enabled ({exec_reason}) - {len(execution_ready_accounts)} account(s) ready")
         
         if not self.account_ids_for_scanning:
             logger.info("ℹ️ No accounts configured in YAML - scanning will run with default instruments")
         else:
             logger.info(f"✅ Working Trading System initialized")
             logger.info(f"   Accounts for scanning: {len(self.account_ids_for_scanning)}")
-            logger.info(f"   Accounts with broker: {len(self.active_accounts)}")
+            logger.info(f"   Accounts with execution capability: {len(execution_ready_accounts)}")
     
     def scan_and_execute(self):
         """Scan for opportunities and EXECUTE trades immediately
@@ -156,10 +229,14 @@ class WorkingTradingSystem:
         
         logger.info(f"📊 Total signals generated: {len(all_signals)}")
         
-        # EXECUTE TRADES (only if order managers are available)
+        # EXECUTE TRADES (only if execution is enabled and order managers are available)
         executed_trades = 0
+        if not self.execution_enabled:
+            logger.info(f"📄 Execution disabled (signals-only) — signals generated: {len(all_signals)}, executed: 0")
+            return len(all_signals)  # Return signal count, not executed count
+        
         if not self.order_managers:
-            logger.info("ℹ️ No order managers available - signals generated but not executed (paper mode)")
+            logger.info(f"📄 Execution enabled but no order managers available — signals generated: {len(all_signals)}, executed: 0")
             return len(all_signals)  # Return signal count, not executed count
         
         for signal in all_signals:
@@ -206,7 +283,10 @@ class WorkingTradingSystem:
             except Exception as e:
                 logger.error(f"❌ Trade execution failed: {e}")
         
-        logger.info(f"🎯 EXECUTED {executed_trades} TRADES")
+        if executed_trades > 0:
+            logger.info(f"🎯 EXECUTED {executed_trades} TRADES")
+        else:
+            logger.info(f"📄 Execution enabled but no trades executed — signals generated: {len(all_signals)}, executed: 0")
         return executed_trades
 
 def run_forever(max_iterations: int = 0) -> None:

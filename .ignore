@@ -1,0 +1,48 @@
+# Ripgrep ignore patterns
+# Use with: rg --ignore-file .ignore
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Archives and backups
+archives/
+backups/
+*.backup
+*.bak
+
+# Node modules
+node_modules/
+
+# Build artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+build/
+dist/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/

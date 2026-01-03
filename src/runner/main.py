@@ -1,36 +1,33 @@
 #!/usr/bin/env python3
 """
-DEPRECATED: Legacy runner shim
+DEPRECATED: This entrypoint is deprecated.
 
-The canonical entrypoint is now: python -m runner_src.runner.main
+Use the canonical entrypoint instead:
+    python -m runner_src.runner.main
 
-This file is a strict deprecation notice and does NOT forward automatically
-to avoid import path conflicts.
+This file exists for backwards compatibility but should not be used.
 """
 
 import sys
 
-
-def main() -> int:
-    print("", file=sys.stderr)
-    print("=" * 70, file=sys.stderr)
-    print("⚠️  DEPRECATED RUNNER", file=sys.stderr)
-    print("=" * 70, file=sys.stderr)
-    print("", file=sys.stderr)
-    print("This runner (python -m src.runner.main) is deprecated.", file=sys.stderr)
-    print("", file=sys.stderr)
-    print("Please use the canonical runner:", file=sys.stderr)
-    print("", file=sys.stderr)
-    print("    python -m runner_src.runner.main", file=sys.stderr)
-    print("", file=sys.stderr)
-    print("Or with environment variables:", file=sys.stderr)
-    print("", file=sys.stderr)
-    print("    MAX_ITERATIONS=1 TRADING_MODE=paper python -m runner_src.runner.main", file=sys.stderr)
-    print("", file=sys.stderr)
-    print("=" * 70, file=sys.stderr)
-    print("", file=sys.stderr)
-    return 1
-
+def main():
+    print("=" * 70)
+    print("❌ DEPRECATED ENTRYPOINT")
+    print("=" * 70)
+    print()
+    print("This entrypoint (src/runner/main.py) is deprecated.")
+    print()
+    print("Use the canonical entrypoint instead:")
+    print("  python -m runner_src.runner.main")
+    print()
+    print("The canonical entrypoint ensures:")
+    print("  ✅ Proper safety gates")
+    print("  ✅ Correct environment loading")
+    print("  ✅ Execution controls")
+    print("  ✅ Path resolution")
+    print()
+    print("=" * 70)
+    sys.exit(1)
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()

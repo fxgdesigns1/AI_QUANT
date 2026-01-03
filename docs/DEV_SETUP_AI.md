@@ -68,6 +68,20 @@ KILL_SWITCH=true python -m runner_src.runner.main
 - Paper mode uses `PaperBroker` by default, which provides synthetic data without network calls
 - This enables uninterrupted strategy testing without requiring valid OANDA credentials or account IDs
 
+### Signals-Only Mode (Default Paper Behavior)
+
+- `PAPER_EXECUTION_ENABLED` - Set to `true` to enable execution in paper mode (default: `false`)
+- **Default behavior (signals-only):**
+  - OrderManager is NOT initialized
+  - No execution components are created
+  - Logs show: "Execution disabled (signals-only) — signals generated: N, executed: 0"
+  - "Accounts with execution capability: 0" (truthful count)
+- **With PAPER_EXECUTION_ENABLED=true:**
+  - OrderManager initializes for valid (non-placeholder) accounts
+  - Execution components are created
+  - Logs show actual execution counts
+  - "Accounts with execution capability: N" (where N = valid brokers)
+
 ## Account Configuration
 
 ### accounts.yaml Schema
