@@ -51,13 +51,21 @@ class WorkingTradingSystem:
         }
         self.order_managers = {}
         
-        # Initialize order managers for each account (if broker is available)
-        if self.active_accounts:
-            for account_id in self.active_accounts:
-                try:
-                    self.order_managers[account_id] = OrderManager(account_id=account_id)
-                except Exception as e:
-                    logger.warning(f"⚠️ Could not initialize OrderManager for {account_id}: {e}")
+        # CRITICAL: Only initialize OrderManager if execution is actually enabled
+        # Paper mode should NEVER initialize execution components
+        gate = ExecutionGate()
+        decision = gate.decision()
+        
+        if decision.mode == 'live' and decision.allowed:
+            # Only initialize order managers when live execution is enabled
+            if self.active_accounts:
+                for account_id in self.active_accounts:
+                    try:
+                        self.order_managers[account_id] = OrderManager(account_id=account_id)
+                    except Exception as e:
+                        logger.warning(f"⚠️ Could not initialize OrderManager for {account_id}: {e}")
+        else:
+            logger.debug("📄 Paper mode: OrderManager initialization skipped (execution components not needed)")
         
         if not self.account_ids_for_scanning:
             logger.info("ℹ️ No accounts configured in YAML - scanning will run with default instruments")
@@ -232,6 +240,12 @@ def main():
     run_forever()
 
 if __name__ == "__main__":
-    main()
+    # BLOCKED: Direct execution bypasses canonical entrypoint and safety gates
+    # Use canonical entrypoint: python -m runner_src.runner.main
+    import sys
+    print("❌ BLOCKED: Direct execution of working_trading_system.py is not allowed.")
+    print("   Use the canonical entrypoint: python -m runner_src.runner.main")
+    print("   This ensures proper safety gates, execution controls, and environment setup.")
+    sys.exit(1)
 
 
