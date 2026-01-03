@@ -17,6 +17,37 @@ from .paper_broker import PaperBroker
 logger = logging.getLogger(__name__)
 
 
+def _is_placeholder_account_id(account_id: str) -> bool:
+    """Check if account_id is clearly a placeholder/invalid value.
+    
+    Returns True if account_id matches common placeholder patterns:
+    - Starts with 'test-', 'demo-', 'placeholder-', 'REPLACE_'
+    - Equals '001', '002', etc. (too short to be real OANDA ID)
+    - Contains 'placeholder', 'demo', 'test' (case-insensitive)
+    - Is empty or whitespace
+    """
+    if not account_id or not account_id.strip():
+        return True
+    
+    account_id_lower = account_id.lower().strip()
+    
+    # Common placeholder prefixes
+    placeholder_prefixes = ['test-', 'demo-', 'placeholder-', 'replace_', 'example-', 'sample-']
+    if any(account_id_lower.startswith(prefix) for prefix in placeholder_prefixes):
+        return True
+    
+    # Too short to be a real OANDA account ID (real IDs are like "101-004-30719775-009")
+    if len(account_id.strip()) <= 3:
+        return True
+    
+    # Contains placeholder keywords
+    placeholder_keywords = ['placeholder', 'demo', 'test', 'example', 'sample', 'replace']
+    if any(keyword in account_id_lower for keyword in placeholder_keywords):
+        return True
+    
+    return False
+
+
 @dataclass
 class AccountConfig:
     """Runtime account configuration"""
@@ -138,6 +169,17 @@ class DynamicAccountManager:
                 if not account_id:
                     logger.warning(f"⚠️  Skipping account without ID")
                     continue
+                
+                # Validate account_id is not a placeholder
+                if _is_placeholder_account_id(account_id):
+                    display_name = account_data.get('display_name', account_data.get('name', 'Unknown'))
+                    logger.warning(
+                        f"⚠️  Account '{display_name}' has placeholder/invalid account_id: '{account_id}'. "
+                        f"Broker initialization will be skipped. "
+                        f"Please update accounts.yaml with a real OANDA PRACTICE account ID from your OANDA portal."
+                    )
+                    # Still create config for scanning, but mark it as placeholder
+                    # (broker init will skip it later)
                 
                 config = AccountConfig(
                     account_id=account_id,
@@ -290,6 +332,26 @@ class DynamicAccountManager:
                 # Use real OANDA client (requires credentials)
                 if not config.api_key or not account_id:
                     logger.warning(f"⚠️ Skipping broker init for {config.display_name}: missing credentials")
+                    continue
+                
+                # Skip broker init for placeholder/invalid account IDs
+                if _is_placeholder_account_id(account_id):
+                    logger.warning(
+                        f"⚠️ Skipping OANDA broker init for {config.display_name}: "
+                        f"account_id '{account_id}' appears to be a placeholder. "
+                        f"Update accounts.yaml with a real OANDA PRACTICE account ID to enable live broker connection."
+                    )
+                    # Fall back to PaperBroker for scanning
+                    try:
+                        client = PaperBroker(
+                            account_id=account_id,
+                            currency=config.instruments[0].split('_')[1] if config.instruments else "USD",
+                            initial_balance=10000.0
+                        )
+                        self.accounts[account_id] = client
+                        logger.info(f"📄 Using paper broker for {config.display_name} (placeholder account_id)")
+                    except Exception as e2:
+                        logger.warning(f"⚠️ Failed to initialize paper broker fallback: {e2}")
                     continue
                 
                 try:

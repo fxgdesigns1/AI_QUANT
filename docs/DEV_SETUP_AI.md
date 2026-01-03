@@ -68,6 +68,37 @@ KILL_SWITCH=true python -m runner_src.runner.main
 - Paper mode uses `PaperBroker` by default, which provides synthetic data without network calls
 - This enables uninterrupted strategy testing without requiring valid OANDA credentials or account IDs
 
+## Account Configuration
+
+### accounts.yaml Schema
+
+The system loads account configurations from `google-cloud-trading-system/accounts.yaml`.
+
+**Required fields:**
+- `id` - OANDA account ID (e.g., `"101-004-30719775-009"`)
+- `name` - Account name
+- `active` - Boolean (true/false)
+- `strategy` - Strategy name (e.g., `"momentum"`, `"gold_scalping"`)
+- `instruments` - List of instruments (e.g., `["XAU_USD", "EUR_USD"]`)
+
+**Optional fields:**
+- `display_name` - Display name for dashboard
+- `risk_settings` - Risk configuration
+- `priority` - Display priority (lower = shows first)
+
+**Finding Your OANDA Account ID:**
+1. Log into [OANDA Practice Portal](https://www.oanda.com/us-en/trading/practice-account/)
+2. Navigate to Account → Account Details
+3. Copy the Account ID (format: `101-004-30719775-009`)
+4. Update `accounts.yaml` with the real account ID
+
+**Placeholder Account IDs:**
+The system detects and safely handles placeholder account IDs (e.g., `"test-001"`, `"REPLACE_WITH_OANDA_ACCOUNT_ID"`):
+- Placeholder accounts will use PaperBroker (no network calls)
+- System will warn about placeholder account IDs
+- Scanning continues normally even with placeholder accounts
+- No 400 errors will be generated for placeholder account IDs
+
 ## Verification Playbook
 
 ### T1: Live Mode Gate Verification
@@ -151,21 +182,40 @@ MAX_ITERATIONS=5 TRADING_MODE=paper PAPER_ALLOW_OANDA_NETWORK=false python -m ru
 🛑 Reached max iterations (5), stopping.
 ```
 
-### T6: Dual-Confirm Live Mode Verification
+### T6: Live Broker Init Sanity Check
 
-**Verify live mode requires both confirms:**
+**Verify broker initialization handles placeholder/invalid account IDs safely:**
 
 ```bash
-# Without both confirms - should NOT execute
-MAX_ITERATIONS=1 TRADING_MODE=live LIVE_TRADING=true python -m runner_src.runner.main 2>&1 | \
-  rg -n "live_order_executed|EXECUTED [1-9]"
-# Expected: ✅ No matches (no trades executed)
+# With placeholder account_id (e.g., "REPLACE_WITH_OANDA_ACCOUNT_ID" or "test-001")
+MAX_ITERATIONS=1 TRADING_MODE=live LIVE_TRADING=true LIVE_TRADING_CONFIRM=true python3 -m runner_src.runner.main 2>&1 | \
+  rg -n "OANDA client initialized|Failed to initialize broker|400 Client Error|Invalid value specified for 'accountID'|Active accounts|placeholder|Skipping OANDA broker init"
+# Expected: 
+#   - Should NOT show "400 Client Error" or "Invalid value specified for 'accountID'"
+#   - Should show warning about placeholder account_id
+#   - Should show "Skipping OANDA broker init" for placeholder accounts
+#   - Should NOT show "OANDA client initialized" for placeholder accounts
+#   - Scanning should still run (Active accounts may be 0, but scanning continues)
 
-# With both confirms - should execute (if broker available)
-MAX_ITERATIONS=1 TRADING_MODE=live LIVE_TRADING=true LIVE_TRADING_CONFIRM=true python -m runner_src.runner.main 2>&1 | \
-  rg -n "execution_gate_decision"
-# Expected: Should show execution_gate_decision with reason: "live_dual_enabled"
+# With real account_id (requires valid OANDA PRACTICE account ID in accounts.yaml)
+MAX_ITERATIONS=1 TRADING_MODE=live LIVE_TRADING=true LIVE_TRADING_CONFIRM=true python3 -m runner_src.runner.main 2>&1 | \
+  rg -n "OANDA client initialized|Failed to initialize broker|400 Client Error|Invalid value specified for 'accountID'|Active accounts"
+# Expected:
+#   - Should show "OANDA client initialized" (if account_id is valid)
+#   - Should NOT show "400 Client Error" or "Invalid value specified for 'accountID'"
+#   - Should show "Active accounts: >= 1" (if at least one account is valid)
 ```
+
+**Note:** To find your OANDA PRACTICE account ID:
+1. Log into [OANDA Practice Portal](https://www.oanda.com/us-en/trading/practice-account/)
+2. Navigate to Account → Account Details
+3. Copy the Account ID (format: `101-004-30719775-009`)
+4. Update `accounts.yaml` with the real account ID
+
+**Important:** Do not enable `LIVE_TRADING=true` and `LIVE_TRADING_CONFIRM=true` unless:
+- You have verified the account_id in accounts.yaml is correct
+- You are ready for live trading execution
+- You understand the risks
 
 ## Rollback
 
