@@ -245,21 +245,32 @@ class DynamicAccountManager:
         PAPER_ALLOW_OANDA_NETWORK=true is set.
         
         In live mode, requires valid OANDA credentials and dual-confirm flags.
+        If dual-confirm is missing, uses PaperBroker to prevent network calls.
         """
         trading_mode = os.getenv('TRADING_MODE', 'paper').lower()
         allow_network = os.getenv('PAPER_ALLOW_OANDA_NETWORK', 'false').lower() == 'true'
         has_broker_creds = bool(os.getenv('OANDA_API_KEY'))
+        
+        # Check dual-confirm for live mode
+        live_trading = os.getenv('LIVE_TRADING', 'false').lower() == 'true'
+        live_confirm = os.getenv('LIVE_TRADING_CONFIRM', 'false').lower() == 'true'
+        live_dual_enabled = live_trading and live_confirm
         
         # Determine broker type
         use_paper_broker = (
             trading_mode == 'paper' and not allow_network
         ) or (
             not has_broker_creds
+        ) or (
+            trading_mode == 'live' and not live_dual_enabled
         )
         
         if use_paper_broker:
             logger.info(f"📄 Using PAPER BROKER for all accounts (no network calls)")
-            logger.info(f"   Set PAPER_ALLOW_OANDA_NETWORK=true to enable OANDA calls in paper mode")
+            if trading_mode == 'paper':
+                logger.info(f"   Set PAPER_ALLOW_OANDA_NETWORK=true to enable OANDA calls in paper mode")
+            elif trading_mode == 'live' and not live_dual_enabled:
+                logger.info(f"   Live mode requires LIVE_TRADING=true AND LIVE_TRADING_CONFIRM=true for OANDA network calls")
         
         # Initialize broker clients
         for account_id, config in self.account_configs.items():
