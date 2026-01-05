@@ -31,9 +31,9 @@ TELEGRAM_CHAT_ID = settings.telegram_chat_id
 
 # Fail-closed: require critical env vars
 if not OANDA_API_KEY:
-    REDACTED ValueError("OANDA_API_KEY environment variable is required")
+    raise ValueError("OANDA_API_KEY environment variable is required")
 if not TELEGRAM_BOT_TOKEN:
-    REDACTED ValueError("TELEGRAM_BOT_TOKEN environment variable is required")
+    raise ValueError("TELEGRAM_BOT_TOKEN environment variable is required")
 if not TELEGRAM_CHAT_ID:
     raise ValueError("TELEGRAM_CHAT_ID environment variable is required")
 

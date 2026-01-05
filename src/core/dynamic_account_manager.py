@@ -30,9 +30,17 @@ class SimpleAccountConfig:
 
 class SimpleAccountManager:
     def __init__(self) -> None:
+        execution_unlock_ok = os.getenv("EXECUTION_UNLOCK_OK", "").strip().lower() == "true"
         aid = os.getenv("OANDA_ACCOUNT_ID", "").strip()
+        
         if not aid:
-            # Paper-safe: allow no-account mode for scanning-only
+            if execution_unlock_ok:
+                # If execution is unlocked but account ID missing, fail closed
+                raise RuntimeError(
+                    "EXECUTION_UNLOCK_OK=true requires OANDA_ACCOUNT_ID to be set. "
+                    "Set OANDA_ACCOUNT_ID or set EXECUTION_UNLOCK_OK=false for signals-only mode."
+                )
+            # Paper-safe: allow no-account mode for scanning-only when execution is locked
             logger.warning("⚠️ OANDA_ACCOUNT_ID not set - running in paper mode with zero accounts (signals-only)")
             self._accounts = []
             self.account_configs = {}
@@ -46,6 +54,15 @@ class SimpleAccountManager:
                     instruments=['EUR_USD', 'GBP_USD', 'XAU_USD', 'USD_JPY', 'AUD_USD']
                 )
             }
+    
+    def execution_capable(self) -> bool:
+        """Check if execution is capable (has accounts and execution unlocked)"""
+        execution_unlock_ok = os.getenv("EXECUTION_UNLOCK_OK", "").strip().lower() == "true"
+        return execution_unlock_ok and len(self._accounts) > 0
+    
+    def accounts_loaded(self) -> int:
+        """Return count of loaded accounts"""
+        return len(self._accounts)
 
     def list_accounts(self):
         return self._accounts

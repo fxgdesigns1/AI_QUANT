@@ -12,7 +12,7 @@ OANDA_BASE_URL = f'https://api-fx{OANDA_ENV}.oanda.com' if OANDA_ENV == "practic
 
 # Fail-closed: require API key
 if not OANDA_API_KEY:
-    REDACTED ValueError("OANDA_API_KEY environment variable is required")
+    raise ValueError("OANDA_API_KEY environment variable is required")
 
 headers = {
     'Authorization': f'Bearer {OANDA_API_KEY}',

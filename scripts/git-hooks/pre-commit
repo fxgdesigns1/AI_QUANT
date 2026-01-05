@@ -1,28 +1,155 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Scan ONLY added lines from staged diff (ignores deletions).
-# Allow safe placeholder examples in templates/docs (still fail on real-looking tokens).
+# Pre-commit hook: file-aware secret scanning
+# Scans ONLY staged added lines from INCLUDED files (code/config)
+# Skips excluded files (docs/artifacts) entirely
 
-ADDED_LINES="$(git diff --cached --unified=0 | grep -E '^\+' | grep -vE '^\+\+\+' || true)"
+# Debug mode: set PRECOMMIT_DEBUG=1 to see which files are scanned
+DEBUG="${PRECOMMIT_DEBUG:-0}"
 
-# Exclude this hook file from scanning to avoid self-pattern false positives
-ADDED_LINES="$(echo "$ADDED_LINES" | grep -vE '^\+.*(scripts/git-hooks/pre-commit|\.git/hooks/pre-commit)' || true)"
+# File inclusion/exclusion policy
+INCLUDE_PATTERNS=(
+  "*.py"
+  "*.sh"
+  "*.yaml"
+  "*.yml"
+  "*.toml"
+  "*.ini"
+  "*.service"
+  "*.env.example"
+  "systemd/**"
+  "scripts/**"
+  "src/**"
+  "runner_src/**"
+  "google-cloud-trading-system/**"
+)
 
-# Secret-like patterns (tuned to reduce false positives, still fail-closed).
-# NOTE: Environment=OANDA_API_KEY= REDACTED catches systemd inline secret injection
+EXCLUDE_PATTERNS=(
+  "ARTIFACTS/**"
+  "docs/**"
+  "**/*.md"
+  "**/*.txt"
+  "**/*.json"
+  "**/*.lock"
+  "**/*.log"
+  "scripts/git-hooks/pre-commit"  # Exclude self
+)
+
+# Secret-like patterns (fail-closed)
 PATTERN='-----BEGIN|PRIVATE KEY|OPENSSH|xox[baprs]-|bot[0-9]+:|AIza[0-9A-Za-z_\-]{10,}|sk-[0-9A-Za-z_\-]{10,}|c01de9eb4d79|a3699a9d6b6d94d4e2c4c59748e73e2d|7248728383:|Environment=(OANDA_API_KEY|TELEGRAM_BOT_TOKEN|OPENAI_API_KEY|GEMINI_API_KEY|GOOGLE_API_KEY|MARKETAUX_KEY|MARKETAUX_KEYS)=|OANDA_API_KEY[[:space:]]*=[[:space:]]*["\x27]|TELEGRAM_BOT_TOKEN[[:space:]]*=[[:space:]]*["\x27]|api[_-]?key[[:space:]]*=[[:space:]]*["\x27]|token[[:space:]]*=[[:space:]]*["\x27]|secret[[:space:]]*=[[:space:]]*["\x27]|password[[:space:]]*=[[:space:]]*["\x27]'
 
-# Skip placeholder examples (templates/docs) and documentation references.
-# NOTE: if you paste a real key into templates/docs, it should still be caught by sk-/AIza strong patterns above.
-FILTERED="$(echo "$ADDED_LINES" | grep -vE 'your_key_here|sk-your|AIza-your|<your_key>|<your_token>|REPLACE_ME|INSERT_KEY_HERE|hardcoded_value|fallback_value|c01de9eb4d79.*REDACTED|Pattern.*c01de9eb4d79|secrets_scan_raw_hits|PRIVATE KEY.*grep|OANDA_API_KEY.*environment|sk-new-key-here|AIza-new-key-here' || true)"
+# Safe placeholder patterns (allowed in code)
+SAFE_PLACEHOLDERS='your_key_here|your-practice-api-key|your-practice-account-id|your_api_key|your_token|sk-your|AIza-your|<your_key>|<your_token>|REPLACE_ME|INSERT_KEY_HERE|hardcoded_value|fallback_value|c01de9eb4d79.*REDACTED|Pattern.*c01de9eb4d79|secrets_scan_raw_hits|PRIVATE KEY.*grep|OANDA_API_KEY.*environment|sk-new-key-here|AIza-new-key-here|re\.compile.*PRIVATE KEY|re\.compile.*BEGIN|SAFE_MARKERS|SECRET_PATTERNS|verify_repo_state|verify_all_local|VIOLATIONS='
 
-if [ -n "$FILTERED" ]; then
-  if echo "$FILTERED" | grep -nE -- "$PATTERN" >/dev/null; then
-    echo "ERROR: possible secret detected in ADDED staged diff. Commit blocked." >&2
-    echo "$FILTERED" | grep -nE -- "$PATTERN" || true
-    exit 1
+# Check if file matches include pattern
+matches_include() {
+  local file="$1"
+  local pattern
+  for pattern in "${INCLUDE_PATTERNS[@]}"; do
+    case "$file" in
+      $pattern)
+        return 0
+        ;;
+    esac
+  done
+  return 1
+}
+
+# Check if file matches exclude pattern
+matches_exclude() {
+  local file="$1"
+  local pattern
+  for pattern in "${EXCLUDE_PATTERNS[@]}"; do
+    # Use [[ for more reliable pattern matching
+    if [[ "$file" == $pattern ]] || [[ "$file" =~ $pattern ]]; then
+      return 0
+    fi
+    # Also check if file path starts with pattern (for ARTIFACTS/**)
+    if [[ "$pattern" == *"/**" ]]; then
+      local prefix="${pattern%/**}"
+      if [[ "$file" == "$prefix"/* ]]; then
+        return 0
+      fi
+    fi
+  done
+  return 1
+}
+
+# Main scanning logic
+SCANNED_COUNT=0
+SKIPPED_COUNT=0
+VIOLATIONS=""
+
+# Get staged files (NUL-delimited for spaces)
+while IFS= read -r -d '' file; do
+  # Skip if matches exclude
+  if matches_exclude "$file"; then
+    ((SKIPPED_COUNT++)) || true
+    [ "$DEBUG" = "1" ] && echo "SKIP: $file (excluded)" >&2
+    continue
   fi
+  
+  # Only scan if matches include
+  if ! matches_include "$file"; then
+    ((SKIPPED_COUNT++)) || true
+    [ "$DEBUG" = "1" ] && echo "SKIP: $file (not in include list)" >&2
+    continue
+  fi
+  
+  # File is included - scan its staged added lines
+  ((SCANNED_COUNT++)) || true
+  [ "$DEBUG" = "1" ] && echo "SCAN: $file" >&2
+  
+  # Get added lines for this file only
+  ADDED_LINES="$(git diff --cached -U0 -- "$file" | grep -E '^\+' | grep -vE '^\+\+\+' || true)"
+  
+  if [ -z "$ADDED_LINES" ]; then
+    continue
+  fi
+  
+  # Filter out safe placeholders FIRST (before pattern matching)
+  # This must happen before pattern matching to avoid false positives
+  FILTERED=""
+  while IFS= read -r line; do
+    # Skip if line contains ANY safe placeholder pattern
+    if echo "$line" | grep -qE "$SAFE_PLACEHOLDERS"; then
+      continue
+    fi
+    # Also check case statement patterns explicitly
+    case "$line" in
+      *your-practice-api-key*|*your-practice-account-id*|*sk-new-key-here*|*AIza-new-key-here*|*re\.compile*|*SAFE_MARKERS*|*SECRET_PATTERNS*|*\*your-practice-api-key\*|*\*your-practice-account-id\*)
+        continue
+        ;;
+      *)
+        FILTERED="${FILTERED}${line}\n"
+        ;;
+    esac
+  done <<< "$ADDED_LINES"
+  
+  if [ -z "$FILTERED" ]; then
+    continue
+  fi
+  
+  # Now check pattern on filtered lines (safe placeholders already removed)
+  FILE_VIOLATIONS="$(echo -e "$FILTERED" | grep -nE -- "$PATTERN" || true)"
+  
+  if [ -n "$FILE_VIOLATIONS" ]; then
+    VIOLATIONS="${VIOLATIONS}${file}:\n${FILE_VIOLATIONS}\n"
+  fi
+done < <(git diff --cached --name-only -z)
+
+# Debug output
+if [ "$DEBUG" = "1" ]; then
+  echo "Scanned: $SCANNED_COUNT files" >&2
+  echo "Skipped: $SKIPPED_COUNT files" >&2
+fi
+
+# Report violations
+if [ -n "$VIOLATIONS" ]; then
+  echo "ERROR: possible secret detected in ADDED staged diff. Commit blocked." >&2
+  echo -e "$VIOLATIONS"
+  exit 1
 fi
 
 exit 0

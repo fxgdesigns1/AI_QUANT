@@ -22,11 +22,11 @@ OANDA_URL = f'https://api-fx{OANDA_ENV}.oanda.com/v3/accounts/{OANDA_ACCOUNT}/pr
 
 # Fail-closed: require critical env vars
 if not TELEGRAM_TOKEN:
-    REDACTED ValueError("TELEGRAM_BOT_TOKEN environment variable is required")
+    raise ValueError("TELEGRAM_BOT_TOKEN environment variable is required")
 if not TELEGRAM_CHAT_ID:
     raise ValueError("TELEGRAM_CHAT_ID environment variable is required")
 if not OANDA_API_KEY:
-    REDACTED ValueError("OANDA_API_KEY environment variable is required")
+    raise ValueError("OANDA_API_KEY environment variable is required")
 
 def send_telegram(message):
     """Send message to Telegram"""
