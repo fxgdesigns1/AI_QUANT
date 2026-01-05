@@ -9,19 +9,19 @@ import json
 from datetime import datetime
 
 # OANDA Configuration - from environment variables
-OANDA_API_KEY = os.getenv('OANDA_API_KEY')
+OANDA_API_KEY = REDACTED'OANDA_API_KEY')
 OANDA_ENV = os.getenv('OANDA_ENV', 'practice')
 OANDA_BASE_URL = f'https://api-fx{OANDA_ENV}.oanda.com/v3' if OANDA_ENV == 'practice' else 'https://api-fxtrade.oanda.com/v3'
 
 # Telegram - from environment variables
-TELEGRAM_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+TELEGRAM_TOKEN = REDACTED'TELEGRAM_BOT_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
 # Fail-closed: require critical env vars
 if not OANDA_API_KEY:
-    raise ValueError("OANDA_API_KEY environment variable is required")
+    REDACTED ValueError("OANDA_API_KEY environment variable is required")
 if not TELEGRAM_TOKEN:
-    raise ValueError("TELEGRAM_BOT_TOKEN environment variable is required")
+    REDACTED ValueError("TELEGRAM_BOT_TOKEN environment variable is required")
 if not TELEGRAM_CHAT_ID:
     raise ValueError("TELEGRAM_CHAT_ID environment variable is required")
 

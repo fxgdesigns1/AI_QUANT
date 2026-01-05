@@ -6,7 +6,7 @@ import urllib.parse
 
 
 def send_message(text: str) -> bool:
-    token = os.getenv('TELEGRAM_TOKEN') or os.getenv('TELEGRAM_BOT_TOKEN') or '7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU'
+    token = os.getenv('TELEGRAM_TOKEN') or os.getenv('TELEGRAM_BOT_TOKEN') or '7248728383:REDACTED'
     chat_id = os.getenv('TELEGRAM_CHAT_ID') or '6100678501'
     if not token or not chat_id:
         return False

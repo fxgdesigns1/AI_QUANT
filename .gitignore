@@ -219,3 +219,6 @@ ARTIFACTS/secrets_scan_raw_hits.txt
 
 # Never keep quarantine inside repo
 QUARANTINE/
+secrets_scan_raw_hits.txt
+*_token*
+*_secrets*

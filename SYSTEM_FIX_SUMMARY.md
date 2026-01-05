@@ -39,7 +39,7 @@
 3. Generate NEW practice API token
 4. Update google-cloud-trading-system/.env file:
    ```
-   OANDA_API_KEY=your_new_token_here
+   OANDA_API_KEY=REDACTED
    ```
 5. Restart system
 

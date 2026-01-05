@@ -19,21 +19,21 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Any
 
 # OANDA Configuration - from environment variables
-OANDA_API_KEY = settings.oanda_api_key
+OANDA_API_KEY = REDACTED
 OANDA_ACCOUNT_ID = os.getenv("OANDA_ACCOUNT_ID", "101-004-30719775-008")  # Demo account default
 OANDA_ENV = os.getenv("OANDA_ENV", "practice")
 OANDA_BASE_URL = f"https://api-fx{OANDA_ENV}.oanda.com" if OANDA_ENV == "practice" else "https://api-fxtrade.oanda.com"
 OANDA_STREAM_URL = f"https://stream-fx{OANDA_ENV}.oanda.com" if OANDA_ENV == "practice" else "https://stream-fxtrade.oanda.com"
 
 # Telegram Configuration - from environment variables
-TELEGRAM_BOT_TOKEN = settings.telegram_bot_token
+TELEGRAM_BOT_TOKEN = REDACTED
 TELEGRAM_CHAT_ID = settings.telegram_chat_id
 
 # Fail-closed: require critical env vars
 if not OANDA_API_KEY:
-    raise ValueError("OANDA_API_KEY environment variable is required")
+    REDACTED ValueError("OANDA_API_KEY environment variable is required")
 if not TELEGRAM_BOT_TOKEN:
-    raise ValueError("TELEGRAM_BOT_TOKEN environment variable is required")
+    REDACTED ValueError("TELEGRAM_BOT_TOKEN environment variable is required")
 if not TELEGRAM_CHAT_ID:
     raise ValueError("TELEGRAM_CHAT_ID environment variable is required")
 

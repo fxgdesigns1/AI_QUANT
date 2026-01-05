@@ -55,7 +55,7 @@ def load_config():
     """Load dashboard configuration"""
     config = {
         'telegram': {
-            'token': os.getenv('TELEGRAM_TOKEN', '7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU'),
+            'token': os.getenv('TELEGRAM_TOKEN', '7248728383:REDACTED'),
             'chat_id': os.getenv('TELEGRAM_CHAT_ID', '6100678501')
         },
         'data_sources': {

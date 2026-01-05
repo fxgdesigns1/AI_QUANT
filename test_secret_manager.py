@@ -104,7 +104,7 @@ def test_fallback():
         
         if api_key:
             masked = f"{api_key[:10]}...{api_key[-4:]}" if len(api_key) > 14 else "***"
-            print(f"✓ Fallback working - OANDA_API_KEY: {masked}")
+            print(f"✓ Fallback working - OANDA_API_KEY: REDACTED")
             print("\n✓ FALLBACK TEST PASSED!")
             print("  System will automatically use .env files if Secret Manager is unavailable")
             return True

@@ -107,7 +107,7 @@
 ./working_beautiful_dashboard.py:174:        'total_balance': sum(acc['balance'] for acc in data['accounts']),
 ./working_beautiful_dashboard.py:192:        'total_accounts': len(data['accounts']),
 ./working_beautiful_dashboard.py:193:        'accounts': {acc['id']: acc for acc in data['accounts']},
-./monitor_ppi_and_news.py:18:OANDA_API_KEY = settings.oanda_api_key
+./monitor_ppi_and_news.py:18:OANDA_API_KEY = REDACTED
 ./monitor_ppi_and_news.py:21:OANDA_URL = f'https://api-fx{OANDA_ENV}.oanda.com/v3/accounts/{OANDA_ACCOUNT}/pricing' if OANDA_ENV == "practice" else f"https://api-fxtrade.oanda.com/v3/accounts/{OANDA_ACCOUNT}/pricing"
 ./working_auto_scanner.py:23:from src.core.oanda_client import OandaClient
 ./working_auto_scanner.py:34:        self.active_accounts = self.account_manager.get_active_accounts()
@@ -193,7 +193,7 @@
 ./execute_current_opportunities.py:16:BASE_URL = f'https://api-fx{OANDA_ENV}.oanda.com/v3' if OANDA_ENV == 'practice' else 'https://api-fxtrade.oanda.com/v3'
 ./execute_current_opportunities.py:95:    url = f'{BASE_URL}/accounts/{account}/pricing'
 ./execute_current_opportunities.py:124:    url = f'{BASE_URL}/accounts/{account}/orders'
-./complete_ai_analysis.py:8:OANDA_API_KEY = settings.oanda_api_key
+./complete_ai_analysis.py:8:OANDA_API_KEY = REDACTED
 ./complete_ai_analysis.py:11:OANDA_BASE_URL = f'https://api-fx{OANDA_ENV}.oanda.com' if OANDA_ENV == "practice" else "https://api-fxtrade.oanda.com"
 ./complete_ai_analysis.py:24:    url = f'{OANDA_BASE_URL}/v3/accounts/{OANDA_ACCOUNT_ID}'
 ./complete_ai_analysis.py:38:    url = f'{OANDA_BASE_URL}/v3/accounts/{OANDA_ACCOUNT_ID}/positions'
@@ -221,7 +221,7 @@
 ./take_gold_profit.py:15:env_path = os.path.join(os.path.dirname(__file__), 'google-cloud-trading-system', 'oanda_config.env')
 ./take_gold_profit.py:18:from src.core.oanda_client import OandaClient
 ./test_trade_execution.py:44:                # Show details for accounts with signals
-./test_market_conditions.py:14:OANDA_API_KEY = settings.oanda_api_key
+./test_market_conditions.py:14:OANDA_API_KEY = REDACTED
 ./test_market_conditions.py:28:url = f"https://api-fxpractice.oanda.com/v3/accounts/{ACCOUNT_ID}/instruments/{inst}/candles"
 ./BRUTAL_DIAGNOSTIC_WHY_NO_EXECUTION.py:25:    load_dotenv('google-cloud-trading-system/oanda_config.env')
 ./BRUTAL_DIAGNOSTIC_WHY_NO_EXECUTION.py:54:    socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect(("api-fxpractice.oanda.com", 443))
@@ -262,7 +262,7 @@
 ./force_all_accounts_trade.py:133:            time.sleep(1)  # Brief pause between accounts
 ./force_all_accounts_trade.py:142:    force_trades_all_accounts()
 ./test_all_accounts.py:3:"""Place test trades on ALL accounts"""
-./test_all_accounts.py:9:OANDA_API_KEY = settings.oanda_api_key
+./test_all_accounts.py:9:OANDA_API_KEY = REDACTED
 ./test_all_accounts.py:14:BASE_URL = 'https://api-fxpractice.oanda.com/v3'
 ./test_all_accounts.py:27:def place_order(account_id, instrument, units):
 ./test_all_accounts.py:31:    url = f'{BASE_URL}/accounts/{account_id}/pricing'
@@ -315,7 +315,7 @@
 ./src/core/settings.py:111:        oanda_api_key=oanda_api_key,
 ./src/core/settings.py:112:        oanda_account_id=oanda_account_id,
 ./src/core/settings.py:113:        oanda_env=oanda_env,
-./monitor_cpi_tomorrow.py:18:OANDA_API_KEY = settings.oanda_api_key
+./monitor_cpi_tomorrow.py:18:OANDA_API_KEY = REDACTED
 ./monitor_cpi_tomorrow.py:21:OANDA_URL = f'https://api-fx{OANDA_ENV}.oanda.com/v3/accounts/{OANDA_ACCOUNT}/pricing' if OANDA_ENV == "practice" else f"https://api-fxtrade.oanda.com/v3/accounts/{OANDA_ACCOUNT}/pricing"
 ./test_complete_system.py:43:        active_accounts = account_manager.get_active_accounts()
 ./test_complete_system.py:44:        print(f"✅ Account Manager: {len(active_accounts)} active accounts")
@@ -488,7 +488,7 @@
 ./final_system_verification.py:114:            for account_id in active_accounts:
 ./final_system_verification.py:246:    print("   ✅ Account Manager: 3 active accounts loaded")
 ./final_system_verification.py:256:    print(f"   📊 Active Accounts: {len(active_accounts)}")
-./automated_trading_system.py:17:OANDA_API_KEY = settings.oanda_api_key
+./automated_trading_system.py:17:OANDA_API_KEY = REDACTED
 ./automated_trading_system.py:20:OANDA_BASE_URL = f"https://api-fx{OANDA_ENV}.oanda.com" if OANDA_ENV == "practice" else "https://api-fxtrade.oanda.com"
 ./automated_trading_system.py:21:OANDA_STREAM_URL = f"https://stream-fx{OANDA_ENV}.oanda.com" if OANDA_ENV == "practice" else "https://stream-fxtrade.oanda.com"
 ./automated_trading_system.py:61:            url = f"{OANDA_BASE_URL}/v3/accounts/{self.account_id}"

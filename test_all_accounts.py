@@ -9,7 +9,7 @@ import json
 OANDA_API_KEY = settings.oanda_api_key
 if not OANDA_API_KEY:
     raise ValueError("OANDA_API_KEY environment variable is required")
-TELEGRAM_TOKEN = '7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU'
+TELEGRAM_TOKEN = '7248728383:REDACTED'
 TELEGRAM_CHAT_ID = '6100678501'
 BASE_URL = 'https://api-fxpractice.oanda.com/v3'
 

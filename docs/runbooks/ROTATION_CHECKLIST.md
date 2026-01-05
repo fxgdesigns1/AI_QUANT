@@ -35,11 +35,11 @@ This document provides procedures for rotating API credentials **outside the rep
    ```bash
    # VM
    sudo nano /etc/ai-quant/ai-quant.env
-   # Update: OANDA_API_KEY=new-key-here
+   # Update: OANDA_API_KEY=REDACTED
    
    # Local
    nano .env
-   # Update: OANDA_API_KEY=new-key-here
+   # Update: OANDA_API_KEY=REDACTED
    ```
 
 4. **Restart Services**
@@ -81,7 +81,7 @@ This document provides procedures for rotating API credentials **outside the rep
 4. **Update Environment**
    ```bash
    sudo nano /etc/ai-quant/ai-quant.env
-   # Update: TELEGRAM_BOT_TOKEN=new-token-here
+   # Update: TELEGRAM_BOT_TOKEN=REDACTED
    ```
 
 5. **Test**

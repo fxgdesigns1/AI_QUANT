@@ -316,7 +316,7 @@ eventSource.onmessage = (event) => {
 - **Log Streaming**: Automatic redaction of API keys, passwords, tokens
 
 Redacted patterns:
-- `OANDA_API_KEY=***REDACTED***`
+- `OANDA_API_KEY=REDACTED
 - `token=***REDACTED***`
 - `password=***REDACTED***`
 

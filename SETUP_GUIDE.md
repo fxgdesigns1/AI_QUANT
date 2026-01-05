@@ -77,9 +77,9 @@ If you want to use environment variables for sensitive data:
 ```bash
 # Create .env file
 cat > google-cloud-trading-system/.env << EOF
-OANDA_API_KEY=your-api-key-here
+OANDA_API_KEY=REDACTED
 OANDA_ACCOUNT_ID=your-account-id-here
-TELEGRAM_BOT_TOKEN=your-telegram-token  # optional
+TELEGRAM_BOT_TOKEN=REDACTED  # optional
 TELEGRAM_CHAT_ID=your-chat-id          # optional
 EOF
 ```

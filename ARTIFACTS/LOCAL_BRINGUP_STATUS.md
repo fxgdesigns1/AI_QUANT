@@ -29,7 +29,7 @@
 ### Environment Variables (After Loading .env)
 
 ```
-OANDA_API_KEY: SET
+OANDA_API_KEY: REDACTED
 OANDA_ACCOUNT_ID: SET
 OANDA_BASE_URL: SET
 TRADING_MODE: SET (paper)
