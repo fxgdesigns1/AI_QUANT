@@ -9,27 +9,43 @@ Goals:
 
 from dataclasses import dataclass
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 @dataclass
 class SimpleAccount:
     account_id: str
 
+@dataclass
+class SimpleAccountConfig:
+    """Minimal account config object for compatibility"""
+    account_id: str
+    strategy_name: str = 'momentum'
+    instruments: list = None
+    
+    def __post_init__(self):
+        if self.instruments is None:
+            self.instruments = ['EUR_USD', 'GBP_USD', 'XAU_USD', 'USD_JPY', 'AUD_USD']
+
 class SimpleAccountManager:
     def __init__(self) -> None:
         aid = os.getenv("OANDA_ACCOUNT_ID", "").strip()
         if not aid:
-            raise RuntimeError("Missing OANDA_ACCOUNT_ID (set in environment)")
-        self._accounts = [SimpleAccount(account_id=aid)]
-        
-        # Minimal account configs for compatibility
-        self.account_configs = {
-            aid: {
-                'account_id': aid,
-                'strategy': 'momentum',
-                'enabled': False,  # Disabled by default for safety
-                'paper_mode': True
+            # Paper-safe: allow no-account mode for scanning-only
+            logger.warning("⚠️ OANDA_ACCOUNT_ID not set - running in paper mode with zero accounts (signals-only)")
+            self._accounts = []
+            self.account_configs = {}
+        else:
+            self._accounts = [SimpleAccount(account_id=aid)]
+            # Minimal account configs for compatibility
+            self.account_configs = {
+                aid: SimpleAccountConfig(
+                    account_id=aid,
+                    strategy_name='momentum',
+                    instruments=['EUR_USD', 'GBP_USD', 'XAU_USD', 'USD_JPY', 'AUD_USD']
+                )
             }
-        }
 
     def list_accounts(self):
         return self._accounts
