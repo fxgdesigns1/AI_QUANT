@@ -1,0 +1,4 @@
+src/control_plane/schema.py:21:    max_daily_loss_pct: float = 5.0  # Max daily loss as % of balance
+src/control_plane/schema.py:95:        if not 1.0 <= self.risk.max_daily_loss_pct <= 50.0:
+src/control_plane/schema.py:96:            errors.append(f"risk.max_daily_loss_pct must be 1.0-50.0, got {self.risk.max_daily_loss_pct}")
+scripts/verify_ai_insights_no_leak.py:38:        print("OK: AI call returned (summary_len):", len(r.summary or ""), "seconds:", round(dt, 2))

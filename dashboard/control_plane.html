@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI_QUANT Control Plane</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+        
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        
+        header {
+            background: rgba(15, 15, 35, 0.8);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid #374151;
+        }
+        
+        h1 { font-size: 2rem; margin-bottom: 8px; }
+        .subtitle { color: #9ca3af; font-size: 0.9rem; }
+        
+        .status-bar {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            background: rgba(15, 15, 35, 0.6);
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+        }
+        
+        .status-chip {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-chip.paper { background: #3b82f6; color: white; }
+        .status-chip.live { background: #10b981; color: white; }
+        .status-chip.blocked { background: #ef4444; color: white; }
+        .status-chip.weekend { background: #f59e0b; color: white; }
+        
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 24px; }
+        
+        .card {
+            background: rgba(26, 26, 46, 0.8);
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .card h2 { font-size: 1.2rem; margin-bottom: 16px; color: #f3f4f6; }
+        
+        .strategy-grid { display: grid; gap: 12px; }
+        
+        .strategy-btn {
+            padding: 16px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid #3b82f6;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        
+        .strategy-btn:hover { background: rgba(59, 130, 246, 0.2); transform: translateY(-2px); }
+        .strategy-btn.active { background: rgba(16, 185, 129, 0.2); border-color: #10b981; }
+        
+        .strategy-name { font-weight: 600; font-size: 1rem; margin-bottom: 4px; }
+        .strategy-desc { font-size: 0.85rem; color: #9ca3af; }
+        .strategy-meta { font-size: 0.75rem; color: #6b7280; margin-top: 8px; }
+        
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 0.9rem; }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            background: rgba(15, 15, 35, 0.6);
+            border: 1px solid #374151;
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-size: 0.9rem;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+        
+        .btn:hover { background: #2563eb; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .terminal {
+            background: #000;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 16px;
+            height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+        
+        .terminal-line { margin-bottom: 4px; color: #0f0; }
+        
+        .warning-banner {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 16px 0;
+            color: #fca5a5;
+            font-size: 0.9rem;
+        }
+        
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; }
+        .info-label { color: #9ca3af; }
+        .info-value { font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 AI_QUANT Control Plane</h1>
+            <p class="subtitle">Dashboard API & Runtime Config Management — Safe by Default</p>
+            
+            <div class="status-bar" id="statusBar">
+                <span class="status-chip paper" id="modeChip">
+                    <span class="dot"></span> Loading...
+                </span>
+                <span class="status-chip" id="executionChip">
+                    Execution: Loading...
+                </span>
+                <span class="status-chip" id="accountsChip">
+                    Accounts: Loading...
+                </span>
+            </div>
+        </header>
+        
+        <div id="warningBanner" class="warning-banner" style="display: none;">
+            ⚠️ <span id="warningText"></span>
+        </div>
+        
+        <div class="grid">
+            <!-- System Status Card -->
+            <div class="card">
+                <h2>📊 System Status</h2>
+                <div class="info-row">
+                    <span class="info-label">Mode:</span>
+                    <span class="info-value" id="statusMode">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Execution:</span>
+                    <span class="info-value" id="statusExecution">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Active Strategy:</span>
+                    <span class="info-value" id="statusStrategy">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Scan Interval:</span>
+                    <span class="info-value" id="statusInterval">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Last Scan:</span>
+                    <span class="info-value" id="statusLastScan">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Signals Generated:</span>
+                    <span class="info-value" id="statusSignals">-</span>
+                </div>
+            </div>
+            
+            <!-- Strategy Switcher Card -->
+            <div class="card">
+                <h2>🎯 Strategy Selection</h2>
+                <div class="strategy-grid" id="strategyGrid">
+                    <div>Loading strategies...</div>
+                </div>
+            </div>
+            
+            <!-- Config Editor Card -->
+            <div class="card">
+                <h2>⚙️ Runtime Config</h2>
+                <div class="form-group">
+                    <label for="scanInterval">Scan Interval (seconds):</label>
+                    <input type="number" id="scanInterval" min="1" max="3600" value="30">
+                </div>
+                <div class="form-group">
+                    <label for="maxRisk">Max Risk per Trade (%):</label>
+                    <input type="number" id="maxRisk" min="0.1" max="10" step="0.1" value="1.0">
+                </div>
+                <div class="form-group">
+                    <label for="maxPositions">Max Positions:</label>
+                    <input type="number" id="maxPositions" min="1" max="20" value="3">
+                </div>
+                <button class="btn" id="saveConfigBtn">💾 Save Config</button>
+            </div>
+        </div>
+        
+        <!-- Live Terminal -->
+        <div class="card">
+            <h2>📟 Live Terminal (Streaming Logs)</h2>
+            <div class="terminal" id="terminal"></div>
+        </div>
+    </div>
+    
+    <script>
+        // API Base URL (same origin by default)
+        const API_BASE = '';
+        
+        // State
+        let currentStatus = null;
+        let currentConfig = null;
+        let strategies = [];
+        let eventSource = null;
+        
+        // Auth token (if needed - read from meta tag or localStorage)
+        const AUTH_TOKEN = null; // Set if auth required
+        
+        function getHeaders() {
+            const headers = { 'Content-Type': 'application/json' };
+            if (AUTH_TOKEN) headers['Authorization'] = `Bearer ${AUTH_TOKEN}`;
+            return headers;
+        }
+        
+        // Fetch status
+        async function fetchStatus() {
+            try {
+                const res = await fetch(`${API_BASE}/api/status`);
+                currentStatus = await res.json();
+                updateStatusDisplay();
+            } catch (e) {
+                console.error('Failed to fetch status:', e);
+            }
+        }
+        
+        // Fetch config
+        async function fetchConfig() {
+            try {
+                const res = await fetch(`${API_BASE}/api/config`);
+                currentConfig = await res.json();
+                updateConfigDisplay();
+            } catch (e) {
+                console.error('Failed to fetch config:', e);
+            }
+        }
+        
+        // Fetch strategies
+        async function fetchStrategies() {
+            try {
+                const res = await fetch(`${API_BASE}/api/strategies`);
+                const data = await res.json();
+                strategies = data.strategies || [];
+                renderStrategyGrid();
+            } catch (e) {
+                console.error('Failed to fetch strategies:', e);
+            }
+        }
+        
+        // Update status display
+        function updateStatusDisplay() {
+            if (!currentStatus) return;
+            
+            const { mode, execution_enabled, accounts_execution_capable, active_strategy_key, 
+                    last_scan_at, last_signals_generated, weekend_indicator } = currentStatus;
+            
+            // Mode chip
+            const modeChip = document.getElementById('modeChip');
+            if (mode === 'live' && execution_enabled) {
+                modeChip.className = 'status-chip live';
+                modeChip.innerHTML = '<span class="dot"></span> LIVE';
+            } else if (mode === 'paper' && !execution_enabled) {
+                modeChip.className = 'status-chip paper';
+                modeChip.innerHTML = '<span class="dot"></span> PAPER (Signals-Only)';
+            } else {
+                modeChip.className = 'status-chip blocked';
+                modeChip.innerHTML = '<span class="dot"></span> BLOCKED';
+            }
+            
+            // Execution chip
+            const execChip = document.getElementById('executionChip');
+            execChip.textContent = `Execution: ${execution_enabled ? 'Enabled' : 'Disabled (Signals-Only)'}`;
+            execChip.className = execution_enabled ? 'status-chip live' : 'status-chip blocked';
+            
+            // Accounts chip
+            const accountsChip = document.getElementById('accountsChip');
+            accountsChip.textContent = `Execution-Capable Accounts: ${accounts_execution_capable}`;
+            accountsChip.className = accounts_execution_capable > 0 ? 'status-chip live' : 'status-chip blocked';
+            
+            // Weekend banner
+            if (weekend_indicator) {
+                document.getElementById('warningBanner').style.display = 'block';
+                document.getElementById('warningText').textContent = 
+                    'Weekend detected — markets closed. Signals-only mode recommended.';
+            }
+            
+            // Signals-only warning
+            if (!execution_enabled) {
+                document.getElementById('warningBanner').style.display = 'block';
+                document.getElementById('warningText').textContent = 
+                    'Signals-only mode — no execution possible. Signals will be generated but not executed.';
+            }
+            
+            // Status details
+            document.getElementById('statusMode').textContent = mode.toUpperCase();
+            document.getElementById('statusExecution').textContent = execution_enabled ? 'Enabled' : 'Disabled';
+            document.getElementById('statusStrategy').textContent = active_strategy_key;
+            document.getElementById('statusInterval').textContent = 
+                currentConfig ? `${currentConfig.scan_interval_seconds}s` : '-';
+            document.getElementById('statusLastScan').textContent = last_scan_at || 'Never';
+            document.getElementById('statusSignals').textContent = last_signals_generated || 0;
+        }
+        
+        // Update config display
+        function updateConfigDisplay() {
+            if (!currentConfig) return;
+            
+            document.getElementById('scanInterval').value = currentConfig.scan_interval_seconds;
+            document.getElementById('maxRisk').value = currentConfig.risk.max_risk_per_trade_pct;
+            document.getElementById('maxPositions').value = currentConfig.risk.max_positions;
+            
+            document.getElementById('statusStrategy').textContent = currentConfig.active_strategy_key;
+            document.getElementById('statusInterval').textContent = `${currentConfig.scan_interval_seconds}s`;
+        }
+        
+        // Render strategy grid
+        function renderStrategyGrid() {
+            const grid = document.getElementById('strategyGrid');
+            if (strategies.length === 0) {
+                grid.innerHTML = '<div>No strategies available</div>';
+                return;
+            }
+            
+            grid.innerHTML = strategies.map(s => `
+                <button class="strategy-btn ${currentConfig?.active_strategy_key === s.key ? 'active' : ''}" 
+                        data-key="${s.key}">
+                    <div class="strategy-name">${s.name}</div>
+                    <div class="strategy-desc">${s.description}</div>
+                    <div class="strategy-meta">
+                        Risk: ${s.risk_level} • Session: ${s.session_preference}
+                    </div>
+                </button>
+            `).join('');
+            
+            // Add click handlers
+            grid.querySelectorAll('.strategy-btn').forEach(btn => {
+                btn.addEventListener('click', () => activateStrategy(btn.dataset.key));
+            });
+        }
+        
+        // Activate strategy
+        async function activateStrategy(key) {
+            try {
+                const res = await fetch(`${API_BASE}/api/strategy/activate`, {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ strategy_key: key, scope: 'global' })
+                });
+                
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                
+                const data = await res.json();
+                console.log('Strategy activated:', data);
+                
+                // Refresh config and status
+                await Promise.all([fetchConfig(), fetchStatus()]);
+                renderStrategyGrid();
+                
+                addTerminalLine(`✅ Strategy activated: ${key}`);
+            } catch (e) {
+                console.error('Failed to activate strategy:', e);
+                addTerminalLine(`❌ Failed to activate strategy: ${e.message}`);
+            }
+        }
+        
+        // Save config
+        document.getElementById('saveConfigBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('saveConfigBtn');
+            btn.disabled = true;
+            
+            try {
+                const update = {
+                    scan_interval_seconds: parseInt(document.getElementById('scanInterval').value),
+                    risk: {
+                        max_risk_per_trade_pct: parseFloat(document.getElementById('maxRisk').value),
+                        max_positions: parseInt(document.getElementById('maxPositions').value)
+                    }
+                };
+                
+                const res = await fetch(`${API_BASE}/api/config`, {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify(update)
+                });
+                
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                
+                const data = await res.json();
+                console.log('Config updated:', data);
+                
+                await Promise.all([fetchConfig(), fetchStatus()]);
+                
+                addTerminalLine(`✅ Config saved successfully`);
+            } catch (e) {
+                console.error('Failed to save config:', e);
+                addTerminalLine(`❌ Failed to save config: ${e.message}`);
+            } finally {
+                btn.disabled = false;
+            }
+        });
+        
+        // Terminal management
+        function addTerminalLine(text) {
+            const terminal = document.getElementById('terminal');
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+            terminal.appendChild(line);
+            terminal.scrollTop = terminal.scrollHeight;
+            
+            // Keep last 200 lines
+            while (terminal.children.length > 200) {
+                terminal.removeChild(terminal.firstChild);
+            }
+        }
+        
+        // Start log streaming
+        function startLogStream() {
+            if (eventSource) eventSource.close();
+            
+            eventSource = new EventSource(`${API_BASE}/api/logs/stream`);
+            
+            eventSource.onmessage = (event) => {
+                addTerminalLine(event.data);
+            };
+            
+            eventSource.onerror = (e) => {
+                console.error('Log stream error:', e);
+                addTerminalLine('⚠️ Log stream disconnected - reconnecting...');
+                setTimeout(() => startLogStream(), 5000);
+            };
+        }
+        
+        // Initialize dashboard
+        async function init() {
+            addTerminalLine('🚀 Dashboard initializing...');
+            
+            await Promise.all([
+                fetchStatus(),
+                fetchConfig(),
+                fetchStrategies()
+            ]);
+            
+            startLogStream();
+            
+            // Poll status every 10 seconds
+            setInterval(() => {
+                fetchStatus();
+            }, 10000);
+            
+            addTerminalLine('✅ Dashboard ready');
+        }
+        
+        // Start on load
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

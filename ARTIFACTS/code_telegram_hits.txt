@@ -1,0 +1,15 @@
+scripts/verify_env_no_leak.py:10:print("TELEGRAM_BOT_TOKEN:", mark(settings.telegram_bot_token))
+scripts/verify_env_no_leak.py:11:print("TELEGRAM_CHAT_ID:", mark(settings.telegram_chat_id))
+src/core/settings.py:26:    # TELEGRAM
+src/core/settings.py:27:    telegram_bot_token: Optional[str]
+src/core/settings.py:28:    telegram_chat_id: Optional[str]
+src/core/settings.py:55:    def telegram_configured(self) -> bool:
+src/core/settings.py:56:        return bool(self.telegram_bot_token and self.telegram_chat_id)
+src/core/settings.py:58:    def require_telegram(self) -> None:
+src/core/settings.py:59:        if not self.telegram_configured():
+src/core/settings.py:60:            raise RuntimeError("Missing TELEGRAM_BOT_TOKEN and/or TELEGRAM_CHAT_ID")
+src/core/settings.py:79:    telegram_bot_token = _get_env("TELEGRAM_BOT_TOKEN")
+src/core/settings.py:80:    telegram_chat_id = _get_env("TELEGRAM_CHAT_ID")
+src/core/settings.py:114:        telegram_bot_token=telegram_bot_token,
+src/core/settings.py:115:        telegram_chat_id=telegram_chat_id,
+scripts/git-hooks/pre-commit:13:PATTERN='-----BEGIN|PRIVATE KEY|OPENSSH|xox[baprs]-|bot[0-9]+:|AIza[0-9A-Za-z_\-]{10,}|sk-[0-9A-Za-z_\-]{10,}|OANDA_API_KEY[[:space:]]*=[[:space:]]*["\x27]|TELEGRAM_BOT_TOKEN[[:space:]]*=[[:space:]]*["\x27]|api[_-]?key[[:space:]]*=[[:space:]]*["\x27]|token[[:space:]]*=[[:space:]]*["\x27]|secret[[:space:]]*=[[:space:]]*["\x27]|password[[:space:]]*=[[:space:]]*["\x27]'

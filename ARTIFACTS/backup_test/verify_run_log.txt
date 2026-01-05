@@ -1,0 +1,30 @@
+[VERIFY] === FXG AI-QUANT Backup Verification ===
+[VERIFY] Directory: BACKUPS/C02J611KQ6LR/Gcloud system/20260104T220925Z
+[VERIFY] 
+[VERIFY] Phase 1: Checking required files...
+[✅] MANIFEST.json present
+[✅] SHA256SUMS present
+[✅] NOTE.txt present
+[✅] CORE archive present: CORE_Gcloud system_20260104T220925Z.tar.zst (128M)
+[✅] SENSITIVE_FILES_LIST.txt present (20 files listed)
+[✅] Git bundle present: Gcloud system_C02J611KQ6LR_20260104T220925Z_b4f68c2.git.bundle ( 28M)
+[⚠️ ] Encrypted SENSITIVE bundle not found (optional - set BACKUP_PASSPHRASE to create)
+[VERIFY] 
+[VERIFY] Phase 2: Verifying checksums...
+[✅] All checksums verified
+[VERIFY] 
+[VERIFY] Phase 3: Verifying git bundle...
+[✅] Git bundle is valid
+[VERIFY]   Contains 49 refs
+[VERIFY] 
+[VERIFY] Phase 4: Manifest contents...
+  Timestamp: 2026-01-04T22:09:45Z
+  Hostname: C02J611KQ6LR
+  Repo: Gcloud system
+  Git SHA: b4f68c236aff...
+  Include artifacts: False
+  Encrypted: False
+  Compression: tar.zst
+[VERIFY] 
+[VERIFY] === Verification Summary ===
+[✅] Backup verification PASSED

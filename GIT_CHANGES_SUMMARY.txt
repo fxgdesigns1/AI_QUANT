@@ -1,0 +1,157 @@
+╔═══════════════════════════════════════════════════════════════════════════╗
+║              FORENSIC DASHBOARD INTEGRATION - GIT CHANGES                 ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+📋 SUMMARY
+─────────────────────────────────────────────────────────────────────────────
+Modified:   6 files (276 insertions, 17 deletions)
+Deleted:    2 files (blocking namespace packages)
+Created:    Previously complete (dashboard + API infrastructure)
+
+🔴 CRITICAL FIX: Namespace Package Imports
+─────────────────────────────────────────────────────────────────────────────
+PROBLEM:  Runner couldn't import src.control_plane modules
+ROOT CAUSE: __init__.py files blocked PEP 420 namespace packages
+
+FILES DELETED:
+  - src/control_plane/__init__.py              (305 bytes, metadata only)
+  - google-cloud-trading-system/src/__init__.py (42 bytes, blocking)
+
+REASON:   Workspace rules require namespace packages (no __init__.py in src/)
+IMPACT:   ✅ Runner can now import both:
+          - src.core.* from google-cloud-trading-system/
+          - src.control_plane.* from repo root
+
+VERIFICATION:
+  $ python3 -m runner_src.runner.main --debug-imports
+  DEBUG_IMPORTS_OK
+  src.core.dynamic_account_manager: .../google-cloud-trading-system/src/core/...
+  src.control_plane.status_snapshot: .../src/control_plane/status_snapshot.py
+
+📝 FILES MODIFIED (6)
+─────────────────────────────────────────────────────────────────────────────
+
+1. docs/CANONICAL_ENTRYPOINT.md               (+17 lines)
+   - Added canonical entrypoint documentation
+
+2. runner_src/runner/main.py                  (+46 lines, -17 deletions)
+   - Enhanced namespace package path setup
+   - Added debug imports mode (--debug-imports)
+   - Improved env file loading
+
+3. working_trading_system.py                  (+185 lines, -1 deletion)
+   - Added status snapshot integration
+   - Enhanced signals-only safety gates
+   - Integrated with control plane
+
+4. fixed_dashboard.py                         (+15 lines)
+   - Minor dashboard compatibility fixes
+
+5. working_beautiful_dashboard.py             (+15 lines)
+   - Minor dashboard compatibility fixes
+
+6. working_dashboard.py                       (+15 lines)
+   - Minor dashboard compatibility fixes
+
+📦 FILES PREVIOUSLY CREATED (Untracked, Ready to Commit)
+─────────────────────────────────────────────────────────────────────────────
+
+DASHBOARD & API:
+  templates/forensic_command.html              (1200 lines, fully wired)
+  src/control_plane/api.py                     (719 lines, all endpoints)
+  src/control_plane/status_snapshot.py         (118 lines, atomic bridge)
+  src/control_plane/config_store.py            (atomic config updates)
+  src/control_plane/log_stream.py              (SSE streaming)
+  src/control_plane/strategy_registry.py       (strategy metadata)
+  src/control_plane/schema.py                  (config schema)
+
+SCRIPTS:
+  scripts/run_control_plane.sh                 (API startup)
+  scripts/verify_dashboard_compat.sh           (207 lines, verification suite)
+  scripts/verify_control_plane.sh              (quick health check)
+
+TESTS:
+  tests/test_config_store.py
+  tests/test_control_plane_config.py
+  tests/test_dashboard_compat_endpoints.py
+  tests/test_hot_reload_integration.py
+  tests/test_status_snapshot.py
+
+DOCUMENTATION:
+  FORENSIC_DASHBOARD_WIRED_COMPLETE.md         (comprehensive report)
+  QUICK_START_FORENSIC_DASHBOARD.txt           (quick start guide)
+  README_CONTROL_PLANE.md
+  docs/CONTROL_PLANE_SETUP.md
+  docs/DASHBOARD_ENDPOINTS_EXPECTED.md
+  docs/DASHBOARD_RUNTIME_CONFIG.md
+
+🔍 VERIFICATION PROOF
+─────────────────────────────────────────────────────────────────────────────
+
+Test Suite: scripts/verify_dashboard_compat.sh
+Result:     ✅ ALL TESTS PASSED
+
+Critical Tests:
+  ✅ Namespace package imports (CRITICAL)
+  ✅ Signals-only safety (no execution markers)
+  ✅ Status snapshot created & valid (no secrets)
+  ✅ API /api/status endpoint works (no secrets)
+  ✅ Forensic Command dashboard served at /
+  ✅ TradingView terminal container present
+  ✅ All 11 API endpoints return 200
+  ✅ POST endpoints require auth
+  ✅ Snapshot reflects signals-only truth
+
+Live System Check:
+  $ curl -s http://127.0.0.1:8787/ | grep "AI-QUANT"
+  AI-QUANT | TOTAL COMMAND
+
+  $ curl -s http://127.0.0.1:8787/api/status | jq .execution_enabled
+  false
+
+  $ cat runtime/status.json | jq .accounts_execution_capable
+  0
+
+📊 DIFF STATS
+─────────────────────────────────────────────────────────────────────────────
+ docs/CANONICAL_ENTRYPOINT.md   |  17 ++++
+ fixed_dashboard.py             |  15 ++++
+ runner_src/runner/main.py      |  46 ++++++----
+ working_beautiful_dashboard.py |  15 ++++
+ working_dashboard.py           |  15 ++++
+ working_trading_system.py      | 185 +++++++++++++++++++++++++++++++++++++++-
+ 6 files changed, 276 insertions(+), 17 deletions(-)
+
+Deleted (Blocking Files):
+  src/control_plane/__init__.py
+  google-cloud-trading-system/src/__init__.py
+
+🎯 READY TO COMMIT
+─────────────────────────────────────────────────────────────────────────────
+
+Commit Message (Suggested):
+  "Fix namespace packages + wire Forensic Command dashboard
+
+  - Remove blocking __init__.py files to enable PEP 420 namespace packages
+  - Fix runner import of src.control_plane modules
+  - Forensic Command dashboard operational at http://127.0.0.1:8787/
+  - All API endpoints verified (11/11 passing)
+  - Signals-only safety verified (no execution markers)
+  - No secrets leakage (snapshot, config, API all clean)
+  - Full verification suite passing
+
+  BREAKING CHANGE: Removed src/__init__.py files.
+  Any code importing 'src' as a regular package will break.
+  Use 'src.core.*' and 'src.control_plane.*' directly.
+
+  Verification: bash scripts/verify_dashboard_compat.sh"
+
+Commands to Commit:
+  git add -A
+  git commit -m "Fix namespace packages + wire Forensic Command dashboard"
+  git push origin safety/savepoint-pre-lockin
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Generated: 2026-01-03 23:50 UTC
+Status:    ✅ READY TO COMMIT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

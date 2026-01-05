@@ -11,8 +11,7 @@ import logging
 import yaml
 from datetime import datetime, timedelta
 
-# Set up environment
-os.environ['OANDA_API_KEY'] = "REMOVED_SECRET"
+# Set up environment - API key must come from environment
 os.environ['OANDA_ENVIRONMENT'] = "practice"
 
 # Add the project path

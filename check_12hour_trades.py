@@ -44,8 +44,12 @@ for acc_num, acc_info in ACCOUNTS.items():
     
     try:
         # Create client for this account
+        # Import settings for secure API key access
+        from src.core.settings import get_settings
+        settings = get_settings()
+        
         client = OandaClient(
-            api_key=os.environ.get('OANDA_API_KEY', 'REMOVED_SECRET'),
+            api_key=settings.oanda_api_key,
             account_id=acc_id
         )
         

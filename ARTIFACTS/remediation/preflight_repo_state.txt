@@ -1,0 +1,4 @@
+b4f68c23
+branch=safety/savepoint-pre-lockin
+date_utc=2026-01-04T22:17:48Z
+repo_root=/Users/mac/Library/CloudStorage/GoogleDrive-fxgdesigns1@gmail.com/My Drive/AI Trading/Gcloud system

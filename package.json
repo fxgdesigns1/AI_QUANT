@@ -1,0 +1,13 @@
+{
+  "name": "gcloud-system",
+  "version": "1.0.0",
+  "description": "Control Plane verification dependencies",
+  "private": true,
+  "devDependencies": {
+    "playwright": "^1.57.0"
+  },
+  "scripts": {
+    "pw:install": "playwright install chromium",
+    "pw:trace": "node scripts/pw_trace_forbidden_requests.js"
+  }
+}

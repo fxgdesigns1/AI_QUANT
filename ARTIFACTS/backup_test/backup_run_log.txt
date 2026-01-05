@@ -1,0 +1,32 @@
+[22:09:25] === FXG AI-QUANT Full Backup ===
+[22:09:25] Repo: Gcloud system
+[22:09:25] Host: C02J611KQ6LR
+[22:09:25] Timestamp: 20260104T220925Z
+[22:09:25] Destination: /Users/mac/Library/CloudStorage/GoogleDrive-fxgdesigns1@gmail.com/My Drive/AI Trading/Gcloud system/BACKUPS/C02J611KQ6LR/Gcloud system/20260104T220925Z
+[22:09:25] 
+[22:09:25] Phase 1: Collecting metadata...
+[22:09:26]   Metadata collected
+[22:09:26] Phase 2: Identifying sensitive files...
+[22:09:32]   Found 20 sensitive file candidates
+[22:09:32] Phase 3: Creating CORE bundle...
+[22:09:44]   CORE archive: 128M
+[22:09:44] Phase 4: Creating git bundle...
+[22:09:44]   Git bundle:  28M
+[22:09:44] Phase 5: Skipping SENSITIVE bundle (no BACKUP_PASSPHRASE set)
+[22:09:44]   Set BACKUP_PASSPHRASE to create encrypted sensitive backup
+[22:09:44] Phase 6: Generating checksums and manifest...
+[22:09:45]   Manifest and checksums written
+[22:09:45] 
+[22:09:45] === Backup Complete ===
+[22:09:45] Location: /Users/mac/Library/CloudStorage/GoogleDrive-fxgdesigns1@gmail.com/My Drive/AI Trading/Gcloud system/BACKUPS/C02J611KQ6LR/Gcloud system/20260104T220925Z
+[22:09:45] 
+[22:09:45] Files created:
+[22:09:45]   -rw-r--r--  1 mac  staff  119139347 Jan  4 22:09 CORE_Gcloud system_20260104T220925Z.tar.zst
+[22:09:45]   -rw-r--r--  1 mac  staff   29763882 Jan  4 22:09 Gcloud system_C02J611KQ6LR_20260104T220925Z_b4f68c2.git.bundle
+[22:09:45]   -rw-r--r--  1 mac  staff        629 Jan  4 22:09 MANIFEST.json
+[22:09:45]   -rw-r--r--  1 mac  staff        588 Jan  4 22:09 NOTE.txt
+[22:09:45]   -rw-r--r--  1 mac  staff        881 Jan  4 22:09 SENSITIVE_FILES_LIST.txt
+[22:09:45]   -rw-r--r--  1 mac  staff        330 Jan  4 22:09 SHA256SUMS
+[22:09:45] 
+[22:09:45] Verify with: bash scripts/backup/verify_backup.sh "/Users/mac/Library/CloudStorage/GoogleDrive-fxgdesigns1@gmail.com/My Drive/AI Trading/Gcloud system/BACKUPS/C02J611KQ6LR/Gcloud system/20260104T220925Z"
+/Users/mac/Library/CloudStorage/GoogleDrive-fxgdesigns1@gmail.com/My Drive/AI Trading/Gcloud system/BACKUPS/C02J611KQ6LR/Gcloud system/20260104T220925Z

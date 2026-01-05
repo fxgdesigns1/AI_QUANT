@@ -1,0 +1,71 @@
+# ai-quant-control-plane.service — Canonical systemd unit (NO SECRETS)
+#
+# This template does NOT contain any hardcoded credentials.
+# Secrets are loaded from EnvironmentFile at runtime.
+#
+# INSTALLATION:
+#   1. Copy this file to /etc/systemd/system/ai-quant-control-plane.service
+#   2. Create /etc/ai-quant/ai-quant.env with required environment variables
+#   3. Run: sudo systemctl daemon-reload
+#   4. Run: sudo systemctl enable --now ai-quant-control-plane.service
+#
+# Or use the installer script:
+#   bash scripts/systemd/install_canonical_service.sh
+
+[Unit]
+Description=FXG AI-QUANT Control Plane (Paper Mode - Safe by Default)
+Documentation=file:///home/%u/gcloud-system/VM_RUNBOOK.md
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=%u
+Group=%u
+WorkingDirectory=/home/%u/gcloud-system
+
+# === SAFETY DEFAULTS (cannot be overridden by env file) ===
+# These are hardcoded to ensure paper-only operation
+Environment="TRADING_MODE=paper"
+Environment="LIVE_TRADING=false"
+Environment="LIVE_TRADING_CONFIRM=false"
+
+# === BINDING (localhost only for security) ===
+Environment="CONTROL_PLANE_HOST=127.0.0.1"
+Environment="CONTROL_PLANE_PORT=8787"
+
+# === LOAD SECRETS FROM EXTERNAL FILE ===
+# This file contains API keys, tokens, etc.
+# NEVER commit the actual env file - only .example templates
+EnvironmentFile=/etc/ai-quant/ai-quant.env
+
+# === EXECUTION ===
+ExecStart=/home/%u/gcloud-system/.venv/bin/python -m src.control_plane.api
+ExecReload=/bin/kill -HUP $MAINPID
+
+# === RESOURCE LIMITS ===
+MemoryMax=512M
+CPUQuota=50%
+
+# === SECURITY HARDENING ===
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+
+# === RESTART POLICY ===
+Restart=on-failure
+RestartSec=10
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+# === LOGGING ===
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ai-quant-control-plane
+
+[Install]
+WantedBy=multi-user.target
