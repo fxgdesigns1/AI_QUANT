@@ -559,109 +559,38 @@
 
             <!-- NEWS AI TAB -->
             <div id="tab-news" class="tab-content p-6 overflow-y-auto">
-                <h2 class="text-3xl font-black uppercase tracking-tighter mb-6">AI Macro Flow Intelligence</h2>
+                <h2 class="text-3xl font-black uppercase tracking-tighter mb-6">News & Market Intelligence</h2>
                 
-                <!-- High Impact Alert -->
-                <div class="alert-banner mb-6">
-                    <div class="flex items-center gap-3">
-                        <span class="text-2xl">⚠️</span>
-                        <div>
-                            <h3 class="font-bold text-red-400 text-sm">HIGH IMPACT EVENT DETECTED</h3>
-                            <p class="text-xs text-red-300 mt-1">NFP Release in 2 hours - Recommended: Close all scalp positions</p>
-                        </div>
+                <div id="news-loading" class="space-y-6">
+                    <div class="glass-card p-6 rounded-xl text-center">
+                        <div class="animate-spin w-8 h-8 border-2 border-gray-600 border-t-[#00ff88] rounded-full mx-auto mb-4"></div>
+                        <p class="text-gray-400">Loading news feed...</p>
                     </div>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="glass-card p-6 rounded-2xl border-l-4 border-blue-500">
-                        <div class="flex items-center gap-2 mb-4">
-                            <span class="text-2xl">🏦</span>
-                            <h3 class="text-sm font-bold text-blue-400 uppercase tracking-widest">Fed Sentiment Trace</h3>
+                <div id="news-disabled" class="space-y-6" style="display: none;">
+                    <div class="glass-card p-6 rounded-xl text-center">
+                        <div class="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-2xl">📰</span>
                         </div>
-                        <p class="text-sm text-gray-300 italic leading-relaxed mb-4">"Neural scan of recent Jackson Hole minutes suggests a hawkish pivot. Model probability for Gold downside on high-vol expansion: 64%."</p>
-                        <div class="flex gap-2">
-                            <span class="chip chip-warning text-[9px] py-1 px-2">HAWKISH</span>
-                            <span class="chip chip-danger text-[9px] py-1 px-2">HIGH VOL</span>
-                        </div>
-                    </div>
-                    
-                    <div class="glass-card p-6 rounded-2xl border-l-4 border-green-500">
-                        <div class="flex items-center gap-2 mb-4">
-                            <span class="text-2xl">📈</span>
-                            <h3 class="text-sm font-bold text-green-400 uppercase tracking-widest">Market Structure Analysis</h3>
-                        </div>
-                        <p class="text-sm text-gray-300 italic leading-relaxed mb-4">"XAUUSD forming higher lows on H4. Support confluence at 2038 zone. AI bias: 78% probability of continuation to 2065 if support holds."</p>
-                        <div class="flex gap-2">
-                            <span class="chip chip-success text-[9px] py-1 px-2">BULLISH</span>
-                            <span class="chip chip-success text-[9px] py-1 px-2">SUPPORT ZONE</span>
-                        </div>
-                    </div>
-                    
-                    <div class="glass-card p-6 rounded-2xl border-l-4 border-purple-500">
-                        <div class="flex items-center gap-2 mb-4">
-                            <span class="text-2xl">🌊</span>
-                            <h3 class="text-sm font-bold text-purple-400 uppercase tracking-widest">Liquidity Flow Detection</h3>
-                        </div>
-                        <p class="text-sm text-gray-300 italic leading-relaxed mb-4">"Large institutional orders detected below 2040. Smart money accumulation phase identified. Risk-adjusted entry: 2042-2044 zone."</p>
-                        <div class="flex gap-2">
-                            <span class="chip chip-success text-[9px] py-1 px-2">ACCUMULATION</span>
-                            <span class="attribute-tag">INST. FLOW</span>
-                        </div>
-                    </div>
-                    
-                    <div class="glass-card p-6 rounded-2xl border-l-4 border-yellow-500">
-                        <div class="flex items-center gap-2 mb-4">
-                            <span class="text-2xl">⚡</span>
-                            <h3 class="text-sm font-bold text-yellow-400 uppercase tracking-widest">Volatility Forecast</h3>
-                        </div>
-                        <p class="text-sm text-gray-300 italic leading-relaxed mb-4">"ATR expansion expected post-NFP. Model suggests 150-pip swing potential. Recommended: Widen stops by 1.5x standard deviation."</p>
-                        <div class="flex gap-2">
-                            <span class="chip chip-warning text-[9px] py-1 px-2">VOL SPIKE</span>
-                            <span class="chip chip-warning text-[9px] py-1 px-2">150 PIPS</span>
-                        </div>
+                        <h3 class="font-bold text-lg text-gray-300 mb-2">News Integration Disabled</h3>
+                        <p class="text-sm text-gray-400 mb-4">News feed is currently disabled in system configuration.</p>
+                        <p class="text-xs text-gray-500">Enable news integration in runtime config to view market news and analysis.</p>
                     </div>
                 </div>
                 
-                <!-- Economic Calendar -->
-                <div class="mt-6">
-                    <h3 class="text-xl font-bold uppercase tracking-tight mb-4 flex items-center gap-2">
-                        <span>📅</span> High-Impact Events (Next 24h)
-                    </h3>
-                    <div class="glass-card rounded-2xl overflow-hidden">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Time (UTC)</th>
-                                    <th>Event</th>
-                                    <th>Currency</th>
-                                    <th>Impact</th>
-                                    <th>AI Bias</th>
-                                </tr>
-                            </thead>
-                            <tbody class="mono">
-                                <tr>
-                                    <td class="font-bold">14:30</td>
-                                    <td>Non-Farm Payrolls (NFP)</td>
-                                    <td class="font-bold">USD</td>
-                                    <td><span class="chip chip-danger text-[9px] py-0.5 px-2">HIGH</span></td>
-                                    <td class="text-yellow-400">VOLATILE</td>
-                                </tr>
-                                <tr>
-                                    <td class="font-bold">18:00</td>
-                                    <td>FOMC Minutes Release</td>
-                                    <td class="font-bold">USD</td>
-                                    <td><span class="chip chip-danger text-[9px] py-0.5 px-2">HIGH</span></td>
-                                    <td class="text-red-400">HAWKISH</td>
-                                </tr>
-                                <tr>
-                                    <td class="font-bold">08:30</td>
-                                    <td>EUR GDP (QoQ)</td>
-                                    <td class="font-bold">EUR</td>
-                                    <td><span class="chip chip-warning text-[9px] py-0.5 px-2">MEDIUM</span></td>
-                                    <td class="text-gray-400">NEUTRAL</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <div id="news-content" class="space-y-6" style="display: none;">
+                    <!-- Dynamic news content will be inserted here -->
+                </div>
+                
+                <div id="news-error" class="space-y-6" style="display: none;">
+                    <div class="glass-card p-6 rounded-xl text-center border-red-500/20">
+                        <div class="w-16 h-16 bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-2xl text-red-400">⚠️</span>
+                        </div>
+                        <h3 class="font-bold text-lg text-red-300 mb-2">News Feed Error</h3>
+                        <p class="text-sm text-red-400 mb-4">Unable to load news feed.</p>
+                        <p class="text-xs text-gray-500">Check system logs or try refreshing the page.</p>
                     </div>
                 </div>
             </div>
@@ -1313,6 +1242,9 @@
             if(tabId === 'terminal' && !tvWidget) {
                 renderChart();
             }
+            if(tabId === 'news') {
+                loadNews();
+            }
         }
 
         function renderChart() {
@@ -1352,6 +1284,82 @@
             // Boot control plane connection
             boot();
         };
+        
+        // ----- News Loading -----
+        async function loadNews() {
+            const loadingEl = document.getElementById('news-loading');
+            const disabledEl = document.getElementById('news-disabled');
+            const contentEl = document.getElementById('news-content');
+            const errorEl = document.getElementById('news-error');
+            
+            // Show loading state
+            loadingEl.style.display = 'block';
+            disabledEl.style.display = 'none';
+            contentEl.style.display = 'none';
+            errorEl.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/news');
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${data.message || 'Unknown error'}`);
+                }
+                
+                loadingEl.style.display = 'none';
+                
+                if (!data.enabled) {
+                    // News integration disabled
+                    disabledEl.style.display = 'block';
+                } else if (data.items && data.items.length > 0) {
+                    // Render news items
+                    renderNewsContent(data.items);
+                    contentEl.style.display = 'block';
+                } else {
+                    // No news items available
+                    contentEl.innerHTML = `
+                        <div class="glass-card p-6 rounded-xl text-center">
+                            <div class="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <span class="text-2xl">📰</span>
+                            </div>
+                            <h3 class="font-bold text-lg text-gray-300 mb-2">No News Available</h3>
+                            <p class="text-sm text-gray-400">No recent news items found.</p>
+                        </div>
+                    `;
+                    contentEl.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Failed to load news:', error);
+                loadingEl.style.display = 'none';
+                errorEl.style.display = 'block';
+            }
+        }
+        
+        function renderNewsContent(items) {
+            const contentEl = document.getElementById('news-content');
+            let html = '';
+            
+            items.forEach(item => {
+                const impactClass = item.impact === 'HIGH' ? 'chip-danger' : 
+                                  item.impact === 'MEDIUM' ? 'chip-warning' : 'chip-success';
+                
+                html += `
+                    <div class="glass-card p-6 rounded-xl">
+                        <div class="flex items-start justify-between mb-3">
+                            <h3 class="font-bold text-lg text-white">${item.title || 'News Item'}</h3>
+                            <span class="chip ${impactClass} text-[9px] py-1 px-2">${item.impact || 'LOW'}</span>
+                        </div>
+                        <p class="text-sm text-gray-300 mb-3">${item.description || ''}</p>
+                        <div class="flex items-center justify-between text-xs text-gray-500">
+                            <span>${item.source || 'Unknown Source'}</span>
+                            <span>${item.time || new Date().toLocaleTimeString()}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            contentEl.innerHTML = html;
+        }
         
         // ----- Boot loop (Control Plane Integration) -----
         async function boot() {
