@@ -72,7 +72,7 @@ REAL_SECRETS=$(grep -v "REDACTED" "$SECRETS_SCAN_OUT" | \
   grep -v "\.md:\|SECRET_PURGE\|ARTIFACTS/secrets_scan" | \
   grep -v "print.*OANDA_API_KEY\|print.*TELEGRAM" | \
   grep -v "pre-commit.*PATTERN\|git-hooks.*PATTERN" | \
-  wc -l | tr -d ' ')
+  wc -l | tr -d ' ' || true)
 
 if [[ "$REAL_SECRETS" -eq 0 ]]; then
     print_status "PASS" "Secrets scan: no real tokens/keys found ($SECRETS_COUNT total matches, all redacted)"
