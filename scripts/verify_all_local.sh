@@ -172,7 +172,7 @@ else
 fi
 
 # Verify execution_enabled is false
-if [[ "$EXEC_ENABLED" == "false" ]]; then
+if [[ "$EXEC_ENABLED" == "false" ]] || [[ "$EXEC_ENABLED" == "False" ]]; then
     print_status "PASS" "execution_enabled remains false (paper-safe)"
 else
     print_status "FAIL" "execution_enabled is $EXEC_ENABLED (expected false)"
