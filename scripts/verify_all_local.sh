@@ -62,7 +62,7 @@ echo "=== P1: SECRETS HYGIENE ==="
 SECRETS_SCAN_OUT="$ARTIFACTS_DIR/secrets_scan_$(date +%s).txt"
 # Build leak fragment pattern via concatenation to avoid triggering pre-commit hook
 LEAK_FRAG_PAT="7248""728383:AA|c01de""9eb4d79"
-SECRETS_COUNT=$(rg -n --hidden --no-ignore-vcs -g '!ARTIFACTS/**' -S "${LEAK_FRAG_PAT}|OANDA_API_KEY\s*[:=]\s*['\"]?[A-Za-z0-9_-]{8,}|TELEGRAM_(BOT_)?TOKEN\s*[:=]\s*['\"]?[A-Za-z0-9:_-]{8,}" . 2>&1 | tee "$SECRETS_SCAN_OUT" | wc -l | tr -d ' ')
+SECRETS_COUNT=$(rg -n --hidden --no-ignore-vcs -g '!ARTIFACTS/**' -S "${LEAK_FRAG_PAT}|OANDA_API_KEY\s*[:=]\s*['\"]?[A-Za-z0-9_-]{8,}|TELEGRAM_(BOT_)?TOKEN\s*[:=]\s*['\"]?[A-Za-z0-9:_-]{8,}" . 2>&1 | tee "$SECRETS_SCAN_OUT" | wc -l | tr -d ' ' || true)
 
 # Filter out REDACTED patterns and safe placeholders (safe)
 # Also exclude: settings accessors, os.getenv calls, documentation files, scan artifacts, hook pattern definitions
