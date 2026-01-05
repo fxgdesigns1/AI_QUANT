@@ -27,6 +27,9 @@ from .log_stream import LogStream
 from .strategy_registry import get_strategy_registry, validate_strategy_key
 from .status_snapshot import get_status_snapshot
 from .trade_ledger import get_trade_ledger
+from .audit_log import get_audit_log
+from .outlook_engine import get_outlook_engine
+from .structural_scanner import get_structural_scanner
 
 
 # Environment config
@@ -38,6 +41,9 @@ BIND_PORT = int(os.getenv("CONTROL_PLANE_PORT", "8787"))
 config_store = ConfigStore()
 log_stream = LogStream()
 status_snapshot = get_status_snapshot()
+audit_log = get_audit_log()
+outlook_engine = get_outlook_engine()
+structural_scanner = get_structural_scanner()
 security = HTTPBearer(auto_error=False)
 
 # Create FastAPI app
@@ -181,6 +187,102 @@ async def serve_advanced_dashboard():
 async def health_check():
     """Health check endpoint"""
     return {"status": "ok", "timestamp": time.time()}
+
+
+@app.get("/api/v1/audit")
+async def get_audit_log(limit: int = 100):
+    """Get recent audit log entries (append-only ledger)
+    
+    Returns last N entries.
+    Safe: No secrets returned (sanitized at write time).
+    """
+    # Enforce reasonable limit
+    limit = min(max(1, limit), 1000)
+    
+    entries = audit_log.read_tail(n=limit)
+    return {
+        "ok": True,
+        "entries": entries,
+        "count": len(entries),
+        "limit": limit,
+        "ts_utc": time.time()
+    }
+
+
+@app.get("/api/v1/outlook/{horizon}")
+async def get_outlook(horizon: str):
+    """Get market outlook for horizon (daily/weekly/monthly)
+    
+    Returns latest computed snapshot.
+    Deterministic and Read-Only.
+    """
+    if horizon not in ["daily", "weekly", "monthly"]:
+        raise HTTPException(status_code=400, detail="Invalid horizon")
+        
+    snapshot = outlook_engine.get_latest(horizon)
+    if not snapshot:
+        # If missing, try to recompute on the fly (it's fast and safe)
+        try:
+            snapshot = outlook_engine.compute(horizon)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to generate outlook: {str(e)}")
+            
+    return {
+        "ok": True,
+        "horizon": horizon,
+        "outlook": snapshot,
+        "ts_utc": time.time()
+    }
+
+
+@app.post("/api/v1/outlook/recompute")
+async def recompute_outlook(
+    request: Request,
+    authenticated: bool = Security(verify_token)
+):
+    """Force recompute of outlook snapshots (Admin Gated)"""
+    try:
+        # Recompute all horizons
+        results = {}
+        for h in ["daily", "weekly", "monthly"]:
+            results[h] = outlook_engine.compute(h)
+            
+        audit_log.log(
+            actor="admin",
+            action="recompute_outlook",
+            status="success",
+            details={"path": "/api/v1/outlook/recompute", "method": "POST", "note": "Recomputed all outlook horizons"}
+        )
+        
+        return {
+            "ok": True,
+            "message": "Outlook recomputed successfully",
+            "horizons_updated": list(results.keys()),
+            "ts_utc": time.time()
+        }
+    except Exception as e:
+        audit_log.log(
+            actor="admin",
+            action="recompute_outlook",
+            status="failure",
+            details={"path": "/api/v1/outlook/recompute", "method": "POST", "error": str(e)}
+        )
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/v1/scanner/structural")
+async def get_structural_scan():
+    """Get structural scanner results (Read-Only)"""
+    try:
+        results = structural_scanner.scan()
+        return {
+            "ok": True,
+            "data": results,
+            "results": results.get("results", []),  # Also include at top level for UI
+            "ts_utc": time.time()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Scanner failed: {str(e)}")
 
 
 @app.get("/favicon.ico")
@@ -353,17 +455,38 @@ async def update_config(
     
     try:
         new_config = config_store.save(partial_update=update_dict)
+        
+        # Audit log
+        audit_log.log(
+            actor="admin" if authenticated else "unknown",
+            action="update_config",
+            status="success",
+            details={"path": "/api/config", "method": "POST", "updated_keys": list(update_dict.keys())}
+        )
+        
         return {
             "status": "ok",
             "message": "Config updated successfully",
             "config": new_config.to_dict()
         }
     except ValueError as e:
+        audit_log.log(
+            actor="admin" if authenticated else "unknown",
+            action="update_config",
+            status="failure",
+            details={"path": "/api/config", "method": "POST", "error": str(e)}
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Invalid config: {str(e)}"
         )
     except Exception as e:
+        audit_log.log(
+            actor="admin" if authenticated else "unknown",
+            action="update_config",
+            status="failure",
+            details={"path": "/api/config", "method": "POST", "error": str(e)}
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to save config: {str(e)}"
@@ -391,6 +514,15 @@ async def activate_strategy(
         new_config = config_store.save(partial_update={
             "active_strategy_key": request.strategy_key
         })
+        
+        # Audit log
+        audit_log.log(
+            actor="admin" if authenticated else "unknown",
+            action="activate_strategy",
+            status="success",
+            details={"path": "/api/strategy/activate", "method": "POST", "strategy_key": request.strategy_key, "scope": request.scope}
+        )
+        
         return {
             "status": "ok",
             "message": f"Strategy '{request.strategy_key}' activated",
@@ -398,6 +530,12 @@ async def activate_strategy(
             "config_updated": True
         }
     except Exception as e:
+        audit_log.log(
+            actor="admin" if authenticated else "unknown",
+            action="activate_strategy",
+            status="failure",
+            details={"path": "/api/strategy/activate", "method": "POST", "strategy_key": request.strategy_key, "error": str(e)}
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to activate strategy: {str(e)}"
@@ -871,6 +1009,7 @@ async def dismiss_opportunity(
     }
 
 
+# Duplicate endpoints removed - see lines 192-279 for v1 endpoints
 # Startup message
 @app.on_event("startup")
 async def startup_event():
