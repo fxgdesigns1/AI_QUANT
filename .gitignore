@@ -207,3 +207,15 @@ google-cloud-trading-system/
 QUARANTINE/
 forensic_snapshot/
 cloud_declutter_v2/Oracle/
+
+# Local secrets / env
+.env
+.env.*
+*.env
+*.env.*
+
+# Secret scan outputs
+ARTIFACTS/secrets_scan_raw_hits.txt
+
+# Never keep quarantine inside repo
+QUARANTINE/
