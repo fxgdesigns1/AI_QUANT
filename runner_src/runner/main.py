@@ -2,10 +2,37 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 import os
 import sys
 import uuid
 import logging
+
+# CRITICAL: Namespace package setup - inject BOTH parent directories into sys.path
+# This enables PEP 420 namespace packages so src.core and src.control_plane both resolve
+# REPO_ROOT = parents[2] from runner_src/runner/main.py
+REPO_ROOT = Path(__file__).resolve().parents[2]
+GCT_ROOT = REPO_ROOT / 'google-cloud-trading-system'
+
+# Add both parent directories to sys.path (parents of the src directories)
+for p in (REPO_ROOT, GCT_ROOT):
+    sp = str(p)
+    if sp not in sys.path:
+        sys.path.insert(0, sp)
+
+# Debug imports mode: test namespace package resolution
+if '--debug-imports' in sys.argv:
+    import importlib
+    try:
+        m1 = importlib.import_module('src.core.dynamic_account_manager')
+        m2 = importlib.import_module('src.control_plane.status_snapshot')
+        print('DEBUG_IMPORTS_OK')
+        print('src.core.dynamic_account_manager:', getattr(m1, '__file__', None))
+        print('src.control_plane.status_snapshot:', getattr(m2, '__file__', None))
+        raise SystemExit(0)
+    except Exception as e:
+        print(f'DEBUG_IMPORTS_FAILED: {e}', file=sys.stderr)
+        raise SystemExit(1)
 
 logger = logging.getLogger(__name__)
 
@@ -74,21 +101,10 @@ def main() -> int:
     #   MAX_ITERATIONS=1 python -m runner_src.runner.main
     max_iter = _env_int("MAX_ITERATIONS", 0)
 
-    # Add google-cloud-trading-system to path if it exists
-    # CRITICAL: Must prioritize google-cloud-trading-system/src over repo-root/src
-    _gcloud_path = os.path.join(os.getcwd(), 'google-cloud-trading-system')
-    _repo_root = os.getcwd()
-    
-    if os.path.exists(_gcloud_path):
-        # Remove repo root temporarily to avoid src/ namespace collision
-        if _repo_root in sys.path:
-            sys.path.remove(_repo_root)
-        # Add google-cloud-trading-system FIRST
-        if _gcloud_path not in sys.path:
-            sys.path.insert(0, _gcloud_path)
-        # Add repo root back AFTER google-cloud-trading-system
-        if _repo_root not in sys.path:
-            sys.path.insert(1, _repo_root)
+    # Path setup is done at module level (top of file) for namespace package support
+    # Both REPO_ROOT and GCT_ROOT are already in sys.path, enabling:
+    # - src.core.* from google-cloud-trading-system/src/core
+    # - src.control_plane.* from repo_root/src/control_plane
 
     # Import late to avoid side effects at import time
     import working_trading_system  # repo-root module

@@ -79,6 +79,23 @@ The canonical entrypoint loads environment files in this order:
 
 First value wins (override=False).
 
+## Namespace Package Setup
+
+The system uses PEP 420 namespace packages to support two `src` directories:
+- `repo_root/src/control_plane/` - Control plane modules (API, config store, status snapshot)
+- `google-cloud-trading-system/src/core/` - Core trading modules (scanner, strategies, execution)
+
+Both parent directories are added to `sys.path` at module load time, enabling:
+- `src.core.*` imports resolve from `google-cloud-trading-system/src/core/`
+- `src.control_plane.*` imports resolve from `repo_root/src/control_plane/`
+
+**Important:** Top-level `src/__init__.py` files must NOT exist (they break namespace packaging).
+
+To verify namespace package resolution:
+```bash
+python -m runner_src.runner.main --debug-imports
+```
+
 ## Safety Gates
 
 The canonical entrypoint ensures:

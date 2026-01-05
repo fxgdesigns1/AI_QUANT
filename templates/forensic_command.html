@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-QUANT | TOTAL COMMAND</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #0a0b0d 0%, #1a1b1f 100%); color: #e6e6e6; margin: 0; overflow: hidden; height: 100vh; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .nav-item { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; border-left: 3px solid transparent; position: relative; }
+        .nav-item:hover { background: #1a1c22; transform: translateX(2px); }
+        .nav-item.active { background: #14161a; border-left-color: #00ff88; color: #00ff88; }
+        .nav-item.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 60%; background: #00ff88; box-shadow: 0 0 10px #00ff88; }
+        .glass-card { background: rgba(20, 22, 26, 0.8); border: 1px solid #2d2e35; backdrop-filter: blur(10px); transition: all 0.3s ease; }
+        .glass-card:hover { border-color: #3d3e45; transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0, 255, 136, 0.1); }
+        .tab-content { display: none; height: 100%; animation: fadeIn 0.4s ease; }
+        .tab-content.active { display: flex; flex-direction: column; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 14px; color: #6b7280; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; background: rgba(0,0,0,0.3); }
+        td { padding: 14px; border-bottom: 1px solid #1f2937; font-size: 0.85rem; transition: background 0.2s; }
+        tr:hover td { background: rgba(0, 255, 136, 0.03); }
+        .status-win { color: #00ff88; background: rgba(0, 255, 136, 0.15); padding: 4px 10px; border-radius: 6px; font-weight: 700; }
+        .status-fail { color: #ff3e3e; background: rgba(255, 62, 62, 0.15); padding: 4px 10px; border-radius: 6px; font-weight: 700; }
+        
+        .diag-pulse { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; position: relative; }
+        .pulse-green { background: #00ff88; box-shadow: 0 0 12px #00ff88, 0 0 24px rgba(0, 255, 136, 0.3); animation: pulse-green 2s infinite; }
+        .pulse-red { background: #ff3e3e; box-shadow: 0 0 12px #ff3e3e; animation: blink 1s infinite; }
+        
+        @keyframes pulse-green { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+        .attribute-tag { font-size: 0.65rem; background: rgba(0, 255, 136, 0.08); color: #00ff88; padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(0, 255, 136, 0.2); margin-right: 4px; font-weight: 600; transition: all 0.2s; }
+        .attribute-tag:hover { background: rgba(0, 255, 136, 0.15); transform: scale(1.05); }
+        .weakness-tag { font-size: 0.65rem; background: rgba(255, 62, 62, 0.08); color: #ff3e3e; padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(255, 62, 62, 0.2); font-weight: 600; }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0b0d; }
+        ::-webkit-scrollbar-thumb { background: #2d2e35; border-radius: 10px; transition: background 0.3s; }
+        ::-webkit-scrollbar-thumb:hover { background: #00ff88; }
+        
+        .suggestion-overlay { position: absolute; top: 15px; right: 15px; z-index: 50; animation: slideIn 0.5s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        
+        .metric-card { transition: all 0.3s ease; cursor: pointer; }
+        .metric-card:hover { transform: scale(1.05); box-shadow: 0 8px 24px rgba(0, 255, 136, 0.2); }
+        
+        .glow-text { text-shadow: 0 0 10px rgba(0, 255, 136, 0.5); }
+        
+        .progress-bar { height: 4px; background: #1f2937; border-radius: 2px; overflow: hidden; position: relative; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #00ff88, #00cc6a); transition: width 0.5s ease; position: relative; }
+        .progress-fill::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); animation: shimmer 2s infinite; }
+        @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        
+        .stat-number { font-size: 2rem; font-weight: 900; letter-spacing: -0.05em; }
+        
+        button { transition: all 0.2s ease; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
+        button:active { transform: translateY(0); }
+        
+        .chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .chip-success { background: rgba(0, 255, 136, 0.1); color: #00ff88; border: 1px solid rgba(0, 255, 136, 0.3); }
+        .chip-warning { background: rgba(255, 193, 7, 0.1); color: #ffc107; border: 1px solid rgba(255, 193, 7, 0.3); }
+        .chip-danger { background: rgba(255, 62, 62, 0.1); color: #ff3e3e; border: 1px solid rgba(255, 62, 62, 0.3); }
+        
+        .strategy-btn { 
+            background: rgba(255, 255, 255, 0.05); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            color: #9ca3af;
+            cursor: pointer;
+        }
+        .strategy-btn:hover { 
+            background: rgba(255, 255, 255, 0.1); 
+            border-color: rgba(255, 255, 255, 0.2); 
+            color: #e5e7eb;
+        }
+        .strategy-btn.active { 
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 204, 106, 0.2)); 
+            border: 2px solid #00ff88; 
+            color: #00ff88;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+        }
+        
+        .data-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+        
+        .alert-banner { background: linear-gradient(90deg, rgba(255, 62, 62, 0.1), rgba(255, 62, 62, 0.05)); border-left: 4px solid #ff3e3e; padding: 12px; border-radius: 8px; margin-bottom: 16px; animation: alertPulse 2s infinite; }
+        @keyframes alertPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
+    </style>
+</head>
+<body class="flex flex-col">
+
+    <!-- Top Bar -->
+    <header class="h-16 border-b border-[#2d2e35] flex items-center justify-between px-6 bg-gradient-to-r from-[#0a0b0d] to-[#14161a] z-20 shrink-0 shadow-xl">
+        <div class="flex items-center gap-4">
+            <div class="w-9 h-9 bg-gradient-to-br from-[#00ff88] to-[#00cc6a] rounded-lg flex items-center justify-center font-bold text-black text-sm shadow-lg">AQ</div>
+            <h1 class="text-xl font-extrabold tracking-tighter uppercase glow-text">Forensic Command</h1>
+            <span class="chip chip-success">
+                <span class="diag-pulse pulse-green"></span>
+                LIVE
+            </span>
+        </div>
+        <div class="flex items-center gap-6">
+            <div class="flex flex-col items-end">
+                <span class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">GCP Secret Manager</span>
+                <span class="text-[11px] text-green-400 font-mono uppercase flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-green-400"></span>
+                    Vault: Connected
+                </span>
+            </div>
+            <div class="flex flex-col items-end">
+                <span class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">System Integrity</span>
+                <span class="text-[11px] text-white font-mono uppercase">All Nodes Operational</span>
+            </div>
+            <div class="bg-white/5 border border-white/10 px-4 py-2 rounded-lg flex items-center gap-3 hover:bg-white/10 transition-all">
+                <span class="diag-pulse pulse-green"></span>
+                <div>
+                    <div class="text-[9px] text-gray-400 uppercase font-bold">API Latency</div>
+                    <div class="text-sm font-bold text-[#00ff88]">42ms</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex-1 flex overflow-hidden">
+        <!-- Sidebar Navigation -->
+        <nav class="w-64 border-r border-[#2d2e35] bg-gradient-to-b from-[#0a0b0d] to-[#14161a] flex flex-col shrink-0 shadow-2xl">
+            <div class="p-4 space-y-2">
+                <div onclick="showTab('terminal')" id="nav-terminal" class="nav-item active flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold">
+                    <span class="text-lg">⚡</span> 
+                    <span>Live Terminal</span>
+                </div>
+                <div onclick="showTab('mesh')" id="nav-mesh" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold">
+                    <span class="text-lg">🕸️</span> 
+                    <span>Integrity Mesh</span>
+                </div>
+                <div onclick="showTab('journal')" id="nav-journal" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold">
+                    <span class="text-lg">📓</span> 
+                    <span>Forensic Journal</span>
+                </div>
+                <div onclick="showTab('news')" id="nav-news" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold">
+                    <span class="text-lg">🌐</span> 
+                    <span>News AI</span>
+                </div>
+                <div onclick="showTab('reports')" id="nav-reports" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold">
+                    <span class="text-lg">📊</span> 
+                    <span>Performance</span>
+                </div>
+                <div onclick="showTab('strategies')" id="nav-strategies" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold">
+                    <span class="text-lg">🛠️</span> 
+                    <span>Starters & Logic</span>
+                </div>
+            </div>
+
+            <!-- Enhanced Pre-Flight Audit -->
+            <div class="mt-auto p-5 border-t border-[#2d2e35] bg-black/60 backdrop-blur-sm">
+                <p class="text-[9px] font-bold text-gray-500 uppercase mb-4 tracking-widest flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-[#00ff88] animate-ping"></span>
+                    Forensic Pre-Flight
+                </p>
+                <div class="space-y-3 text-[11px] font-mono">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400">Node Sync</span> 
+                        <span class="chip chip-success text-[9px] py-1 px-2">READY</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400">Spread Avg</span> 
+                        <span class="text-green-400 font-bold">0.12</span>
+                    </div>
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <span class="text-gray-400">System Load</span>
+                            <span class="text-white font-bold">67%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 67%"></div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400">Logic Fail</span> 
+                        <span class="text-white font-bold">0</span>
+                    </div>
+                    <div class="flex justify-between text-yellow-400 items-center">
+                        <span>Latency Spike</span> 
+                        <span class="font-bold">NONE</span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Workspace -->
+        <main class="flex-1 relative overflow-hidden bg-[#0a0b0d]">
+            
+            <!-- LIVE TERMINAL TAB -->
+            <div id="tab-terminal" class="tab-content active p-6 overflow-y-auto">
+                <!-- Strategy/Pair Selector Bar -->
+                <div class="glass-card rounded-xl p-4 mb-4 flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Active Strategy</span>
+                        <div class="flex gap-2">
+                            <button onclick="switchStrategy('gold')" id="strategy-gold" class="strategy-btn active px-4 py-2 rounded-lg font-bold text-xs uppercase transition-all">
+                                GOLD_SCALPER_v4.2
+                            </button>
+                            <button onclick="switchStrategy('mean')" id="strategy-mean" class="strategy-btn px-4 py-2 rounded-lg font-bold text-xs uppercase transition-all">
+                                MEAN_REV_CORE
+                            </button>
+                            <button onclick="switchStrategy('breakout')" id="strategy-breakout" class="strategy-btn px-4 py-2 rounded-lg font-bold text-xs uppercase transition-all">
+                                BREAKOUT_HUNTER
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Chart Instrument</span>
+                        <select id="chart-symbol" onchange="changeChartSymbol()" class="bg-black/50 border border-white/20 rounded-lg px-3 py-2 font-mono text-sm text-white focus:border-[#00ff88] focus:outline-none transition-all cursor-pointer">
+                            <option value="OANDA:XAUUSD">XAUUSD (Gold)</option>
+                            <option value="OANDA:EURUSD">EURUSD</option>
+                            <option value="OANDA:GBPUSD">GBPUSD</option>
+                            <option value="OANDA:USDJPY">USDJPY</option>
+                            <option value="OANDA:AUDUSD">AUDUSD</option>
+                            <option value="OANDA:USDCAD">USDCAD</option>
+                            <option value="OANDA:NZDUSD">NZDUSD</option>
+                            <option value="OANDA:EURJPY">EURJPY</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full">
+                    <div class="lg:col-span-3 flex flex-col gap-6">
+                        <div class="glass-card rounded-2xl overflow-hidden flex-1 relative min-h-[480px] shadow-2xl">
+                             <!-- Enhanced Suggestion Overlay -->
+                             <div class="suggestion-overlay" id="signal-overlay">
+                                 <div class="bg-gradient-to-br from-black/95 to-[#00ff88]/20 backdrop-blur-xl border-2 border-[#00ff88]/50 p-4 rounded-xl shadow-2xl">
+                                     <div class="flex items-center gap-2 mb-2">
+                                         <div class="w-3 h-3 rounded-full bg-[#00ff88] animate-ping"></div>
+                                         <span class="text-[11px] font-black text-white uppercase tracking-wider">AI Active Signal</span>
+                                     </div>
+                                     <p class="text-[12px] font-bold text-[#00ff88] mono uppercase" id="signal-text">Entry: 2042.85 | TP: 2055.00</p>
+                                     <p class="text-[10px] text-gray-300 mt-2" id="signal-confidence">Confidence: 94.2%</p>
+                                 </div>
+                             </div>
+                             <div id="tradingview_terminal" class="h-full w-full"></div>
+                        </div>
+                        <div class="grid grid-cols-4 gap-4">
+                            <div class="glass-card p-5 rounded-xl metric-card border-l-4 border-blue-500">
+                                <p class="text-[10px] text-gray-500 font-bold uppercase mb-2 tracking-wider">Current Corridor</p>
+                                <p class="stat-number text-white font-mono" id="corridor">2038-2055</p>
+                            </div>
+                            <div class="glass-card p-5 rounded-xl metric-card border-l-4 border-[#00ff88]">
+                                <p class="text-[10px] text-gray-500 font-bold uppercase mb-2 tracking-wider">Active Positions</p>
+                                <p class="stat-number text-[#00ff88] font-mono glow-text" id="positions">01</p>
+                            </div>
+                            <div class="glass-card p-5 rounded-xl metric-card border-l-4 border-purple-500">
+                                <p class="text-[10px] text-gray-500 font-bold uppercase mb-2 tracking-wider">Strategy Type</p>
+                                <p class="text-lg font-bold text-purple-400" id="strategy-type">SCALP</p>
+                            </div>
+                            <div class="glass-card p-5 rounded-xl metric-card border-l-4 border-red-500">
+                                <p class="text-[10px] text-gray-500 font-bold uppercase mb-2 tracking-wider">News Block</p>
+                                <p class="text-xs font-bold text-red-500 uppercase flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                                    NFP High Impact
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Enhanced AI Insight Sidebar -->
+                    <div class="flex flex-col gap-4">
+                        <h2 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Current Active Signal</h2>
+                        <div class="bg-gradient-to-br from-[#1c1f26] via-[#14161a] to-[#1a1c22] border-2 border-[#2d2e35] p-6 rounded-2xl space-y-5 shadow-2xl">
+                            <div>
+                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Primary Signal</span>
+                                <p class="text-2xl font-black text-[#00ff88] mt-1 glow-text" id="primary-signal">XAUUSD BUY</p>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="flex justify-between text-[11px] border-b border-white/5 pb-2">
+                                    <span class="text-gray-500">Conviction</span>
+                                    <span class="font-bold text-[#00ff88]" id="conviction">94.2%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="conviction-bar" style="width: 94.2%"></div>
+                                </div>
+                                <div class="flex justify-between text-[11px] border-b border-white/5 pb-2">
+                                    <span class="text-gray-500">ATR Stability</span>
+                                    <span class="chip chip-success text-[9px] py-0.5 px-2" id="atr-stability">HIGH</span>
+                                </div>
+                                <div class="flex justify-between text-[11px]">
+                                    <span class="text-gray-500">Market Bias</span>
+                                    <span class="text-[#00ff88] font-bold" id="market-bias">BULL_EXPANSION</span>
+                                </div>
+                            </div>
+                            <div class="bg-black/30 p-4 rounded-lg border border-white/5">
+                                <p class="text-[11px] text-gray-300 italic leading-relaxed" id="ai-reasoning">"Neural analysis confirms liquidity sweep at 2038. Logic: High volume rejection at daily support + RSI oversold on M15."</p>
+                            </div>
+                            <button class="w-full bg-gradient-to-r from-[#00ff88] to-[#00cc6a] text-black font-black text-xs py-3.5 rounded-xl uppercase tracking-wider shadow-lg hover:shadow-[#00ff88]/50 transition-all">
+                                Manual Override Entry
+                            </button>
+                        </div>
+                        
+                        <!-- Upcoming Signals Queue -->
+                        <div class="mt-4">
+                            <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-3">Upcoming Signals Queue</h3>
+                            <div class="space-y-2" id="signals-queue">
+                                <!-- Signals will be populated by JS based on active strategy -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INTEGRITY MESH -->
+            <div id="tab-mesh" class="tab-content p-6 overflow-y-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-black uppercase tracking-tighter">System Integrity Mesh</h2>
+                    <span class="chip chip-success">SYSTEM_NOMINAL</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass-card p-6 rounded-2xl border-l-4 border-green-500">
+                        <h3 class="text-xs font-bold text-gray-500 uppercase mb-5 flex items-center gap-2">
+                            <span class="diag-pulse pulse-green"></span>
+                            GCP Execution Nodes
+                        </h3>
+                        <div class="space-y-4 mono text-sm">
+                            <div class="flex justify-between items-center p-3 bg-black/30 rounded-lg">
+                                <span>Node_01 (OANDA_BRIDGE)</span> 
+                                <span class="chip chip-success text-[9px] py-1 px-2">ONLINE</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-black/30 rounded-lg">
+                                <span>Node_02 (LOGIC_ENGINE)</span> 
+                                <span class="chip chip-success text-[9px] py-1 px-2">ONLINE</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-black/30 rounded-lg">
+                                <span>Node_03 (AUTH_SYNC)</span> 
+                                <span class="chip chip-success text-[9px] py-1 px-2">ONLINE</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass-card p-6 rounded-2xl border-l-4 border-red-500">
+                        <h3 class="text-xs font-bold text-gray-500 uppercase mb-5 flex items-center gap-2">
+                            <span class="diag-pulse pulse-red"></span>
+                            Logic Heartbeat Audit
+                        </h3>
+                        <div class="alert-banner mb-4">
+                            <p class="text-xs font-bold text-red-400 flex items-center gap-2">
+                                <span>⚠️</span>
+                                Break Detection: 'XAU_SCALP_PY'
+                            </p>
+                            <p class="text-[10px] text-red-300 mt-1">LINE_142_ERR</p>
+                        </div>
+                        <div class="space-y-4 mono text-sm">
+                            <div class="flex justify-between items-center p-3 bg-black/30 rounded-lg">
+                                <span class="text-gray-400">Memory Usage (e2-micro)</span> 
+                                <span class="text-white font-bold">42%</span>
+                            </div>
+                            <div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 42%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PERFORMANCE TAB -->
+            <div id="tab-reports" class="tab-content p-6 overflow-y-auto">
+                 <h2 class="text-3xl font-black uppercase tracking-tighter mb-6">Incubator Performance Matrix</h2>
+                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                     <div class="glass-card p-6 rounded-2xl hover:scale-105 transition-all">
+                         <div class="flex justify-between items-start mb-5">
+                             <h3 class="font-bold text-[#00ff88] text-lg">GOLD_SCALPER_v4.2</h3>
+                             <span class="chip chip-success text-[9px] py-1 px-2">PF: 2.14</span>
+                         </div>
+                         <div class="data-grid mb-5">
+                             <div class="bg-black/30 p-3 rounded-lg">
+                                 <p class="text-[9px] text-gray-500 uppercase mb-1">Drawdown</p>
+                                 <p class="text-lg font-bold text-white">0.8%</p>
+                             </div>
+                             <div class="bg-black/30 p-3 rounded-lg">
+                                 <p class="text-[9px] text-gray-500 uppercase mb-1">Win Rate</p>
+                                 <p class="text-lg font-bold text-[#00ff88]">68%</p>
+                             </div>
+                         </div>
+                         <div class="pt-4 border-t border-white/5">
+                             <p class="text-[9px] text-gray-500 uppercase mb-3 font-bold tracking-widest">Forensic Attributes</p>
+                             <div class="flex flex-wrap gap-2 mb-4">
+                                 <span class="attribute-tag">ATR-Adaptive SL</span>
+                                 <span class="attribute-tag">H1-Trend Lock</span>
+                                 <span class="attribute-tag">Volume Filter</span>
+                             </div>
+                             <p class="text-[9px] text-gray-500 uppercase mb-2 font-bold tracking-widest">Weak Points</p>
+                             <span class="weakness-tag">Spread Widening</span>
+                         </div>
+                     </div>
+                 </div>
+            </div>
+
+            <!-- FORENSIC JOURNAL TAB -->
+            <div id="tab-journal" class="tab-content p-6 overflow-y-auto">
+                 <div class="flex justify-between items-center mb-6">
+                     <h2 class="text-3xl font-black uppercase tracking-tighter">Forensic Journal</h2>
+                     <div class="flex gap-3">
+                         <button class="bg-white/5 border border-white/10 px-4 py-2 rounded-lg font-bold text-xs uppercase hover:bg-white/10 transition-all">
+                             Export CSV
+                         </button>
+                         <button id="btn-settings" class="bg-white/5 border border-white/10 px-4 py-2 rounded-lg font-bold text-xs uppercase hover:bg-white/10 transition-all">
+                             Settings
+                         </button>
+                         <button class="bg-white/5 border border-white/10 px-4 py-2 rounded-lg font-bold text-xs uppercase hover:bg-white/10 transition-all">
+                             Filter Trades
+                         </button>
+                     </div>
+                 </div>
+                 
+                 <!-- Trade Cards with Expandable Details -->
+                 <!-- Trade Cards - Populated by JavaScript from GET /api/journal/trades -->
+                 <div id="journal-trades-container" class="space-y-4">
+                     <!-- Loading... -->
+                     <div class="glass-card rounded-xl p-12 text-center">
+                         <div class="text-6xl mb-4">📓</div>
+                         <h3 class="text-2xl font-bold text-white mb-2">Loading Trades...</h3>
+                         <p class="text-gray-400">Fetching trades from ledger...</p>
+                     </div>
+                 </div>
+            </div>
+
+            <!-- STARTERS & LOGIC TAB -->
+            <div id="tab-strategies" class="tab-content p-6 overflow-y-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-black uppercase tracking-tighter text-white">Logic Starters & Secrets</h2>
+                    <div class="flex gap-3">
+                        <button class="bg-white/5 border border-white/10 px-5 py-2.5 rounded-xl font-bold text-xs uppercase hover:bg-white/10">
+                            Reload Cloud Sync
+                        </button>
+                        <button class="bg-gradient-to-r from-[#00ff88] to-[#00cc6a] text-black px-6 py-2.5 rounded-xl font-black text-xs uppercase shadow-lg">
+                            Deploy All Nodes
+                        </button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass-card p-6 rounded-2xl">
+                        <h3 class="font-bold mb-5 flex items-center gap-2 text-lg">
+                            <span class="w-3 h-3 rounded-full bg-blue-500 shadow-lg shadow-blue-500/50"></span> 
+                            OANDA API SECRET MESH
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="bg-black/30 p-4 rounded-lg">
+                                <label class="text-gray-500 uppercase font-bold tracking-tighter text-[10px] block mb-2">Primary Account ID</label>
+                                <input class="bg-black/50 border border-white/20 rounded-lg px-3 py-2 font-mono w-full text-sm focus:border-[#00ff88] focus:outline-none transition-all" value="101-004-307-889">
+                            </div>
+                            <div class="bg-black/30 p-4 rounded-lg">
+                                <label class="text-gray-500 uppercase font-bold tracking-tighter text-[10px] block mb-2">GCP Vault Endpoint</label>
+                                <div class="font-mono text-gray-300 italic text-sm bg-black/40 p-2 rounded border border-white/10">
+                                    /projects/quant/secrets/API_KEY
+                                </div>
+                            </div>
+                            <div class="bg-black/30 p-4 rounded-lg">
+                                <label class="text-gray-500 uppercase font-bold tracking-tighter text-[10px] block mb-2">Connection Status</label>
+                                <div class="flex items-center gap-2">
+                                    <span class="diag-pulse pulse-green"></span>
+                                    <span class="text-[#00ff88] font-bold text-sm">AUTHENTICATED</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass-card p-6 rounded-2xl">
+                        <h3 class="font-bold mb-5 flex items-center gap-2 text-lg">
+                            <span class="w-3 h-3 rounded-full bg-green-500 shadow-lg shadow-green-500/50"></span> 
+                            SNIPER LOGIC PARAMS
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="bg-black/30 p-4 rounded-lg">
+                                <label class="text-gray-500 uppercase font-bold tracking-tighter text-[10px] block mb-2">Lot Calculation</label>
+                                <input class="bg-black/50 border border-white/20 rounded-lg px-3 py-2 font-mono w-full text-sm focus:border-[#00ff88] focus:outline-none transition-all" value="DYNAMIC_EQUITY_0.5%">
+                            </div>
+                            <div class="bg-black/30 p-4 rounded-lg">
+                                <label class="text-gray-500 uppercase font-bold tracking-tighter text-[10px] block mb-2">ATR Factor</label>
+                                <input class="bg-black/50 border border-white/20 rounded-lg px-3 py-2 font-mono w-full text-sm focus:border-[#00ff88] focus:outline-none transition-all" value="1.5x_STDEV">
+                            </div>
+                            <div class="bg-black/30 p-4 rounded-lg">
+                                <label class="text-gray-500 uppercase font-bold tracking-tighter text-[10px] block mb-2">Risk Per Trade</label>
+                                <input class="bg-black/50 border border-white/20 rounded-lg px-3 py-2 font-mono w-full text-sm focus:border-[#00ff88] focus:outline-none transition-all" value="MAX_0.5%">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Strategy Matrix -->
+                <div class="mt-6">
+                    <h3 class="text-xl font-bold uppercase tracking-tight mb-4 flex items-center gap-2">
+                        <span>⚙️</span> Active Strategy Matrix
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="glass-card p-4 rounded-xl border-l-4 border-[#00ff88]">
+                            <div class="flex justify-between items-start mb-3">
+                                <h4 class="font-bold text-sm">GOLD_SCALPER_v4.2</h4>
+                                <span class="chip chip-success text-[8px] py-0.5 px-2">ACTIVE</span>
+                            </div>
+                            <div class="space-y-2 text-[10px]">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Timeframe</span>
+                                    <span class="font-mono text-white">M5, M15</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Max Positions</span>
+                                    <span class="font-mono text-white">3</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Last Signal</span>
+                                    <span class="font-mono text-[#00ff88]">2m ago</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="glass-card p-4 rounded-xl border-l-4 border-blue-500">
+                            <div class="flex justify-between items-start mb-3">
+                                <h4 class="font-bold text-sm">MEAN_REV_CORE</h4>
+                                <span class="chip chip-success text-[8px] py-0.5 px-2">ACTIVE</span>
+                            </div>
+                            <div class="space-y-2 text-[10px]">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Timeframe</span>
+                                    <span class="font-mono text-white">H1, H4</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Max Positions</span>
+                                    <span class="font-mono text-white">2</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Last Signal</span>
+                                    <span class="font-mono text-gray-400">45m ago</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="glass-card p-4 rounded-xl border-l-4 border-purple-500">
+                            <div class="flex justify-between items-start mb-3">
+                                <h4 class="font-bold text-sm">BREAKOUT_HUNTER</h4>
+                                <span class="chip chip-warning text-[8px] py-0.5 px-2">STANDBY</span>
+                            </div>
+                            <div class="space-y-2 text-[10px]">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Timeframe</span>
+                                    <span class="font-mono text-white">M15, M30</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Max Positions</span>
+                                    <span class="font-mono text-white">1</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Last Signal</span>
+                                    <span class="font-mono text-gray-400">2h ago</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEWS AI TAB -->
+            <div id="tab-news" class="tab-content p-6 overflow-y-auto">
+                <h2 class="text-3xl font-black uppercase tracking-tighter mb-6">AI Macro Flow Intelligence</h2>
+                
+                <!-- High Impact Alert -->
+                <div class="alert-banner mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl">⚠️</span>
+                        <div>
+                            <h3 class="font-bold text-red-400 text-sm">HIGH IMPACT EVENT DETECTED</h3>
+                            <p class="text-xs text-red-300 mt-1">NFP Release in 2 hours - Recommended: Close all scalp positions</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass-card p-6 rounded-2xl border-l-4 border-blue-500">
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="text-2xl">🏦</span>
+                            <h3 class="text-sm font-bold text-blue-400 uppercase tracking-widest">Fed Sentiment Trace</h3>
+                        </div>
+                        <p class="text-sm text-gray-300 italic leading-relaxed mb-4">"Neural scan of recent Jackson Hole minutes suggests a hawkish pivot. Model probability for Gold downside on high-vol expansion: 64%."</p>
+                        <div class="flex gap-2">
+                            <span class="chip chip-warning text-[9px] py-1 px-2">HAWKISH</span>
+                            <span class="chip chip-danger text-[9px] py-1 px-2">HIGH VOL</span>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card p-6 rounded-2xl border-l-4 border-green-500">
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="text-2xl">📈</span>
+                            <h3 class="text-sm font-bold text-green-400 uppercase tracking-widest">Market Structure Analysis</h3>
+                        </div>
+                        <p class="text-sm text-gray-300 italic leading-relaxed mb-4">"XAUUSD forming higher lows on H4. Support confluence at 2038 zone. AI bias: 78% probability of continuation to 2065 if support holds."</p>
+                        <div class="flex gap-2">
+                            <span class="chip chip-success text-[9px] py-1 px-2">BULLISH</span>
+                            <span class="chip chip-success text-[9px] py-1 px-2">SUPPORT ZONE</span>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card p-6 rounded-2xl border-l-4 border-purple-500">
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="text-2xl">🌊</span>
+                            <h3 class="text-sm font-bold text-purple-400 uppercase tracking-widest">Liquidity Flow Detection</h3>
+                        </div>
+                        <p class="text-sm text-gray-300 italic leading-relaxed mb-4">"Large institutional orders detected below 2040. Smart money accumulation phase identified. Risk-adjusted entry: 2042-2044 zone."</p>
+                        <div class="flex gap-2">
+                            <span class="chip chip-success text-[9px] py-1 px-2">ACCUMULATION</span>
+                            <span class="attribute-tag">INST. FLOW</span>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card p-6 rounded-2xl border-l-4 border-yellow-500">
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="text-2xl">⚡</span>
+                            <h3 class="text-sm font-bold text-yellow-400 uppercase tracking-widest">Volatility Forecast</h3>
+                        </div>
+                        <p class="text-sm text-gray-300 italic leading-relaxed mb-4">"ATR expansion expected post-NFP. Model suggests 150-pip swing potential. Recommended: Widen stops by 1.5x standard deviation."</p>
+                        <div class="flex gap-2">
+                            <span class="chip chip-warning text-[9px] py-1 px-2">VOL SPIKE</span>
+                            <span class="chip chip-warning text-[9px] py-1 px-2">150 PIPS</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Economic Calendar -->
+                <div class="mt-6">
+                    <h3 class="text-xl font-bold uppercase tracking-tight mb-4 flex items-center gap-2">
+                        <span>📅</span> High-Impact Events (Next 24h)
+                    </h3>
+                    <div class="glass-card rounded-2xl overflow-hidden">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Time (UTC)</th>
+                                    <th>Event</th>
+                                    <th>Currency</th>
+                                    <th>Impact</th>
+                                    <th>AI Bias</th>
+                                </tr>
+                            </thead>
+                            <tbody class="mono">
+                                <tr>
+                                    <td class="font-bold">14:30</td>
+                                    <td>Non-Farm Payrolls (NFP)</td>
+                                    <td class="font-bold">USD</td>
+                                    <td><span class="chip chip-danger text-[9px] py-0.5 px-2">HIGH</span></td>
+                                    <td class="text-yellow-400">VOLATILE</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">18:00</td>
+                                    <td>FOMC Minutes Release</td>
+                                    <td class="font-bold">USD</td>
+                                    <td><span class="chip chip-danger text-[9px] py-0.5 px-2">HIGH</span></td>
+                                    <td class="text-red-400">HAWKISH</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">08:30</td>
+                                    <td>EUR GDP (QoQ)</td>
+                                    <td class="font-bold">EUR</td>
+                                    <td><span class="chip chip-warning text-[9px] py-0.5 px-2">MEDIUM</span></td>
+                                    <td class="text-gray-400">NEUTRAL</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 hidden items-center justify-center bg-black/70 z-[9999]">
+        <div class="glass-card rounded-2xl p-6 w-[520px] max-w-[92vw] border-2 border-white/10 shadow-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-black uppercase tracking-tight">Control Plane Settings</h3>
+                <button id="settings-close" class="text-gray-400 hover:text-white text-xl transition-all">✕</button>
+            </div>
+            <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-2">Bearer Token (POST only)</label>
+            <input id="settings-token" type="password"
+                class="bg-black/50 border border-white/20 rounded-lg px-3 py-2 font-mono w-full text-sm text-white focus:border-[#00ff88] focus:outline-none transition-all"
+                placeholder="Paste CONTROL_PLANE_TOKEN here" />
+            <div class="flex justify-end gap-3 mt-5">
+                <button id="settings-clear" class="bg-white/5 border border-white/10 px-4 py-2 rounded-lg text-xs font-bold uppercase hover:bg-white/10 transition-all">
+                    Clear
+                </button>
+                <button id="settings-save" class="bg-gradient-to-r from-[#00ff88] to-[#00cc6a] text-black px-5 py-2 rounded-lg text-xs font-black uppercase shadow-lg transition-all">
+                    Save
+                </button>
+            </div>
+            <p class="text-[11px] text-gray-400 mt-4 leading-relaxed">
+                Stored in <span class="mono text-gray-300">localStorage.control_plane_token</span>. Never embedded in HTML.
+                Token is only sent for POST requests (e.g. strategy switch).
+            </p>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <script>
+        // ====== Control Plane Wiring (safe, no secrets embedded) ======
+        const API_BASE = ""; // same-origin
+
+        function getToken() {
+            return localStorage.getItem("control_plane_token") || window.__CONTROL_PLANE_TOKEN || "";
+        }
+
+        // ====== Safety Guard: Block Forbidden Endpoints ======
+        // ROOT CAUSE ANALYSIS (2026-01-04 - Playwright Forensic Proof):
+        // - Playwright runtime trace (60s) confirms: ZERO forbidden endpoint requests from OUR code
+        //   See: scripts/artifacts/pw_forbidden_requests.log for proof
+        // - forensic_command.html contains ZERO direct calls to /socket.io, /tasks/full_scan, /api/insights, /api/trade_ideas
+        // - All API calls go through apiGet/apiPost functions (verified by grep + Python analysis)
+        // - No io() calls, no fetch() calls to forbidden endpoints found in code
+        // - GET / serves templates/forensic_command.html (verified in src/control_plane/api.py)
+        // - TradingView widget (external CDN) may make socket.io calls internally - this is external and expected
+        // 
+        // This guard is a defensive measure to prevent future code from accidentally calling
+        // endpoints that don't exist on the backend. If any code attempts to call these via
+        // apiGet/apiPost, it will be blocked and logged before the network request is made.
+        const BLOCKED_ENDPOINTS = [
+            "/socket.io",
+            "/tasks/full_scan",
+            "/api/insights",
+            "/api/trade_ideas"
+        ];
+
+        // ====== Network Instrumentation (Debug Only) ======
+        // Enable with: localStorage.DEBUG_NET_TRACE = '1' in browser console
+        // This wraps window.fetch and XMLHttpRequest to trace forbidden endpoint calls
+        (function installNetworkTracing() {
+            if (localStorage.getItem('DEBUG_NET_TRACE') !== '1') return;
+
+            const originalFetch = window.fetch;
+            window.fetch = function(...args) {
+                const url = args[0];
+                if (typeof url === 'string' && BLOCKED_ENDPOINTS.some(blocked => url.includes(blocked))) {
+                    console.error('[DEBUG_NET_TRACE] Forbidden fetch detected:', url);
+                    console.trace('Stack trace:');
+                }
+                return originalFetch.apply(this, args);
+            };
+
+            const originalXHROpen = XMLHttpRequest.prototype.open;
+            XMLHttpRequest.prototype.open = function(method, url, ...rest) {
+                if (typeof url === 'string' && BLOCKED_ENDPOINTS.some(blocked => url.includes(blocked))) {
+                    console.error('[DEBUG_NET_TRACE] Forbidden XHR detected:', method, url);
+                    console.trace('Stack trace:');
+                }
+                return originalXHROpen.call(this, method, url, ...rest);
+            };
+
+            console.log('[DEBUG_NET_TRACE] Network tracing enabled. Disable with: localStorage.removeItem("DEBUG_NET_TRACE")');
+        })();
+
+        function isBlocked(path) {
+            // Block both absolute and relative paths, and handle query strings
+            // Examples that should be blocked:
+            //   '/api/insights' -> blocked
+            //   '/api/insights?x=1' -> blocked (query string removed)
+            //   'http://example.com/api/insights' -> blocked (path extracted)
+            //   '/tasks/full_scan' -> blocked
+            //   '/socket.io/?EIO=4&transport=polling' -> blocked
+            //   'socket.io/' -> blocked (path normalization)
+            if (!path || typeof path !== 'string') return false;
+            
+            // Remove query string and fragment
+            const normalized = path.split('?')[0].split('#')[0].trim();
+            if (!normalized) return false;
+            
+            // Ensure path starts with / for consistency
+            const withSlash = normalized.startsWith('/') ? normalized : '/' + normalized;
+            
+            // Extract path from full URL if present
+            let pathOnly = withSlash;
+            try {
+                const url = new URL(normalized, window.location.origin);
+                pathOnly = url.pathname;
+            } catch (e) {
+                // Not a full URL, use normalized version with slash
+                pathOnly = withSlash;
+            }
+            
+            // Check against blocked endpoints (prefix match, case-insensitive)
+            const pathLower = pathOnly.toLowerCase();
+            return BLOCKED_ENDPOINTS.some(blocked => {
+                const blockedLower = blocked.toLowerCase();
+                return pathLower === blockedLower || pathLower.startsWith(blockedLower + '/');
+            });
+        }
+
+        async function apiGet(path) {
+            // Safety guard: block forbidden endpoints
+            if (isBlocked(path)) {
+                const error = new Error(`Blocked endpoint: ${path}`);
+                console.error("[apiGet] Blocked forbidden endpoint:", path);
+                throw error;
+            }
+            const r = await fetch(API_BASE + path, { credentials: "same-origin" });
+            if (!r.ok) throw new Error(`GET ${path} failed: ${r.status}`);
+            return r.json();
+        }
+
+        async function apiPost(path, bodyObj) {
+            // Safety guard: block forbidden endpoints
+            if (isBlocked(path)) {
+                const error = new Error(`Blocked endpoint: ${path}`);
+                console.error("[apiPost] Blocked forbidden endpoint:", path);
+                throw error;
+            }
+            const token = getToken();
+            if (!token) throw new Error("Missing token. Open Settings and set CONTROL_PLANE_TOKEN.");
+            const r = await fetch(API_BASE + path, {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: JSON.stringify(bodyObj),
+            });
+            if (!r.ok) throw new Error(`POST ${path} failed: ${r.status}`);
+            return r.json();
+        }
+
+        // ----- Settings Modal -----
+        (function initSettings() {
+            const modal = document.getElementById("settings-modal");
+            const btn = document.getElementById("btn-settings");
+            const close = document.getElementById("settings-close");
+            const save = document.getElementById("settings-save");
+            const clear = document.getElementById("settings-clear");
+            const input = document.getElementById("settings-token");
+
+            if (!modal || !btn || !close || !save || !clear || !input) return;
+
+            function open() {
+                input.value = localStorage.getItem("control_plane_token") || "";
+                modal.classList.remove("hidden");
+                modal.classList.add("flex");
+                input.focus();
+            }
+            function hide() {
+                modal.classList.add("hidden");
+                modal.classList.remove("flex");
+            }
+
+            btn.addEventListener("click", open);
+            close.addEventListener("click", hide);
+            modal.addEventListener("click", (e) => { if (e.target === modal) hide(); });
+
+            save.addEventListener("click", () => {
+                const v = (input.value || "").trim();
+                if (!v) return alert("Token is empty.");
+                localStorage.setItem("control_plane_token", v);
+                hide();
+                alert("Token saved (local only).");
+            });
+
+            clear.addEventListener("click", () => {
+                localStorage.removeItem("control_plane_token");
+                input.value = "";
+                alert("Token cleared.");
+            });
+        })();
+
+        // ----- DOM helpers (safe: only update if element exists) -----
+        function setText(id, text) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = text;
+        }
+        function setWidth(id, pct) {
+            const el = document.getElementById(id);
+            if (el) el.style.width = pct;
+        }
+
+        // ----- Live data polling -----
+        let lastStatus = null;
+
+        async function pollStatus() {
+            try {
+                const s = await apiGet("/api/status");
+                lastStatus = s;
+                return s;
+            } catch (e) {
+                console.error("Poll status error:", e);
+                return null;
+            }
+        }
+
+        async function pollSignals() {
+            try {
+                const data = await apiGet("/api/signals/pending");
+                const signals = Array.isArray(data) ? data : (data.signals || data.items || []);
+                renderSignalsQueue(signals);
+
+                // Set "current active signal" from the first signal if present
+                if (signals.length > 0) {
+                    const sig = signals[0];
+                    const dir = (sig.direction || sig.side || "BUY").toUpperCase();
+                    const instrument = (sig.instrument || sig.symbol || "XAUUSD").toUpperCase();
+                    const entry = sig.entry ?? sig.entry_price ?? sig.price ?? "";
+                    const tp = sig.take_profit ?? sig.tp ?? "";
+                    const conf = sig.confidence ?? sig.score ?? "";
+                    const reasoning = sig.reasoning ?? sig.strategy ?? "";
+                    const bias = sig.bias ?? sig.market_bias ?? "";
+                    const atr = sig.atr ?? sig.stability ?? "";
+                    const corridor = sig.corridor ?? sig.range ?? "";
+                    const strategyType = sig.strategy_type ?? sig.type ?? "";
+
+                    setText("primary-signal", `${instrument} ${dir}`);
+                    setText("signal-text", entry && tp ? `Entry: ${entry} | TP: ${tp}` : "");
+                    if (conf !== "") {
+                        const pct = (Number(conf) <= 1 ? Number(conf) * 100 : Number(conf));
+                        setText("conviction", `${pct.toFixed(1)}%`);
+                        setWidth("conviction-bar", `${pct}%`);
+                        setText("signal-confidence", `Confidence: ${pct.toFixed(1)}%`);
+                    } else {
+                        setText("conviction", "");
+                        setWidth("conviction-bar", "0%");
+                        setText("signal-confidence", "");
+                    }
+                    setText("ai-reasoning", reasoning);
+                    setText("market-bias", bias);
+                    setText("atr-stability", atr);
+                    setText("corridor", corridor);
+                    setText("strategy-type", strategyType);
+                } else {
+                    // Clear signal fields if no signals
+                    setText("primary-signal", "");
+                    setText("signal-text", "");
+                    setText("signal-confidence", "");
+                    setText("conviction", "");
+                    setWidth("conviction-bar", "0%");
+                    setText("ai-reasoning", "");
+                    setText("market-bias", "");
+                    setText("atr-stability", "");
+                    setText("corridor", "");
+                    setText("strategy-type", "");
+                }
+            } catch (e) {
+                console.error("Poll signals error:", e);
+                // Clear fields on error (hard start)
+                setText("primary-signal", "");
+                setText("signal-text", "");
+                setText("signal-confidence", "");
+                setText("conviction", "");
+                setWidth("conviction-bar", "0%");
+            }
+        }
+
+        function renderSignalsQueue(signals) {
+            const queue = document.getElementById("signals-queue");
+            if (!queue) return;
+
+            if (!Array.isArray(signals) || signals.length === 0) {
+                queue.innerHTML = '';
+                return;
+            }
+
+            const html = signals.slice(0, 6).map(sig => {
+                const dir = (sig.direction || sig.side || "UNKNOWN").toUpperCase();
+                const instrument = (sig.instrument || sig.symbol || "UNKNOWN").toUpperCase();
+                const entry = sig.entry ?? sig.entry_price ?? sig.price ?? "";
+                const conf = sig.confidence ?? sig.score ?? "";
+                const tp = sig.take_profit ?? sig.tp ?? "";
+                const kind = (sig.type || sig.signal_type || "POTENTIAL").toUpperCase();
+
+                const dirColor = dir === "BUY" ? "text-[#00ff88]" : (dir === "SELL" ? "text-red-400" : "text-gray-300");
+                const border = kind === "WATCH" ? "border-yellow-500" : (kind === "CONDITIONAL" ? "border-blue-500" : "border-[#00ff88]");
+                const confText = conf !== "" ? `${Number(conf).toFixed ? Number(conf).toFixed(1) : conf}%` : "";
+
+                return `
+                    <div class="glass-card p-3 rounded-lg border-l-4 ${border}">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <span class="text-[9px] font-bold text-gray-500 uppercase">${kind}</span>
+                                <p class="text-sm font-bold ${dirColor}">${instrument} ${dir} ${entry !== "" ? `@ ${entry}` : ""}</p>
+                                ${tp !== "" ? `<p class="text-[10px] text-gray-400">TP: ${tp}</p>` : ""}
+                            </div>
+                            ${confText ? `<span class="chip chip-success text-[8px] py-0.5 px-2">${confText}</span>` : ""}
+                        </div>
+                    </div>
+                `;
+            }).join("");
+
+            queue.innerHTML = html;
+        }
+
+        async function pollPositions() {
+            try {
+                const data = await apiGet("/api/positions");
+                const positions = Array.isArray(data) ? data : (data.positions || data.items || []);
+                setText("positions", String(positions.length).padStart(2, "0"));
+            } catch (e) {
+                console.error("Poll positions error:", e);
+                // Clear on error (hard start)
+                setText("positions", "");
+            }
+        }
+
+        async function pollJournalTrades() {
+            try {
+                const data = await apiGet("/api/journal/trades?limit=50");
+                const trades = Array.isArray(data.trades) ? data.trades : [];
+                renderJournalTrades(trades, data.last_executed_count || 0);
+            } catch (e) {
+                console.error("Poll journal trades error:", e);
+                // Show NOT WIRED state on error
+                renderJournalError();
+            }
+        }
+
+        function renderJournalTrades(trades, lastExecutedCount) {
+            const container = document.getElementById("journal-trades-container");
+            if (!container) return;
+
+            // If no trades executed, show "No trades" message
+            if (trades.length === 0 && lastExecutedCount === 0) {
+                container.innerHTML = `
+                    <div class="glass-card rounded-xl p-12 text-center">
+                        <div class="text-6xl mb-4">📓</div>
+                        <h3 class="text-2xl font-bold text-white mb-2">No Trades Executed</h3>
+                        <p class="text-gray-400">The system has not executed any trades yet. Trades will appear here once execution begins.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // If trades exist but empty array, show "No trades" (ledger empty but execution happened)
+            if (trades.length === 0) {
+                container.innerHTML = `
+                    <div class="glass-card rounded-xl p-12 text-center">
+                        <div class="text-6xl mb-4">📓</div>
+                        <h3 class="text-2xl font-bold text-white mb-2">No Trades in Ledger</h3>
+                        <p class="text-gray-400">Trades have been executed but ledger is empty. Check system logs.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Render trades
+            const html = trades.map((trade, index) => {
+                const tradeId = `trade-${trade.trade_id || index}`;
+                const isWin = trade.pnl && trade.pnl > 0;
+                const isLoss = trade.pnl && trade.pnl < 0;
+                const pnlColor = isWin ? "text-[#00ff88]" : (isLoss ? "text-red-500" : "text-white");
+                const borderColor = isWin ? "hover:border-[#00ff88]/30" : (isLoss ? "hover:border-red-500/30" : "hover:border-white/30");
+                const chipClass = isWin ? "chip chip-success" : (isLoss ? "chip chip-danger" : "chip");
+                const chipText = isWin ? "WIN" : (isLoss ? "LOSS" : "OPEN");
+
+                // Format timestamps
+                const entryTime = trade.entry_time ? new Date(trade.entry_time).toISOString().substr(11, 8) + " UTC" : "N/A";
+                const exitTime = trade.exit_time ? new Date(trade.exit_time).toISOString().substr(11, 8) + " UTC" : "N/A";
+                const loggedAt = trade.logged_at ? new Date(trade.logged_at).toISOString().substr(11, 8) + " UTC" : "N/A";
+
+                // Format P&L
+                const pnl = trade.pnl !== null && trade.pnl !== undefined ? (trade.pnl > 0 ? `+$${trade.pnl.toFixed(2)}` : `-$${Math.abs(trade.pnl).toFixed(2)}`) : "N/A";
+                const accountId = trade.account_id_redacted || "****-****-****-****";
+
+                return `
+                    <div class="glass-card rounded-xl overflow-hidden ${borderColor} transition-all">
+                        <div class="p-5 cursor-pointer" onclick="toggleTradeDetails('${tradeId}')">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-4">
+                                    <div class="text-center">
+                                        <div class="text-[9px] text-gray-500 font-bold uppercase mb-1">Trade ID</div>
+                                        <div class="text-xs font-mono ${pnlColor}">${(trade.trade_id || `trade-${index}`).substr(0, 6)}</div>
+                                    </div>
+                                    <div class="h-10 w-px bg-white/10"></div>
+                                    <div>
+                                        <div class="font-bold text-lg text-white">${trade.instrument || "UNKNOWN"}</div>
+                                        <div class="text-xs text-gray-400 font-mono">${trade.strategy_key || "Unknown"}</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-6">
+                                    <div class="text-right">
+                                        <div class="text-[9px] text-gray-500 font-bold uppercase mb-1">Entry Time</div>
+                                        <div class="text-xs font-mono text-white">${entryTime}</div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-[9px] text-gray-500 font-bold uppercase mb-1">Exit Time</div>
+                                        <div class="text-xs font-mono text-white">${exitTime}</div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-[9px] text-gray-500 font-bold uppercase mb-1">P&L</div>
+                                        <div class="text-lg font-bold ${pnlColor}">${pnl}</div>
+                                    </div>
+                                    <div class="text-gray-500 text-xl transition-transform" id="${tradeId}-arrow">▼</div>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <span class="chip ${chipClass} text-[9px] py-0.5 px-2">${chipText}</span>
+                                <span class="attribute-tag">${accountId}</span>
+                            </div>
+                        </div>
+                        
+                        <div id="${tradeId}" class="hidden border-t border-white/10">
+                            <div class="p-5 bg-black/30">
+                                <div class="grid grid-cols-3 gap-6 mb-5">
+                                    <div>
+                                        <h4 class="text-[10px] font-bold text-gray-500 uppercase mb-3 tracking-widest">Trade Execution</h4>
+                                        <div class="space-y-2 text-xs">
+                                            <div class="flex justify-between border-b border-white/5 pb-1">
+                                                <span class="text-gray-400">Entry Price</span>
+                                                <span class="font-mono text-white">${trade.entry_price || "N/A"}</span>
+                                            </div>
+                                            <div class="flex justify-between border-b border-white/5 pb-1">
+                                                <span class="text-gray-400">Exit Price</span>
+                                                <span class="font-mono text-white">${trade.exit_price || "N/A"}</span>
+                                            </div>
+                                            <div class="flex justify-between border-b border-white/5 pb-1">
+                                                <span class="text-gray-400">Stop Loss</span>
+                                                <span class="font-mono text-white">${trade.stop_loss || "N/A"}</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400">Units</span>
+                                                <span class="font-mono text-white">${trade.units || "N/A"}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-[10px] font-bold text-gray-500 uppercase mb-3 tracking-widest">Performance</h4>
+                                        <div class="space-y-2 text-xs">
+                                            <div class="flex justify-between border-b border-white/5 pb-1">
+                                                <span class="text-gray-400">P&L</span>
+                                                <span class="font-mono ${pnlColor}">${pnl}</span>
+                                            </div>
+                                            <div class="flex justify-between border-b border-white/5 pb-1">
+                                                <span class="text-gray-400">Status</span>
+                                                <span class="font-mono text-white">${trade.status || "unknown"}</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400">Side</span>
+                                                <span class="font-mono text-white">${trade.side || "N/A"}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-[10px] font-bold text-gray-500 uppercase mb-3 tracking-widest">Metadata</h4>
+                                        <div class="space-y-2 text-xs">
+                                            <div class="flex justify-between border-b border-white/5 pb-1">
+                                                <span class="text-gray-400">Account</span>
+                                                <span class="font-mono text-white">${accountId}</span>
+                                            </div>
+                                            <div class="flex justify-between border-b border-white/5 pb-1">
+                                                <span class="text-gray-400">Strategy</span>
+                                                <span class="font-mono text-white">${trade.strategy_key || "N/A"}</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400">Logged</span>
+                                                <span class="font-mono text-white">${loggedAt}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+
+            container.innerHTML = `<div class="space-y-4">${html}</div>`;
+        }
+
+        function renderJournalError() {
+            const container = document.getElementById("journal-trades-container");
+            if (!container) return;
+            container.innerHTML = `
+                <div class="glass-card rounded-xl p-12 text-center border-2 border-yellow-500/50">
+                    <div class="text-6xl mb-4">⚠️</div>
+                    <h3 class="text-2xl font-bold text-yellow-500 mb-2">NOT WIRED</h3>
+                    <p class="text-gray-400 mb-4">The journal trades endpoint is not available or failed to load.</p>
+                    <p class="text-xs text-gray-500">Endpoint: <code class="bg-black/50 px-2 py-1 rounded">GET /api/journal/trades</code></p>
+                </div>
+            `;
+        }
+
+        // ----- Strategy switching (POST /api/config) -----
+        const UI_TO_BACKEND_STRATEGY = {
+            gold: "gold",
+            mean: "range",
+            breakout: "momentum_v2",
+        };
+
+        // Allowed strategy keys from backend (authoritative source)
+        let allowedStrategies = new Set();
+        let strategyCatalogLoaded = false;
+
+        async function loadStrategyCatalog() {
+            try {
+                const response = await apiGet("/api/strategies");
+                if (response.ok && Array.isArray(response.allowed)) {
+                    allowedStrategies = new Set(response.allowed);
+                    strategyCatalogLoaded = true;
+                    console.log("Strategy catalog loaded:", Array.from(allowedStrategies));
+                } else {
+                    console.error("Invalid /api/strategies response format:", response);
+                    // Fallback: use existing mapping if response format is unexpected
+                    strategyCatalogLoaded = false;
+                }
+            } catch (e) {
+                console.error("Failed to load strategy catalog:", e);
+                // If catalog load fails, block POST to prevent invalid keys
+                strategyCatalogLoaded = false;
+            }
+        }
+
+        async function switchStrategyBackend(uiKey) {
+            const backendKey = UI_TO_BACKEND_STRATEGY[uiKey] || uiKey;
+
+            // Validate against backend catalog if loaded
+            if (strategyCatalogLoaded) {
+                if (!allowedStrategies.has(backendKey)) {
+                    const errorMsg = `Invalid strategy key: ${backendKey}. Allowed keys: ${Array.from(allowedStrategies).join(", ")}`;
+                    console.error(errorMsg);
+                    alert(`Strategy switch blocked: ${errorMsg}`);
+                    return false;
+                }
+            } else {
+                // If catalog not loaded, block POST to prevent invalid keys
+                console.error("Strategy catalog not loaded. Cannot validate key. Blocking POST.");
+                alert("Strategy catalog not available. Cannot switch strategy. Please reload the page.");
+                return false;
+            }
+
+            const confirmed = confirm(
+                `Switch strategy to: ${backendKey}?\n\nThis updates config only. Execution remains gated server-side.`
+            );
+            if (!confirmed) return false;
+
+            try {
+                await apiPost("/api/config", { active_strategy_key: backendKey });
+                await pollStatus();
+                await pollSignals();
+                alert(`Strategy switched to ${backendKey}`);
+                return true;
+            } catch (e) {
+                console.error(e);
+                alert(`Strategy switch failed: ${e.message}`);
+                return false;
+            }
+        }
+        let tvWidget = null;
+        
+        // Toggle trade details
+        function toggleTradeDetails(tradeId) {
+            const details = document.getElementById(tradeId);
+            const arrow = document.getElementById(tradeId + '-arrow');
+            
+            if (details.classList.contains('hidden')) {
+                details.classList.remove('hidden');
+                arrow.style.transform = 'rotate(180deg)';
+            } else {
+                details.classList.add('hidden');
+                arrow.style.transform = 'rotate(0deg)';
+            }
+        }
+        
+        // Clear all dynamic fields (hard start: no placeholders)
+        function clearDynamicFields() {
+            setText("primary-signal", "");
+            setText("signal-text", "");
+            setText("signal-confidence", "");
+            setText("conviction", "");
+            setText("ai-reasoning", "");
+            setText("market-bias", "");
+            setText("atr-stability", "");
+            setText("corridor", "");
+            setText("positions", "");
+            setText("strategy-type", "");
+            setWidth("conviction-bar", "0%");
+            const queue = document.getElementById("signals-queue");
+            if (queue) queue.innerHTML = "";
+        }
+        
+        function switchStrategy(strategy) {
+            // Update button states (UI only)
+            document.querySelectorAll('.strategy-btn').forEach(btn => btn.classList.remove('active'));
+            const btn = document.getElementById('strategy-' + strategy);
+            if (btn) btn.classList.add('active');
+            
+            // Switch strategy on backend (authoritative source)
+            switchStrategyBackend(strategy).then(success => {
+                if (success) {
+                    // Refresh all data from backend after successful switch
+                    pollStatus().catch(() => {});
+                    pollPositions().catch(() => {});
+                    pollSignals().catch(() => {});
+                } else {
+                    // If backend switch failed, revert button state
+                    if (btn) btn.classList.remove('active');
+                }
+            }).catch(err => {
+                console.error("Strategy switch error:", err);
+                if (btn) btn.classList.remove('active');
+            });
+        }
+        
+        function changeChartSymbol() {
+            const symbol = document.getElementById('chart-symbol').value;
+            if (tvWidget) {
+                tvWidget.setSymbol(symbol, "5", function() {
+                    console.log("Symbol changed to: " + symbol);
+                });
+            }
+        }
+        
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            document.getElementById('nav-' + tabId).classList.add('active');
+            if(tabId === 'terminal' && !tvWidget) {
+                renderChart();
+            }
+        }
+
+        function renderChart() {
+            tvWidget = new TradingView.widget({
+                "autosize": true,
+                "symbol": document.getElementById('chart-symbol').value,
+                "interval": "5",
+                "timezone": "Etc/UTC",
+                "theme": "dark",
+                "style": "1",
+                "container_id": "tradingview_terminal",
+                "hide_side_toolbar": false,
+                "allow_symbol_change": true,
+                "save_image": false,
+                "details": true,
+                "hotlist": true,
+                "calendar": true,
+                "studies": [
+                    "RSI@tv-basicstudies",
+                    "MASimple@tv-basicstudies",
+                    "Volume@tv-basicstudies"
+                ],
+                "show_popup_button": true,
+                "popup_width": "1000",
+                "popup_height": "650",
+                "locale": "en"
+            });
+        }
+        
+        window.onload = function() {
+            // Clear all dynamic fields on boot (hard start: no placeholders)
+            clearDynamicFields();
+            
+            // Render TradingView chart
+            renderChart();
+            
+            // Boot control plane connection
+            boot();
+        };
+        
+        // ----- Boot loop (Control Plane Integration) -----
+        async function boot() {
+            // Clear fields first (hard start)
+            clearDynamicFields();
+            
+            // Load strategy catalog FIRST (required for validation)
+            await loadStrategyCatalog();
+            
+            // Poll backend data (no fallback to mock)
+            try {
+                await pollStatus();
+            } catch (e) {
+                console.error("Boot pollStatus error:", e);
+            }
+            
+            try {
+                await pollPositions();
+            } catch (e) {
+                console.error("Boot pollPositions error:", e);
+            }
+            
+            try {
+                await pollSignals();
+            } catch (e) {
+                console.error("Boot pollSignals error:", e);
+            }
+            
+            try {
+                await pollJournalTrades();
+            } catch (e) {
+                console.error("Boot pollJournalTrades error:", e);
+            }
+
+            // Polling intervals (no fallback, just log errors)
+            setInterval(() => pollStatus().catch(err => console.error("Poll status error:", err)), 5000);
+            setInterval(() => pollPositions().catch(err => console.error("Poll positions error:", err)), 3000);
+            setInterval(() => pollSignals().catch(err => console.error("Poll signals error:", err)), 3000);
+            setInterval(() => pollJournalTrades().catch(err => console.error("Poll journal trades error:", err)), 5000);
+        }
+    </script>
+</body>
+</html>

@@ -8,7 +8,7 @@ import os
 import sys
 import time
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 # Set up environment
 os.environ['OANDA_ENVIRONMENT'] = os.environ.get('OANDA_ENVIRONMENT', 'practice')
@@ -26,6 +26,12 @@ try:
 except ImportError:
     # Fallback: use momentum if gold scalping not available
     GoldScalpingStrategy = MomentumTradingStrategy
+
+# Market hours check (proper FX market hours)
+from src.core.market_hours import is_fx_market_open
+
+# Status snapshot for API bridge (lazy import - happens after path setup)
+HAS_STATUS_SNAPSHOT = None  # Will be determined lazily
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -85,17 +91,20 @@ def _has_valid_broker(account_id: str, account_manager) -> bool:
     if _is_placeholder_account_id(account_id):
         return False
     
-    # Check if broker client exists and is not PaperBroker (for execution purposes)
+    # Check if broker client exists
     client = account_manager.get_account_client(account_id)
     if not client:
         return False
     
-    # PaperBroker is not a valid execution broker
+    # OrderManager requires real OANDA client interface
+    # PaperBroker may not implement all required methods (create_order, etc.)
+    # So we require real OANDA client for execution
+    # This is achieved by setting PAPER_ALLOW_OANDA_NETWORK=true in paper mode
     from src.core.paper_broker import PaperBroker
     if isinstance(client, PaperBroker):
-        return False
+        return False  # PaperBroker not supported for OrderManager execution
     
-    return True
+    return True  # Real OANDA client is valid
 
 
 class WorkingTradingSystem:
@@ -118,9 +127,20 @@ class WorkingTradingSystem:
         }
         self.order_managers = {}
         
+        # Hot-reload support: track config state
+        self._config_last_mtime = 0.0
+        self._active_strategy_key = "momentum"  # Default
+        self._scan_interval = 30  # Default
+        
+        # Try to load initial runtime config (optional)
+        self._load_runtime_config()
+        
         # Determine execution eligibility
         can_execute, exec_reason = _can_execute()
         self.execution_enabled = can_execute
+        
+        # Initialize status snapshot writer (lazy import after path setup)
+        self.status_writer = self._get_status_writer()
         
         # Count accounts with valid execution brokers (non-placeholder, non-PaperBroker)
         execution_ready_accounts = []
@@ -146,6 +166,163 @@ class WorkingTradingSystem:
             logger.info(f"✅ Working Trading System initialized")
             logger.info(f"   Accounts for scanning: {len(self.account_ids_for_scanning)}")
             logger.info(f"   Accounts with execution capability: {len(execution_ready_accounts)}")
+        
+        # Write initial status snapshot
+        self._write_status_snapshot(0, 0)
+    
+    def _get_status_writer(self):
+        """Lazy import status snapshot writer (after path setup)"""
+        global HAS_STATUS_SNAPSHOT
+        if HAS_STATUS_SNAPSHOT is None:
+            try:
+                from src.control_plane.status_snapshot import get_status_snapshot
+                HAS_STATUS_SNAPSHOT = True
+                return get_status_snapshot()
+            except ImportError:
+                HAS_STATUS_SNAPSHOT = False
+                return None
+        elif HAS_STATUS_SNAPSHOT:
+            from src.control_plane.status_snapshot import get_status_snapshot
+            return get_status_snapshot()
+        else:
+            return None
+    
+    def _write_status_snapshot(self, signals_generated: int, executed_count: int) -> None:
+        """Write status snapshot for API (atomic, no secrets)"""
+        if not self.status_writer:
+            return
+        
+        try:
+            # Get execution state
+            can_execute, exec_reason = _can_execute()
+            
+            # Count execution-ready accounts
+            execution_ready_count = 0
+            if can_execute:
+                for account_id in self.active_accounts:
+                    if _has_valid_broker(account_id, self.account_manager):
+                        execution_ready_count += 1
+            
+            # Build snapshot (NO SECRETS)
+            snapshot = {
+                "mode": os.getenv("TRADING_MODE", "paper"),
+                "execution_enabled": can_execute,
+                "execution_reason": exec_reason,
+                "accounts_total": len(self.account_ids_for_scanning),
+                "accounts_execution_capable": execution_ready_count,
+                "active_strategy_key": self._active_strategy_key,
+                "scan_interval": self._scan_interval,
+                "last_signals_generated": signals_generated,
+                "last_executed_count": executed_count,
+                "last_scan_iso": datetime.utcnow().isoformat() + "Z",
+                "market_closed": not is_fx_market_open(datetime.now(timezone.utc)),  # FX market hours
+                "accounts": [],  # Populated below without secrets
+                "recent_signals": [],  # TODO: add signal summaries
+                "positions": [],  # Empty in signals-only
+                "pending_trades": [],  # Empty in signals-only
+            }
+            
+            # Add account summaries (no secrets, masked IDs)
+            for account_id in self.account_ids_for_scanning:
+                if account_id in self.account_configs:
+                    config = self.account_configs[account_id]
+                    snapshot["accounts"].append({
+                        "id_masked": account_id[-4:] if len(account_id) > 4 else "****",
+                        "strategy": config.strategy_name,
+                        "instruments": config.instruments[:3],  # Limit list size
+                        "execution_capable": _has_valid_broker(account_id, self.account_manager) if can_execute else False
+                    })
+            
+            # Write atomically
+            self.status_writer.write(snapshot)
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to write status snapshot: {e}")
+    
+    def _load_runtime_config(self) -> None:
+        """Load runtime config if available (hot-reload support)
+        
+        This allows dashboard to change settings without restarting runner.
+        Config changes are applied deterministically before next scan.
+        """
+        try:
+            # Try to import control plane config store
+            from src.control_plane.config_store import ConfigStore
+            
+            config_store = ConfigStore()
+            config = config_store.load()
+            
+            # Update internal state
+            self._active_strategy_key = config.active_strategy_key
+            self._scan_interval = config.scan_interval_seconds
+            self._config_last_mtime = config_store.get_mtime()
+            
+            logger.info(f"📝 Runtime config loaded: strategy={self._active_strategy_key}, interval={self._scan_interval}s")
+        except ImportError:
+            # Control plane not available - use defaults
+            logger.debug("Control plane not available - using default settings")
+        except Exception as e:
+            logger.warning(f"⚠️ Could not load runtime config: {e}")
+    
+    def _check_config_reload(self) -> None:
+        """Check if runtime config changed and reload if needed (hot-reload)
+        
+        Called before each scan to detect config changes from dashboard.
+        NO CODE RELOAD - only updates settings and strategy selection.
+        """
+        try:
+            from src.control_plane.config_store import ConfigStore
+            
+            config_store = ConfigStore()
+            current_mtime = config_store.get_mtime()
+            
+            # Check if config file changed
+            if current_mtime > self._config_last_mtime:
+                logger.info("🔄 Runtime config changed - reloading...")
+                config = config_store.load()
+                
+                old_strategy = self._active_strategy_key
+                old_interval = self._scan_interval
+                
+                self._active_strategy_key = config.active_strategy_key
+                self._scan_interval = config.scan_interval_seconds
+                self._config_last_mtime = current_mtime
+                
+                # Log changes
+                if old_strategy != self._active_strategy_key:
+                    logger.info(f"   Strategy changed: {old_strategy} → {self._active_strategy_key}")
+                if old_interval != self._scan_interval:
+                    logger.info(f"   Scan interval changed: {old_interval}s → {self._scan_interval}s")
+                
+                logger.info("✅ Runtime config reloaded successfully")
+        except ImportError:
+            # Control plane not available - skip hot reload
+            pass
+        except Exception as e:
+            logger.warning(f"⚠️ Config reload failed: {e}")
+    
+    def _get_active_strategy_instance(self):
+        """Get strategy instance based on active config key
+        
+        Maps runtime config strategy key to actual strategy instances.
+        Supports hot-switching strategies without restart.
+        """
+        # Map config keys to strategy instances
+        strategy_map = {
+            'momentum': self.strategies.get('momentum'),
+            'gold': self.strategies.get('gold'),
+            'gold_scalping': self.strategies.get('gold'),  # Alias
+            'momentum_v2': self.strategies.get('momentum'),  # Fallback to momentum
+            'range': self.strategies.get('momentum'),  # Fallback to momentum
+            'eur_usd_5m_safe': self.strategies.get('momentum'),  # Fallback to momentum
+        }
+        
+        strategy = strategy_map.get(self._active_strategy_key)
+        if strategy is None:
+            logger.warning(f"⚠️ Strategy '{self._active_strategy_key}' not found, using momentum")
+            strategy = self.strategies.get('momentum')
+        
+        return strategy
     
     def scan_and_execute(self):
         """Scan for opportunities and EXECUTE trades immediately
@@ -233,10 +410,12 @@ class WorkingTradingSystem:
         executed_trades = 0
         if not self.execution_enabled:
             logger.info(f"📄 Execution disabled (signals-only) — signals generated: {len(all_signals)}, executed: 0")
+            self._write_status_snapshot(len(all_signals), 0)
             return len(all_signals)  # Return signal count, not executed count
         
         if not self.order_managers:
             logger.info(f"📄 Execution enabled but no order managers available — signals generated: {len(all_signals)}, executed: 0")
+            self._write_status_snapshot(len(all_signals), 0)
             return len(all_signals)  # Return signal count, not executed count
         
         for signal in all_signals:
@@ -287,6 +466,8 @@ class WorkingTradingSystem:
             logger.info(f"🎯 EXECUTED {executed_trades} TRADES")
         else:
             logger.info(f"📄 Execution enabled but no trades executed — signals generated: {len(all_signals)}, executed: 0")
+        
+        self._write_status_snapshot(len(all_signals), executed_trades)
         return executed_trades
 
 def run_forever(max_iterations: int = 0) -> None:
@@ -299,15 +480,21 @@ def run_forever(max_iterations: int = 0) -> None:
     i = 0
     while True:
         try:
+            # HOT-RELOAD: Check for config changes before each scan
+            system._check_config_reload()
+            
             executed = system.scan_and_execute()
-            logger.info(f"⏰ Next scan in 30 seconds... (Executed {executed} trades)")
+            
+            # Use dynamically loaded scan interval
+            scan_interval = system._scan_interval
+            logger.info(f"⏰ Next scan in {scan_interval} seconds... (Executed {executed} trades)")
             
             i += 1
             if max_iterations > 0 and i >= max_iterations:
                 logger.info(f"🛑 Reached max iterations ({max_iterations}), stopping.")
                 break
             
-            time.sleep(30)
+            time.sleep(scan_interval)
         except KeyboardInterrupt:
             logger.info("🛑 Trading system stopped by user")
             break

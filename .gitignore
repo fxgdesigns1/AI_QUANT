@@ -202,3 +202,8 @@ dashboard/*.py
 
 # Entire google-cloud-trading-system directory (contains many hardcoded secrets)
 google-cloud-trading-system/
+
+# === QUARANTINE (sensitive artifacts - added by remediation script) ===
+QUARANTINE/
+forensic_snapshot/
+cloud_declutter_v2/Oracle/
