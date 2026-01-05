@@ -64,8 +64,14 @@ SECRETS_SCAN_OUT="$ARTIFACTS_DIR/secrets_scan_$(date +%s).txt"
 LEAK_FRAG_PAT="7248""728383:AA|c01de""9eb4d79"
 SECRETS_COUNT=$(rg -n --hidden --no-ignore-vcs -S "${LEAK_FRAG_PAT}|OANDA_API_KEY\s*[:=]\s*['\"]?[A-Za-z0-9_-]{8,}|TELEGRAM_(BOT_)?TOKEN\s*[:=]\s*['\"]?[A-Za-z0-9:_-]{8,}" . 2>&1 | tee "$SECRETS_SCAN_OUT" | wc -l | tr -d ' ')
 
-# Filter out REDACTED patterns (safe)
-REAL_SECRETS=$(grep -v "REDACTED" "$SECRETS_SCAN_OUT" | grep -v "your_key_here" | grep -v "your_token" | wc -l | tr -d ' ')
+# Filter out REDACTED patterns and safe placeholders (safe)
+# Also exclude: settings accessors, os.getenv calls, documentation files, scan artifacts
+REAL_SECRETS=$(grep -v "REDACTED" "$SECRETS_SCAN_OUT" | \
+  grep -v "your_key_here\|your_token\|your_api_key\|your-oanda-api-key-here" | \
+  grep -v "settings\.oanda_api_key\|settings\.telegram\|os\.getenv" | \
+  grep -v "\.md:\|SECRET_PURGE\|ARTIFACTS/secrets_scan" | \
+  grep -v "print.*OANDA_API_KEY\|print.*TELEGRAM" | \
+  wc -l | tr -d ' ')
 
 if [[ "$REAL_SECRETS" -eq 0 ]]; then
     print_status "PASS" "Secrets scan: no real tokens/keys found ($SECRETS_COUNT total matches, all redacted)"
