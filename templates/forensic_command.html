@@ -96,6 +96,16 @@
         <div class="flex items-center gap-4">
             <div class="w-9 h-9 bg-gradient-to-br from-[#00ff88] to-[#00cc6a] rounded-lg flex items-center justify-center font-bold text-black text-sm shadow-lg">AQ</div>
             <h1 class="text-xl font-extrabold tracking-tighter uppercase glow-text">Forensic Command</h1>
+            <span id="system-label-badge" class="chip chip-warning">
+                <span class="diag-pulse pulse-green"></span>
+                <span id="system-label-text">LOADING...</span>
+            </span>
+            <span id="last-scan-at" class="chip chip-info" style="display: none;">
+                <span class="text-[9px] text-gray-400">Last Scan: <span class="text-white">-</span></span>
+            </span>
+            <span id="accounts-loaded" class="chip chip-info" style="display: none;">
+                <span class="text-[9px] text-gray-400">Accounts: <span class="text-white">-</span></span>
+            </span>
             <span class="chip chip-success">
                 <span class="diag-pulse pulse-green"></span>
                 LIVE
@@ -162,6 +172,10 @@
                 <div onclick="showTab('strategies')" id="nav-strategies" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold">
                     <span class="text-lg">🛠️</span> 
                     <span>Starters & Logic</span>
+                </div>
+                <div onclick="showTab('trades')" id="nav-trades" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold">
+                    <span class="text-lg">📈</span> 
+                    <span>Active Trades</span>
                 </div>
             </div>
 
@@ -240,39 +254,45 @@
                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full">
                     <div class="lg:col-span-3 flex flex-col gap-6">
                         <div class="glass-card rounded-2xl overflow-hidden flex-1 relative min-h-[480px] shadow-2xl">
-                             <!-- Enhanced Suggestion Overlay -->
-                             <div class="suggestion-overlay" id="signal-overlay">
+                             <!-- Enhanced Suggestion Overlay (Hidden by default, populated by JS) -->
+                             <div class="suggestion-overlay" id="signal-overlay" style="display: none;">
                                  <div class="bg-gradient-to-br from-black/95 to-[#00ff88]/20 backdrop-blur-xl border-2 border-[#00ff88]/50 p-4 rounded-xl shadow-2xl">
                                      <div class="flex items-center gap-2 mb-2">
                                          <div class="w-3 h-3 rounded-full bg-[#00ff88] animate-ping"></div>
                                          <span class="text-[11px] font-black text-white uppercase tracking-wider">AI Active Signal</span>
                                      </div>
-                                     <p class="text-[12px] font-bold text-[#00ff88] mono uppercase" id="signal-text">Entry: 2042.85 | TP: 2055.00</p>
-                                     <p class="text-[10px] text-gray-300 mt-2" id="signal-confidence">Confidence: 94.2%</p>
+                                     <p class="text-[12px] font-bold text-[#00ff88] mono uppercase" id="signal-text">-</p>
+                                     <p class="text-[10px] text-gray-300 mt-2" id="signal-confidence">-</p>
                                  </div>
                              </div>
                              <div id="tradingview_terminal" class="h-full w-full"></div>
                         </div>
                         <div class="grid grid-cols-4 gap-4">
                             <div class="glass-card p-5 rounded-xl metric-card border-l-4 border-blue-500">
-                                <p class="text-[10px] text-gray-500 font-bold uppercase mb-2 tracking-wider">Current Corridor</p>
-                                <p class="stat-number text-white font-mono" id="corridor">2038-2055</p>
+                                <p class="text-[10px] text-gray-500 font-bold uppercase mb-2 tracking-wider">XAU_USD Bid</p>
+                                <p class="stat-number text-white font-mono" id="xauusd-bid">-</p>
                             </div>
                             <div class="glass-card p-5 rounded-xl metric-card border-l-4 border-[#00ff88]">
-                                <p class="text-[10px] text-gray-500 font-bold uppercase mb-2 tracking-wider">Active Positions</p>
-                                <p class="stat-number text-[#00ff88] font-mono glow-text" id="positions">01</p>
+                                <p class="text-[10px] text-gray-500 font-bold uppercase mb-2 tracking-wider">XAU_USD Ask</p>
+                                <p class="stat-number text-[#00ff88] font-mono glow-text" id="xauusd-ask">-</p>
                             </div>
                             <div class="glass-card p-5 rounded-xl metric-card border-l-4 border-purple-500">
-                                <p class="text-[10px] text-gray-500 font-bold uppercase mb-2 tracking-wider">Strategy Type</p>
-                                <p class="text-lg font-bold text-purple-400" id="strategy-type">SCALP</p>
+                                <p class="text-[10px] text-gray-500 font-bold uppercase mb-2 tracking-wider">Price Time</p>
+                                <p class="text-xs font-bold text-purple-400" id="xauusd-time">-</p>
                             </div>
                             <div class="glass-card p-5 rounded-xl metric-card border-l-4 border-red-500">
-                                <p class="text-[10px] text-gray-500 font-bold uppercase mb-2 tracking-wider">News Block</p>
-                                <p class="text-xs font-bold text-red-500 uppercase flex items-center gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                                    NFP High Impact
-                                </p>
+                                <p class="text-[10px] text-gray-500 font-bold uppercase mb-2 tracking-wider">News Items</p>
+                                <p class="text-xs font-bold text-white" id="news-items-count" style="display: block !important;">0</p>
                             </div>
+                        </div>
+                        <!-- Error banner (hidden by default) -->
+                        <div id="dashboard-error-banner" class="glass-card p-4 rounded-xl border-l-4 border-red-500 bg-red-500/10" style="display: none;">
+                            <p class="text-sm font-bold text-red-400" id="dashboard-error-text">ERROR</p>
+                        </div>
+                        <!-- Price Integrity banner (hidden by default) -->
+                        <div id="price-integrity-banner" class="glass-card p-4 rounded-xl border-l-4 border-red-500 bg-red-500/10" style="display: none;">
+                            <p class="text-sm font-bold text-red-400 mb-2">⚠️ Price Integrity Blocked</p>
+                            <div id="price-integrity-details" class="text-xs text-red-300"></div>
                         </div>
                     </div>
                     
@@ -282,29 +302,29 @@
                         <div class="bg-gradient-to-br from-[#1c1f26] via-[#14161a] to-[#1a1c22] border-2 border-[#2d2e35] p-6 rounded-2xl space-y-5 shadow-2xl">
                             <div>
                                 <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Primary Signal</span>
-                                <p class="text-2xl font-black text-[#00ff88] mt-1 glow-text" id="primary-signal">XAUUSD BUY</p>
+                                <p class="text-2xl font-black text-gray-500 mt-1 glow-text" id="primary-signal">SCANNING...</p>
                             </div>
                             <div class="space-y-3">
                                 <div class="flex justify-between text-[11px] border-b border-white/5 pb-2">
                                     <span class="text-gray-500">Conviction</span>
-                                    <span class="font-bold text-[#00ff88]" id="conviction">94.2%</span>
+                                    <span class="font-bold text-gray-400" id="conviction">-</span>
                                 </div>
                                 <div class="progress-bar">
-                                    <div class="progress-fill" id="conviction-bar" style="width: 94.2%"></div>
+                                    <div class="progress-fill" id="conviction-bar" style="width: 0%"></div>
                                 </div>
                                 <div class="flex justify-between text-[11px] border-b border-white/5 pb-2">
                                     <span class="text-gray-500">ATR Stability</span>
-                                    <span class="chip chip-success text-[9px] py-0.5 px-2" id="atr-stability">HIGH</span>
+                                    <span class="chip text-[9px] py-0.5 px-2" id="atr-stability">-</span>
                                 </div>
                                 <div class="flex justify-between text-[11px]">
                                     <span class="text-gray-500">Market Bias</span>
-                                    <span class="text-[#00ff88] font-bold" id="market-bias">BULL_EXPANSION</span>
+                                    <span class="text-gray-400 font-bold" id="market-bias">-</span>
                                 </div>
                             </div>
                             <div class="bg-black/30 p-4 rounded-lg border border-white/5">
-                                <p class="text-[11px] text-gray-300 italic leading-relaxed" id="ai-reasoning">"Neural analysis confirms liquidity sweep at 2038. Logic: High volume rejection at daily support + RSI oversold on M15."</p>
+                                <p class="text-[11px] text-gray-300 italic leading-relaxed" id="ai-reasoning">System scanning for opportunities...</p>
                             </div>
-                            <button class="w-full bg-gradient-to-r from-[#00ff88] to-[#00cc6a] text-black font-black text-xs py-3.5 rounded-xl uppercase tracking-wider shadow-lg hover:shadow-[#00ff88]/50 transition-all">
+                            <button class="w-full bg-gradient-to-r from-[#00ff88] to-[#00cc6a] text-black font-black text-xs py-3.5 rounded-xl uppercase tracking-wider shadow-lg hover:shadow-[#00ff88]/50 transition-all opacity-50 cursor-not-allowed" id="manual-override-btn" disabled>
                                 Manual Override Entry
                             </button>
                         </div>
@@ -425,33 +445,8 @@
             <!-- PERFORMANCE TAB -->
             <div id="tab-reports" class="tab-content p-6 overflow-y-auto">
                  <h2 class="text-3xl font-black uppercase tracking-tighter mb-6">Incubator Performance Matrix</h2>
-                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                     <div class="glass-card p-6 rounded-2xl hover:scale-105 transition-all">
-                         <div class="flex justify-between items-start mb-5">
-                             <h3 class="font-bold text-[#00ff88] text-lg">GOLD_SCALPER_v4.2</h3>
-                             <span class="chip chip-success text-[9px] py-1 px-2">PF: 2.14</span>
-                         </div>
-                         <div class="data-grid mb-5">
-                             <div class="bg-black/30 p-3 rounded-lg">
-                                 <p class="text-[9px] text-gray-500 uppercase mb-1">Drawdown</p>
-                                 <p class="text-lg font-bold text-white">0.8%</p>
-                             </div>
-                             <div class="bg-black/30 p-3 rounded-lg">
-                                 <p class="text-[9px] text-gray-500 uppercase mb-1">Win Rate</p>
-                                 <p class="text-lg font-bold text-[#00ff88]">68%</p>
-                             </div>
-                         </div>
-                         <div class="pt-4 border-t border-white/5">
-                             <p class="text-[9px] text-gray-500 uppercase mb-3 font-bold tracking-widest">Forensic Attributes</p>
-                             <div class="flex flex-wrap gap-2 mb-4">
-                                 <span class="attribute-tag">ATR-Adaptive SL</span>
-                                 <span class="attribute-tag">H1-Trend Lock</span>
-                                 <span class="attribute-tag">Volume Filter</span>
-                             </div>
-                             <p class="text-[9px] text-gray-500 uppercase mb-2 font-bold tracking-widest">Weak Points</p>
-                             <span class="weakness-tag">Spread Widening</span>
-                         </div>
-                     </div>
+                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="performance-matrix-container">
+                     <div class="glass-card p-6 text-center text-gray-500 italic">Loading performance data...</div>
                  </div>
             </div>
 
@@ -550,68 +545,45 @@
                     <h3 class="text-xl font-bold uppercase tracking-tight mb-4 flex items-center gap-2">
                         <span>⚙️</span> Active Strategy Matrix
                     </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="glass-card p-4 rounded-xl border-l-4 border-[#00ff88]">
-                            <div class="flex justify-between items-start mb-3">
-                                <h4 class="font-bold text-sm">GOLD_SCALPER_v4.2</h4>
-                                <span class="chip chip-success text-[8px] py-0.5 px-2">ACTIVE</span>
-                            </div>
-                            <div class="space-y-2 text-[10px]">
-                                <div class="flex justify-between">
-                                    <span class="text-gray-500">Timeframe</span>
-                                    <span class="font-mono text-white">M5, M15</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-500">Max Positions</span>
-                                    <span class="font-mono text-white">3</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-500">Last Signal</span>
-                                    <span class="font-mono text-[#00ff88]">2m ago</span>
-                                </div>
-                            </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="strategy-matrix-container">
+                        <div class="glass-card p-6 text-center text-gray-500 italic">Loading strategies...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACTIVE TRADES TAB -->
+            <div id="tab-trades" class="tab-content p-6 overflow-y-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-black uppercase tracking-tighter text-white">Active Trades & Pending Orders</h2>
+                    <div class="flex gap-3">
+                        <button onclick="refreshActiveTrades()" class="bg-white/5 border border-white/10 px-5 py-2.5 rounded-xl font-bold text-xs uppercase hover:bg-white/10 transition-all">
+                            🔄 Refresh All
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Active Trades Section -->
+                <div class="mb-8">
+                    <h3 class="text-xl font-bold uppercase tracking-tight mb-4 flex items-center gap-2">
+                        <span>📊</span> Active Trades
+                    </h3>
+                    <div id="trades-content" class="space-y-6">
+                        <div class="glass-card p-6 rounded-xl text-center">
+                            <div class="animate-spin w-8 h-8 border-2 border-gray-600 border-t-[#00ff88] rounded-full mx-auto mb-4"></div>
+                            <p class="text-gray-400">Loading active trades...</p>
                         </div>
-                        
-                        <div class="glass-card p-4 rounded-xl border-l-4 border-blue-500">
-                            <div class="flex justify-between items-start mb-3">
-                                <h4 class="font-bold text-sm">MEAN_REV_CORE</h4>
-                                <span class="chip chip-success text-[8px] py-0.5 px-2">ACTIVE</span>
-                            </div>
-                            <div class="space-y-2 text-[10px]">
-                                <div class="flex justify-between">
-                                    <span class="text-gray-500">Timeframe</span>
-                                    <span class="font-mono text-white">H1, H4</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-500">Max Positions</span>
-                                    <span class="font-mono text-white">2</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-500">Last Signal</span>
-                                    <span class="font-mono text-gray-400">45m ago</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="glass-card p-4 rounded-xl border-l-4 border-purple-500">
-                            <div class="flex justify-between items-start mb-3">
-                                <h4 class="font-bold text-sm">BREAKOUT_HUNTER</h4>
-                                <span class="chip chip-warning text-[8px] py-0.5 px-2">STANDBY</span>
-                            </div>
-                            <div class="space-y-2 text-[10px]">
-                                <div class="flex justify-between">
-                                    <span class="text-gray-500">Timeframe</span>
-                                    <span class="font-mono text-white">M15, M30</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-500">Max Positions</span>
-                                    <span class="font-mono text-white">1</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-500">Last Signal</span>
-                                    <span class="font-mono text-gray-400">2h ago</span>
-                                </div>
-                            </div>
+                    </div>
+                </div>
+                
+                <!-- Pending Orders Section -->
+                <div class="mb-8">
+                    <h3 class="text-xl font-bold uppercase tracking-tight mb-4 flex items-center gap-2">
+                        <span>📋</span> Pending Orders
+                    </h3>
+                    <div id="pending-orders-content" class="space-y-6">
+                        <div class="glass-card p-6 rounded-xl text-center">
+                            <div class="animate-spin w-8 h-8 border-2 border-gray-600 border-t-[#00ff88] rounded-full mx-auto mb-4"></div>
+                            <p class="text-gray-400">Loading pending orders...</p>
                         </div>
                     </div>
                 </div>
@@ -641,6 +613,10 @@
                 
                 <div id="news-content" class="space-y-6" style="display: none;">
                     <!-- Dynamic news content will be inserted here -->
+                    <div class="glass-card p-4 rounded-xl">
+                        <p class="text-[10px] text-gray-500 font-bold uppercase mb-2">Last Refresh</p>
+                        <p class="text-sm text-white font-mono" id="news-last-refresh">-</p>
+                    </div>
                 </div>
                 
                 <div id="news-error" class="space-y-6" style="display: none;">
@@ -807,6 +783,29 @@
         async function pollStatus() {
             try {
                 const s = await apiGet("/api/status");
+                // Update system label
+                const labelEl = document.getElementById("system-label-text");
+                if (labelEl && s.system_label) {
+                    labelEl.textContent = s.system_label;
+                    const badgeEl = document.getElementById("system-label-badge");
+                    if (badgeEl) {
+                        badgeEl.className = s.system_label === "ALPHA" ? "chip chip-success" : 
+                                          (s.system_label === "BETA" ? "chip chip-warning" : "chip");
+                    }
+                }
+                // Update last-scan-at selector
+                const lastScanEl = document.getElementById("last-scan-at");
+                if (lastScanEl && s.last_scan_at) {
+                    const scanDate = new Date(s.last_scan_at);
+                    lastScanEl.innerHTML = `<span class="text-[9px] text-gray-400">Last Scan: <span class="text-white">${scanDate.toLocaleTimeString()}</span></span>`;
+                    lastScanEl.style.display = "inline-flex";
+                }
+                // Update accounts-loaded selector
+                const accountsEl = document.getElementById("accounts-loaded");
+                if (accountsEl && s.accounts_loaded !== undefined) {
+                    accountsEl.innerHTML = `<span class="text-[9px] text-gray-400">Accounts: <span class="text-white">${s.accounts_loaded}</span></span>`;
+                    accountsEl.style.display = "inline-flex";
+                }
                 // Update header chip
                 // ... logic to update header chip ...
             } catch (e) {
@@ -814,7 +813,489 @@
             }
         }
 
+        async function updateLivePrices() {
+            try {
+                const data = await apiGet("/api/market/prices?instruments=XAU_USD");
+                const errBanner = document.getElementById("dashboard-error-banner");
+                const errText = document.getElementById("dashboard-error-text");
+                
+                if (!data.ok) {
+                    // Show error banner
+                    if (errBanner && errText) {
+                        errText.textContent = `ERROR: /api/market/prices ${data.error || 'Unknown error'}`;
+                        errBanner.style.display = "block";
+                    }
+                    // Set prices to "-" to indicate error
+                    const bidEl = document.getElementById("xauusd-bid");
+                    const askEl = document.getElementById("xauusd-ask");
+                    const timeEl = document.getElementById("xauusd-time");
+                    if (bidEl) bidEl.textContent = "-";
+                    if (askEl) askEl.textContent = "-";
+                    if (timeEl) timeEl.textContent = "-";
+                    return;
+                }
+                
+                // Hide error banner if prices loaded
+                if (errBanner) errBanner.style.display = "none";
+                
+                // Check price integrity status
+                const integrityBanner = document.getElementById("price-integrity-banner");
+                const integrityDetails = document.getElementById("price-integrity-details");
+                const blockedPrices = data.prices?.filter(p => p.integrity && !p.integrity.ok) || [];
+                
+                if (blockedPrices.length > 0) {
+                    // Show integrity banner with blocked instruments
+                    if (integrityBanner && integrityDetails) {
+                        const top5 = blockedPrices.slice(0, 5);
+                        integrityDetails.innerHTML = top5.map(p => 
+                            `<div>${p.instrument}: ${p.integrity.violation_code || 'unknown'} - ${p.integrity.reason || 'no reason'}</div>`
+                        ).join('');
+                        integrityBanner.style.display = "block";
+                    }
+                } else {
+                    // Hide integrity banner if all prices are valid
+                    if (integrityBanner) integrityBanner.style.display = "none";
+                }
+                
+                // Find XAU_USD price
+                const xauPrice = data.prices?.find(p => p.instrument === "XAU_USD");
+                if (xauPrice) {
+                    const bidEl = document.getElementById("xauusd-bid");
+                    const askEl = document.getElementById("xauusd-ask");
+                    const timeEl = document.getElementById("xauusd-time");
+                    if (bidEl) bidEl.textContent = xauPrice.bid.toFixed(2);
+                    if (askEl) askEl.textContent = xauPrice.ask.toFixed(2);
+                    if (timeEl) {
+                        try {
+                            const priceDate = new Date(xauPrice.time);
+                            if (!isNaN(priceDate.getTime())) {
+                                timeEl.textContent = priceDate.toLocaleTimeString();
+                            } else {
+                                // Fallback: use time string directly if parsing fails
+                                timeEl.textContent = xauPrice.time.substring(11, 19) || xauPrice.time;
+                            }
+                        } catch (e) {
+                            timeEl.textContent = xauPrice.time.substring(11, 19) || xauPrice.time;
+                        }
+                    }
+                } else {
+                    // No XAU_USD in response
+                    if (errBanner && errText) {
+                        errText.textContent = "ERROR: /api/market/prices XAU_USD not found";
+                        errBanner.style.display = "block";
+                    }
+                }
+            } catch (e) {
+                console.error("Update prices error:", e);
+                const errBanner = document.getElementById("dashboard-error-banner");
+                const errText = document.getElementById("dashboard-error-text");
+                if (errBanner && errText) {
+                    errText.textContent = `ERROR: /api/market/prices ${e.message}`;
+                    errBanner.style.display = "block";
+                }
+            }
+        }
+
+        async function updateNews() {
+            try {
+                const data = await apiGet("/api/news");
+                const newsCountEl = document.getElementById("news-items-count");
+                const newsRefreshEl = document.getElementById("news-last-refresh");
+                const errBanner = document.getElementById("dashboard-error-banner");
+                const errText = document.getElementById("dashboard-error-text");
+                
+                if (!data.ok || data.error) {
+                    // Show error banner
+                    if (errBanner && errText) {
+                        errText.textContent = `ERROR: /api/news ${data.error || 'Unknown error'}`;
+                        errBanner.style.display = "block";
+                    }
+                    if (newsCountEl) newsCountEl.textContent = "0";
+                    if (newsRefreshEl) newsRefreshEl.textContent = "-";
+                    return;
+                }
+                
+                // Hide error banner if news loaded
+                if (errBanner) errBanner.style.display = "none";
+                
+                const items = data.items || [];
+                if (newsCountEl) newsCountEl.textContent = String(items.length);
+                if (newsRefreshEl) {
+                    const now = new Date();
+                    newsRefreshEl.textContent = now.toLocaleTimeString();
+                }
+            } catch (e) {
+                console.error("Update news error:", e);
+                const errBanner = document.getElementById("dashboard-error-banner");
+                const errText = document.getElementById("dashboard-error-text");
+                if (errBanner && errText) {
+                    errText.textContent = `ERROR: /api/news ${e.message}`;
+                    errBanner.style.display = "block";
+                }
+                const newsCountEl = document.getElementById("news-items-count");
+                if (newsCountEl) newsCountEl.textContent = "0";
+            }
+        }
+
+        // Load active trades
+        async function loadActiveTrades() {
+            const container = document.getElementById("trades-content");
+            if (!container) return;
+            
+            try {
+                const data = await apiGet("/api/trades/active");
+                
+                if (!data.ok && data.error) {
+                    container.innerHTML = `
+                        <div class="glass-card p-6 rounded-xl text-center">
+                            <div class="text-red-500 mb-2">⚠️ Error</div>
+                            <p class="text-gray-400 text-sm">${data.error}</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const accounts = data.accounts || [];
+                const systemLabel = data.system_label || "UNKNOWN";
+                const refreshedAt = data.refreshed_at || new Date().toISOString();
+                
+                if (accounts.length === 0) {
+                    container.innerHTML = `
+                        <div class="glass-card p-6 rounded-xl text-center">
+                            <div class="text-4xl mb-4">📊</div>
+                            <h3 class="font-bold text-lg text-gray-300 mb-2">No Active Trades</h3>
+                            <p class="text-sm text-gray-400">No open trades found for configured accounts.</p>
+                            <p class="text-xs text-gray-500 mt-4">Last refreshed: ${formatDateSafely(refreshedAt)}</p>
+                            <p class="text-xs text-gray-500">System: ${systemLabel}</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = `<div class="mb-4 text-xs text-gray-500">
+                    <span>System: <span class="font-bold text-white">${systemLabel}</span></span>
+                    <span class="ml-4">Refreshed: <span class="font-mono">${formatDateSafely(refreshedAt)}</span></span>
+                </div>`;
+                
+                accounts.forEach(acc => {
+                    const trades = acc.trades || [];
+                    const hasError = acc.error;
+                    // Use account_id_masked, account_id, or account_suffix as fallback
+                    const accountDisplay = acc.account_id_masked || acc.account_id || acc.account_suffix || `Account ${acc.account_suffix || 'Unknown'}`;
+                    if (!accountDisplay || accountDisplay === 'undefined') console.warn("Account display undefined for acc:", acc);
+                    
+                    html += `
+                        <div class="glass-card p-6 rounded-xl ${hasError ? 'border-l-4 border-red-500' : ''}">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <h3 class="font-bold text-lg text-white">Account ${accountDisplay}</h3>
+                                    <p class="text-xs text-gray-400">Open Trades: <span class="font-bold text-white">${acc.open_trades_count || 0}</span></p>
+                                </div>
+                                ${hasError ? `<span class="chip chip-danger text-[10px]">${acc.error}</span>` : ''}
+                            </div>
+                            ${trades.length > 0 ? `
+                                <div class="overflow-x-auto">
+                                    <table class="w-full">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-left text-xs text-gray-500 uppercase">Instrument</th>
+                                                <th class="text-left text-xs text-gray-500 uppercase">Units</th>
+                                                <th class="text-left text-xs text-gray-500 uppercase">Unrealized P/L</th>
+                                                <th class="text-left text-xs text-gray-500 uppercase">Open Time</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${trades.map(trade => `
+                                                <tr class="border-t border-white/10">
+                                                    <td class="py-3 font-mono text-white">${trade.instrument || 'N/A'}</td>
+                                                    <td class="py-3 font-mono ${trade.units > 0 ? 'text-green-400' : 'text-red-400'}">${trade.units || 0}</td>
+                                                    <td class="py-3 font-mono ${(trade.unrealizedPL || 0) >= 0 ? 'text-green-400' : 'text-red-400'}">${(trade.unrealizedPL || 0).toFixed(2)}</td>
+                                                    <td class="py-3 text-xs text-gray-400">${trade.openTime ? formatDateSafely(trade.openTime) : 'N/A'}</td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ` : '<p class="text-gray-400 text-sm">No open trades for this account.</p>'}
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+            } catch (e) {
+                console.error("Active trades load error:", e);
+                container.innerHTML = `
+                    <div class="glass-card p-6 rounded-xl text-center">
+                        <div class="text-red-500 mb-2">❌ Error</div>
+                        <p class="text-gray-400 text-sm">Failed to load active trades: ${e.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function refreshActiveTrades() {
+            await loadActiveTrades();
+            await loadPendingOrders();
+        }
+
+        // Load pending orders
+        async function loadPendingOrders() {
+            const container = document.getElementById("pending-orders-content");
+            if (!container) return;
+            
+            try {
+                const data = await apiGet("/api/trades/pending");
+                
+                if (!data.ok && data.error) {
+                    container.innerHTML = `
+                        <div class="glass-card p-6 rounded-xl text-center">
+                            <div class="text-red-500 mb-2">⚠️ Error</div>
+                            <p class="text-gray-400 text-sm">${data.error}</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const accounts = data.accounts || [];
+                const systemLabel = data.system_label || "UNKNOWN";
+                const refreshedAt = data.refreshed_at || new Date().toISOString();
+                
+                if (accounts.length === 0) {
+                    container.innerHTML = `
+                        <div class="glass-card p-6 rounded-xl text-center">
+                            <div class="text-4xl mb-4">📋</div>
+                            <h3 class="font-bold text-lg text-gray-300 mb-2">No Pending Orders</h3>
+                            <p class="text-sm text-gray-400">No pending orders found for configured accounts.</p>
+                            <p class="text-xs text-gray-500 mt-4">Last refreshed: ${formatDateSafely(refreshedAt)}</p>
+                            <p class="text-xs text-gray-500">System: ${systemLabel}</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = `<div class="mb-4 text-xs text-gray-500">
+                    <span>System: <span class="font-bold text-white">${systemLabel}</span></span>
+                    <span class="ml-4">Refreshed: <span class="font-mono">${formatDateSafely(refreshedAt)}</span></span>
+                </div>`;
+                
+                accounts.forEach(acc => {
+                    const orders = acc.orders || [];
+                    const hasError = acc.error;
+                    // Use account_id_masked, account_id, or account_suffix as fallback
+                    const accountDisplay = acc.account_id_masked || acc.account_id || acc.account_suffix || `Account ${acc.account_suffix || 'Unknown'}`;
+                    if (!accountDisplay || accountDisplay === 'undefined') console.warn("Account display undefined for acc:", acc);
+                    
+                    html += `
+                        <div class="glass-card p-6 rounded-xl ${hasError ? 'border-l-4 border-red-500' : ''}">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <h3 class="font-bold text-lg text-white">Account ${accountDisplay}</h3>
+                                    <p class="text-xs text-gray-400">Pending Orders: <span class="font-bold text-white">${acc.pending_orders_count || 0}</span></p>
+                                </div>
+                                ${hasError ? `<span class="chip chip-danger text-[10px]">${acc.error}</span>` : ''}
+                            </div>
+                            ${orders.length > 0 ? `
+                                <div class="overflow-x-auto">
+                                    <table class="w-full">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-left text-xs text-gray-500 uppercase">Type</th>
+                                                <th class="text-left text-xs text-gray-500 uppercase">Instrument</th>
+                                                <th class="text-left text-xs text-gray-500 uppercase">Units</th>
+                                                <th class="text-left text-xs text-gray-500 uppercase">Price</th>
+                                                <th class="text-left text-xs text-gray-500 uppercase">State</th>
+                                                <th class="text-left text-xs text-gray-500 uppercase">Created</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${orders.map(order => `
+                                                <tr class="border-t border-white/10">
+                                                    <td class="py-3 font-mono text-white text-xs">${order.type || 'N/A'}</td>
+                                                    <td class="py-3 font-mono text-white">${order.instrument || 'N/A'}</td>
+                                                    <td class="py-3 font-mono ${(parseInt(order.units) || 0) > 0 ? 'text-green-400' : 'text-red-400'}">${order.units || 0}</td>
+                                                    <td class="py-3 font-mono text-white">${order.price ? parseFloat(order.price).toFixed(5) : 'N/A'}</td>
+                                                    <td class="py-3 text-xs"><span class="chip chip-warning">${order.state || 'N/A'}</span></td>
+                                                    <td class="py-3 text-xs text-gray-400">${order.createTime ? formatDateSafely(order.createTime) : 'N/A'}</td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ` : '<p class="text-gray-400 text-sm">No pending orders for this account.</p>'}
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+            } catch (e) {
+                console.error("Pending orders load error:", e);
+                container.innerHTML = `
+                    <div class="glass-card p-6 rounded-xl text-center">
+                        <div class="text-red-500 mb-2">❌ Error</div>
+                        <p class="text-gray-400 text-sm">Failed to load pending orders: ${e.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Auto-refresh active trades and pending orders every 10 seconds when tab is visible
+        let tradesInterval = null;
+        function startTradesPolling() {
+            if (tradesInterval) clearInterval(tradesInterval);
+            loadActiveTrades();
+            loadPendingOrders();
+            tradesInterval = setInterval(() => {
+                const tab = document.getElementById("tab-trades");
+                if (tab && tab.classList.contains("active")) {
+                    loadActiveTrades();
+                    loadPendingOrders();
+                }
+            }, 10000);
+        }
+
         // ... existing poll functions ...
+
+        // NEW: Load News
+        async function loadNews() {
+            // Show loading state
+            document.getElementById('news-loading').style.display = 'block';
+            document.getElementById('news-content').style.display = 'none';
+            document.getElementById('news-error').style.display = 'none';
+            document.getElementById('news-disabled').style.display = 'none';
+            
+            try {
+                const data = await apiGet("/api/news");
+                // data = { ok: true, enabled: bool, items: [...], error: "..." }
+                
+                document.getElementById('news-loading').style.display = 'none';
+                
+                if (!data.ok) {
+                    if (data.enabled === false) {
+                        document.getElementById('news-disabled').style.display = 'block';
+                    } else {
+                        // Error but enabled (e.g. rate limit or empty)
+                        const errDiv = document.getElementById('news-error');
+                        errDiv.style.display = 'block';
+                        // Update error message - find the paragraph with error text
+                        const errText = errDiv.querySelector('p.text-sm.text-red-400');
+                        if (errText) {
+                            errText.textContent = data.error || "Unknown error loading news";
+                        } else {
+                            // Fallback: update the heading or create new error text
+                            const errHeading = errDiv.querySelector('h3');
+                            if (errHeading && data.error) {
+                                errHeading.textContent = `News Feed Error: ${data.error}`;
+                            }
+                        }
+                    }
+                    return;
+                }
+                
+                const items = data.items || [];
+                const container = document.getElementById('news-content');
+                container.style.display = 'block';
+                
+                if (items.length === 0) {
+                    container.innerHTML = `
+                        <div class="glass-card p-6 rounded-xl text-center">
+                            <div class="text-4xl mb-4">📰</div>
+                            <h3 class="font-bold text-lg text-gray-300 mb-2">No News Available</h3>
+                            <p class="text-sm text-gray-400">News feed is enabled but no items were returned.</p>
+                            <p class="text-xs text-gray-500 mt-2">Last refresh: ${new Date().toLocaleTimeString()}</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const html = items.map(item => `
+                    <div class="glass-card p-4 rounded-xl border-l-4 ${getImpactColor(item.impact)} hover:bg-white/5 transition-all">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[9px] font-bold uppercase tracking-wider text-gray-400">${item.source || 'UNKNOWN'}</span>
+                                <span class="text-[9px] text-gray-600">•</span>
+                                <span class="text-[9px] text-gray-500">${formatTimeAgo(item.ts_utc || item.published_at)}</span>
+                            </div>
+                            <span class="chip text-[8px] py-0.5 px-2 ${getImpactChip(item.impact)}">${(item.impact || 'LOW').toUpperCase()}</span>
+                        </div>
+                        <h4 class="font-bold text-white text-sm mb-2 leading-snug"><a href="${item.url}" target="_blank" class="hover:text-[#00ff88] transition-colors">${item.title}</a></h4>
+                        <p class="text-xs text-gray-400 leading-relaxed line-clamp-2">${item.summary || ''}</p>
+                        ${item.symbols && item.symbols.length ? `
+                            <div class="mt-3 flex gap-2">
+                                ${item.symbols.map(s => `<span class="text-[9px] font-mono bg-white/5 px-1.5 py-0.5 rounded text-gray-300">${s}</span>`).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join("");
+                
+                container.innerHTML = html + `
+                    <div class="glass-card p-4 rounded-xl flex justify-between items-center mt-4">
+                        <span class="text-[10px] text-gray-500 font-bold uppercase">Last Refresh</span>
+                        <span class="text-xs text-white font-mono" id="news-last-refresh">${new Date().toLocaleTimeString()}</span>
+                    </div>
+                `;
+                
+            } catch (e) {
+                console.error("News load error:", e);
+                document.getElementById('news-loading').style.display = 'none';
+                document.getElementById('news-error').style.display = 'block';
+            }
+        }
+        
+        function getImpactColor(impact) {
+            switch((impact || '').toLowerCase()) {
+                case 'high': return 'border-red-500';
+                case 'medium': return 'border-yellow-500';
+                default: return 'border-gray-500';
+            }
+        }
+        
+        function getImpactChip(impact) {
+            switch((impact || '').toLowerCase()) {
+                case 'high': return 'chip-danger';
+                case 'medium': return 'chip-warning';
+                default: return 'bg-gray-700 text-gray-300 border-gray-600';
+            }
+        }
+        
+        function formatTimeAgo(ts) {
+            if (!ts) return '';
+            try {
+                // Handle unix timestamp (seconds or ms) or ISO string
+                const date = typeof ts === 'number' ? new Date(ts > 1e10 ? ts : ts * 1000) : new Date(ts);
+                const now = new Date();
+                const diffMs = now - date;
+                const diffMins = Math.floor(diffMs / 60000);
+                
+                if (diffMins < 1) return 'Just now';
+                if (diffMins < 60) return `${diffMins}m ago`;
+                const diffHours = Math.floor(diffMins / 60);
+                if (diffHours < 24) return `${diffHours}h ago`;
+                return `${Math.floor(diffHours / 24)}d ago`;
+            } catch (e) {
+                return '';
+            }
+        }
+        
+        function formatDateSafely(dateStr) {
+            if (!dateStr || dateStr === 'null' || dateStr === 'undefined') return '-';
+            try {
+                const date = new Date(dateStr);
+                if (isNaN(date.getTime())) {
+                    // Try parsing as ISO string with 'Z' suffix if missing
+                    if (typeof dateStr === 'string' && dateStr.includes('T') && !dateStr.endsWith('Z') && !dateStr.includes('+')) {
+                         const isoStr = dateStr + 'Z';
+                         const date2 = new Date(isoStr);
+                         if (!isNaN(date2.getTime())) return date2.toLocaleString();
+                    }
+                    console.warn("Invalid date:", dateStr);
+                    return dateStr.substring(0, 19).replace('T', ' '); // Fallback: show raw string
+                }
+                return date.toLocaleString();
+            } catch (e) {
+                console.error("Date parse error:", e);
+                return String(dateStr).substring(0, 19).replace('T', ' '); // Fallback: show raw string
+            }
+        }
 
         // NEW: Load Outlook
         async function loadOutlook(horizon = 'daily') {
@@ -911,6 +1392,216 @@
             }
         }
 
+        // NEW: Load Active Signals
+        async function updateActiveSignal() {
+            try {
+                const data = await apiGet("/api/signals/pending");
+                // data = { ok: true, signals: [...], execution_enabled: bool, ... }
+                
+                const signals = data.signals || [];
+                const overlay = document.getElementById("signal-overlay");
+                const primarySignalEl = document.getElementById("primary-signal");
+                const convictionEl = document.getElementById("conviction");
+                const convictionBar = document.getElementById("conviction-bar");
+                const atrEl = document.getElementById("atr-stability");
+                const biasEl = document.getElementById("market-bias");
+                const reasoningEl = document.getElementById("ai-reasoning");
+                const signalTextEl = document.getElementById("signal-text");
+                const signalConfEl = document.getElementById("signal-confidence");
+                const overrideBtn = document.getElementById("manual-override-btn");
+                
+                if (signals.length > 0) {
+                    const signal = signals[0]; // Take primary signal
+                    
+                    // Show overlay
+                    if (overlay) overlay.style.display = "block";
+                    
+                    // Update overlay text
+                    if (signalTextEl) {
+                         const entry = signal.entry_price ? `Entry: ${signal.entry_price}` : '';
+                         const tp = signal.tp_price ? ` | TP: ${signal.tp_price}` : '';
+                         signalTextEl.textContent = `${entry}${tp}` || `${signal.instrument} ${signal.side}`;
+                    }
+                    if (signalConfEl) {
+                        signalConfEl.textContent = signal.confidence ? `Confidence: ${(signal.confidence * 100).toFixed(1)}%` : '';
+                    }
+                    
+                    // Update Sidebar
+                    if (primarySignalEl) {
+                        primarySignalEl.textContent = `${signal.instrument} ${signal.side}`;
+                        primarySignalEl.className = "text-2xl font-black text-[#00ff88] mt-1 glow-text";
+                    }
+                    
+                    if (convictionEl) convictionEl.textContent = signal.confidence ? `${(signal.confidence * 100).toFixed(1)}%` : "-";
+                    if (convictionBar) convictionBar.style.width = signal.confidence ? `${signal.confidence * 100}%` : "0%";
+                    
+                    if (atrEl) {
+                        atrEl.textContent = "HIGH"; // TODO: wire up real ATR
+                        atrEl.className = "chip chip-success text-[9px] py-0.5 px-2";
+                    }
+                    
+                    if (biasEl) {
+                        biasEl.textContent = "BULL_EXPANSION"; // TODO: wire up real regime
+                        biasEl.className = "text-[#00ff88] font-bold";
+                    }
+                    
+                    if (reasoningEl) reasoningEl.textContent = signal.rationale || "Signal generated by strategy logic.";
+                    
+                    if (overrideBtn) {
+                        overrideBtn.disabled = false;
+                        overrideBtn.classList.remove("opacity-50", "cursor-not-allowed");
+                    }
+                    
+                } else {
+                    // No Active Signal
+                    if (overlay) overlay.style.display = "none";
+                    
+                    if (primarySignalEl) {
+                        primarySignalEl.textContent = "SCANNING...";
+                        primarySignalEl.className = "text-2xl font-black text-gray-500 mt-1 glow-text";
+                    }
+                    
+                    if (convictionEl) convictionEl.textContent = "-";
+                    if (convictionBar) convictionBar.style.width = "0%";
+                    
+                    if (atrEl) {
+                        atrEl.textContent = "-";
+                        atrEl.className = "chip text-[9px] py-0.5 px-2";
+                    }
+                    
+                    if (biasEl) {
+                        biasEl.textContent = "-";
+                        biasEl.className = "text-gray-400 font-bold";
+                    }
+                    
+                    if (reasoningEl) reasoningEl.textContent = "System scanning for opportunities...";
+                    
+                    if (overrideBtn) {
+                        overrideBtn.disabled = true;
+                        overrideBtn.classList.add("opacity-50", "cursor-not-allowed");
+                    }
+                }
+                
+                // Update Signals Queue
+                const queueEl = document.getElementById("signals-queue");
+                if (queueEl) {
+                    if (signals.length > 1) {
+                         // Show other signals
+                         const otherSignals = signals.slice(1);
+                         queueEl.innerHTML = otherSignals.map(s => `
+                            <div class="bg-black/30 p-3 rounded-lg flex justify-between items-center border-l-2 border-[#00ff88]">
+                                <div>
+                                    <span class="text-[10px] font-bold text-white block">${s.instrument}</span>
+                                    <span class="text-[9px] text-gray-400 uppercase">${s.side}</span>
+                                </div>
+                                <span class="text-[#00ff88] font-mono text-xs">${(s.confidence * 100).toFixed(0)}%</span>
+                            </div>
+                         `).join("");
+                    } else {
+                        queueEl.innerHTML = '<div class="text-[10px] text-gray-500 text-center italic">Queue empty</div>';
+                    }
+                }
+                
+            } catch (e) {
+                console.error("Active signal update error:", e);
+            }
+        }
+
+        // NEW: Load Strategy Matrix
+        async function loadStrategyMatrix() {
+            const container = document.getElementById("strategy-matrix-container");
+            if (!container) return;
+            
+            try {
+                const data = await apiGet("/api/strategies/overview");
+                const strategies = data.strategies || [];
+                const activeKey = data.active_strategy;
+                
+                if (strategies.length === 0) {
+                    container.innerHTML = '<div class="glass-card p-6 text-center text-gray-500">No strategies found.</div>';
+                    return;
+                }
+                
+                const html = strategies.map(s => {
+                    const isActive = s.active || s.key === activeKey;
+                    return `
+                        <div class="glass-card p-4 rounded-xl ${isActive ? 'border-l-4 border-[#00ff88]' : 'border-l-4 border-gray-600 opacity-70'}">
+                            <div class="flex justify-between items-start mb-3">
+                                <h4 class="font-bold text-sm">${s.name || s.key}</h4>
+                                <span class="chip ${isActive ? 'chip-success' : 'chip-warning'} text-[8px] py-0.5 px-2">${isActive ? 'ACTIVE' : 'STANDBY'}</span>
+                            </div>
+                            <div class="space-y-2 text-[10px]">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Instruments</span>
+                                    <span class="font-mono text-white">${(s.instruments || []).join(', ')}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Risk Level</span>
+                                    <span class="font-mono text-white">${s.risk_level || 'N/A'}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Description</span>
+                                    <span class="font-mono text-gray-400 truncate w-32" title="${s.description}">${s.description || '-'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join("");
+                
+                container.innerHTML = html;
+            } catch (e) {
+                console.error("Strategy matrix error:", e);
+                container.innerHTML = '<div class="glass-card p-6 text-center text-red-500">Failed to load strategy matrix.</div>';
+            }
+        }
+
+        // NEW: Load Performance Matrix
+        async function loadPerformanceMatrix() {
+            const container = document.getElementById("performance-matrix-container");
+            if (!container) return;
+            
+            try {
+                const data = await apiGet("/api/performance/summary");
+                
+                if (!data.ok) {
+                    container.innerHTML = '<div class="glass-card p-6 text-center text-gray-500">Performance data unavailable.</div>';
+                    return;
+                }
+                
+                // Single aggregate card for now
+                const html = `
+                     <div class="glass-card p-6 rounded-2xl hover:scale-105 transition-all border-l-4 border-[#00ff88]">
+                         <div class="flex justify-between items-start mb-5">
+                             <h3 class="font-bold text-[#00ff88] text-lg">AGGREGATE PERFORMANCE</h3>
+                             <span class="chip chip-success text-[9px] py-1 px-2">PF: ${data.profit_factor}</span>
+                         </div>
+                         <div class="data-grid mb-5">
+                             <div class="bg-black/30 p-3 rounded-lg">
+                                 <p class="text-[9px] text-gray-500 uppercase mb-1">Drawdown</p>
+                                 <p class="text-lg font-bold text-white">${data.max_drawdown}%</p>
+                             </div>
+                             <div class="bg-black/30 p-3 rounded-lg">
+                                 <p class="text-[9px] text-gray-500 uppercase mb-1">Win Rate</p>
+                                 <p class="text-lg font-bold text-[#00ff88]">${(data.win_rate * 100).toFixed(1)}%</p>
+                             </div>
+                         </div>
+                         <div class="pt-4 border-t border-white/5 text-center">
+                             <p class="text-[9px] text-gray-500 uppercase mb-1 font-bold">Total P/L</p>
+                             <p class="text-xl font-mono ${data.total_pnl >= 0 ? 'text-green-400' : 'text-red-400'}">
+                                ${data.total_pnl >= 0 ? '+' : ''}${data.total_pnl}
+                             </p>
+                             <p class="text-[9px] text-gray-500 mt-2">${data.total_trades} Trades Analyzed</p>
+                         </div>
+                     </div>
+                `;
+                
+                container.innerHTML = html;
+            } catch (e) {
+                console.error("Performance matrix error:", e);
+                container.innerHTML = '<div class="glass-card p-6 text-center text-red-500">Failed to load performance matrix.</div>';
+            }
+        }
+
         // NEW: Load Audit
         async function loadAudit() {
             const tbody = document.getElementById("audit-table-body");
@@ -956,8 +1647,9 @@
             if(tabId === 'outlook') loadOutlook('daily');
             if(tabId === 'scanner') loadScanner();
             if(tabId === 'audit') loadAudit();
-            if(tabId === 'scanner') loadScanner();
-            if(tabId === 'audit') loadAudit();
+            if(tabId === 'strategies') loadStrategyMatrix();
+            if(tabId === 'reports') loadPerformanceMatrix();
+            if(tabId === 'trades') startTradesPolling();
         }
 
         function renderChart() {
@@ -1053,6 +1745,14 @@
             
             // Start polling
             setInterval(() => pollStatus(), 5000);
+            setInterval(() => updateLivePrices(), 5000);
+            setInterval(() => updateActiveSignal(), 5000); // Poll signals
+            setInterval(() => updateNews(), 10000);
+            
+            // Initial load
+            updateLivePrices();
+            updateActiveSignal();
+            updateNews();
             
             // Default tab
             showTab('terminal');
