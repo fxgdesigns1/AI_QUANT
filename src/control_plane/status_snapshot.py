@@ -40,30 +40,42 @@ class StatusSnapshot:
         self.snapshot_path.parent.mkdir(parents=True, exist_ok=True)
     
     def write(self, status: Dict[str, Any]) -> None:
-        """Write status snapshot atomically (NO SECRETS)"""
-        # Add timestamp
-        status["timestamp_utc"] = time.time()
-        status["timestamp_iso"] = datetime.utcnow().isoformat() + "Z"
+        """Write status snapshot atomically (NO SECRETS)
+        
+        On success, adds last_status_write_at timestamp.
+        On failure, raises exception (caller should handle and log).
+        """
+        write_time_iso = datetime.utcnow().isoformat() + "Z"
+        write_time_utc = time.time()
+        
+        # Add timestamps to status dict before sanitizing
+        status["timestamp_utc"] = write_time_utc
+        status["timestamp_iso"] = write_time_iso
+        status["last_status_write_at"] = write_time_iso
         
         # Paranoid: remove any secret-like keys
         sanitized = self._sanitize(status)
         
         # Atomic write
-        with tempfile.NamedTemporaryFile(
-            mode='w',
-            dir=self.snapshot_path.parent,
-            prefix='.status_',
-            suffix='.json.tmp',
-            delete=False,
-            encoding='utf-8'
-        ) as tmp_file:
-            tmp_path = Path(tmp_file.name)
-            json.dump(sanitized, tmp_file, indent=2, sort_keys=True)
-            tmp_file.flush()
-            os.fsync(tmp_file.fileno())
-        
-        # Atomic rename
-        tmp_path.replace(self.snapshot_path)
+        try:
+            with tempfile.NamedTemporaryFile(
+                mode='w',
+                dir=self.snapshot_path.parent,
+                prefix='.status_',
+                suffix='.json.tmp',
+                delete=False,
+                encoding='utf-8'
+            ) as tmp_file:
+                tmp_path = Path(tmp_file.name)
+                json.dump(sanitized, tmp_file, indent=2, sort_keys=True)
+                tmp_file.flush()
+                os.fsync(tmp_file.fileno())
+            
+            # Atomic rename (this succeeds, so write was successful)
+            tmp_path.replace(self.snapshot_path)
+        except OSError as e:
+            # Re-raise with context for caller to log
+            raise IOError(f"Failed to write status snapshot: {e} (errno: {e.errno})") from e
     
     def read(self, max_age_seconds: int = 120) -> Optional[Dict[str, Any]]:
         """Read status snapshot if fresh enough"""
@@ -92,10 +104,10 @@ class StatusSnapshot:
         for key, value in data.items():
             key_lower = key.lower()
             
-            # Block secret-like keys
+            # Block secret-like keys (but allow strategy_key)
             if any(pattern in key_lower for pattern in [
                 'api_key', 'token', 'secret', 'password', 'credential', 'bearer'
-            ]):
+            ]) and key_lower != 'strategy_key':
                 continue
             
             # Recursively sanitize nested dicts

@@ -1,0 +1,35 @@
+{
+  "component": "SessionRegimeAlignedStrategy",
+  "status": "IMPLEMENTED_AND_READY",
+  "mode": "paper",
+  "fail_closed": true,
+  "audit_log": "logs/session_regime_gate_audit.jsonl",
+  "last_verified": "2026-01-20T00:20:00Z",
+  "verification_status": {
+    "gatekeeper_imports": true,
+    "gatekeeper_initializes": true,
+    "gatekeeper_blocks_by_default": true,
+    "dashboard_panel_available": true,
+    "api_endpoints_available": true,
+    "telegram_alerts_available": true,
+    "training_job_available": true,
+    "policy_store_reload_available": true,
+    "system_running": true,
+    "requires_restart": true,
+    "notes": "System is running but was started before gatekeeper was added. Restart required to activate gatekeeper. Once restarted, gatekeeper will check all accounts with strategy assignments configured."
+  },
+  "accounts_affected": "ALL accounts with strategy_assignments (currently: 001, 002, 003, 004, 005 based on logs)",
+  "expected_behavior_after_restart": {
+    "gatekeeper_active": true,
+    "checks_all_instruments": true,
+    "blocks_on_policy_not_found": true,
+    "logs_all_decisions": true,
+    "sends_telegram_on_critical": true
+  },
+  "oanda_account_truth": {
+    "account_type": "OANDA PRACTICE",
+    "execution_mode": "paper",
+    "live_trading": false,
+    "risk": "ZERO (practice accounts only)"
+  }
+}

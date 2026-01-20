@@ -1,0 +1,836 @@
+[
+  {
+    "account_id": "101-004-30719775-001",
+    "account_name": "Gold Scalper (Topdown) DEMO",
+    "strategy": "gold_scalping_topdown",
+    "current_balance": 103094.1533,
+    "unrealized_pl": 0.0,
+    "total_equity": 103094.1533,
+    "realized_pl_since": 3094.1486,
+    "total_pl_since": 3094.1486,
+    "total_trades": 2,
+    "winning_trades": 2,
+    "losing_trades": 0,
+    "win_rate": 100.0,
+    "avg_win": 1547.0743,
+    "avg_loss": 0.0,
+    "profit_factor": 3094.1486,
+    "gross_profit": 3094.1486,
+    "gross_loss": 0,
+    "total_volume": 0.0,
+    "trades": [
+      {
+        "instrument": "XAU_USD",
+        "units": 100.0,
+        "entry_price": 4054.4,
+        "exit_price": 4074.86,
+        "pl": 1558.884,
+        "time": "2025-11-20T12:18:44.570645607Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "XAU_USD",
+        "units": 100.0,
+        "entry_price": 4054.44,
+        "exit_price": 4074.59,
+        "pl": 1535.2646,
+        "time": "2025-11-20T12:18:41.018105578Z",
+        "side": "BUY"
+      }
+    ]
+  },
+  {
+    "account_id": "101-004-30719775-003",
+    "account_name": "Gold Scalper (Strict1) DEMO",
+    "strategy": "gold_scalping_strict1",
+    "current_balance": 103207.1362,
+    "unrealized_pl": 0.0,
+    "total_equity": 103207.1362,
+    "realized_pl_since": 3106.3392999999996,
+    "total_pl_since": 3106.3392999999996,
+    "total_trades": 2,
+    "winning_trades": 2,
+    "losing_trades": 0,
+    "win_rate": 100.0,
+    "avg_win": 1553.1696499999998,
+    "avg_loss": 0.0,
+    "profit_factor": 3106.3392999999996,
+    "gross_profit": 3106.3392999999996,
+    "gross_loss": 0,
+    "total_volume": 0.0,
+    "trades": [
+      {
+        "instrument": "XAU_USD",
+        "units": 100.0,
+        "entry_price": 4054.24,
+        "exit_price": 4074.86,
+        "pl": 1571.0747,
+        "time": "2025-11-20T12:18:44.570645607Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "XAU_USD",
+        "units": 100.0,
+        "entry_price": 4054.44,
+        "exit_price": 4074.59,
+        "pl": 1535.2646,
+        "time": "2025-11-20T12:18:41.018105578Z",
+        "side": "BUY"
+      }
+    ]
+  },
+  {
+    "account_id": "101-004-30719775-004",
+    "account_name": "Gold Scalper (Winrate) DEMO",
+    "strategy": "gold_scalping_winrate",
+    "current_balance": 103009.3325,
+    "unrealized_pl": 0.0,
+    "total_equity": 103009.3325,
+    "realized_pl_since": 4091.0,
+    "total_pl_since": 4091.0,
+    "total_trades": 2,
+    "winning_trades": 2,
+    "losing_trades": 0,
+    "win_rate": 100.0,
+    "avg_win": 2045.5,
+    "avg_loss": 0.0,
+    "profit_factor": 4091.0,
+    "gross_profit": 4091.0,
+    "gross_loss": 0,
+    "total_volume": 0.0,
+    "trades": [
+      {
+        "instrument": "XAU_USD",
+        "units": 100.0,
+        "entry_price": 4054.1,
+        "exit_price": 4074.86,
+        "pl": 2076.0,
+        "time": "2025-11-20T12:18:44.570645607Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "XAU_USD",
+        "units": 100.0,
+        "entry_price": 4054.44,
+        "exit_price": 4074.59,
+        "pl": 2015.0,
+        "time": "2025-11-20T12:18:41.018105578Z",
+        "side": "BUY"
+      }
+    ]
+  },
+  {
+    "account_id": "101-004-30719775-007",
+    "account_name": "Gold Scalping Account (Base)",
+    "strategy": "gold_scalping",
+    "current_balance": 104086.4825,
+    "unrealized_pl": 0.0,
+    "total_equity": 104086.4825,
+    "realized_pl_since": 4086.0,
+    "total_pl_since": 4086.0,
+    "total_trades": 2,
+    "winning_trades": 2,
+    "losing_trades": 0,
+    "win_rate": 100.0,
+    "avg_win": 2043.0,
+    "avg_loss": 0.0,
+    "profit_factor": 4086.0,
+    "gross_profit": 4086.0,
+    "gross_loss": 0,
+    "total_volume": 0.0,
+    "trades": [
+      {
+        "instrument": "XAU_USD",
+        "units": 100.0,
+        "entry_price": 4054.15,
+        "exit_price": 4074.86,
+        "pl": 2071.0,
+        "time": "2025-11-20T12:18:44.570645607Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "XAU_USD",
+        "units": 100.0,
+        "entry_price": 4054.44,
+        "exit_price": 4074.59,
+        "pl": 2015.0,
+        "time": "2025-11-20T12:18:41.018105578Z",
+        "side": "BUY"
+      }
+    ]
+  },
+  {
+    "account_id": "101-004-30719775-005",
+    "account_name": "Optimized Multi-Pair Live",
+    "strategy": "optimized_multi_pair_live",
+    "current_balance": 100000.2537,
+    "unrealized_pl": 0.0,
+    "total_equity": 100000.2537,
+    "realized_pl_since": 0.0,
+    "total_pl_since": 0.0,
+    "total_trades": 0,
+    "winning_trades": 0,
+    "losing_trades": 0,
+    "win_rate": 0.0,
+    "avg_win": 0.0,
+    "avg_loss": 0.0,
+    "profit_factor": 0.0,
+    "gross_profit": 0,
+    "gross_loss": 0,
+    "total_volume": 0.0,
+    "trades": []
+  },
+  {
+    "account_id": "101-004-30719775-011",
+    "account_name": "Dynamic Multi-Pair Unified Account",
+    "strategy": "dynamic_multi_pair_unified",
+    "current_balance": 100000.0057,
+    "unrealized_pl": 0.0,
+    "total_equity": 100000.0057,
+    "realized_pl_since": 0.0,
+    "total_pl_since": 0.0,
+    "total_trades": 0,
+    "winning_trades": 0,
+    "losing_trades": 0,
+    "win_rate": 0.0,
+    "avg_win": 0.0,
+    "avg_loss": 0.0,
+    "profit_factor": 0.0,
+    "gross_profit": 0,
+    "gross_loss": 0,
+    "total_volume": 0.0,
+    "trades": []
+  },
+  {
+    "account_id": "101-004-30719775-008",
+    "account_name": "Primary Trading Account",
+    "strategy": "momentum_trading",
+    "current_balance": 99779.9768,
+    "unrealized_pl": 0.529,
+    "total_equity": 99780.5058,
+    "realized_pl_since": -220.0,
+    "total_pl_since": -219.471,
+    "total_trades": 2,
+    "winning_trades": 0,
+    "losing_trades": 2,
+    "win_rate": 0.0,
+    "avg_win": 0.0,
+    "avg_loss": -110.0,
+    "profit_factor": 0.0,
+    "gross_profit": 0,
+    "gross_loss": 220.0,
+    "total_volume": 0.0,
+    "trades": [
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.30746,
+        "exit_price": 1.30802,
+        "pl": -112.0,
+        "time": "2025-11-20T19:13:02.169705353Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.307,
+        "exit_price": 1.30754,
+        "pl": -108.0,
+        "time": "2025-11-20T18:58:34.133459184Z",
+        "side": "BUY"
+      }
+    ]
+  },
+  {
+    "account_id": "101-004-30719775-010",
+    "account_name": "Trade With Pat ORB Lane",
+    "strategy": "trade_with_pat_orb_dual",
+    "current_balance": 103140.9786,
+    "unrealized_pl": 0.568,
+    "total_equity": 103141.5466,
+    "realized_pl_since": 3140.8399999999997,
+    "total_pl_since": 3141.408,
+    "total_trades": 61,
+    "winning_trades": 26,
+    "losing_trades": 35,
+    "win_rate": 42.62295081967213,
+    "avg_win": 496.25615384615384,
+    "avg_loss": -278.90914285714285,
+    "profit_factor": 1.3217473790748038,
+    "gross_profit": 12902.66,
+    "gross_loss": 9761.82,
+    "total_volume": 0.0,
+    "trades": [
+      {
+        "instrument": "EUR_USD",
+        "units": 200000.0,
+        "entry_price": 1.15369,
+        "exit_price": 1.15316,
+        "pl": -106.0,
+        "time": "2025-11-20T16:47:04.998861645Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "XAU_USD",
+        "units": 193.0,
+        "entry_price": 4070.94,
+        "exit_price": 4056.38,
+        "pl": 2810.08,
+        "time": "2025-11-20T16:54:49.395636629Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "EUR_USD",
+        "units": 200000.0,
+        "entry_price": 1.15415,
+        "exit_price": 1.1536,
+        "pl": -110.0,
+        "time": "2025-11-20T16:21:06.061584705Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "EUR_USD",
+        "units": 200000.0,
+        "entry_price": 1.15382,
+        "exit_price": 1.15327,
+        "pl": -110.0,
+        "time": "2025-11-20T16:32:26.358994951Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "EUR_USD",
+        "units": 200000.0,
+        "entry_price": 1.15224,
+        "exit_price": 1.15276,
+        "pl": -104.0,
+        "time": "2025-11-20T15:44:22.855869836Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "XAU_USD",
+        "units": 199.0,
+        "entry_price": 4097.54,
+        "exit_price": 4086.63,
+        "pl": -2171.09,
+        "time": "2025-11-20T15:33:02.562025870Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "XAU_USD",
+        "units": 203.0,
+        "entry_price": 4104.58,
+        "exit_price": 4093.96,
+        "pl": -2155.86,
+        "time": "2025-11-20T14:55:54.999541200Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "XAU_USD",
+        "units": 195.0,
+        "entry_price": 4092.07,
+        "exit_price": 4106.43,
+        "pl": 2800.2,
+        "time": "2025-11-20T14:50:23.621984113Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.3122,
+        "exit_price": 1.31163,
+        "pl": -114.0,
+        "time": "2025-11-20T14:35:25.438575955Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "EUR_USD",
+        "units": 200000.0,
+        "entry_price": 1.15477,
+        "exit_price": 1.15423,
+        "pl": -108.0,
+        "time": "2025-11-20T14:38:31.437832702Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.31179,
+        "exit_price": 1.3111,
+        "pl": -138.0,
+        "time": "2025-11-20T14:55:51.654630368Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.31096,
+        "exit_price": 1.3119,
+        "pl": 188.0,
+        "time": "2025-11-20T14:33:01.931536254Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "EUR_USD",
+        "units": 200000.0,
+        "entry_price": 1.15288,
+        "exit_price": 1.15234,
+        "pl": -108.0,
+        "time": "2025-11-20T11:06:20.845406787Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.30787,
+        "exit_price": 1.30728,
+        "pl": -118.0,
+        "time": "2025-11-20T10:58:43.151563242Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.3073,
+        "exit_price": 1.30674,
+        "pl": -112.0,
+        "time": "2025-11-20T09:45:15.100325374Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.30728,
+        "exit_price": 1.30672,
+        "pl": -112.0,
+        "time": "2025-11-20T09:45:15.213415827Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "EUR_USD",
+        "units": 200000.0,
+        "entry_price": 1.15253,
+        "exit_price": 1.15198,
+        "pl": -110.0,
+        "time": "2025-11-20T11:20:37.196506097Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.30686,
+        "exit_price": 1.30778,
+        "pl": 184.0,
+        "time": "2025-11-20T09:57:35.139982932Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.3068,
+        "exit_price": 1.30631,
+        "pl": -98.0,
+        "time": "2025-11-20T09:14:38.206650498Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.30709,
+        "exit_price": 1.30652,
+        "pl": -114.0,
+        "time": "2025-11-20T08:59:36.919536899Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.30687,
+        "exit_price": 1.30631,
+        "pl": -112.0,
+        "time": "2025-11-20T09:00:02.244557643Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "EUR_USD",
+        "units": 200000.0,
+        "entry_price": 1.1515,
+        "exit_price": 1.15203,
+        "pl": -106.0,
+        "time": "2025-11-20T08:32:05.675443651Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.30759,
+        "exit_price": 1.30702,
+        "pl": -114.0,
+        "time": "2025-11-20T08:07:25.924493662Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.30708,
+        "exit_price": 1.30651,
+        "pl": -114.0,
+        "time": "2025-11-20T08:08:15.439413781Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "XAU_USD",
+        "units": 194.0,
+        "entry_price": 4105.22,
+        "exit_price": 4089.95,
+        "pl": 2962.38,
+        "time": "2025-11-19T16:01:57.877065293Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.30775,
+        "exit_price": 1.30833,
+        "pl": -116.0,
+        "time": "2025-11-19T16:02:56.742187725Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.30816,
+        "exit_price": 1.30741,
+        "pl": 150.0,
+        "time": "2025-11-19T15:45:26.347492920Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.30877,
+        "exit_price": 1.30782,
+        "pl": 190.0,
+        "time": "2025-11-19T15:43:31.842883050Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "EUR_USD",
+        "units": 200000.0,
+        "entry_price": 1.15493,
+        "exit_price": 1.15394,
+        "pl": 198.0,
+        "time": "2025-11-19T16:19:15.842121639Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.31027,
+        "exit_price": 1.30931,
+        "pl": 192.0,
+        "time": "2025-11-19T15:35:01.733179229Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "EUR_USD",
+        "units": 200000.0,
+        "entry_price": 1.15488,
+        "exit_price": 1.15391,
+        "pl": 194.0,
+        "time": "2025-11-19T16:19:17.465180595Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.31034,
+        "exit_price": 1.3094,
+        "pl": 188.0,
+        "time": "2025-11-19T15:32:07.957619287Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.31114,
+        "exit_price": 1.31021,
+        "pl": 186.0,
+        "time": "2025-11-19T15:30:49.556344089Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "XAU_USD",
+        "units": 193.0,
+        "entry_price": 4128.15,
+        "exit_price": 4118.56,
+        "pl": -1850.87,
+        "time": "2025-11-19T15:27:20.837058867Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "EUR_USD",
+        "units": 200000.0,
+        "entry_price": 1.15548,
+        "exit_price": 1.15452,
+        "pl": 192.0,
+        "time": "2025-11-19T15:43:31.842209513Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.31084,
+        "exit_price": 1.31144,
+        "pl": -120.0,
+        "time": "2025-11-19T15:19:54.734480384Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.31064,
+        "exit_price": 1.3112,
+        "pl": -112.0,
+        "time": "2025-11-19T14:56:49.831364233Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "EUR_USD",
+        "units": 200000.0,
+        "entry_price": 1.15585,
+        "exit_price": 1.15489,
+        "pl": 192.0,
+        "time": "2025-11-19T15:06:57.446072575Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "EUR_USD",
+        "units": 200000.0,
+        "entry_price": 1.15594,
+        "exit_price": 1.15494,
+        "pl": 200.0,
+        "time": "2025-11-19T15:06:54.276954538Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "EUR_USD",
+        "units": 200000.0,
+        "entry_price": 1.15634,
+        "exit_price": 1.15538,
+        "pl": 192.0,
+        "time": "2025-11-19T15:01:07.143083386Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.31107,
+        "exit_price": 1.31013,
+        "pl": 188.0,
+        "time": "2025-11-19T15:11:29.579203093Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "EUR_USD",
+        "units": 200000.0,
+        "entry_price": 1.15595,
+        "exit_price": 1.15644,
+        "pl": -98.0,
+        "time": "2025-11-19T14:32:37.577750509Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.31076,
+        "exit_price": 1.31132,
+        "pl": -112.0,
+        "time": "2025-11-19T14:33:05.617471307Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "EUR_USD",
+        "units": 200000.0,
+        "entry_price": 1.15732,
+        "exit_price": 1.15785,
+        "pl": -106.0,
+        "time": "2025-11-19T11:15:39.687071212Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.31262,
+        "exit_price": 1.31169,
+        "pl": 186.0,
+        "time": "2025-11-19T10:06:43.888669132Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "EUR_USD",
+        "units": 200000.0,
+        "entry_price": 1.15672,
+        "exit_price": 1.15729,
+        "pl": -114.0,
+        "time": "2025-11-19T09:52:39.037687931Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.31181,
+        "exit_price": 1.31239,
+        "pl": -116.0,
+        "time": "2025-11-19T09:53:21.398716323Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "EUR_USD",
+        "units": 200000.0,
+        "entry_price": 1.15666,
+        "exit_price": 1.15718,
+        "pl": -104.0,
+        "time": "2025-11-19T09:50:50.062131836Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.31298,
+        "exit_price": 1.31204,
+        "pl": 188.0,
+        "time": "2025-11-19T09:48:12.918093741Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.31293,
+        "exit_price": 1.3135,
+        "pl": -114.0,
+        "time": "2025-11-19T09:20:24.122677835Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.31348,
+        "exit_price": 1.31248,
+        "pl": 200.0,
+        "time": "2025-11-19T09:44:05.233832143Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.31215,
+        "exit_price": 1.31273,
+        "pl": -116.0,
+        "time": "2025-11-19T09:05:10.522880936Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.31224,
+        "exit_price": 1.31284,
+        "pl": -120.0,
+        "time": "2025-11-19T09:05:27.038719049Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "EUR_USD",
+        "units": 200000.0,
+        "entry_price": 1.15717,
+        "exit_price": 1.15773,
+        "pl": -112.0,
+        "time": "2025-11-19T09:06:52.489187710Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.31265,
+        "exit_price": 1.31323,
+        "pl": -116.0,
+        "time": "2025-11-19T09:06:55.808318723Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "EUR_USD",
+        "units": 200000.0,
+        "entry_price": 1.15763,
+        "exit_price": 1.15667,
+        "pl": 192.0,
+        "time": "2025-11-19T09:49:12.668302946Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "EUR_USD",
+        "units": 200000.0,
+        "entry_price": 1.15766,
+        "exit_price": 1.15669,
+        "pl": 194.0,
+        "time": "2025-11-19T09:48:12.972387791Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.31337,
+        "exit_price": 1.31242,
+        "pl": 190.0,
+        "time": "2025-11-19T08:59:08.200471708Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.31347,
+        "exit_price": 1.31254,
+        "pl": 186.0,
+        "time": "2025-11-19T08:52:16.196888403Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "GBP_USD",
+        "units": 200000.0,
+        "entry_price": 1.31375,
+        "exit_price": 1.31291,
+        "pl": 168.0,
+        "time": "2025-11-19T08:41:37.074175606Z",
+        "side": "BUY"
+      },
+      {
+        "instrument": "EUR_USD",
+        "units": 200000.0,
+        "entry_price": 1.15801,
+        "exit_price": 1.15705,
+        "pl": 192.0,
+        "time": "2025-11-19T09:37:58.341786165Z",
+        "side": "BUY"
+      }
+    ]
+  },
+  {
+    "account_id": "101-004-30719775-006",
+    "account_name": "EUR Calendar Optimized V2",
+    "strategy": "eur_calendar_optimized",
+    "current_balance": 100000.1834,
+    "unrealized_pl": 0.529,
+    "total_equity": 100000.71239999999,
+    "realized_pl_since": 0.0,
+    "total_pl_since": 0.529,
+    "total_trades": 0,
+    "winning_trades": 0,
+    "losing_trades": 0,
+    "win_rate": 0.0,
+    "avg_win": 0.0,
+    "avg_loss": 0.0,
+    "profit_factor": 0.0,
+    "gross_profit": 0,
+    "gross_loss": 0,
+    "total_volume": 0.0,
+    "trades": []
+  }
+]

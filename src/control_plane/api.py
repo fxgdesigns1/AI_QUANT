@@ -2210,6 +2210,118 @@ async def get_economic_calendar():
         source="news_provider",
     )
 
+# ============================================================================
+# SESSION REGIME GATE ENDPOINTS (Read-Only Observability)
+# ============================================================================
+
+@app.get("/api/session-regime-gate/decisions")
+async def get_session_regime_gate_decisions(limit: int = Query(100, ge=1, le=1000)):
+    """Get recent session regime gate decisions (read-only)"""
+    try:
+        from src.dashboard.panels.session_regime_gate_panel import load_recent_gate_events
+        events = load_recent_gate_events(limit=limit)
+        payload = {
+            "ok": True,
+            "decisions": events,
+            "count": len(events),
+            "ts_utc": time.time()
+        }
+        return _truth_wrap(
+            payload,
+            complete=bool(events),
+            source="session_regime_gate_panel",
+        )
+    except Exception as e:
+        return _truth_wrap(
+            {"ok": False, "decisions": [], "error": str(e)[:200]},
+            complete=False,
+            source="session_regime_gate_panel",
+            warnings=[f"Error loading gate decisions: {str(e)[:200]}"],
+        )
+
+
+@app.get("/api/session-regime-gate/statistics")
+async def get_session_regime_gate_statistics():
+    """Get session regime gate statistics (read-only)"""
+    try:
+        from src.dashboard.panels.session_regime_gate_panel import get_gate_statistics
+        stats = get_gate_statistics()
+        payload = {
+            "ok": True,
+            "statistics": stats,
+            "ts_utc": time.time()
+        }
+        return _truth_wrap(
+            payload,
+            complete=True,
+            source="session_regime_gate_panel",
+        )
+    except Exception as e:
+        return _truth_wrap(
+            {"ok": False, "statistics": {}, "error": str(e)[:200]},
+            complete=False,
+            source="session_regime_gate_panel",
+            warnings=[f"Error loading gate statistics: {str(e)[:200]}"],
+        )
+
+
+@app.get("/api/session-regime-gate/snapshot")
+async def get_session_regime_gate_snapshot():
+    """Get current session/regime snapshot (read-only)"""
+    from datetime import datetime, timezone
+    from src.dashboard.panels.session_regime_gate_panel import load_recent_gate_events
+    
+    try:
+        # Get most recent decision for current state
+        events = load_recent_gate_events(limit=1)
+        current_time = datetime.now(timezone.utc)
+        
+        # Classify current session
+        h = current_time.hour
+        if h >= 22 or h < 6:
+            current_session = "asia"
+        elif 6 <= h < 12:
+            current_session = "london"
+        elif 12 <= h < 16:
+            current_session = "london_ny_overlap"
+        elif 16 <= h < 21:
+            current_session = "new_york"
+        else:
+            current_session = "transition"
+        
+        # Get last known regime and policy key from most recent event
+        last_event = events[0] if events else None
+        last_regime = last_event.get("regime", "UNKNOWN") if last_event else "UNKNOWN"
+        last_policy_key = None
+        if last_event:
+            session = last_event.get("session", "unknown")
+            regime = last_event.get("regime", "UNKNOWN")
+            news_state = last_event.get("news_state", "normal")
+            bias_alignment = "aligned" if last_event.get("roadmap_aligned", False) else "misaligned"
+            last_policy_key = f"{session}|{regime}|{news_state}|{bias_alignment}"
+        
+        payload = {
+            "ok": True,
+            "current_session": current_session,
+            "current_time_utc": current_time.isoformat(),
+            "last_known_regime": last_regime,
+            "last_policy_key": last_policy_key,
+            "ts_utc": time.time()
+        }
+        return _truth_wrap(
+            payload,
+            complete=True,
+            source="session_regime_gate_panel",
+        )
+    except Exception as e:
+        return _truth_wrap(
+            {"ok": False, "error": str(e)[:200]},
+            complete=False,
+            source="session_regime_gate_panel",
+            warnings=[f"Error loading gate snapshot: {str(e)[:200]}"],
+        )
+
+
 def run():
     """Run the API server"""
     import uvicorn

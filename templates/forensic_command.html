@@ -1013,15 +1013,8 @@
             }
         }
         
-        function showTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            document.getElementById('tab-' + tabId).classList.add('active');
-            document.getElementById('nav-' + tabId).classList.add('active');
-            if(tabId === 'terminal' && !tvWidget) {
-                renderChart();
-            }
-        }
+        // OLD showTab removed - using async version with truth checking below
+        // Legacy function removed - replaced by async showTab() with truth gates
 
         function renderChart() {
             tvWidget = new TradingView.widget({
@@ -1293,25 +1286,55 @@
                 primary = filteredSignals[0];
             }
             if (primary && typeof primary === "object") {
-                const instrument = primary.instrument || primary.symbol;
-                const entry = primary.entry || primary.entry_price;
+                const dir = (primary.direction || primary.side || "BUY").toUpperCase();
+                const instrument = (primary.instrument || primary.symbol || "UNKNOWN").toUpperCase();
+                const entry = primary.entry || primary.entry_price || "";
+                const tp = primary.take_profit || primary.tp || "";
                 const confidence = primary.confidence;
                 const conviction = primary.conviction;
-                const reasoning = primary.reasoning || primary.strategy;
-                const bias = primary.bias || primary.market_bias;
-                const atr = primary.atr || primary.stability;
-                const corridor = primary.corridor || primary.range;
-                const strategyType = primary.strategy_type || primary.type;
+                const reasoning = primary.reasoning || primary.strategy || "";
+                const bias = primary.bias || primary.market_bias || "";
+                const atr = primary.atr || primary.stability || "";
+                const corridor = primary.corridor || primary.range || "";
+                const strategyType = primary.strategy_type || primary.type || "";
 
-                if (instrument !== undefined && instrument !== null) setText("primary-signal", String(instrument));
-                if (entry !== undefined && entry !== null) setText("signal-text", String(entry));
-                if (confidence !== undefined && confidence !== null) setText("signal-confidence", String(confidence));
-                if (conviction !== undefined && conviction !== null) setText("conviction", String(conviction));
-                if (reasoning !== undefined && reasoning !== null) setText("ai-reasoning", String(reasoning));
-                if (bias !== undefined && bias !== null) setText("market-bias", String(bias));
-                if (atr !== undefined && atr !== null) setText("atr-stability", String(atr));
-                if (corridor !== undefined && corridor !== null) setText("corridor", String(corridor));
-                if (strategyType !== undefined && strategyType !== null) setText("strategy-type", String(strategyType));
+                // Format primary signal with direction
+                setText("primary-signal", `${instrument} ${dir}`);
+                
+                // Format signal text with Entry and TP
+                if (entry && tp) {
+                    setText("signal-text", `Entry: ${entry} | TP: ${tp}`);
+                } else if (entry) {
+                    setText("signal-text", `Entry: ${entry}`);
+                } else {
+                    setText("signal-text", "");
+                }
+                
+                // Format confidence as percentage
+                if (confidence !== undefined && confidence !== null && confidence !== "") {
+                    const confNum = Number(confidence);
+                    const pct = (confNum <= 1 ? confNum * 100 : confNum);
+                    setText("signal-confidence", `Confidence: ${pct.toFixed(1)}%`);
+                    setText("conviction", `${pct.toFixed(1)}%`);
+                    setWidth("conviction-bar", `${Math.min(100, pct)}%`);
+                } else if (conviction !== undefined && conviction !== null && conviction !== "") {
+                    const convNum = Number(conviction);
+                    const pct = (convNum <= 1 ? convNum * 100 : convNum);
+                    setText("conviction", `${pct.toFixed(1)}%`);
+                    setWidth("conviction-bar", `${Math.min(100, pct)}%`);
+                    setText("signal-confidence", "");
+                } else {
+                    setText("conviction", "");
+                    setWidth("conviction-bar", "0%");
+                    setText("signal-confidence", "");
+                }
+                
+                // Set other fields
+                if (reasoning) setText("ai-reasoning", String(reasoning));
+                if (bias) setText("market-bias", String(bias));
+                if (atr) setText("atr-stability", String(atr));
+                if (corridor) setText("corridor", String(corridor));
+                if (strategyType) setText("strategy-type", String(strategyType));
                 return true;
             }
 
@@ -1676,22 +1699,36 @@
             const env = await fetchEnvelope("/api/news");
             console.log("[Forensic] News Env:", env);
             
+            // Always try to update news count widget in top right, even if truth incomplete
+            const newsItems = env?.data?.news || [];
+            const count = newsItems.length;
+            
             if (!truthComplete(env)) {
                 // Show explicit empty state, don't hide
                 setHtml("news-feed", '<div class="text-sm text-gray-400 italic">News feed unavailable (backend connection issue)</div>');
-                setText("news-count", "0");
+                setText("news-count", String(count || "0"));
                 setText("news-top-headline", "--");
             } else {
                 // Ensure renderNews works
                 try {
                     renderNews(env.data);
-                    const count = (env.data?.news || []).length;
                     setText("news-count", String(count));
-                    const firstTitle = env.data?.news?.[0]?.title || env.data?.news?.[0]?.headline || "--";
+                    const firstTitle = newsItems[0]?.title || newsItems[0]?.headline || "--";
                     setText("news-top-headline", firstTitle.slice(0, 40));
                     console.log("[Forensic] Rendered news count:", count);
                 } catch (e) {
                     console.error("[Forensic] Render news error:", e);
+                    // Still update count widget even if render fails
+                    setText("news-count", String(count));
+                }
+            }
+            
+            // Update top-right connector widget even if truth incomplete (as long as we have a response)
+            if (env && env.truth && env.data) {
+                setText("news-count", String(count));
+                if (count > 0 && newsItems[0]) {
+                    const firstTitle = newsItems[0].title || newsItems[0].headline || "--";
+                    setText("news-top-headline", firstTitle.slice(0, 40));
                 }
             }
             
@@ -1989,34 +2026,97 @@
             );
         }
 
-        async function gateTruth(actionLabel, requireConfirm) {
+        // NEW: Check if endpoint has complete truth (for read-only views)
+        function truthCompleteForRead(envelope) {
+            return Boolean(
+                envelope &&
+                envelope.truth &&
+                envelope.truth.complete === true
+            );
+        }
+
+        async function gateTruth(actionLabel, requireConfirm, requireFullTruth = true) {
+            console.log(`[gateTruth] Called with actionLabel=${actionLabel}, requireConfirm=${requireConfirm}, requireFullTruth=${requireFullTruth}`);
             if (requireConfirm) {
                 const proceed = confirm(`Intent: ${actionLabel}\n\nThis dashboard is read-only. Continue?`);
                 if (!proceed) return { allowed: false, reason: "cancelled" };
             }
             const env = await fetchTruthStatus();
-            if (!truthIsFull(env)) {
+            console.log(`[gateTruth] Truth status:`, env);
+            if (requireFullTruth && !truthIsFull(env)) {
+                console.error(`[gateTruth] Blocked: requireFullTruth=true but truthIsFull=false`);
                 alert(`Action blocked: TRUTH_LEVEL is not FULL. (${actionLabel})`);
                 return { allowed: false, reason: "truth_not_full" };
+            } else if (!requireFullTruth && !truthCompleteForRead(env)) {
+                console.error(`[gateTruth] Blocked: requireFullTruth=false but truthCompleteForRead=false`);
+                alert(`Action blocked: Backend truth incomplete. (${actionLabel})`);
+                return { allowed: false, reason: "truth_incomplete" };
             }
+            console.log(`[gateTruth] Allowed: action=${actionLabel}`);
             return { allowed: true };
         }
 
         async function guardDestructive(actionLabel) {
-            const gate = await gateTruth(actionLabel, true);
+            const gate = await gateTruth(actionLabel, true, true);
             if (!gate.allowed) return false;
             alert("Blocked: UI cannot mutate system state. Use backend controls only.");
             return false;
         }
 
+        // NEW: Check endpoint-specific truth for read-only navigation
+        // For read-only views, allow navigation as long as endpoint responds (even if truth.complete=false)
+        // Frontend will render explicit empty states when truth is incomplete
+        async function guardReadOnlyForEndpoint(endpoint, actionLabel) {
+            try {
+                console.log(`[TruthGate] Checking endpoint truth for: ${endpoint}`);
+                const env = await fetchEnvelope(endpoint);
+                console.log(`[TruthGate] Endpoint response:`, env);
+                // Check if we got a valid response (has truth envelope)
+                if (!env || !env.truth) {
+                    console.error(`[TruthGate] Invalid response from ${endpoint}:`, env);
+                    alert(`Action blocked: Backend endpoint ${endpoint} returned invalid response. (${actionLabel})`);
+                    return false;
+                }
+                // Allow navigation even if truth.complete=false - frontend handles empty states
+                // Only block if endpoint completely fails (no response or network error)
+                console.log(`[TruthGate] Allowing navigation to ${endpoint} (truth.complete=${env.truth?.complete})`);
+                return true;
+            } catch (e) {
+                console.error(`[TruthGate] Failed to fetch ${endpoint}:`, e);
+                alert(`Action blocked: Cannot reach backend endpoint ${endpoint}. (${actionLabel})`);
+                return false;
+            }
+        }
+
         async function guardReadOnly(actionLabel) {
-            const gate = await gateTruth(actionLabel, false);
+            // For read-only navigation, use aggregate truth (backward compatible)
+            // Individual tabs will check their own endpoint truth in showTab
+            const gate = await gateTruth(actionLabel, false, false);
             return gate.allowed;
         }
 
         async function showTab(tabId) {
-            const allowed = await guardReadOnly(`Navigate to ${tabId}`);
-            if (!allowed) return;
+            // Map tab IDs to their endpoint checks for read-only verification
+            const endpointMap = {
+                "news": "/api/news",
+                "journal": "/api/journal/trades",
+                "reports": "/api/performance/summary",
+                "terminal": "/api/signals/pending",
+                "mesh": "/api/truth/status",
+                "strategies": "/api/config"
+            };
+            
+            const endpoint = endpointMap[tabId];
+            
+            // For read-only tabs, check endpoint-specific truth instead of aggregate
+            if (endpoint) {
+                const allowed = await guardReadOnlyForEndpoint(endpoint, `Navigate to ${tabId}`);
+                if (!allowed) return;
+            } else {
+                // Fallback to aggregate check for unknown tabs
+                const allowed = await guardReadOnly(`Navigate to ${tabId}`);
+                if (!allowed) return;
+            }
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
                 tab.classList.add('hidden');
@@ -2199,8 +2299,14 @@
             bindButton("btn-deploy-nodes", () => {
                 guardDestructive("Deploy All Nodes");
             });
+            
+            // Initialize all dashboard data on page load
             refreshStrategies();
             refreshTerminal();
+            refreshNews();  // Load news count in top-right connector widget
+            refreshJournal();  // Load journal and trade info
+            refreshMesh();  // Load mesh status
+            refreshUiVersion();  // Load UI version in header
         });
     </script>
 

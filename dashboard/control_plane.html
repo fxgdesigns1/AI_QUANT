@@ -215,7 +215,26 @@
                     <label for="maxPositions">Max Positions:</label>
                     <input type="number" id="maxPositions" min="1" max="20" value="3">
                 </div>
+                <div class="form-group">
+                    <label for="globalMaxDailyTrades">Global Max Daily Trades (default):</label>
+                    <input type="number" id="globalMaxDailyTrades" min="0" max="100" value="3">
+                    <small style="color: #888;">0 = unlimited, applies to accounts without per-account limits</small>
+                </div>
                 <button class="btn" id="saveConfigBtn">💾 Save Config</button>
+            </div>
+            
+            <!-- Per-Account Daily Limits Card -->
+            <div class="card">
+                <h2>📊 Per-Account Daily Trade Limits</h2>
+                <p style="color: #888; font-size: 0.9em; margin-bottom: 15px;">
+                    Set daily trade limits per account. Leave empty to use global default. Set to 0 for unlimited.
+                </p>
+                <div id="accountLimitsContainer">
+                    <div style="text-align: center; color: #888; padding: 20px;">
+                        Loading accounts...
+                    </div>
+                </div>
+                <button class="btn" id="saveAccountLimitsBtn" style="margin-top: 15px;">💾 Save Account Limits</button>
             </div>
         </div>
         
@@ -340,9 +359,62 @@
             document.getElementById('scanInterval').value = currentConfig.scan_interval_seconds;
             document.getElementById('maxRisk').value = currentConfig.risk.max_risk_per_trade_pct;
             document.getElementById('maxPositions').value = currentConfig.risk.max_positions;
+            document.getElementById('globalMaxDailyTrades').value = currentConfig.risk.max_daily_trades_per_account || 3;
             
             document.getElementById('statusStrategy').textContent = currentConfig.active_strategy_key;
             document.getElementById('statusInterval').textContent = `${currentConfig.scan_interval_seconds}s`;
+            
+            // Update account limits display
+            renderAccountLimits();
+        }
+        
+        // Render account limits UI
+        function renderAccountLimits() {
+            const container = document.getElementById('accountLimitsContainer');
+            if (!currentStatus || !currentConfig) {
+                container.innerHTML = '<div style="text-align: center; color: #888;">Loading...</div>';
+                return;
+            }
+            
+            const accounts = currentStatus.accounts_loaded || 0;
+            const accountPrefix = '101-004-30719775-';
+            const accountLimits = currentConfig.account_risk_limits || {};
+            
+            // Generate account list (001-010 for both Alpha and Beta)
+            const accountSuffixes = Array.from({length: 10}, (_, i) => String(i + 1).padStart(3, '0'));
+            
+            container.innerHTML = accountSuffixes.map(suffix => {
+                const accountId = accountPrefix + suffix;
+                const limits = accountLimits[accountId] || {};
+                const maxDailyTrades = limits.max_daily_trades !== undefined ? limits.max_daily_trades : '';
+                const enabled = limits.enabled !== false;
+                
+                return `
+                    <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
+                        <label style="min-width: 120px; color: #fff;">Account ${suffix}:</label>
+                        <input type="number" 
+                               id="accountLimit_${suffix}" 
+                               class="account-limit-input" 
+                               data-account="${accountId}"
+                               min="0" 
+                               max="100" 
+                               placeholder="Global default"
+                               value="${maxDailyTrades}"
+                               style="flex: 1; max-width: 150px;">
+                        <label style="display: flex; align-items: center; gap: 5px; color: #888; font-size: 0.9em;">
+                            <input type="checkbox" 
+                                   id="accountEnabled_${suffix}" 
+                                   class="account-enabled-checkbox"
+                                   data-account="${accountId}"
+                                   ${enabled ? 'checked' : ''}>
+                            Enabled
+                        </label>
+                        <small style="color: #888; font-size: 0.85em;">
+                            ${maxDailyTrades === '' ? 'Uses global' : maxDailyTrades === 0 ? 'Unlimited' : `Max: ${maxDailyTrades}`}
+                        </small>
+                    </div>
+                `;
+            }).join('');
         }
         
         // Render strategy grid
@@ -405,7 +477,8 @@
                     scan_interval_seconds: parseInt(document.getElementById('scanInterval').value),
                     risk: {
                         max_risk_per_trade_pct: parseFloat(document.getElementById('maxRisk').value),
-                        max_positions: parseInt(document.getElementById('maxPositions').value)
+                        max_positions: parseInt(document.getElementById('maxPositions').value),
+                        max_daily_trades_per_account: parseInt(document.getElementById('globalMaxDailyTrades').value) || 3
                     }
                 };
                 
@@ -426,6 +499,61 @@
             } catch (e) {
                 console.error('Failed to save config:', e);
                 addTerminalLine(`❌ Failed to save config: ${e.message}`);
+            } finally {
+                btn.disabled = false;
+            }
+        });
+        
+        // Save account limits
+        document.getElementById('saveAccountLimitsBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('saveAccountLimitsBtn');
+            btn.disabled = true;
+            
+            try {
+                const accountLimits = {};
+                const inputs = document.querySelectorAll('.account-limit-input');
+                const checkboxes = document.querySelectorAll('.account-enabled-checkbox');
+                
+                inputs.forEach(input => {
+                    const accountId = input.dataset.account;
+                    const suffix = accountId.split('-').pop();
+                    const value = input.value.trim();
+                    const checkbox = document.getElementById(`accountEnabled_${suffix}`);
+                    const enabled = checkbox ? checkbox.checked : true;
+                    
+                    // Only include if value is set (not empty) or if disabled
+                    if (value !== '' || !enabled) {
+                        accountLimits[accountId] = {
+                            enabled: enabled
+                        };
+                        
+                        if (value !== '') {
+                            accountLimits[accountId].max_daily_trades = parseInt(value);
+                        }
+                    }
+                });
+                
+                const update = {
+                    account_risk_limits: accountLimits
+                };
+                
+                const res = await fetch(`${API_BASE}/api/config`, {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify(update)
+                });
+                
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                
+                const data = await res.json();
+                console.log('Account limits updated:', data);
+                
+                await Promise.all([fetchConfig(), fetchStatus()]);
+                
+                addTerminalLine(`✅ Account limits saved successfully`);
+            } catch (e) {
+                console.error('Failed to save account limits:', e);
+                addTerminalLine(`❌ Failed to save account limits: ${e.message}`);
             } finally {
                 btn.disabled = false;
             }

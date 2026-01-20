@@ -1,0 +1,240 @@
+{
+  "audit_date": "2025-12-31",
+  "audit_type": "execution_model_verification",
+  
+  "entrypoint_analysis": {
+    "primary_entrypoint": {
+      "file": "ai_trading_system.py",
+      "function": "main()",
+      "line": 2376,
+      "invocation": "if __name__ == '__main__': main()",
+      "invocation_line": 2545,
+      "execution_type": "LONG_RUNNING_DAEMON"
+    },
+    "execution_flow": [
+      "1. Load environment variables from oanda_config.env",
+      "2. Add project root to sys.path",
+      "3. Import dependencies (with optional fallbacks)",
+      "4. Initialize AITradingSystem for each account from YAML",
+      "5. Start 4 daemon threads (Telegram, adaptive, scheduler, main loop)",
+      "6. Enter infinite while True loop with 60-second cycles",
+      "7. For each cycle: run_trading_cycle() for all 8 accounts",
+      "8. Sleep 60 seconds between cycles"
+    ]
+  },
+  
+  "while_true_loops": {
+    "main_trading_loop": {
+      "file": "ai_trading_system.py",
+      "line": 2507,
+      "function": "main()",
+      "purpose": "Continuous trading cycle - processes 8 accounts every 60 seconds",
+      "sleep_interval": 60,
+      "evidence": "while True: ... time.sleep(60)",
+      "accounts_processed": 8,
+      "cycle_actions": [
+        "get_current_prices() - Fetch live OANDA prices",
+        "analyze_market() - Run strategy evaluation",
+        "execute_trade() - Submit orders if signals generated",
+        "monitor_trades() - Check open positions"
+      ]
+    },
+    "telegram_command_loop": {
+      "file": "ai_trading_system.py",
+      "line": 961,
+      "function": "telegram_command_loop()",
+      "purpose": "Poll Telegram for commands",
+      "sleep_interval": 1,
+      "evidence": "while True: ... time.sleep(1)",
+      "commands_supported": [
+        "/status",
+        "/enable",
+        "/disable",
+        "/help"
+      ]
+    },
+    "adaptive_loop": {
+      "file": "ai_trading_system.py",
+      "line": 2328,
+      "function": "adaptive_loop()",
+      "purpose": "Adaptive learning and parameter adjustment",
+      "sleep_interval": 3600,
+      "evidence": "while True: ... time.sleep(3600)"
+    }
+  },
+  
+  "scheduler_usage": {
+    "schedule_library": {
+      "imported": true,
+      "import_line": 16,
+      "usage": "Daily/weekly/monthly report scheduling",
+      "schedules": [
+        {
+          "frequency": "daily",
+          "time": "06:00 London",
+          "function": "send_daily_briefing()",
+          "line": 280
+        },
+        {
+          "frequency": "weekly",
+          "time": "Every 7 days at 06:30 London",
+          "function": "send_weekly_briefing()",
+          "line": 281
+        },
+        {
+          "frequency": "monthly",
+          "time": "Every 30 days at 07:00 London",
+          "function": "send_monthly_briefing()",
+          "line": 282
+        }
+      ]
+    },
+    "topdown_scheduler": {
+      "module": "src.analytics.topdown_scheduler.TopDownScheduler",
+      "imported": true,
+      "import_line": 87,
+      "usage": "Market analysis scheduling",
+      "thread": "Separate daemon thread",
+      "schedules": [
+        "Monthly market outlook",
+        "Weekly breakdown",
+        "Mid-week updates"
+      ],
+      "evidence": "Line 2478-2491"
+    }
+  },
+  
+  "threading_model": {
+    "main_thread": {
+      "purpose": "Trading cycle loop",
+      "blocking": true,
+      "cycle_time": "60 seconds",
+      "accounts_per_cycle": 8
+    },
+    "daemon_threads": [
+      {
+        "name": "telegram_thread",
+        "target": "telegram_command_loop",
+        "daemon": true,
+        "line": 2460,
+        "purpose": "Remote command processing"
+      },
+      {
+        "name": "adaptive_thread",
+        "target": "adaptive_loop",
+        "daemon": true,
+        "line": 2464,
+        "purpose": "Adaptive learning"
+      },
+      {
+        "name": "scheduler_thread",
+        "target": "topdown_scheduler.run_scheduler",
+        "daemon": true,
+        "line": 2490,
+        "purpose": "Market analysis scheduling"
+      }
+    ],
+    "total_threads": 4,
+    "thread_safety": "UNKNOWN - No explicit locking mechanisms observed"
+  },
+  
+  "systemd_integration": {
+    "service_file": "ai_trading.service",
+    "service_type": "simple",
+    "exec_start": "/usr/bin/python3 /opt/quant_system_clean/google-cloud-trading-system/ai_trading_system.py",
+    "working_directory": "/opt/quant_system_clean/google-cloud-trading-system",
+    "restart_policy": "always",
+    "restart_sec": 10,
+    "user": "root",
+    "standard_output": "journal",
+    "standard_error": "journal",
+    "environment_variables": [
+      "PYTHONPATH=/opt/quant_system_clean/google-cloud-trading-system",
+      "OANDA_API_KEY=REDACTED",
+      "OANDA_ENVIRONMENT=practice",
+      "MARKETAUX_KEYS=<redacted>",
+      "MARKETAUX_CACHE_TTL_MINUTES=2"
+    ],
+    "evidence": "ai_trading.service file"
+  },
+  
+  "startup_sequence": {
+    "step_1": "Load environment variables",
+    "step_2": "Configure sys.path for imports",
+    "step_3": "Import dependencies (with optional fallbacks)",
+    "step_4": "Load accounts from YAML (via YAMLManager)",
+    "step_5": "Initialize AITradingSystem for each account",
+    "step_6": "Register accounts with orchestrator",
+    "step_7": "Send startup Telegram notification",
+    "step_8": "Start daemon threads (Telegram, adaptive, scheduler)",
+    "step_9": "Enter main trading loop",
+    "startup_time_estimate": "5-10 seconds",
+    "failure_points": [
+      "Missing accounts.yaml",
+      "Invalid API keys",
+      "Import failures for optional modules",
+      "Firestore connection (if used)"
+    ]
+  },
+  
+  "shutdown_behavior": {
+    "graceful_shutdown": "KeyboardInterrupt caught",
+    "cleanup": "Minimal - daemon threads terminated",
+    "systemd_restart": "Automatic restart on failure",
+    "evidence": "Line 2523-2525: except KeyboardInterrupt"
+  },
+  
+  "execution_modes": {
+    "trading_enabled_flag": {
+      "exists": true,
+      "variable": "self.trading_enabled",
+      "default": true,
+      "can_disable": true,
+      "disable_methods": [
+        "Telegram /disable command",
+        "Daily trade limit reached",
+        "News halt window active"
+      ],
+      "evidence": "Line 224, 501, 505, 541, 1819, 2236"
+    },
+    "dry_run_mode": {
+      "exists": false,
+      "evidence": "No DRY_RUN or PAPER_TRADING environment variable found in main system"
+    },
+    "demo_mode": {
+      "exists": true,
+      "hardcoded": true,
+      "evidence": "OANDA_BASE_URL = 'https://api-fxpractice.oanda.com' (demo endpoint)",
+      "log_message": "Line 2379: '📊 DEMO ACCOUNT ONLY - NO REAL MONEY AT RISK'"
+    }
+  },
+  
+  "process_management": {
+    "daemon_type": "systemd",
+    "auto_start": true,
+    "auto_restart": true,
+    "restart_limit": "unlimited",
+    "log_destination": "systemd journal",
+    "monitoring": "journalctl -u ai_trading.service -f"
+  },
+  
+  "verdict": {
+    "execution_model": "LONG_RUNNING_DAEMON",
+    "deployment_type": "SYSTEMD_SERVICE",
+    "threading": "MULTI_THREADED (4 threads)",
+    "restart_capability": "AUTOMATIC",
+    "graceful_shutdown": "PARTIAL",
+    "redeployability": "HIGH",
+    "blockers": [
+      "Hardcoded path /opt/quant_system_clean in service file",
+      "No clean shutdown mechanism (daemon threads not joined)",
+      "Thread safety not explicitly handled"
+    ],
+    "recommendations": [
+      "Make service file path configurable",
+      "Implement proper thread cleanup on shutdown",
+      "Add signal handlers for graceful shutdown",
+      "Document startup dependencies"
+    ]
+  }
+}
