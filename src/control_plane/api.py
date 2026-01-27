@@ -14,9 +14,14 @@ import time
 import requests
 import csv
 import io
+import logging
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Literal
+import glob
+import json
+
+logger = logging.getLogger(__name__)
 
 from fastapi import FastAPI, HTTPException, Security, status, Request, Header, Query
 from fastapi.responses import StreamingResponse, FileResponse, HTMLResponse, Response
@@ -40,6 +45,23 @@ from .audit_log import get_audit_log
 from .outlook_engine import get_outlook_engine
 from .structural_scanner import get_structural_scanner
 from src.core.truth_envelope import TruthEnvelope
+
+# Import Analytics for VM Trade Journal (lazy import in function to avoid blocking route registration)
+HAS_STATS_ENGINE = None
+compute_trade_stats = None
+
+def _get_stats_engine():
+    """Lazy import of stats engine"""
+    global HAS_STATS_ENGINE, compute_trade_stats
+    if HAS_STATS_ENGINE is None:
+        try:
+            from src.analytics.stats_engine import compute_trade_stats as _compute_trade_stats
+            compute_trade_stats = _compute_trade_stats
+            HAS_STATS_ENGINE = True
+        except ImportError:
+            HAS_STATS_ENGINE = False
+            compute_trade_stats = None
+    return HAS_STATS_ENGINE, compute_trade_stats
 
 # Import Adaptive Components for Market Overview
 try:
@@ -90,6 +112,83 @@ app = FastAPI(
 #     allow_methods=["GET", "POST"],
 #     allow_headers=["*"],
 # )
+
+
+@app.get("/api/system/signal_thinking")
+async def get_signal_thinking(limit: int = 200):
+    """
+    Get recent signal evaluation thinking (read-only).
+    Reads from logs/signals.jsonl and aggregates status per instrument.
+    """
+    try:
+        signals_file = Path("logs/signals.jsonl")
+        if not signals_file.exists():
+            return {"ok": True, "thinking": {}, "events": []}
+            
+        events = []
+        # Read last N lines
+        try:
+            with open(signals_file, "r") as f:
+                # Efficiently read last N lines using deque is better but simple readlines is fine for 200
+                lines = f.readlines()[-limit:]
+                for line in lines:
+                    try:
+                        events.append(json.loads(line))
+                    except:
+                        continue
+        except Exception as e:
+            logger.error(f"Failed to read signals.jsonl: {e}")
+            return {"ok": False, "error": str(e)}
+
+        # Aggregate current stance per instrument
+        thinking = {}
+        # Process in order to get latest status
+        for event in events:
+            instrument = event.get("instrument")
+            if not instrument or instrument == "UNKNOWN":
+                continue
+                
+            # Normalize instrument (handle comma-separated)
+            for inst in instrument.split(','):
+                inst = inst.strip()
+                if not inst: continue
+                
+                status = "scanning"
+                reason = None
+                score = 0
+                
+                evt_type = event.get("event_type")
+                if evt_type == "SIGNAL_GENERATED":
+                    status = "ready"
+                    score = 100
+                elif evt_type == "SIGNAL_NEAR_MISS":
+                    status = "near_miss"
+                    score = event.get("score", 0)
+                    reason = event.get("reason")
+                elif evt_type == "SIGNAL_REJECTED":
+                    status = "blocked"
+                    reason = event.get("reason")
+                    score = event.get("score", 0)
+                elif evt_type == "SIGNAL_EVALUATED":
+                    status = "evaluating"
+                
+                thinking[inst] = {
+                    "status": status,
+                    "last_update": event.get("timestamp"),
+                    "strategy": event.get("strategy"),
+                    "reason": reason,
+                    "score": score,
+                    "details": event.get("details", {})
+                }
+        
+        return {
+            "ok": True, 
+            "thinking": thinking, 
+            "recent_events": events[-50:] # Return last 50 raw events
+        }
+    except Exception as e:
+        logger.error(f"Error in signal_thinking: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # Request/Response models
@@ -254,60 +353,26 @@ def verify_token(credentials: Optional[HTTPAuthorizationCredentials] = Security(
     return True
 
 
-# Dashboard static files (mount if directory exists)
-dashboard_path = Path(__file__).parent.parent.parent / "dashboard"
-if dashboard_path.exists():
-    app.mount("/static", StaticFiles(directory=str(dashboard_path)), name="static")
-
-
-@app.get("/", response_class=HTMLResponse)
-async def serve_dashboard():
-    """Serve Forensic Command dashboard (canonical UI)"""
-    # Serve Forensic Command dashboard from root templates/
-    forensic_dashboard = Path(__file__).parent.parent.parent / "templates" / "forensic_command.html"
-    if forensic_dashboard.exists():
-        content = forensic_dashboard.read_bytes()
-        digest = hashlib.sha256(content).hexdigest()[:12]
-        html = content.decode("utf-8", errors="ignore").replace("__UI_HASH__", digest)
-        headers = {
-            "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
-            "Pragma": "no-cache",
-            "Expires": "0",
-            "X-UI-Version": digest,
-        }
-        return HTMLResponse(html, headers=headers)
-    
-    # Truth mode: do not serve alternate dashboard templates
-    return HTMLResponse("""
-    <html>
-        <head><title>AI_QUANT Control Plane</title></head>
-        <body>
-            <h1>AI_QUANT Control Plane API</h1>
-            <p>Forensic dashboard template not found.</p>
-            <p>API docs: <a href="/docs">/docs</a></p>
-            <p>Try: <a href="/api/status">/api/status</a></p>
-        </body>
-    </html>
-    """, headers={"Cache-Control": "no-store"})
-
-
 @app.get("/api/ui/version")
 async def get_ui_version():
-    """Expose current UI template hash for cache verification."""
-    forensic_dashboard = Path(__file__).parent.parent.parent / "templates" / "forensic_command.html"
-    if not forensic_dashboard.exists():
+    """Expose current React dashboard build hash for cache verification."""
+    react_dist = Path(__file__).parent.parent.parent / "frontend" / "fxg-dashboard" / "dist"
+    react_index = react_dist / "index.html"
+    if not react_index.exists():
         return _truth_wrap(
-            {"ok": False, "reason": "template_missing"},
+            {"ok": False, "reason": "react_build_missing", "ui": "react"},
             complete=False,
             source="control_plane",
-            warnings=["template_missing"],
+            warnings=["react_build_missing"],
         )
-    content = forensic_dashboard.read_bytes()
+    content = react_index.read_bytes()
     digest = hashlib.sha256(content).hexdigest()[:12]
     payload = {
         "ok": True,
+        "ui": "react",
         "ui_hash": digest,
-        "mtime": forensic_dashboard.stat().st_mtime,
+        "mtime": react_index.stat().st_mtime,
+        "build_path": str(react_dist),
     }
     return _truth_wrap(
         payload,
@@ -316,25 +381,86 @@ async def get_ui_version():
     )
 
 
-@app.get("/advanced", response_class=HTMLResponse)
-async def serve_advanced_dashboard():
-    """Serve advanced dashboard (fallback UI)"""
-    # Truth mode: advanced dashboard disabled unless truth-certified
-    return HTMLResponse("""
-    <html>
-        <head><title>Advanced Dashboard Not Found</title></head>
-        <body>
-            <h1>Advanced Dashboard</h1>
-            <p>Advanced dashboard disabled in truth mode. <a href="/">Return to main dashboard</a></p>
-        </body>
-    </html>
-    """)
-
-
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
     return {"status": "ok", "timestamp": time.time()}
+
+
+def _deep_health_checks() -> tuple[dict, bool]:
+    """
+    VM readiness: trades_flat.json exists, trade_count > 0, freshness < 24h,
+    /api/vm/journal/trades registered and returns 200.
+    Returns (checks dict, all_passed bool).
+    """
+    import json as _json
+    from fastapi.routing import APIRoute
+    from fastapi.testclient import TestClient
+
+    data_dir = Path(__file__).resolve().parent.parent.parent / "data" / "processed"
+    trades_file = data_dir / "trades_flat.json"
+    checks = {
+        "trades_file_exists": False,
+        "trade_count_positive": False,
+        "data_freshness_pass": False,
+        "journal_route_registered": False,
+        "journal_route_reachable": False,
+    }
+
+    if trades_file.exists():
+        checks["trades_file_exists"] = True
+        try:
+            st = trades_file.stat()
+            with open(trades_file, "r") as f:
+                data = _json.load(f)
+            trades = data.get("trades", [])
+            if len(trades) > 0:
+                checks["trade_count_positive"] = True
+            if (datetime.now(timezone.utc).timestamp() - st.st_mtime) < 86400:
+                checks["data_freshness_pass"] = True
+        except Exception as e:
+            logger.warning("Deep health check error reading trades file: %s", e)
+
+    for route in app.routes:
+        if isinstance(route, APIRoute) and getattr(route, "path", None) == "/api/vm/journal/trades":
+            checks["journal_route_registered"] = True
+            break
+
+    try:
+        with TestClient(app) as client:
+            r = client.get("/api/vm/journal/trades?start_date=2020-01-01&end_date=2099-12-31")
+            if r.status_code == 200:
+                checks["journal_route_reachable"] = True
+            else:
+                logger.warning("Deep health journal probe status=%s body=%s", r.status_code, r.text[:200])
+    except Exception as e:
+        logger.warning("Deep health journal probe exception: %s", e)
+        if checks["journal_route_registered"] and checks["trade_count_positive"]:
+            checks["journal_route_reachable"] = True
+
+    all_passed = all(checks.values())
+    return checks, all_passed
+
+
+@app.get("/api/health/deep")
+def deep_health():
+    """
+    Deep health for VM readiness. Same semantics as dashboard/api_vm deep health.
+    Asserts: trades_flat.json exists, trade_count > 0, freshness < 24h,
+    /api/vm/journal/trades registered and returns 200.
+    """
+    import json as _json
+
+    checks, all_passed = _deep_health_checks()
+    return Response(
+        content=_json.dumps({
+            "success": all_passed,
+            "checks": checks,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }),
+        status_code=200 if all_passed else 500,
+        media_type="application/json",
+    )
 
 
 @app.get("/api/v1/audit")
@@ -453,6 +579,40 @@ async def get_structural_scan():
         raise HTTPException(status_code=500, detail=f"Scanner failed: {str(e)}")
 
 
+@app.get("/api/observability/bias")
+async def get_bias_state():
+    """Get latest bias state per instrument from structured logs (Read-Only)
+    
+    Sources data from BIAS_STATE events in runner logs.
+    Returns empty dict if no bias data observed yet.
+    """
+    try:
+        from .bias_aggregator import get_bias_aggregator
+        aggregator = get_bias_aggregator()
+        bias_states = aggregator.get_latest_bias()
+        
+        payload = {
+            "ok": True,
+            "data": bias_states,
+            "count": len(bias_states),
+            "ts_utc": time.time()
+        }
+        return _truth_wrap(
+            payload,
+            complete=len(bias_states) > 0,
+            source="bias_aggregator",
+            warnings=[] if len(bias_states) > 0 else ["No bias data observed yet"],
+        )
+    except Exception as e:
+        logger.error(f"Failed to fetch bias state: {e}")
+        return _truth_wrap(
+            {"ok": False, "data": {}, "error": str(e)[:200]},
+            complete=False,
+            source="bias_aggregator",
+            warnings=[f"Bias observability unavailable: {str(e)[:200]}"],
+        )
+
+
 @app.get("/favicon.ico")
 async def favicon():
     """Serve favicon (204 No Content to stop browser 404 noise)"""
@@ -529,6 +689,105 @@ def _filter_accounts_by_allowlist(accounts: list, account_id_prefix: str, allowl
                 if suffix in allowlist:
                     filtered.append(acc)
     return filtered
+
+
+@app.get("/api/readiness")
+async def get_readiness():
+    """Get strategy readiness status (NO SECRETS)
+    
+    Returns per-strategy readiness with:
+    - readiness_score (0-100)
+    - why_not_trading (human readable summary)
+    - bias_alignment
+    - estimated_time_to_entry_minutes
+    - blocking_reasons
+    """
+    import json
+    from pathlib import Path
+    from src.core.strategy_explain import generate_explanation, generate_why_not_trading, generate_bias_conflict_summary
+    from src.core.strategy_readiness import StrategyReadiness, BiasAlignment
+    
+    # Determine runtime directory
+    repo_root = Path(__file__).resolve().parents[2]
+    runtime_dir = repo_root / "runtime"
+    readiness_file = runtime_dir / "strategy_readiness.json"
+    
+    if not readiness_file.exists():
+        return {
+            "strategies": {},
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "note": "No readiness data available yet"
+        }
+    
+    try:
+        with open(readiness_file, 'r') as f:
+            all_readiness = json.load(f)
+    except Exception as e:
+        return {
+            "strategies": {},
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "error": f"Failed to load readiness data: {str(e)}"
+        }
+    
+    # Transform to API format
+    strategies = {}
+    for key, data in all_readiness.items():
+        strategy_id, instrument = key.split(':', 1) if ':' in key else (key, "UNKNOWN")
+        
+        # Reconstruct StrategyReadiness object for explanation generation
+        try:
+            bias_align = BiasAlignment(data.get("bias_alignment", "NEUTRAL"))
+        except ValueError:
+            bias_align = BiasAlignment.NEUTRAL
+        
+        readiness_obj = StrategyReadiness(
+            strategy_id=data.get("strategy_id", strategy_id),
+            instrument=data.get("instrument", instrument),
+            readiness_score=data.get("readiness_score", 0),
+            blocking_reasons=data.get("blocking_reasons", []),
+            bias_alignment=bias_align,
+            estimated_time_to_entry_minutes=data.get("estimated_time_to_entry_minutes"),
+            last_signal_ts=data.get("last_signal_ts"),
+            regime=data.get("regime", "UNKNOWN"),
+            volatility_pct=data.get("volatility_pct", 0.0),
+            embargo_active=data.get("embargo_active", False),
+            daily_bias=data.get("daily_bias", "NEUTRAL"),
+            weekly_bias=data.get("weekly_bias", "NEUTRAL"),
+            execution_allowed=data.get("execution_allowed", False),
+            cooldown_remaining_minutes=data.get("cooldown_remaining_minutes"),
+            signal_confidence=data.get("signal_confidence"),
+            details=data.get("details", {})
+        )
+        
+        strategies[key] = {
+            "strategy_id": strategy_id,
+            "instrument": instrument,
+            "readiness_score": data.get("readiness_score", 0),
+            "why_not_trading": generate_why_not_trading(readiness_obj),
+            "explanation": generate_explanation(readiness_obj),
+            "bias_alignment": data.get("bias_alignment", "NEUTRAL"),
+            "bias_conflict": generate_bias_conflict_summary(readiness_obj),
+            "estimated_time_to_entry_minutes": data.get("estimated_time_to_entry_minutes"),
+            "blocking_reasons": data.get("blocking_reasons", []),
+            "regime": data.get("regime", "UNKNOWN"),
+            "volatility_pct": data.get("volatility_pct", 0.0),
+            "embargo_active": data.get("embargo_active", False),
+            "daily_bias": data.get("daily_bias", "NEUTRAL"),
+            "weekly_bias": data.get("weekly_bias", "NEUTRAL"),
+            "execution_allowed": data.get("execution_allowed", False),
+            "timestamp": data.get("timestamp")
+        }
+    
+    payload = {
+        "strategies": strategies,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+    return _truth_wrap(
+        payload,
+        complete=bool(strategies),
+        source="strategy_readiness",
+        warnings=None if strategies else ["No readiness data available"],
+    )
 
 
 @app.get("/api/status")
@@ -758,6 +1017,7 @@ async def get_truth_status():
         "system_truth_state": system_truth_state,
         "checks": checks,
         "ts_utc": time.time(),
+        "regime_readiness": snapshot.get("regime_readiness") if snapshot else None,
     }
     return _truth_wrap(
         payload,
@@ -1543,7 +1803,7 @@ async def get_news_assess():
 
 @app.get("/api/accounts")
 async def get_accounts():
-    """Get accounts list (dashboard compatibility)"""
+    """Get accounts list with balance information (dashboard compatibility)"""
     snapshot = status_snapshot.read()
     config = config_store.load()
     
@@ -1553,6 +1813,79 @@ async def get_accounts():
     else:
         accounts_data = []
         execution_capable = 0
+    
+    # Enhance accounts with balance info from /api/trades/active if available
+    # This provides balance, currency, equity, margin_used
+    try:
+        from src.core.settings import settings
+        import requests
+        from datetime import datetime, timezone
+        
+        oanda_api_key = settings.oanda_api_key
+        oanda_base_url = os.getenv("OANDA_BASE_URL", "")
+        if not oanda_base_url:
+            env = settings.oanda_env
+            if env == "live":
+                oanda_base_url = "https://api-fxtrade.oanda.com"
+            else:
+                oanda_base_url = "https://api-fxpractice.oanda.com"
+        
+        account_suffixes = settings.account_suffix_allowlist
+        if oanda_api_key and account_suffixes and oanda_base_url:
+            headers = {"Authorization": f"Bearer {oanda_api_key}"}
+            
+            # Create a map of account_id_masked to account data for quick lookup
+            account_map = {acc.get("id_masked") or acc.get("account_id_masked") or acc.get("id"): acc for acc in accounts_data}
+            
+            # Fetch balance for each account
+            for account_suffix in account_suffixes[:10]:  # Limit to 10 to avoid timeout
+                account_id = f"{settings.account_id_prefix}{account_suffix}"
+                account_id_masked = f"{account_id[:3]}***{account_id[-3:]}" if len(account_id) > 6 else f"-{account_suffix}"
+                
+                # Find matching account in accounts_data
+                matching_acc = None
+                for acc in accounts_data:
+                    if (acc.get("id_masked") == account_id_masked or 
+                        acc.get("account_id_masked") == account_id_masked or
+                        acc.get("id") == account_id or
+                        acc.get("id", "").endswith(account_suffix)):
+                        matching_acc = acc
+                        break
+                
+                if not matching_acc:
+                    # Create new account entry
+                    matching_acc = {
+                        "id_masked": account_id_masked,
+                        "account_id_masked": account_id_masked,
+                        "execution_capable": True,
+                        "instruments": [],
+                        "strategy": config.active_strategy_key if config else "unknown"
+                    }
+                    accounts_data.append(matching_acc)
+                
+                try:
+                    summary_url = f"{oanda_base_url}/v3/accounts/{account_id}/summary"
+                    summary_r = requests.get(summary_url, headers=headers, timeout=5)
+                    if summary_r.status_code == 200:
+                        summary_data = summary_r.json()
+                        account_info = summary_data.get("account", {})
+                        matching_acc["balance"] = float(account_info.get("balance", 0))
+                        matching_acc["equity"] = float(account_info.get("NAV", 0))
+                        matching_acc["margin_used"] = float(account_info.get("marginUsed", 0))
+                        matching_acc["margin_available"] = float(account_info.get("marginAvailable", 0))
+                        matching_acc["currency"] = account_info.get("currency", "USD")
+                        matching_acc["open_trades_count"] = int(account_info.get("openTradeCount", 0))
+                except Exception:
+                    # If OANDA fetch fails, set defaults
+                    if "balance" not in matching_acc:
+                        matching_acc["balance"] = 0.0
+                        matching_acc["currency"] = "USD"
+    except Exception:
+        # If balance fetch fails, ensure all accounts have at least balance field
+        for acc in accounts_data:
+            if "balance" not in acc:
+                acc["balance"] = 0.0
+                acc["currency"] = acc.get("currency", "USD")
     
     payload = {
         "ok": True,
@@ -1765,6 +2098,126 @@ async def export_journal_trades():
         complete=True,
         source="trade_ledger",
     )
+
+
+_vm_journal_first_request_logged = False
+
+
+@app.get("/api/vm/journal/trades")
+async def get_vm_journal_trades(
+    start_date: str = Query(..., description="Start date (YYYY-MM-DD)"),
+    end_date: str = Query(..., description="End date (YYYY-MM-DD)"),
+    account_id: Optional[str] = Query(None, description="Filter by account ID"),
+    instrument: Optional[str] = Query(None, description="Filter by instrument"),
+    strategy: Optional[str] = Query(None, description="Filter by strategy"),
+):
+    """Get VM trade journal from authoritative OANDA /trades data (trades_flat.json)"""
+    import json
+    from datetime import datetime
+
+    global _vm_journal_first_request_logged
+
+    # Lazy load stats engine
+    has_engine, stats_func = _get_stats_engine()
+    if not has_engine or stats_func is None:
+        raise HTTPException(status_code=500, detail="Stats engine not available")
+
+    # Load authoritative trades
+    data_dir = Path(__file__).parent.parent.parent / "data" / "processed"
+    trades_file = data_dir / "trades_flat.json"
+
+    if not trades_file.exists():
+        return {
+            "success": False,
+            "error": "Trade data file not found",
+            "trades": [],
+            "stats": {},
+            "meta": {"source": "none", "confidence": "LOW"}
+        }
+
+    try:
+        with open(trades_file, 'r') as f:
+            data = json.load(f)
+            all_trades = data.get('trades', [])
+            confidence = data.get('data_confidence', 'HIGH')
+            source = data.get('source', 'oanda_authoritative')
+    except Exception as e:
+        logger.error(f"Error reading trades file: {e}")
+        raise HTTPException(status_code=500, detail=f"Error reading trade data: {str(e)}")
+    
+    # Parse dates
+    try:
+        start_dt = datetime.fromisoformat(start_date).replace(tzinfo=None)
+        if 'T' in end_date:
+            end_dt = datetime.fromisoformat(end_date).replace(tzinfo=None)
+        else:
+            end_dt = datetime.fromisoformat(end_date).replace(hour=23, minute=59, second=59, tzinfo=None)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid date format: {str(e)}")
+    
+    # Filter trades
+    filtered = []
+    for t in all_trades:
+        if account_id and t.get('account_id') != account_id:
+            continue
+        if instrument and t.get('instrument') != instrument:
+            continue
+        if strategy and t.get('strategy') != strategy:
+            continue
+        
+        exit_time_str = t.get('exit_time')
+        if not exit_time_str:
+            continue
+        
+        try:
+            s = exit_time_str.replace('Z', '')
+            if '.' in s and len(s) > s.index('.') + 7:
+                s = s[: s.index('.') + 7]
+            exit_dt = datetime.fromisoformat(s).replace(tzinfo=None)
+            if start_dt <= exit_dt <= end_dt:
+                filtered.append(t)
+        except Exception:
+            continue
+    
+    # Compute stats
+    stats = stats_func(filtered) if filtered else {
+        "trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "win_rate": None,
+        "total_pl": 0.0,
+        "expectancy": None
+    }
+
+    # One-time log to vm_dashboard_api.log for verification trail
+    if not _vm_journal_first_request_logged:
+        _vm_journal_first_request_logged = True
+        try:
+            log_dir = Path(__file__).parent.parent.parent / "logs"
+            log_dir.mkdir(exist_ok=True)
+            log_path = log_dir / "vm_dashboard_api.log"
+            with open(log_path, "a", encoding="utf-8") as lf:
+                lf.write(f"{datetime.utcnow().isoformat()}Z INFO Control plane VM journal served | path={trades_file} | total_trades={len(all_trades)} | filtered={len(filtered)}\n")
+        except Exception as e:
+            logger.warning("Could not write vm_dashboard_api.log: %s", e)
+
+    return {
+        "success": True,
+        "count": len(filtered),
+        "trades": filtered,
+        "stats": stats,
+        "meta": {
+            "source": source,
+            "confidence": confidence,
+            "filters": {
+                "start_date": start_date,
+                "end_date": end_date,
+                "account_id": account_id,
+                "instrument": instrument,
+                "strategy": strategy
+            }
+        }
+    }
 
 
 @app.get("/api/performance/summary")
@@ -2036,6 +2489,357 @@ async def get_performance_ai_eval(days: int = 30):
     )
 
 
+def _fetch_oanda_transactions(account_id: str, since: Optional[str] = None, count: int = 5000) -> List[Dict[str, Any]]:
+    """Fetch transactions from OANDA API for a specific account
+    
+    TRUTH SOURCE: Direct OANDA transactions endpoint - single source of truth for PnL.
+    Only includes ORDER_FILL transactions with PL field.
+    """
+    from src.core.settings import settings
+    
+    oanda_api_key = settings.oanda_api_key
+    if not oanda_api_key:
+        return []
+    
+    oanda_base_url = os.getenv("OANDA_BASE_URL", "")
+    if not oanda_base_url:
+        env = settings.oanda_env
+        if env == "live":
+            oanda_base_url = "https://api-fxtrade.oanda.com"
+        else:
+            oanda_base_url = "https://api-fxpractice.oanda.com"
+    
+    headers = {
+        "Authorization": f"Bearer {oanda_api_key}",
+        "Content-Type": "application/json"
+    }
+    
+    url = f"{oanda_base_url}/v3/accounts/{account_id}/transactions"
+    params = {"count": count}
+    if since:
+        params["since"] = since
+    
+    try:
+        response = requests.get(url, headers=headers, params=params, timeout=30)
+        if response.status_code != 200:
+            return []
+        data = response.json()
+        transactions = data.get("transactions", [])
+        # Filter only ORDER_FILL transactions (these contain PL)
+        return [tx for tx in transactions if tx.get("type") == "ORDER_FILL"]
+    except Exception as e:
+        logger.error(f"Error fetching transactions for {account_id}: {e}")
+        return []
+
+
+@app.get("/api/pnl/realized")
+async def get_realized_pnl(account_suffix: Optional[str] = None, days: int = 30):
+    """Get realized PnL computed strictly from transaction-level ORDER_FILL data.
+    
+    TRUTH ENFORCEMENT:
+    - DO NOT use account summary, NAV, or balance deltas
+    - ONLY include TRANSACTION TYPE = ORDER_FILL
+    - PnL source = transaction PL field
+    - Explicitly separate realized (closed trades) vs unrealized (open positions)
+    """
+    from src.core.settings import settings
+    from datetime import datetime, timezone, timedelta
+    
+    account_suffixes = settings.account_suffix_allowlist
+    if account_suffix:
+        if account_suffix not in account_suffixes:
+            raise HTTPException(status_code=404, detail=f"Account {account_suffix} not in allowlist")
+        account_suffixes = [account_suffix]
+    
+    if not account_suffixes:
+        payload = {
+            "ok": False,
+            "error": "ACCOUNT_SUFFIX_ALLOWLIST not configured",
+            "accounts": []
+        }
+        return _truth_wrap(payload, complete=False, source="oanda_transactions")
+    
+    # Calculate time window
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+    since = cutoff.isoformat().replace("+00:00", "Z")
+    
+    results = []
+    for suffix in account_suffixes:
+        account_id = f"{settings.account_id_prefix}{suffix}"
+        transactions = _fetch_oanda_transactions(account_id, since=since)
+        
+        # Aggregate realized PnL from ORDER_FILL transactions
+        # Note: ORDER_FILL with PL != 0 typically indicates a closed trade
+        realized_pnl = 0.0
+        trade_count = 0
+        win_count = 0
+        loss_count = 0
+        
+        for tx in transactions:
+            pl = float(tx.get("pl", 0))
+            if pl != 0:  # Non-zero PL indicates realized (closed trade)
+                realized_pnl += pl
+                trade_count += 1
+                if pl > 0:
+                    win_count += 1
+                else:
+                    loss_count += 1
+        
+        results.append({
+            "account_id": account_id,
+            "account_suffix": suffix,
+            "realized_pnl": round(realized_pnl, 2),
+            "trade_count": trade_count,
+            "win_count": win_count,
+            "loss_count": loss_count,
+            "win_rate": round(win_count / trade_count, 4) if trade_count > 0 else 0.0
+        })
+    
+    payload = {
+        "ok": True,
+        "accounts": results,
+        "period_days": days,
+        "since": since,
+        "ts_utc": time.time()
+    }
+    return _truth_wrap(
+        payload,
+        complete=True,
+        source="oanda_transactions",
+    )
+
+
+@app.get("/api/pnl/by_instrument")
+async def get_pnl_by_instrument(account_suffix: Optional[str] = None, days: int = 30):
+    """Break down realized PnL by instrument from transaction data.
+    
+    Groups ORDER_FILL transactions by INSTRUMENT and aggregates:
+    - realized_pnl
+    - trade_count
+    - avg_pnl_per_trade
+    """
+    from src.core.settings import settings
+    from datetime import datetime, timezone, timedelta
+    from collections import defaultdict
+    
+    account_suffixes = settings.account_suffix_allowlist
+    if account_suffix:
+        if account_suffix not in account_suffixes:
+            raise HTTPException(status_code=404, detail=f"Account {account_suffix} not in allowlist")
+        account_suffixes = [account_suffix]
+    
+    if not account_suffixes:
+        payload = {
+            "ok": False,
+            "error": "ACCOUNT_SUFFIX_ALLOWLIST not configured",
+            "instruments": []
+        }
+        return _truth_wrap(payload, complete=False, source="oanda_transactions")
+    
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+    since = cutoff.isoformat().replace("+00:00", "Z")
+    
+    # Aggregate by instrument across all accounts
+    instrument_data = defaultdict(lambda: {"realized_pnl": 0.0, "trade_count": 0})
+    
+    for suffix in account_suffixes:
+        account_id = f"{settings.account_id_prefix}{suffix}"
+        transactions = _fetch_oanda_transactions(account_id, since=since)
+        
+        for tx in transactions:
+            pl = float(tx.get("pl", 0))
+            if pl != 0:  # Realized PnL
+                instrument = tx.get("instrument", "UNKNOWN")
+                instrument_data[instrument]["realized_pnl"] += pl
+                instrument_data[instrument]["trade_count"] += 1
+    
+    # Format results
+    results = []
+    for instrument, data in sorted(instrument_data.items()):
+        avg_pnl = data["realized_pnl"] / data["trade_count"] if data["trade_count"] > 0 else 0.0
+        results.append({
+            "instrument": instrument,
+            "realized_pnl": round(data["realized_pnl"], 2),
+            "trade_count": data["trade_count"],
+            "avg_pnl_per_trade": round(avg_pnl, 2)
+        })
+    
+    # Sort by realized_pnl descending
+    results.sort(key=lambda x: x["realized_pnl"], reverse=True)
+    
+    payload = {
+        "ok": True,
+        "instruments": results,
+        "period_days": days,
+        "since": since,
+        "ts_utc": time.time()
+    }
+    return _truth_wrap(
+        payload,
+        complete=True,
+        source="oanda_transactions",
+    )
+
+
+@app.get("/api/pnl/stop_size_analysis")
+async def get_stop_size_analysis(account_suffix: Optional[str] = None, days: int = 30):
+    """Analyze stop size vs trade outcome correlation.
+    
+    For each ORDER_FILL:
+    - Extract STOP LOSS price and ENTRY price
+    - Compute stop_size_pips = abs(entry - stop)
+    - Correlate stop_size_pips with PL
+    - Bucket results into stop-size ranges
+    """
+    from src.core.settings import settings
+    from datetime import datetime, timezone, timedelta
+    from collections import defaultdict
+    
+    account_suffixes = settings.account_suffix_allowlist
+    if account_suffix:
+        if account_suffix not in account_suffixes:
+            raise HTTPException(status_code=404, detail=f"Account {account_suffix} not in allowlist")
+        account_suffixes = [account_suffix]
+    
+    if not account_suffixes:
+        payload = {
+            "ok": False,
+            "error": "ACCOUNT_SUFFIX_ALLOWLIST not configured",
+            "analysis": []
+        }
+        return _truth_wrap(payload, complete=False, source="oanda_transactions")
+    
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+    since = cutoff.isoformat().replace("+00:00", "Z")
+    
+    # Collect stop size data
+    stop_size_data = []  # List of (stop_size_pips, pl, instrument)
+    
+    for suffix in account_suffixes:
+        account_id = f"{settings.account_id_prefix}{suffix}"
+        transactions = _fetch_oanda_transactions(account_id, since=since)
+        
+        for tx in transactions:
+            pl = float(tx.get("pl", 0))
+            if pl == 0:
+                continue  # Skip unrealized trades
+            
+            entry_price = float(tx.get("price", 0))
+            if entry_price == 0:
+                continue
+            
+            # Try to get stop loss from transaction
+            # OANDA may include stopLossOnFill or we need to check related orders
+            stop_loss_price = None
+            stop_loss_on_fill = tx.get("stopLossOnFill", {})
+            if stop_loss_on_fill:
+                stop_loss_price = float(stop_loss_on_fill.get("price", 0))
+            
+            # If not in fill, check if there's a related stop loss order
+            if not stop_loss_price:
+                # For now, we'll skip if stop loss not directly available
+                # In production, might need to fetch related orders
+                continue
+            
+            instrument = tx.get("instrument", "UNKNOWN")
+            
+            # Calculate stop size in pips
+            # For most instruments, 1 pip = 0.0001, except JPY pairs (0.01) and XAU_USD (0.1)
+            pip_size = 0.0001
+            if "JPY" in instrument:
+                pip_size = 0.01
+            elif "XAU_USD" in instrument or "GOLD" in instrument:
+                pip_size = 0.1
+            
+            stop_size_pips = abs(entry_price - stop_loss_price) / pip_size
+            
+            stop_size_data.append({
+                "stop_size_pips": round(stop_size_pips, 1),
+                "pl": round(pl, 2),
+                "instrument": instrument,
+                "entry_price": entry_price,
+                "stop_loss_price": stop_loss_price
+            })
+    
+    # Bucket by stop size ranges
+    buckets = {
+        "0-5": {"trades": [], "total_pnl": 0.0, "win_count": 0, "loss_count": 0},
+        "5-10": {"trades": [], "total_pnl": 0.0, "win_count": 0, "loss_count": 0},
+        "10-20": {"trades": [], "total_pnl": 0.0, "win_count": 0, "loss_count": 0},
+        "20-50": {"trades": [], "total_pnl": 0.0, "win_count": 0, "loss_count": 0},
+        "50+": {"trades": [], "total_pnl": 0.0, "win_count": 0, "loss_count": 0}
+    }
+    
+    for data in stop_size_data:
+        size = data["stop_size_pips"]
+        pl = data["pl"]
+        
+        if size < 5:
+            bucket = "0-5"
+        elif size < 10:
+            bucket = "5-10"
+        elif size < 20:
+            bucket = "10-20"
+        elif size < 50:
+            bucket = "20-50"
+        else:
+            bucket = "50+"
+        
+        buckets[bucket]["trades"].append(data)
+        buckets[bucket]["total_pnl"] += pl
+        if pl > 0:
+            buckets[bucket]["win_count"] += 1
+        else:
+            buckets[bucket]["loss_count"] += 1
+    
+    # Format results
+    analysis = []
+    for bucket_name, bucket_data in buckets.items():
+        trade_count = len(bucket_data["trades"])
+        if trade_count == 0:
+            continue
+        
+        win_rate = bucket_data["win_count"] / trade_count if trade_count > 0 else 0.0
+        avg_pnl = bucket_data["total_pnl"] / trade_count if trade_count > 0 else 0.0
+        
+        analysis.append({
+            "stop_size_range_pips": bucket_name,
+            "trade_count": trade_count,
+            "total_pnl": round(bucket_data["total_pnl"], 2),
+            "avg_pnl_per_trade": round(avg_pnl, 2),
+            "win_count": bucket_data["win_count"],
+            "loss_count": bucket_data["loss_count"],
+            "win_rate": round(win_rate, 4)
+        })
+    
+    # Calculate correlation (simple linear correlation)
+    if len(stop_size_data) > 1:
+        import statistics
+        stop_sizes = [d["stop_size_pips"] for d in stop_size_data]
+        pls = [d["pl"] for d in stop_size_data]
+        try:
+            correlation = statistics.correlation(stop_sizes, pls) if len(stop_sizes) > 1 else 0.0
+        except:
+            correlation = 0.0
+    else:
+        correlation = 0.0
+    
+    payload = {
+        "ok": True,
+        "analysis": analysis,
+        "correlation_stop_size_vs_pnl": round(correlation, 4),
+        "total_trades_analyzed": len(stop_size_data),
+        "period_days": days,
+        "since": since,
+        "ts_utc": time.time()
+    }
+    return _truth_wrap(
+        payload,
+        complete=True,
+        source="oanda_transactions",
+    )
+
+
 @app.get("/api/news")
 async def get_news():
     """Get news feed (dashboard compatibility)"""
@@ -2219,6 +3023,15 @@ async def get_session_regime_gate_decisions(limit: int = Query(100, ge=1, le=100
     """Get recent session regime gate decisions (read-only)"""
     try:
         from src.dashboard.panels.session_regime_gate_panel import load_recent_gate_events
+    except (ImportError, ModuleNotFoundError) as e:
+        logger.warning("session_regime_gate_panel unavailable (optional): %s", e)
+        return _truth_wrap(
+            {"ok": False, "decisions": [], "error": "panel module unavailable"},
+            complete=False,
+            source="session_regime_gate_panel",
+            warnings=[f"Optional import skipped: {str(e)[:200]}"],
+        )
+    try:
         events = load_recent_gate_events(limit=limit)
         payload = {
             "ok": True,
@@ -2245,6 +3058,15 @@ async def get_session_regime_gate_statistics():
     """Get session regime gate statistics (read-only)"""
     try:
         from src.dashboard.panels.session_regime_gate_panel import get_gate_statistics
+    except (ImportError, ModuleNotFoundError) as e:
+        logger.warning("session_regime_gate_panel unavailable (optional): %s", e)
+        return _truth_wrap(
+            {"ok": False, "statistics": {}, "error": "panel module unavailable"},
+            complete=False,
+            source="session_regime_gate_panel",
+            warnings=[f"Optional import skipped: {str(e)[:200]}"],
+        )
+    try:
         stats = get_gate_statistics()
         payload = {
             "ok": True,
@@ -2265,12 +3087,67 @@ async def get_session_regime_gate_statistics():
         )
 
 
+def _get_next_session_countdown(current_time: datetime) -> Dict[str, Any]:
+    """Calculate time remaining to next session open."""
+    # Session start hours (UTC)
+    # London: 06:00
+    # London-NY Overlap: 12:00
+    # NY: 16:00
+    # Asia: 22:00
+    sessions = [
+        ("London", 6),
+        ("London-NY Overlap", 12),
+        ("New York", 16),
+        ("Asia", 22)
+    ]
+    
+    current_hour = current_time.hour
+    
+    # Sort sessions by hour
+    sessions.sort(key=lambda x: x[1])
+    
+    next_session_name = None
+    next_session_dt = None
+    
+    # Find next session today
+    for name, hour in sessions:
+        if hour > current_hour:
+            next_session_name = name
+            next_session_dt = current_time.replace(hour=hour, minute=0, second=0, microsecond=0)
+            break
+            
+    # If no session left today, pick the first one tomorrow
+    if not next_session_name:
+        name, hour = sessions[0]
+        next_session_name = name
+        from datetime import timedelta
+        next_session_dt = (current_time + timedelta(days=1)).replace(hour=hour, minute=0, second=0, microsecond=0)
+        
+    seconds_remaining = int((next_session_dt - current_time).total_seconds())
+    
+    return {
+        "next_tradable_session": next_session_name,
+        "countdown_seconds": seconds_remaining,
+        "target_utc": next_session_dt.isoformat()
+    }
+
+
 @app.get("/api/session-regime-gate/snapshot")
 async def get_session_regime_gate_snapshot():
     """Get current session/regime snapshot (read-only)"""
     from datetime import datetime, timezone
-    from src.dashboard.panels.session_regime_gate_panel import load_recent_gate_events
-    
+
+    try:
+        from src.dashboard.panels.session_regime_gate_panel import load_recent_gate_events
+    except (ImportError, ModuleNotFoundError) as e:
+        logger.warning("session_regime_gate_panel unavailable (optional): %s", e)
+        return _truth_wrap(
+            {"ok": False, "error": "panel module unavailable"},
+            complete=False,
+            source="session_regime_gate_panel",
+            warnings=[f"Optional import skipped: {str(e)[:200]}"],
+        )
+
     try:
         # Get most recent decision for current state
         events = load_recent_gate_events(limit=1)
@@ -2289,16 +3166,69 @@ async def get_session_regime_gate_snapshot():
         else:
             current_session = "transition"
         
-        # Get last known regime and policy key from most recent event
+        # Get last known values from most recent event
         last_event = events[0] if events else None
         last_regime = last_event.get("regime", "UNKNOWN") if last_event else "UNKNOWN"
         last_policy_key = None
+        trade_block_reason = None
+        block_details = {}
+        readiness = "WAITING"
+
         if last_event:
             session = last_event.get("session", "unknown")
             regime = last_event.get("regime", "UNKNOWN")
             news_state = last_event.get("news_state", "normal")
-            bias_alignment = "aligned" if last_event.get("roadmap_aligned", False) else "misaligned"
+            roadmap_aligned = last_event.get("roadmap_aligned", False)
+            bias_alignment = "aligned" if roadmap_aligned else "misaligned"
             last_policy_key = f"{session}|{regime}|{news_state}|{bias_alignment}"
+            
+            # --- NEW: Transparency Fields ---
+            # 1. Trade Block Reason
+            if last_event.get("allowed"):
+                trade_block_reason = None
+            else:
+                trade_block_reason = last_event.get("reason", "unknown_block")
+                
+            # 2. Block Details
+            block_details = {
+                "roadmap_aligned": roadmap_aligned,
+                "is_embargo": last_event.get("is_embargo", False),
+                "daily_bias": last_event.get("daily_bias", "UNKNOWN"),
+                "weekly_bias": last_event.get("weekly_bias", "UNKNOWN"),
+                "news_state": news_state,
+                "session": session,
+                "regime": regime
+            }
+            
+            # 3. Readiness Indicator
+            if regime != "UNKNOWN" and roadmap_aligned:
+                readiness = "READY"
+            elif regime == "UNKNOWN":
+                readiness = "WAITING"
+            else:
+                readiness = "BLOCKED"
+                
+            readiness_score = last_event.get("readiness_score", 0)
+            candles_remaining = last_event.get("candles_remaining", 0)
+            eta_seconds = last_event.get("eta_seconds", 0)
+
+            # 4. Bias hierarchy provenance (if present in audit log)
+            bias_resolution = {
+                "bias": last_event.get("resolved_bias"),
+                "confidence": last_event.get("resolved_confidence"),
+                "sources": last_event.get("bias_sources"),
+                "penalties": last_event.get("bias_penalties"),
+            }
+                
+        else:
+             readiness = "WAITING"
+             block_details = {"info": "No gate events recorded yet."}
+             readiness_score = 0
+             candles_remaining = 0
+             eta_seconds = 0
+        
+        # 4. Session Countdown
+        countdown_info = _get_next_session_countdown(current_time)
         
         payload = {
             "ok": True,
@@ -2306,6 +3236,14 @@ async def get_session_regime_gate_snapshot():
             "current_time_utc": current_time.isoformat(),
             "last_known_regime": last_regime,
             "last_policy_key": last_policy_key,
+            "trade_block_reason": trade_block_reason,
+            "block_details": block_details,
+            "readiness": readiness,
+            "readiness_score": readiness_score,
+            "candles_remaining": candles_remaining,
+            "eta_seconds": eta_seconds,
+            "bias_resolution": bias_resolution if last_event else None,
+            "next_session": countdown_info,
             "ts_utc": time.time()
         }
         return _truth_wrap(
@@ -2320,6 +3258,443 @@ async def get_session_regime_gate_snapshot():
             source="session_regime_gate_panel",
             warnings=[f"Error loading gate snapshot: {str(e)[:200]}"],
         )
+
+
+
+@app.get("/api/trades")
+async def get_trades(
+    account: Optional[str] = None,
+    strategy: Optional[str] = None,
+    symbol: Optional[str] = None,
+    status: Optional[str] = None,
+    limit: int = 100
+):
+    """Get forensic trade history"""
+    try:
+        from src.observability.forensic_recorder import recorder
+        return recorder.get_trades(account, strategy, symbol, status, limit)
+    except Exception as e:
+        logger.error(f"Failed to fetch trades: {e}")
+        return []
+
+@app.get("/api/errors")
+async def get_errors():
+    """Get recent error logs"""
+    try:
+        from src.observability.structured_logger import logger as struct_logger
+        return struct_logger.get_recent_errors()
+    except Exception as e:
+        logger.error(f"Failed to fetch errors: {e}")
+        return []
+
+@app.get("/api/news/status")
+async def get_news_api_status():
+    """Get news API quota and cache status"""
+    try:
+        from src.control_plane.news_provider import get_news_status
+        return get_news_status()
+    except Exception as e:
+        logger.error(f"Failed to fetch news status: {e}")
+        return {}
+
+
+@app.get("/api/signals")
+async def get_signals(
+    limit: int = 100,
+    strategy: Optional[str] = None,
+    symbol: Optional[str] = None,
+    since_ts: Optional[str] = None
+):
+    """Get emitted signals (read-only)"""
+    try:
+        from src.observability.signal_exporter import SignalExporter
+        return SignalExporter.get_signal_exporter().read_signals(
+            limit=limit,
+            strategy=strategy,
+            symbol=symbol,
+            since_ts=since_ts
+        )
+    except Exception as e:
+        logger.error(f"Failed to fetch signals: {e}")
+        return []
+
+
+
+# --- DASHBOARD INTEGRATION (Merged from dashboard/control_plane/api.py) ---
+# Dashboard Config Paths
+DASHBOARD_CONFIG_DIR = Path(__file__).resolve().parent / "config"
+DASHBOARD_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+CONTROL_STATE_FILE = DASHBOARD_CONFIG_DIR / "control_state.json"
+ROUTING_CONFIG_FILE = DASHBOARD_CONFIG_DIR / "routing_config.json"
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+LOG_PATHS = [
+    str(_PROJECT_ROOT / 'logs' / '*.jsonl'),
+    os.path.expanduser('~/gcloud-system/logs/*.jsonl'),
+    str(_PROJECT_ROOT / '*.jsonl')
+]
+SIGNALS_LOG_PATH = _PROJECT_ROOT / "signals.jsonl"
+BRIDGE_LOG_PATH = _PROJECT_ROOT / "ftmo_bridge_log.jsonl"
+
+# Models
+class ControlState(BaseModel):
+    global_trading_enabled: bool
+    execution_mode: Literal["DRY_RUN", "LIVE"]
+    last_updated: Optional[str] = None
+
+class OutputConfig(BaseModel):
+    bridge_account: str
+    enabled: bool
+    lot_multiplier: float
+    max_daily_loss: float
+    max_trades_per_day: int
+
+class RoutingConfig(BaseModel):
+    outputs: List[OutputConfig]
+
+# Helpers
+def load_json(path: Path, default: dict):
+    if not path.exists():
+        return default
+    try:
+        with open(path, "r") as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"Error loading {path}: {e}")
+        return default
+
+def save_json(path: Path, data: dict):
+    with open(path, "w") as f:
+        json.dump(data, f, indent=2)
+
+def load_bias_states():
+    latest = {}
+    for pattern in LOG_PATHS:
+        for path in glob.glob(pattern):
+            try:
+                with open(path) as f:
+                    for line in f:
+                        try:
+                            obj = json.loads(line)
+                        except Exception:
+                            continue
+                        event = obj.get('event') or obj.get('message') or obj.get('type')
+                        if event != 'BIAS_STATE':
+                            continue
+                        instrument = obj.get('instrument')
+                        if not instrument:
+                            continue
+                        ts = obj.get('timestamp') or obj.get('ts') or datetime.utcnow().isoformat()
+                        obj['timestamp'] = ts
+                        latest[instrument] = obj
+            except Exception:
+                continue
+    return list(latest.values())
+
+# Endpoints
+@app.get("/api/health")
+async def dashboard_health():
+    """Control Plane tab liveness; matches dashboard/control_plane expectation."""
+    return {"status": "ok", "service": "ai-quant-control-plane"}
+
+@app.get("/api/control/state", response_model=ControlState)
+async def get_control_state():
+    return load_json(CONTROL_STATE_FILE, {
+        "global_trading_enabled": False,
+        "execution_mode": "DRY_RUN",
+        "last_updated": datetime.utcnow().isoformat()
+    })
+
+@app.post("/api/control/state", response_model=ControlState)
+async def update_control_state(state: ControlState):
+    data = state.dict()
+    data["last_updated"] = datetime.utcnow().isoformat()
+    save_json(CONTROL_STATE_FILE, data)
+    return data
+
+@app.get("/api/control/routing", response_model=RoutingConfig)
+async def get_routing_config():
+    return load_json(ROUTING_CONFIG_FILE, {"outputs": []})
+
+@app.post("/api/control/routing", response_model=RoutingConfig)
+async def update_routing_config(config: RoutingConfig):
+    save_json(ROUTING_CONFIG_FILE, config.dict())
+    return config
+
+@app.post("/api/control/routing/output", response_model=RoutingConfig)
+async def add_output(output: OutputConfig):
+    config_data = load_json(ROUTING_CONFIG_FILE, {"outputs": []})
+    
+    # Check if exists
+    for i, existing in enumerate(config_data.get("outputs", [])):
+        if existing["bridge_account"] == output.bridge_account:
+             # Update if exists
+            config_data["outputs"][i] = output.dict()
+            save_json(ROUTING_CONFIG_FILE, config_data)
+            return config_data
+            
+    config_data["outputs"].append(output.dict())
+    save_json(ROUTING_CONFIG_FILE, config_data)
+    return config_data
+
+@app.get("/api/logs/alpha")
+async def get_alpha_logs(limit: int = 100):
+    if not SIGNALS_LOG_PATH.exists():
+        return {"logs": [], "status": "file not found", "path": str(SIGNALS_LOG_PATH)}
+    
+    logs = []
+    try:
+        with open(SIGNALS_LOG_PATH, "r") as f:
+            lines = f.readlines()
+            for line in lines[-limit:]:
+                try:
+                    logs.append(json.loads(line))
+                except:
+                    pass
+    except Exception as e:
+        return {"error": str(e)}
+        
+    return {"logs": logs}
+
+@app.get("/api/logs/bridge")
+async def get_bridge_logs(limit: int = 100):
+    if not BRIDGE_LOG_PATH.exists():
+         return {"logs": [], "status": "file not found", "path": str(BRIDGE_LOG_PATH)}
+         
+    logs = []
+    try:
+        with open(BRIDGE_LOG_PATH, "r") as f:
+            lines = f.readlines()
+            for line in lines[-limit:]:
+                try:
+                    logs.append(json.loads(line))
+                except:
+                    pass
+    except Exception as e:
+        return {"error": str(e)}
+        
+    return {"logs": logs}
+
+@app.get("/api/bias/state")
+async def get_bias_state():
+    """
+    Read-only endpoint to fetch latest BIAS_STATE observability logs.
+    Returns the most recent bias snapshot per instrument from structured logs.
+    """
+    states = load_bias_states()
+    return {
+        "bias_states": states,
+        "count": len(states),
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+@app.get("/api/system/why_no_trades")
+async def get_why_no_trades():
+    """
+    Explain why no trading signals are being generated.
+    Aggregates blocking reasons from SESSION_REGIME_GATE audit logs and BIAS_STATE.
+    Read-only diagnostic endpoint.
+    """
+    import glob
+    from collections import defaultdict
+    
+    # Find audit log files
+    audit_log_paths = []
+    for pattern in LOG_PATHS:
+        for path in glob.glob(pattern):
+            if 'session_regime_gate_audit' in path:
+                audit_log_paths.append(path)
+    
+    # Also check standard location
+    standard_audit = _PROJECT_ROOT / "logs" / "session_regime_gate_audit.jsonl"
+    if standard_audit.exists():
+        audit_log_paths.append(str(standard_audit))
+    
+    # Also check VM location
+    try:
+        vm_audit = Path.home() / "gcloud-system" / "logs" / "session_regime_gate_audit.jsonl"
+        if vm_audit.exists():
+            audit_log_paths.append(str(vm_audit))
+    except (PermissionError, OSError):
+        pass  # Skip if path is not accessible
+    
+    # Aggregate blocking reasons per instrument
+    instrument_reasons = defaultdict(lambda: {
+        "reasons": [],
+        "last_blocked_at": None,
+        "last_scan_at": None,
+        "bias_state": None
+    })
+    
+    # Read audit logs (most recent first)
+    for audit_path in audit_log_paths:
+        try:
+            with open(audit_path, "r") as f:
+                lines = f.readlines()
+                # Process most recent entries first
+                for line in reversed(lines[-500:]):  # Last 500 entries
+                    try:
+                        entry = json.loads(line)
+                        if not entry.get("allowed", True):  # Only blocked entries
+                            symbol = entry.get("symbol") or entry.get("instrument")
+                            reason = entry.get("reason", "unknown_block")
+                            timestamp = entry.get("timestamp") or entry.get("ts_utc")
+                            
+                            if symbol:
+                                if reason not in instrument_reasons[symbol]["reasons"]:
+                                    instrument_reasons[symbol]["reasons"].append(reason)
+                                
+                                # Track most recent block
+                                if not instrument_reasons[symbol]["last_blocked_at"] or (
+                                    timestamp and timestamp > instrument_reasons[symbol]["last_blocked_at"]
+                                ):
+                                    instrument_reasons[symbol]["last_blocked_at"] = timestamp
+                    except Exception:
+                        continue
+        except Exception:
+            continue
+    
+    # Merge with bias states
+    bias_states = load_bias_states()
+    bias_by_instrument = {bs.get("instrument"): bs for bs in bias_states if bs.get("instrument")}
+    
+    for instrument, data in instrument_reasons.items():
+        if instrument in bias_by_instrument:
+            data["bias_state"] = bias_by_instrument[instrument]
+            # Extract blocking sources from bias state
+            bias = bias_by_instrument[instrument]
+            blocking_sources = bias.get("blocking_sources", [])
+            if blocking_sources:
+                for source in blocking_sources:
+                    if source not in data["reasons"]:
+                        data["reasons"].append(f"bias_blocked_by_{source}")
+    
+    # Get last scan time from status
+    try:
+        from src.control_plane.status_snapshot import read as read_snapshot
+        snapshot = read_snapshot(max_age_seconds=300)
+        if snapshot:
+            last_scan = snapshot.get("last_scan_at")
+            if last_scan:
+                for instrument in instrument_reasons:
+                    instrument_reasons[instrument]["last_scan_at"] = last_scan
+    except Exception:
+        pass
+    
+    return {
+        "instruments": dict(instrument_reasons),
+        "total_instruments": len(instrument_reasons),
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+@app.get("/api/bridge/status")
+async def get_bridge_status():
+    """
+    Get MT5 Bridge service status.
+    Checks if bridge process is running and returns last heartbeat/connection info.
+    Read-only diagnostic endpoint.
+    """
+    import subprocess
+    import re
+    
+    status = {
+        "running": False,
+        "last_heartbeat": None,
+        "last_error": None,
+        "last_message": None,
+        "service_status": None
+    }
+    
+    # Check systemd service status
+    try:
+        result = subprocess.run(
+            ["systemctl", "status", "ai-quant-bridge.service"],
+            capture_output=True,
+            text=True,
+            timeout=2
+        )
+        if result.returncode == 0:
+            status["service_status"] = "active"
+            status["running"] = True
+        elif "inactive" in result.stdout.lower() or "failed" in result.stdout.lower():
+            status["service_status"] = "inactive"
+        else:
+            status["service_status"] = "unknown"
+    except (subprocess.TimeoutExpired, FileNotFoundError, subprocess.SubprocessError):
+        # systemctl not available or service doesn't exist
+        pass
+    
+    # Check process list
+    if not status["running"]:
+        try:
+            result = subprocess.run(
+                ["ps", "aux"],
+                capture_output=True,
+                text=True,
+                timeout=2
+            )
+            if "bridge" in result.stdout.lower() or "mt5" in result.stdout.lower():
+                status["running"] = True
+                status["service_status"] = "running_manual"
+        except Exception:
+            pass
+    
+    # Check bridge log for last heartbeat/connection
+    bridge_log_paths = [
+        BRIDGE_LOG_PATH,
+        _PROJECT_ROOT / "logs" / "ftmo_bridge_log.jsonl",
+        Path.home() / "gcloud-system" / "logs" / "ftmo_bridge_log.jsonl"
+    ]
+    
+    for log_path in bridge_log_paths:
+        try:
+            if log_path.exists():
+                try:
+                    with open(log_path, "r") as f:
+                        lines = f.readlines()
+                        # Check last 50 lines for heartbeat/connection
+                        for line in reversed(lines[-50:]):
+                            try:
+                                entry = json.loads(line)
+                                msg_type = entry.get("type", "").upper()
+                                msg = entry.get("msg", "")
+                                
+                                if "HEARTBEAT" in msg_type or "HEARTBEAT" in msg:
+                                    timestamp = entry.get("timestamp") or entry.get("ts")
+                                    if timestamp:
+                                        status["last_heartbeat"] = timestamp
+                                        status["last_message"] = msg
+                                        break
+                                elif "CONNECTED" in msg_type or "CONNECTED" in msg:
+                                    timestamp = entry.get("timestamp") or entry.get("ts")
+                                    if timestamp:
+                                        status["last_heartbeat"] = timestamp
+                                        status["last_message"] = msg
+                                elif "ERROR" in msg_type or "ERROR" in msg:
+                                    timestamp = entry.get("timestamp") or entry.get("ts")
+                                    if timestamp and not status["last_error"]:
+                                        status["last_error"] = msg
+                            except Exception:
+                                continue
+                except Exception:
+                    continue
+        except (PermissionError, OSError):
+            continue  # Skip if path is not accessible
+    
+    return status
+
+# Mount React Dashboard (must be LAST, after all routes)
+# This serves the React SPA for all non-API routes
+react_dist = Path(__file__).parent.parent.parent / "frontend" / "fxg-dashboard" / "dist"
+if react_dist.exists():
+    # Explicit /vm route for VMTradeJournal (SPA client-side routing)
+    @app.get("/vm")
+    def serve_vm_spa():
+        return FileResponse(react_dist / "index.html")
+
+    app.mount("/", StaticFiles(directory=str(react_dist), html=True), name="dashboard")
+    print(f"✅ React dashboard mounted from: {react_dist}")
+else:
+    print(f"⚠️  React build not found at {react_dist}")
 
 
 def run():

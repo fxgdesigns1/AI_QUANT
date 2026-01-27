@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import '../styles/control-plane.css';
 
-const API_BASE = 'http://localhost:8000/api';
+const API_BASE = '/api';
 
 // --- Reusable UI Components ---
 
@@ -85,6 +85,10 @@ export default function ControlPlaneDashboard() {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [expandedBias, setExpandedBias] = useState(new Set());
   const [toast, setToast] = useState(null);
+  const [whyNoTrades, setWhyNoTrades] = useState(null);
+  const [bridgeStatus, setBridgeStatus] = useState(null);
+  const [systemStatus, setSystemStatus] = useState(null);
+  const [signalThinking, setSignalThinking] = useState(null);
 
   const [newOutput, setNewOutput] = useState({
     bridge_account: '',
@@ -114,13 +118,28 @@ export default function ControlPlaneDashboard() {
 
   const fetchData = async () => {
     try {
-      const [stateRes, routingRes, healthRes, alphaRes, bridgeRes, biasRes] = await Promise.all([
+      const [
+        stateRes,
+        routingRes,
+        healthRes,
+        alphaRes,
+        bridgeRes,
+        biasRes,
+        statusRes,
+        whyNoTradesRes,
+        bridgeStatusRes,
+        signalThinkingRes,
+      ] = await Promise.all([
         fetch(`${API_BASE}/control/state`),
         fetch(`${API_BASE}/control/routing`),
         fetch(`${API_BASE}/health`),
         fetch(`${API_BASE}/logs/alpha`),
         fetch(`${API_BASE}/logs/bridge`),
-        fetch(`${API_BASE}/bias/state`)
+        fetch(`${API_BASE}/bias/state`),
+        fetch(`${API_BASE}/status`).catch(() => null),
+        fetch(`${API_BASE}/system/why_no_trades`).catch(() => null),
+        fetch(`${API_BASE}/bridge/status`).catch(() => null),
+        fetch(`${API_BASE}/system/signal_thinking`).catch(() => null),
       ]);
 
       setControlState(await stateRes.json());
@@ -130,6 +149,27 @@ export default function ControlPlaneDashboard() {
       setBridgeLogs((await bridgeRes.json()).logs || []);
       const biasData = await biasRes.json();
       setBiasStates(biasData.bias_states || []);
+      
+      if (statusRes) {
+        const statusData = await statusRes.json();
+        setSystemStatus(statusData);
+      }
+      
+      if (whyNoTradesRes) {
+        const whyData = await whyNoTradesRes.json();
+        setWhyNoTrades(whyData);
+      }
+      
+      if (bridgeStatusRes) {
+        const bridgeData = await bridgeStatusRes.json();
+        setBridgeStatus(bridgeData);
+      }
+
+      if (signalThinkingRes) {
+        const thinkingData = await signalThinkingRes.json();
+        setSignalThinking(thinkingData);
+      }
+      
       setLastUpdated(new Date());
       setLoading(false);
       setError(null);
@@ -416,6 +456,173 @@ export default function ControlPlaneDashboard() {
         </section>
 
         <hr className="cp-section-divider" />
+
+        {/* Bridge Status & Why No Trades */}
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6" aria-label="System Diagnostics">
+          {/* Bridge Status */}
+          <Card title="MT5 Bridge Status" icon={Radio}>
+            {bridgeStatus ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-slate-700">Service Status</span>
+                  <Badge variant={bridgeStatus.running ? 'success' : bridgeStatus.service_status === 'inactive' ? 'warning' : 'danger'}>
+                    {bridgeStatus.running ? 'CONNECTED' : bridgeStatus.service_status === 'inactive' ? 'IDLE' : 'NOT RUNNING'}
+                  </Badge>
+                </div>
+                {bridgeStatus.last_heartbeat && (
+                  <div className="text-xs text-slate-600">
+                    <span className="font-semibold">Last Heartbeat:</span>{' '}
+                    {new Date(bridgeStatus.last_heartbeat).toLocaleString()}
+                  </div>
+                )}
+                {bridgeStatus.last_message && (
+                  <div className="text-xs text-slate-500 font-mono bg-slate-50 p-2 rounded border border-slate-200">
+                    {bridgeStatus.last_message}
+                  </div>
+                )}
+                {bridgeStatus.last_error && (
+                  <div className="text-xs text-rose-600 bg-rose-50 p-2 rounded border border-rose-200">
+                    <span className="font-semibold">Error:</span> {bridgeStatus.last_error}
+                  </div>
+                )}
+                {!bridgeStatus.running && !bridgeStatus.last_heartbeat && (
+                  <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
+                    Bridge service not detected. Check systemd service or process list.
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-4 text-slate-400 text-sm">
+                <Radio className="w-6 h-6 mx-auto mb-2 opacity-25" />
+                <p>Bridge status unavailable</p>
+              </div>
+            )}
+          </Card>
+
+          {/* Why No Trades */}
+          {systemStatus?.last_signals_generated === 0 && whyNoTrades && (
+            <Card title="Why No Trades?" icon={AlertTriangle}>
+              <div className="space-y-3">
+                <div className="text-xs text-slate-600 mb-3">
+                  <span className="font-semibold">Last Scan:</span>{' '}
+                  {systemStatus.last_scan_at ? new Date(systemStatus.last_scan_at).toLocaleString() : 'Unknown'}
+                </div>
+                {whyNoTrades.instruments && Object.keys(whyNoTrades.instruments).length > 0 ? (
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {Object.entries(whyNoTrades.instruments).map(([instrument, data]) => (
+                      <div key={instrument} className="bg-slate-50 rounded-lg p-3 border border-slate-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-mono text-sm font-bold text-slate-800">{instrument}</span>
+                          {data.last_blocked_at && (
+                            <span className="text-[10px] text-slate-400">
+                              {new Date(data.last_blocked_at).toLocaleTimeString()}
+                            </span>
+                          )}
+                        </div>
+                        <div className="space-y-1">
+                          {data.reasons && data.reasons.length > 0 ? (
+                            data.reasons.map((reason, idx) => (
+                              <div key={idx} className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+                                {reason.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                              </div>
+                            ))
+                          ) : (
+                            <div className="text-xs text-slate-500">No blocking reasons found</div>
+                          )}
+                        </div>
+                        {data.bias_state && (
+                          <div className="mt-2 pt-2 border-t border-slate-200">
+                            <div className="text-[10px] text-slate-400">
+                              <span className="font-semibold">Bias:</span> {data.bias_state.final_bias || 'NEUTRAL'}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-4 text-slate-400 text-sm">
+                    <AlertTriangle className="w-6 h-6 mx-auto mb-2 opacity-25" />
+                    <p>No instrument blocking data available</p>
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
+        </section>
+
+        {systemStatus?.last_signals_generated === 0 && whyNoTrades && <hr className="cp-section-divider" />}
+
+        {/* System Thinking - Continuous Signal-Level Status */}
+        <section aria-label="System Thinking">
+          <Card title="System Thinking (Signals)" icon={Activity}>
+            {(!signalThinking || !signalThinking.thinking || Object.keys(signalThinking.thinking).length === 0) ? (
+              <div className="text-center py-8 text-slate-400 text-sm">
+                <Activity className="w-8 h-8 mx-auto mb-2 opacity-25" />
+                <p>Waiting for signal evaluations... This panel will show per-instrument status even when no trades fire.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {Object.entries(signalThinking.thinking).map(([instrument, info]) => {
+                  const status = info.status || 'scanning';
+                  let variant = 'neutral';
+                  let label = 'SCANNING';
+                  if (status === 'ready') {
+                    variant = 'success';
+                    label = 'READY';
+                  } else if (status === 'blocked') {
+                    variant = 'danger';
+                    label = 'BLOCKED';
+                  } else if (status === 'near_miss') {
+                    variant = 'warning';
+                    label = 'NEAR MISS';
+                  } else if (status === 'evaluating') {
+                    variant = 'info';
+                    label = 'SCANNING';
+                  }
+
+                  const ts = info.last_update ? new Date(info.last_update) : null;
+                  const reason = info.reason || info.details?.reason;
+
+                  return (
+                    <div key={instrument} className="bg-slate-50 rounded-lg border border-slate-200 p-4 hover:shadow-md hover:border-slate-300 transition-all">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-mono text-sm font-bold text-slate-800">{instrument}</span>
+                        <Badge variant={variant}>{label}</Badge>
+                      </div>
+                      <div className="text-xs text-slate-500 space-y-1">
+                        <div>
+                          <span className="font-semibold">Strategy:</span>{' '}
+                          <span className="font-mono">{info.strategy || 'UNKNOWN'}</span>
+                        </div>
+                        {reason && (
+                          <div>
+                            <span className="font-semibold">Last Reason:</span>{' '}
+                            <span className="font-mono break-all">
+                              {String(reason).replace(/_/g, ' ')}
+                            </span>
+                          </div>
+                        )}
+                        {typeof info.score === 'number' && (
+                          <div>
+                            <span className="font-semibold">Readiness Score:</span>{' '}
+                            <span className="font-mono">{info.score}</span>
+                          </div>
+                        )}
+                        <div>
+                          <span className="font-semibold">Last Evaluation:</span>{' '}
+                          <span className="font-mono">
+                            {ts ? ts.toLocaleTimeString() : 'UNKNOWN'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </Card>
+        </section>
 
         {/* Bias Observability */}
         <section aria-label="Bias Observability">

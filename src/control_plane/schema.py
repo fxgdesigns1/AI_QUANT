@@ -28,7 +28,7 @@ class RiskSettings:
     max_positions: int = 3  # Max concurrent positions
     max_daily_loss_pct: float = 5.0  # Max daily loss as % of balance
     max_drawdown_pct: float = 10.0  # Max drawdown before pausing
-    max_daily_trades_per_account: int = 3  # Max daily trades per account (global default)
+    max_daily_trades_per_account: int = 10  # Max daily trades per account (global default) - RAISED FOR PAPER TESTING
 
 
 @dataclass
@@ -126,10 +126,18 @@ class RuntimeConfig:
             if len(self.strategy_assignments) > self.max_strategy_assignments:
                 errors.append(f"strategy_assignments count ({len(self.strategy_assignments)}) exceeds max_strategy_assignments ({self.max_strategy_assignments})")
             
-            # Check for unique account_id
+            # Check for unique account_id (allow account 006 to have multiple strategies)
             account_ids = [a.account_id for a in self.strategy_assignments if a.enabled]
-            if len(account_ids) != len(set(account_ids)):
-                errors.append("strategy_assignments: duplicate account_id found (each account can only have one strategy)")
+            account_006_id = None
+            for aid in account_ids:
+                if aid.endswith("006") or (len(aid) >= 3 and aid[-3:] == "006"):
+                    account_006_id = aid
+                    break
+            
+            # Allow account 006 to have multiple strategies, but other accounts must be unique
+            other_account_ids = [aid for aid in account_ids if aid != account_006_id]
+            if len(other_account_ids) != len(set(other_account_ids)):
+                errors.append("strategy_assignments: duplicate account_id found (each account except 006 can only have one strategy)")
             
             # Note: Multiple accounts CAN share the same strategy_key (removed unique strategy_key requirement)
             
