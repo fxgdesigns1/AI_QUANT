@@ -46,9 +46,9 @@ if [ "$STATUS_RESP" = "FAIL" ]; then
     exit 1
 fi
 
-MODE=$(echo "$STATUS_RESP" | python3 -c "import sys,json; print(json.load(sys.stdin).get('mode', 'unknown'))" 2>/dev/null || echo "unknown")
-EXEC_ENABLED=$(echo "$STATUS_RESP" | python3 -c "import sys,json; print(json.load(sys.stdin).get('execution_enabled', 'unknown'))" 2>/dev/null || echo "unknown")
-ACTIVE_STRATEGY=$(echo "$STATUS_RESP" | python3 -c "import sys,json; print(json.load(sys.stdin).get('active_strategy_key', 'unknown'))" 2>/dev/null || echo "unknown")
+MODE=$(echo "$STATUS_RESP" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('data', d).get('mode', 'unknown'))" 2>/dev/null || echo "unknown")
+EXEC_ENABLED=$(echo "$STATUS_RESP" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('data', d).get('execution_enabled', 'unknown'))" 2>/dev/null || echo "unknown")
+ACTIVE_STRATEGY=$(echo "$STATUS_RESP" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('data', d).get('active_strategy_key', 'unknown'))" 2>/dev/null || echo "unknown")
 
 echo "   ✅ Status: mode=$MODE, execution_enabled=$EXEC_ENABLED, active_strategy=$ACTIVE_STRATEGY"
 echo ""
@@ -104,9 +104,9 @@ if [ "$STRATEGIES_RESP" = "FAIL" ]; then
     exit 1
 fi
 
-STRATEGIES_OK=$(echo "$STRATEGIES_RESP" | python3 -c "import sys,json; print(json.load(sys.stdin).get('ok', False))" 2>/dev/null || echo "False")
-ALLOWED_COUNT=$(echo "$STRATEGIES_RESP" | python3 -c "import sys,json; allowed=json.load(sys.stdin).get('allowed', []); print(len(allowed))" 2>/dev/null || echo "0")
-ALLOWED_KEYS=$(echo "$STRATEGIES_RESP" | python3 -c "import sys,json; allowed=json.load(sys.stdin).get('allowed', []); print(','.join(allowed))" 2>/dev/null || echo "")
+STRATEGIES_OK=$(echo "$STRATEGIES_RESP" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('data', d).get('ok', False))" 2>/dev/null || echo "False")
+ALLOWED_COUNT=$(echo "$STRATEGIES_RESP" | python3 -c "import sys,json; d=json.load(sys.stdin); allowed=d.get('data', d).get('allowed', []); print(len(allowed))" 2>/dev/null || echo "0")
+ALLOWED_KEYS=$(echo "$STRATEGIES_RESP" | python3 -c "import sys,json; d=json.load(sys.stdin); allowed=d.get('data', d).get('allowed', []); print(','.join(allowed))" 2>/dev/null || echo "")
 
 if [ "$STRATEGIES_OK" = "True" ] && [ "$ALLOWED_COUNT" -gt 0 ]; then
     echo "   ✅ Strategies catalog: $ALLOWED_COUNT allowed keys: $ALLOWED_KEYS"
@@ -140,7 +140,7 @@ if [ -n "$ERROR_MSG" ]; then
     fi
 fi
 
-STATUS_FIELD=$(echo "$POST_RESP" | python3 -c "import sys,json; print(json.load(sys.stdin).get('status', ''))" 2>/dev/null || echo "")
+STATUS_FIELD=$(echo "$POST_RESP" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('data', d).get('status', ''))" 2>/dev/null || echo "")
 if [ "$STATUS_FIELD" = "ok" ]; then
     echo "   ✅ POST /api/config succeeded"
 else
@@ -151,7 +151,7 @@ echo ""
 # Test 4: Verify strategy key changed
 echo "4️⃣  Verifying active_strategy_key updated..."
 NEW_STATUS=$(curl -sf http://127.0.0.1:8787/api/status)
-NEW_STRATEGY=$(echo "$NEW_STATUS" | python3 -c "import sys,json; print(json.load(sys.stdin).get('active_strategy_key', 'unknown'))" 2>/dev/null || echo "unknown")
+NEW_STRATEGY=$(echo "$NEW_STATUS" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('data', d).get('active_strategy_key', 'unknown'))" 2>/dev/null || echo "unknown")
 
 if [ "$NEW_STRATEGY" = "gold" ]; then
     echo "   ✅ active_strategy_key = gold (updated successfully)"
@@ -299,7 +299,7 @@ if [ "$STRAT_RESP" = "FAIL" ]; then
     echo "      ❌ GET /api/strategies failed"
     FAILED=1
 else
-    ALLOWED_KEYS=$(echo "$STRAT_RESP" | python3 -c "import sys,json; d=json.load(sys.stdin); print(','.join(d.get('allowed', [])))" 2>/dev/null || echo "")
+    ALLOWED_KEYS=$(echo "$STRAT_RESP" | python3 -c "import sys,json; d=json.load(sys.stdin); print(','.join(d.get('data', d).get('allowed', [])))" 2>/dev/null || echo "")
     if [ -n "$ALLOWED_KEYS" ]; then
         echo "      ✅ Allowed keys: $ALLOWED_KEYS"
     else
@@ -317,7 +317,7 @@ if [ "$POST_STRAT_RESP" = "FAIL" ]; then
     echo "      ❌ POST /api/config failed"
     FAILED=1
 else
-    POST_STATUS=$(echo "$POST_STRAT_RESP" | python3 -c "import sys,json; print(json.load(sys.stdin).get('status', ''))" 2>/dev/null || echo "")
+    POST_STATUS=$(echo "$POST_STRAT_RESP" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('data', d).get('status', ''))" 2>/dev/null || echo "")
     if [ "$POST_STATUS" = "ok" ]; then
         echo "      ✅ Strategy switch POST succeeded"
     else
@@ -327,7 +327,7 @@ fi
 
 echo "   C) Verifying active_strategy_key updated..."
 FINAL_STATUS=$(curl -sf http://127.0.0.1:8787/api/status)
-FINAL_STRATEGY=$(echo "$FINAL_STATUS" | python3 -c "import sys,json; print(json.load(sys.stdin).get('active_strategy_key', 'unknown'))" 2>/dev/null || echo "unknown")
+FINAL_STRATEGY=$(echo "$FINAL_STATUS" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('data', d).get('active_strategy_key', 'unknown'))" 2>/dev/null || echo "unknown")
 if [ "$FINAL_STRATEGY" = "gold" ]; then
     echo "      ✅ active_strategy_key = gold (verified update)"
 else
