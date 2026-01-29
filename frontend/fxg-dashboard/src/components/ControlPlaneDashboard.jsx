@@ -14,6 +14,8 @@ import {
   ChevronUp,
 } from 'lucide-react';
 import '../styles/control-plane.css';
+import ReadinessPanel from './ReadinessPanel';
+import { mapReadinessData } from '../utils/readinessMapper';
 
 const API_BASE = '/api';
 
@@ -89,6 +91,9 @@ export default function ControlPlaneDashboard() {
   const [bridgeStatus, setBridgeStatus] = useState(null);
   const [systemStatus, setSystemStatus] = useState(null);
   const [signalThinking, setSignalThinking] = useState(null);
+  const [gateProximity, setGateProximity] = useState(null);
+  const [reasoningSnapshot, setReasoningSnapshot] = useState(null);
+  const [readinessObservability, setReadinessObservability] = useState({});
 
   const [newOutput, setNewOutput] = useState({
     bridge_account: '',
@@ -129,6 +134,9 @@ export default function ControlPlaneDashboard() {
         whyNoTradesRes,
         bridgeStatusRes,
         signalThinkingRes,
+        gateProximityRes,
+        reasoningRes,
+        observabilityRes,
       ] = await Promise.all([
         fetch(`${API_BASE}/control/state`),
         fetch(`${API_BASE}/control/routing`),
@@ -140,6 +148,9 @@ export default function ControlPlaneDashboard() {
         fetch(`${API_BASE}/system/why_no_trades`).catch(() => null),
         fetch(`${API_BASE}/bridge/status`).catch(() => null),
         fetch(`${API_BASE}/system/signal_thinking`).catch(() => null),
+        fetch(`${API_BASE}/system/gate_proximity`).catch(() => null),
+        fetch(`${API_BASE}/system/reasoning`).catch(() => null),
+        fetch(`${API_BASE}/observability/readiness`).catch(() => null),
       ]);
 
       setControlState(await stateRes.json());
@@ -168,6 +179,27 @@ export default function ControlPlaneDashboard() {
       if (signalThinkingRes) {
         const thinkingData = await signalThinkingRes.json();
         setSignalThinking(thinkingData);
+      }
+      
+      if (gateProximityRes) {
+        const gateData = await gateProximityRes.json();
+        setGateProximity(gateData);
+      }
+      
+      if (reasoningRes) {
+        const reasoningData = await reasoningRes.json();
+        if (reasoningData.ok && reasoningData.snapshot) {
+          setReasoningSnapshot(reasoningData.snapshot);
+        } else {
+          setReasoningSnapshot(null);
+        }
+      }
+
+      if (observabilityRes) {
+        const obsData = await observabilityRes.json();
+        if (obsData && obsData.data) {
+          setReadinessObservability(mapReadinessData(obsData.data));
+        }
       }
       
       setLastUpdated(new Date());
@@ -619,6 +651,136 @@ export default function ControlPlaneDashboard() {
                     </div>
                   );
                 })}
+              </div>
+            )}
+          </Card>
+        </section>
+
+        {/* Session Gate & Reasoning (S3: Dashboard Wiring) */}
+        <section aria-label="Session Gate & Reasoning">
+          <Card
+            title="Readiness & Reasoning"
+            icon={ShieldAlert}
+          >
+            {Object.keys(readinessObservability).length === 0 ? (
+              <div className="text-center py-6 text-slate-400 text-sm">
+                <ShieldAlert className="w-6 h-6 mx-auto mb-2 opacity-25" />
+                <p>No readiness data available yet. Waiting for system scan...</p>
+              </div>
+            ) : (
+              <div>
+                 {Object.entries(readinessObservability).map(([instrument, data]) => (
+                    <ReadinessPanel key={instrument} instrument={instrument} data={data} />
+                 ))}
+              </div>
+            )}
+          </Card>
+        </section>
+
+        {/* Gate Proximity & Why No Trades (Unified Visibility) */}
+        <section aria-label="Gate Proximity & Why No Trades">
+          <Card
+            title="Gate Proximity & Why No Trades"
+            icon={AlertTriangle}
+            className={
+              systemStatus?.last_signals_generated === 0
+                ? 'ring-2 ring-amber-300 ring-offset-2 ring-offset-slate-50'
+                : ''
+            }
+          >
+            {!gateProximity || !gateProximity.instruments || Object.keys(gateProximity.instruments).length === 0 ? (
+              <div className="text-center py-6 text-slate-400 text-sm">
+                <AlertTriangle className="w-6 h-6 mx-auto mb-2 opacity-25" />
+                <p>No gate proximity data available yet. This panel will fill once Alpha has completed at least one scan.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between text-xs text-slate-500">
+                  <div>
+                    <span className="font-semibold">Snapshot:</span>{' '}
+                    {gateProximity.timestamp ? new Date(gateProximity.timestamp).toLocaleTimeString() : 'Unknown'}
+                  </div>
+                  {systemStatus && (
+                    <div>
+                      <span className="font-semibold">Last Scan:</span>{' '}
+                      {systemStatus.last_scan_at ? new Date(systemStatus.last_scan_at).toLocaleTimeString() : 'Unknown'}
+                    </div>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {Object.entries(gateProximity.instruments).map(([instrument, data]) => {
+                    const proximity = typeof data.proximity_score === 'number' ? data.proximity_score : 0;
+                    const bias = (data.final_bias || 'neutral').toUpperCase();
+                    const variant =
+                      proximity >= 90 ? 'success' :
+                      proximity >= 60 ? 'warning' :
+                      'danger';
+
+                    return (
+                      <div
+                        key={instrument}
+                        className="bg-slate-50 rounded-lg border border-slate-200 p-4 hover:shadow-md hover:border-slate-300 transition-all"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-mono text-sm font-bold text-slate-800">{instrument}</span>
+                          <Badge variant={variant}>
+                            {bias}
+                          </Badge>
+                        </div>
+                        <div className="mb-2">
+                          <div className="flex items-center justify-between text-[10px] text-slate-500 mb-1">
+                            <span>Proximity to Flip</span>
+                            <span className="font-mono">{proximity}%</span>
+                          </div>
+                          <div className="h-2 rounded-full bg-slate-200 overflow-hidden">
+                            <div
+                              className={
+                                `h-full rounded-full transition-all duration-500 ` +
+                                (proximity >= 90
+                                  ? 'bg-emerald-500'
+                                  : proximity >= 60
+                                  ? 'bg-amber-500'
+                                  : 'bg-rose-500')
+                              }
+                              style={{ width: `${Math.max(0, Math.min(100, proximity))}%` }}
+                            />
+                          </div>
+                        </div>
+                        {data.blocking_sources && data.blocking_sources.length > 0 && (
+                          <div className="mb-2">
+                            <div className="text-[10px] font-bold text-amber-700 uppercase tracking-wide mb-1">
+                              Blocking Sources
+                            </div>
+                            <div className="space-y-1">
+                              {data.blocking_sources.map((src, idx) => (
+                                <div
+                                  key={idx}
+                                  className="text-[10px] text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-0.5"
+                                >
+                                  {src}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {data.last_blocked_at && (
+                          <div className="text-[10px] text-slate-400 mb-1">
+                            <span className="font-semibold">Last Blocked:</span>{' '}
+                            {new Date(data.last_blocked_at).toLocaleTimeString()}
+                          </div>
+                        )}
+                        {data.next_unlock_hint && (
+                          <div className="text-[10px] text-slate-500 mt-1">
+                            <span className="font-semibold">Next Unlock Hint:</span>{' '}
+                            <span className="font-mono break-words">
+                              {data.next_unlock_hint}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </Card>
