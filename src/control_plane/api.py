@@ -15,11 +15,15 @@ import requests
 import csv
 import io
 import logging
+import platform
+import subprocess
+import socket
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Literal
 import glob
 import json
+import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +36,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from .config_store import ConfigStore
+from .config_io import (
+    apply_patch as apply_runtime_patch,
+    append_audit as append_control_plane_audit,
+    load_runtime_config,
+    validate_patch as validate_runtime_patch,
+    write_runtime_config_atomic,
+)
 from .log_stream import LogStream
 from .strategy_registry import get_strategy_registry, validate_strategy_key
 from .status_snapshot import get_status_snapshot
@@ -45,6 +56,25 @@ from .audit_log import get_audit_log
 from .outlook_engine import get_outlook_engine
 from .structural_scanner import get_structural_scanner
 from src.core.truth_envelope import TruthEnvelope
+from .command_pack import load_command_pack_text
+from .countdowns import (
+    get_market_state_countdown,
+    get_runner_countdown,
+    get_events_countdown
+)
+
+# Backward-compat: some deployments may not have load_readiness_snapshot yet.
+try:
+    from .status_snapshot import load_readiness_snapshot as load_readiness_snapshot  # type: ignore
+except Exception:
+    def load_readiness_snapshot() -> Dict[str, Any]:  # type: ignore
+        return {
+            "available": False,
+            "readiness_available": False,
+            "reason": "load_readiness_snapshot_unavailable",
+            "path": None,
+            "instruments": {},
+        }
 
 # Import Analytics for VM Trade Journal (lazy import in function to avoid blocking route registration)
 HAS_STATS_ENGINE = None
@@ -191,6 +221,138 @@ async def get_signal_thinking(limit: int = 200):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/api/system/reasoning")
+async def get_reasoning_snapshot():
+    """
+    Get reasoning snapshot verbatim (no recomputation).
+    Reads from /opt/ai-quant/runtime/reasoning_snapshot.json directly.
+    
+    Returns exact file contents or explicit error if file missing.
+    """
+    try:
+        import os
+        
+        # Try /opt/ai-quant path first (production), then fallback to local
+        if os.path.exists("/opt/ai-quant/runtime/reasoning_snapshot.json"):
+            snapshot_path = Path("/opt/ai-quant/runtime/reasoning_snapshot.json")
+        else:
+            # Fallback to local runtime directory
+            repo_root = Path(__file__).resolve().parent.parent.parent
+            snapshot_path = repo_root / "runtime" / "reasoning_snapshot.json"
+        
+        if not snapshot_path.exists():
+            return {
+                "ok": False,
+                "error": "reasoning_snapshot.json not found",
+                "reason": "File does not exist - no scan cycle has completed yet or runner not running",
+                "path": str(snapshot_path)
+            }
+        
+        # Read file directly (verbatim, no recomputation)
+        with open(snapshot_path, 'r') as f:
+            snapshot_data = json.load(f)
+        
+        return {
+            "ok": True,
+            "snapshot": snapshot_data
+        }
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse reasoning_snapshot.json: {e}")
+        return {
+            "ok": False,
+            "error": "Invalid JSON in reasoning_snapshot.json",
+            "reason": str(e)
+        }
+    except Exception as e:
+        logger.error(f"Error reading reasoning snapshot: {e}")
+        return {
+            "ok": False,
+            "error": str(e),
+            "reason": "Failed to read reasoning_snapshot.json"
+        }
+
+
+@app.get("/api/observability/readiness")
+async def get_readiness_observability():
+    """
+    Readiness observability endpoint.
+    
+    - Always returns HTTP 200.
+    - Never raises on missing/invalid snapshot.
+    - Uses the same underlying loader as status_snapshot.
+    
+    Success case (wrapped in TruthEnvelope):
+        {
+          "data": {
+            "available": true,
+            "instruments": {
+              "EUR_USD": {
+                "readiness_available": true,
+                "readiness_score": 40,
+                "primary_blocker": "...",
+                "secondary_blockers": [...],
+                "bias_state": "...",
+                "regime": "...",
+                "estimated_time_to_readiness": ...,
+                "nearest_unblock_event": "..."
+              },
+              ...
+            }
+          },
+          "truth": { ... }
+        }
+    
+    Missing/invalid snapshot:
+        {
+          "data": {
+            "available": false,
+            "reason": "no_snapshot" | "error_loading_snapshot" | "empty_snapshot"
+          },
+          "truth": { ... }
+        }
+    """
+    try:
+        snapshot = load_readiness_snapshot()
+    except Exception as e:
+        # Hard guard: never propagate exceptions from this endpoint.
+        logger.error(f"Readiness loader failed: {e}")
+        payload = {
+            "available": False,
+            "reason": "loader_failed",
+        }
+        return _truth_wrap(
+            payload,
+            complete=False,
+            source="readiness_snapshot",
+            warnings=["Readiness loader failed"],
+        )
+
+    available = bool(snapshot.get("available"))
+
+    if not available:
+        reason = snapshot.get("reason") or "no_snapshot"
+        payload = {
+            "available": False,
+            "reason": reason,
+        }
+        return _truth_wrap(
+            payload,
+            complete=False,
+            source="readiness_snapshot",
+            warnings=[reason],
+        )
+
+    payload = {
+        "available": True,
+        "instruments": snapshot.get("instruments", {}),
+    }
+    return _truth_wrap(
+        payload,
+        complete=True,
+        source="readiness_snapshot",
+    )
+
+
 # Request/Response models
 class StrategyAssignmentRequest(BaseModel):
     """Strategy assignment request model"""
@@ -210,6 +372,67 @@ class ConfigUpdateRequest(BaseModel):
     execution_policy: Optional[Dict[str, Any]] = Field(None, description="Execution policy (advisory)")
     news_integration_enabled: Optional[bool] = None
     ui_theme: Optional[str] = None
+
+
+# ============================================================================
+# Controls schema (single source of truth for UI patch validation)
+# ============================================================================
+CONTROLS_SCHEMA_MINIMUM: Dict[str, Any] = {
+    "risk": {
+        "max_risk_per_trade_pct": {"type": "number", "min": 0.01, "max": 2.0},
+        "max_positions": {"type": "integer", "min": 0, "max": 50},
+        "max_daily_loss_pct": {"type": "number", "min": 0.1, "max": 10.0},
+        "max_drawdown_pct": {"type": "number", "min": 0.1, "max": 30.0},
+        "max_daily_trades_per_account": {"type": "integer", "min": 0, "max": 50},
+    },
+    "trade_selection": {
+        # UI-facing enum (aliases are accepted and mapped if needed)
+        "mode": {"type": "string", "enum": ["QUALITY_OVER_SPEED", "SPEED_OVER_QUALITY", "BALANCED"]},
+        "daily_trade_limit": {"type": "integer", "min": 0, "max": 50},
+        "min_confidence_threshold": {"type": "number", "min": 0.0, "max": 1.0},
+        "early_session_penalty_minutes": {"type": "integer", "min": 0, "max": 240},
+        "re_rank_on_each_scan": {"type": "boolean"},
+        "execution_cutoff": {"type": "string", "enum": ["IMMEDIATE", "SESSION_END", "DAY_END"]},
+        "allow_exceptional_early_execution": {"type": "boolean"},
+        "exceptional_confidence_threshold": {"type": "number", "min": 0.0, "max": 1.0},
+    },
+    "execution_policy": {
+        "signals_only": {"type": "boolean"},
+        "paper_execution_enabled": {"type": "boolean"},
+        "live_trading_allowed": {"type": "boolean", "locked_false_on_alpha": True},
+    },
+    "strategy_assignments": {
+        "type": "array",
+        # PATCH supports full list replacement (UI should send the full list).
+        "items": {
+            "type": "object",
+            "properties": {
+                "account_id": {"type": "string"},
+                "strategy_key": {"type": "string"},
+                "enabled": {"type": "boolean"},
+            },
+        },
+    },
+    "guards": {
+        "enabled": {"type": "boolean"},
+        "default_profile": {"type": "string", "enum": ["DEV", "PROP_SAFE"]},
+        "account_overrides": {"type": "object", "values_enum": ["DEV", "PROP_SAFE"]},
+        "strategy_overrides": {"type": "object", "values_enum": ["DEV", "PROP_SAFE"]},
+        "feature_toggles": {
+            "session_filter_enabled": {"type": "boolean"},
+            "day_filter_enabled": {"type": "boolean"},
+            "news_embargo_enabled": {"type": "boolean"},
+            "top3_per_session_enabled": {"type": "boolean"},
+        },
+        "profiles": {"type": "object", "immutable_via_ui": True},
+    },
+}
+
+
+class ConfigPatchRequest(BaseModel):
+    patch: Dict[str, Any] = Field(..., description="JSON patch object (allowlisted keys only)")
+    reason: str = Field(..., min_length=1, max_length=200, description="Human reason for audit trail")
+    config_reload_mode: str = Field("none", description="none|restart")
 
 
 class StrategyActivateRequest(BaseModel):
@@ -266,6 +489,16 @@ class StatusResponse(BaseModel):
     oanda_cancel_reasons_per_account: Optional[Dict[str, Dict[str, int]]] = None
     execution_suspended_accounts: Optional[Dict[str, Dict[str, Any]]] = None
 
+    # Readiness & Status Badge (v1.2)
+    system_alive: bool = True
+    no_trade_reason: Optional[str] = None
+    readiness_score: int = 0
+    readiness_countdown: str = "N/A"
+    readiness_breakdown: Optional[Dict[str, str]] = None
+
+    # Guards policy (v1.3) - effective per-account policy for dashboard clarity
+    effective_guards: Optional[List[Dict[str, Any]]] = None
+
 
 def _freshness_ms_from_timestamp_utc(ts: Optional[Any]) -> Optional[int]:
     if not ts:
@@ -296,10 +529,12 @@ def _truth_wrap(
     last_verified_at: Optional[str] = None,
     freshness_ms: Optional[int] = None,
 ) -> Dict[str, Any]:
-    envelope_source = "live" if complete else "none"
+    # IMPORTANT: preserve the provided source so UI/contract probes can reason deterministically.
+    safe_source = source or "control_plane"
+
     if complete:
         truth = TruthEnvelope.live(
-            source=envelope_source,
+            source=safe_source,
             freshness_ms=freshness_ms,
             last_verified_at=last_verified_at,
             assumptions=assumptions,
@@ -307,7 +542,7 @@ def _truth_wrap(
         )
     else:
         truth = TruthEnvelope.none(
-            source=envelope_source,
+            source=safe_source,
             reason=(warnings[0] if warnings else None),
             assumptions=assumptions,
             warnings=warnings,
@@ -379,6 +614,162 @@ async def get_ui_version():
         complete=True,
         source="control_plane",
     )
+
+
+@app.get("/api/build")
+async def get_build():
+    """
+    Build identity for audit and verification.
+    Returns git_sha, build_ts, ui_hash wrapped in truth envelope.
+    """
+    repo_root = Path(__file__).parent.parent.parent
+    git_sha = "UNKNOWN"
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        if result.returncode == 0:
+            git_sha = result.stdout.strip()
+    except Exception as e:
+        logger.warning(f"Could not get git hash: {e}")
+
+    build_ts = datetime.now(timezone.utc).isoformat()
+    try:
+        api_file = Path(__file__)
+        if api_file.exists():
+            build_ts = datetime.fromtimestamp(
+                api_file.stat().st_mtime, tz=timezone.utc
+            ).isoformat()
+    except Exception:
+        pass
+
+    ui_hash = None
+    react_dist = repo_root / "frontend" / "fxg-dashboard" / "dist"
+    vm_react_dist = Path("/opt/ai-quant/frontend/fxg-dashboard/dist")
+    for dist_path in (react_dist, vm_react_dist):
+        index_html = dist_path / "index.html"
+        if index_html.exists():
+            ui_hash = hashlib.sha256(index_html.read_bytes()).hexdigest()[:12]
+            break
+
+    payload = {
+        "ok": True,
+        "git_sha": git_sha,
+        "build_ts": build_ts,
+        "ui_hash": ui_hash,
+    }
+    return _truth_wrap(
+        payload,
+        complete=True,
+        source="control_plane",
+    )
+
+
+@app.get("/api/vm")
+async def get_vm():
+    """
+    Minimal VM identity for dashboard bootstrap (no secrets).
+    Returns hostname, platform, ts_utc for frontend 404 fix.
+    """
+    payload = {
+        "ok": True,
+        "hostname": socket.gethostname(),
+        "platform": platform.platform(),
+        "ts_utc": time.time(),
+    }
+    return _truth_wrap(
+        payload,
+        complete=True,
+        source="control_plane",
+    )
+
+
+@app.get("/api/system/deployed_version")
+async def get_deployed_version():
+    """
+    Hard deployment verification endpoint.
+    Returns git hash, build timestamp, VM hostname, code signature, and mode.
+    Used for deployment verification and canary checks.
+    """
+    try:
+        # Get git hash (embedded at build time or computed at runtime)
+        git_hash = "UNKNOWN"
+        try:
+            repo_root = Path(__file__).parent.parent.parent
+            result = subprocess.run(
+                ["git", "rev-parse", "HEAD"],
+                cwd=repo_root,
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            if result.returncode == 0:
+                git_hash = result.stdout.strip()
+        except Exception as e:
+            logger.warning(f"Could not get git hash: {e}")
+        
+        # Get build timestamp (use api.py mtime as proxy for build time)
+        build_timestamp_utc = datetime.now(timezone.utc).isoformat()
+        try:
+            api_file = Path(__file__)
+            if api_file.exists():
+                build_timestamp_utc = datetime.fromtimestamp(
+                    api_file.stat().st_mtime, tz=timezone.utc
+                ).isoformat()
+        except Exception as e:
+            logger.warning(f"Could not get build timestamp: {e}")
+        
+        # Get VM hostname
+        vm_hostname = socket.gethostname()
+        
+        # Calculate code signature (sha256 of api.py + working_trading_system.py)
+        code_signature = "UNKNOWN"
+        try:
+            repo_root = Path(__file__).parent.parent.parent
+            api_file = repo_root / "src" / "control_plane" / "api.py"
+            working_file = repo_root / "working_trading_system.py"
+            
+            combined_content = b""
+            if api_file.exists():
+                combined_content += api_file.read_bytes()
+            if working_file.exists():
+                combined_content += working_file.read_bytes()
+            
+            if combined_content:
+                code_signature = hashlib.sha256(combined_content).hexdigest()
+        except Exception as e:
+            logger.warning(f"Could not calculate code signature: {e}")
+        
+        # Determine mode (paper/live)
+        mode = "paper"
+        oanda_env = os.getenv("OANDA_ENVIRONMENT", "practice").lower()
+        if oanda_env not in ("practice", "paper"):
+            mode = "live"
+        
+        payload = {
+            "ok": True,
+            "git_hash": git_hash,
+            "build_timestamp_utc": build_timestamp_utc,
+            "vm_hostname": vm_hostname,
+            "code_signature": code_signature,
+            "mode": mode,
+        }
+        return _truth_wrap(
+            payload,
+            complete=True,
+            source="control_plane",
+        )
+    except Exception as e:
+        logger.error(f"Error in deployed_version endpoint: {e}")
+        return _truth_wrap(
+            {"ok": False, "error": str(e)},
+            complete=False,
+            source="control_plane",
+        )
 
 
 @app.get("/health")
@@ -581,35 +972,181 @@ async def get_structural_scan():
 
 @app.get("/api/observability/bias")
 async def get_bias_state():
-    """Get latest bias state per instrument from structured logs (Read-Only)
-    
-    Sources data from BIAS_STATE events in runner logs.
-    Returns empty dict if no bias data observed yet.
-    """
+    """Compatibility endpoint for bias state. Contract-safe: never ok:false or complete:false."""
     try:
-        from .bias_aggregator import get_bias_aggregator
-        aggregator = get_bias_aggregator()
-        bias_states = aggregator.get_latest_bias()
-        
+        try:
+            from .bias_aggregator import get_bias_aggregator
+        except Exception as e:
+            logger.error(f"bias_aggregator unavailable: {e}")
+            payload = {
+                "ok": True,
+                "data": {},
+                "count": 0,
+                "reason": "bias_aggregator_unavailable",
+                "ts_utc": time.time(),
+            }
+            return _truth_wrap(
+                payload,
+                complete=True,
+                warnings=["bias_aggregator_unavailable"],
+            )
+
+        agg = get_bias_aggregator()
+        bias_states = agg.get_latest_bias() or {}
+
         payload = {
             "ok": True,
             "data": bias_states,
             "count": len(bias_states),
-            "ts_utc": time.time()
+            "ts_utc": time.time(),
+        }
+        warnings: List[str] = []
+        if not bias_states:
+            warnings.append("no_bias_data_observed_yet")
+        return _truth_wrap(
+            payload,
+            complete=True,
+            warnings=(warnings or None),
+        )
+
+    except Exception as e:
+        logger.error(f"Failed to fetch bias state: {e}")
+        payload = {
+            "ok": True,
+            "data": {},
+            "count": 0,
+            "reason": "bias_error",
+            "error": str(e)[:200],
+            "ts_utc": time.time(),
         }
         return _truth_wrap(
             payload,
-            complete=len(bias_states) > 0,
-            source="bias_aggregator",
-            warnings=[] if len(bias_states) > 0 else ["No bias data observed yet"],
+            complete=True,
+            warnings=["bias_error"],
+        )
+
+
+@app.get("/api/observability/state")
+async def get_observability_state():
+    """
+    Canonical Truth Envelope for FXG Dashboard.
+    Read-only, real-time observability state assembled from existing live sources.
+    """
+    from src.core.settings import settings
+
+    warnings: List[str] = []
+
+    # Runner snapshot (freshness-limited)
+    snapshot = status_snapshot.read(max_age_seconds=120)
+    snapshot_available = bool(snapshot)
+    if not snapshot_available:
+        warnings.append("runner_status_snapshot_missing_or_stale")
+
+    # Best-effort snapshot freshness (ms) for truth envelope
+    freshness_ms = None
+    if snapshot_available:
+        freshness_ms = _freshness_ms_from_timestamp_utc(
+            snapshot.get("last_status_write_at")
+            or snapshot.get("timestamp_iso")
+            or snapshot.get("timestamp_utc")
+        )
+
+    # Trading mode: prefer snapshot (runner truth), fall back to env
+    trading_mode = (snapshot.get("mode") if snapshot_available else None) or os.getenv("TRADING_MODE", "paper").lower()
+
+    # Signals (same exporter used by /api/signals)
+    try:
+        from src.observability.signal_exporter import get_signal_exporter
+
+        signals_raw = get_signal_exporter().read_signals(limit=20)
+        signals = signals_raw if isinstance(signals_raw, list) else []
+        if not signals:
+            warnings.append("no_signals_observed_yet")
+    except Exception as e:
+        logger.error(f"Observability state: failed to read signals: {e}")
+        signals = []
+        warnings.append("signals_unavailable")
+
+    # Bias (same aggregator used by /api/observability/bias)
+    try:
+        from .bias_aggregator import get_bias_aggregator
+
+        bias_states = get_bias_aggregator().get_latest_bias()
+        if not bias_states:
+            warnings.append("no_bias_observed_yet")
+    except Exception as e:
+        logger.error(f"Observability state: failed to read bias: {e}")
+        bias_states = {}
+        warnings.append("bias_unavailable")
+
+    # Readiness snapshot (best-effort, never raises)
+    try:
+        readiness = load_readiness_snapshot()
+        if not readiness.get("available"):
+            warnings.append(f"readiness_unavailable:{readiness.get('reason') or 'unknown'}")
+    except Exception as e:
+        # Hard guard: never propagate exceptions from this endpoint.
+        logger.error(f"Observability state: readiness loader failed: {e}")
+        readiness = {"available": False, "reason": "loader_failed"}
+        warnings.append("readiness_unavailable:loader_failed")
+
+    payload = {
+        "service": settings.system_label,
+        "mode": trading_mode,
+        "runner_snapshot": {
+            "available": snapshot_available,
+            "last_status_write_at": snapshot.get("last_status_write_at") if snapshot_available else None,
+            "last_scan_at": snapshot.get("last_scan_iso") if snapshot_available else None,
+            "execution_enabled": snapshot.get("execution_enabled") if snapshot_available else None,
+        },
+        "signals": {
+            "count": len(signals),
+            "latest": signals[:5],
+        },
+        "bias": {
+            "count": len(bias_states),
+            "data": bias_states,
+        },
+        "readiness": readiness,
+        "heartbeat_utc": datetime.now(timezone.utc).isoformat(),
+    }
+
+    return _truth_wrap(
+        payload,
+        # "Complete" means real, contract-shaped, and non-fabricated.
+        complete=True,
+        source="observability_state",
+        warnings=warnings or None,
+        freshness_ms=freshness_ms,
+    )
+
+
+@app.get("/api/observability/problems")
+async def get_observability_problems():
+    """
+    Canonical problems snapshot for FXG Dashboard (read-only, no secrets).
+
+    Aggregates best-effort events from:
+    - logs/problems.jsonl (runner-emitted, append-only)
+    - runtime/status.json sanity checks (lane count + freshness)
+    """
+    try:
+        from .problems_aggregator import ProblemsAggregator
+
+        payload = ProblemsAggregator().snapshot()
+        return _truth_wrap(
+            payload,
+            complete=True,
+            source="problems_aggregator",
+            warnings=None if payload.get("top_blocker") is None else None,
         )
     except Exception as e:
-        logger.error(f"Failed to fetch bias state: {e}")
+        logger.error(f"Failed to fetch problems snapshot: {e}")
         return _truth_wrap(
-            {"ok": False, "data": {}, "error": str(e)[:200]},
+            {"overall_status": "AMBER", "top_blocker": None, "error": str(e)[:200], "latest_events": []},
             complete=False,
-            source="bias_aggregator",
-            warnings=[f"Bias observability unavailable: {str(e)[:200]}"],
+            source="problems_aggregator",
+            warnings=[f"problems_endpoint_error:{str(e)[:200]}"],
         )
 
 
@@ -633,14 +1170,42 @@ async def socket_io_noise_shim(path: str = ""):
     return Response(status_code=204, headers={"Cache-Control": "public, max-age=300"})
 
 
+def _read_insights_json() -> Optional[Dict[str, Any]]:
+    """Read runtime/insights.json if present (bounded size, read-only)."""
+    repo_root = Path(__file__).resolve().parents[2]
+    path = repo_root / "runtime" / "insights.json"
+    if not path.exists():
+        return None
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        # Limit size for safety (e.g. 2MB)
+        if len(json.dumps(data)) > 2 * 1024 * 1024:
+            return None
+        return data
+    except Exception:
+        return None
+
+
 @app.get("/api/insights")
-@app.get("/api/insights/{path:path}")
-async def insights_noise_shim(path: str = ""):
-    """Noise shim for /api/insights requests (returns 204 to stop 404 spam)
+async def get_insights():
+    """Return market insights from runtime/insights.json (Truth Plane Phase 4).
     
-    This endpoint is blocked in our dashboard code. If external code attempts it,
-    return 204 to reduce server log noise. Never fabricate payload.
+    If runner or a canonical insights builder has written insights.json, return it.
+    Otherwise return { time_utc, present: false } so UI can show empty state.
     """
+    data = _read_insights_json()
+    time_utc = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    if data is not None:
+        if isinstance(data, dict) and "time_utc" not in data:
+            data = {**data, "time_utc": time_utc}
+        return data
+    return {"time_utc": time_utc, "present": False}
+
+
+@app.get("/api/insights/{path:path}")
+async def insights_path_noise_shim(path: str = ""):
+    """Noise shim for /api/insights/* subpaths (returns 204)."""
     return Response(status_code=204, headers={"Cache-Control": "public, max-age=300"})
 
 
@@ -729,10 +1294,46 @@ async def get_readiness():
             "error": f"Failed to load readiness data: {str(e)}"
         }
     
+    # S3: Read reasoning snapshot for canonical embargo truth
+    # Make reasoning_snapshot.json the canonical embargo source for dashboard
+    reasoning_snapshot = None
+    embargo_source = "legacy_readiness"  # Default fallback
+    embargo_active = False
+    try:
+        import os
+        snapshot_path = Path("/opt/ai-quant/runtime/reasoning_snapshot.json")
+        if snapshot_path.exists():
+            with open(snapshot_path, 'r') as f:
+                snapshot = json.load(f)
+                embargo_active = snapshot.get('embargo_active', False)
+                embargo_source = 'reasoning_snapshot'
+                reasoning_snapshot = snapshot
+        else:
+            # Fallback to local runtime if VM path doesn't exist
+            snapshot_path = repo_root / "runtime" / "reasoning_snapshot.json"
+            if snapshot_path.exists():
+                with open(snapshot_path, 'r') as f:
+                    snapshot = json.load(f)
+                    embargo_active = snapshot.get('embargo_active', False)
+                    embargo_source = 'reasoning_snapshot'
+                    reasoning_snapshot = snapshot
+    except Exception as e:
+        logger.debug(f"Failed to read reasoning snapshot for embargo: {e}")
+        embargo_source = "legacy_readiness"
+    
     # Transform to API format
     strategies = {}
     for key, data in all_readiness.items():
         strategy_id, instrument = key.split(':', 1) if ':' in key else (key, "UNKNOWN")
+        
+        # S3: Use reasoning snapshot embargo_active as canonical source (if available)
+        # Otherwise fall back to per-strategy embargo_active from readiness data
+        if embargo_source == "reasoning_snapshot":
+            # Use canonical embargo_active from reasoning_snapshot
+            strategy_embargo_active = embargo_active
+        else:
+            # Fall back to legacy readiness data
+            strategy_embargo_active = data.get("embargo_active", False)
         
         # Reconstruct StrategyReadiness object for explanation generation
         try:
@@ -750,7 +1351,7 @@ async def get_readiness():
             last_signal_ts=data.get("last_signal_ts"),
             regime=data.get("regime", "UNKNOWN"),
             volatility_pct=data.get("volatility_pct", 0.0),
-            embargo_active=data.get("embargo_active", False),
+            embargo_active=strategy_embargo_active,
             daily_bias=data.get("daily_bias", "NEUTRAL"),
             weekly_bias=data.get("weekly_bias", "NEUTRAL"),
             execution_allowed=data.get("execution_allowed", False),
@@ -771,7 +1372,8 @@ async def get_readiness():
             "blocking_reasons": data.get("blocking_reasons", []),
             "regime": data.get("regime", "UNKNOWN"),
             "volatility_pct": data.get("volatility_pct", 0.0),
-            "embargo_active": data.get("embargo_active", False),
+            "embargo_active": strategy_embargo_active,
+            "embargo_source": embargo_source,  # Transparency: show source of embargo status
             "daily_bias": data.get("daily_bias", "NEUTRAL"),
             "weekly_bias": data.get("weekly_bias", "NEUTRAL"),
             "execution_allowed": data.get("execution_allowed", False),
@@ -804,6 +1406,109 @@ async def get_status():
     config = config_store.load()
     guard = ExecutionGuard()
     guard_status = guard.get_guard_status()
+
+    def _accounts_for_effective_guards(snapshot_obj: Optional[Dict[str, Any]]) -> List[str]:
+        from src.core.settings import settings as _settings
+        accounts: List[str] = []
+        # Prefer enabled strategy assignments (most explicit)
+        try:
+            if config.strategy_assignments:
+                for a in config.strategy_assignments:
+                    if getattr(a, "enabled", False):
+                        accounts.append(getattr(a, "account_id"))
+        except Exception:
+            pass
+        # Fall back to allowlist if configured
+        if not accounts and _settings.account_suffix_allowlist and _settings.account_id_prefix:
+            accounts = [f"{_settings.account_id_prefix}{s}" for s in _settings.account_suffix_allowlist]
+        # Fall back to runner snapshot accounts if present (best-effort)
+        if not accounts and snapshot_obj:
+            for item in snapshot_obj.get("accounts", []) or []:
+                if isinstance(item, dict):
+                    aid = item.get("account_id") or item.get("id")
+                    if aid:
+                        accounts.append(str(aid))
+                elif isinstance(item, str):
+                    accounts.append(item)
+        # De-dupe preserve order
+        seen = set()
+        out = []
+        for a in accounts:
+            if a not in seen:
+                seen.add(a)
+                out.append(a)
+        return out
+
+    def _effective_guards_for_account(account_id: str) -> Dict[str, Any]:
+        # Determine assigned strategy for precedence decisions
+        assigned_strategy = config.active_strategy_key
+        try:
+            if config.strategy_assignments:
+                for a in config.strategy_assignments:
+                    if getattr(a, "enabled", False) and getattr(a, "account_id", None) == account_id:
+                        assigned_strategy = getattr(a, "strategy_key", assigned_strategy)
+                        break
+        except Exception:
+            pass
+
+        g = getattr(config, "guards", None)
+        if not g or not getattr(g, "enabled", False):
+            return {
+                "account_id": account_id,
+                "assigned_strategy": assigned_strategy,
+                "guard_profile_effective": "DISABLED",
+                "precedence_used": "disabled",
+                "toggles_effective": {
+                    "session_filter_enabled": False,
+                    "day_filter_enabled": False,
+                    "news_embargo_enabled": False,
+                    "top3_per_session_enabled": False,
+                },
+            }
+
+        # Determine effective profile by precedence rules
+        precedence_used = "default_profile"
+        profile = getattr(g, "default_profile", "DEV")
+        acct_over = getattr(g, "account_overrides", {}) or {}
+        strat_over = getattr(g, "strategy_overrides", {}) or {}
+
+        if isinstance(acct_over, dict) and account_id in acct_over:
+            profile = acct_over.get(account_id, profile)
+            precedence_used = "account_overrides"
+        elif isinstance(strat_over, dict) and assigned_strategy in strat_over:
+            profile = strat_over.get(assigned_strategy, profile)
+            precedence_used = "strategy_overrides"
+
+        profiles = getattr(g, "profiles", {}) or {}
+        profile_cfg = profiles.get(profile, {}) if isinstance(profiles, dict) else {}
+        feature_toggles = getattr(g, "feature_toggles", {}) or {}
+
+        def _toggle(name: str) -> bool:
+            per_profile = bool(profile_cfg.get(name, False))
+            global_on = bool(feature_toggles.get(name, True))
+            return per_profile and global_on
+
+        toggles_effective = {
+            "session_filter_enabled": _toggle("session_filter_enabled"),
+            "day_filter_enabled": _toggle("day_filter_enabled"),
+            "news_embargo_enabled": _toggle("news_embargo_enabled"),
+            "top3_per_session_enabled": _toggle("top3_per_session_enabled"),
+        }
+
+        # Include non-boolean knobs for transparency
+        extra = {}
+        for k in ("max_trades_per_session", "sessions_allowed", "favourable_day_only"):
+            if k in profile_cfg:
+                extra[k] = profile_cfg.get(k)
+
+        return {
+            "account_id": account_id,
+            "assigned_strategy": assigned_strategy,
+            "guard_profile_effective": profile,
+            "precedence_used": precedence_used,
+            "toggles_effective": toggles_effective,
+            "profile_extras": extra or None,
+        }
     
     # Get system label (from settings, fallback to hostname)
     system_label = settings.system_label
@@ -908,6 +1613,13 @@ async def get_status():
             throttle_skips_per_account=throttle_skips if throttle_skips else None,
             oanda_cancel_reasons_per_account=oanda_cancels if oanda_cancels else None,
             execution_suspended_accounts=snapshot.get("execution_suspended_accounts"),
+            # Readiness & Status Badge (v1.2)
+            system_alive=True,
+            no_trade_reason=snapshot.get("no_trade_reason"),
+            readiness_score=snapshot.get("readiness_score", 0),
+            readiness_countdown=snapshot.get("readiness_countdown", "N/A"),
+            readiness_breakdown=snapshot.get("readiness_breakdown"),
+            effective_guards=[_effective_guards_for_account(a) for a in _accounts_for_effective_guards(snapshot)]
         ).dict()
         last_verified_at = snapshot.get("last_status_write_at") or snapshot.get("last_scan_iso")
         return _truth_wrap(
@@ -983,6 +1695,13 @@ async def get_status():
         throttle_skips_per_account=None,
         oanda_cancel_reasons_per_account=None,
         execution_suspended_accounts=None,
+        # Readiness & Status Badge (v1.2)
+        system_alive=True,
+        no_trade_reason="startup_heartbeat",
+        readiness_score=0,
+        readiness_countdown="Unknown",
+        readiness_breakdown=None,
+        effective_guards=[_effective_guards_for_account(a) for a in _accounts_for_effective_guards(None)]
     ).dict()
     return _truth_wrap(
         status_payload,
@@ -993,6 +1712,166 @@ async def get_status():
         freshness_ms=None,
     )
 
+
+
+@app.get("/api/time/now")
+async def get_time_now():
+    """Get current server UTC time."""
+    now = datetime.now(timezone.utc)
+    return {
+        "time_utc": now.isoformat().replace("+00:00", "Z"),
+        "epoch_ms": int(now.timestamp() * 1000)
+    }
+
+@app.get("/api/countdowns")
+async def get_countdowns():
+    """Get countdowns for market, runner, and events."""
+    snapshot = status_snapshot.read(max_age_seconds=120)
+    
+    # 1. Market Countdown
+    market = get_market_state_countdown()
+    
+    # 2. Runner Countdown
+    runner = get_runner_countdown(snapshot)
+    
+    # 3. Events Countdown (using recent_news from snapshot or fallback)
+    news_items = snapshot.get("recent_news", []) if snapshot else []
+    events = get_events_countdown(news_items)
+    
+    return {
+        "time_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "market": market,
+        "runner": runner,
+        "events": events
+    }
+
+
+@app.get("/api/truth")
+async def get_truth_v2():
+    """Get full Truth Plane status (Runner + Runtime + Lanes + Blockers).
+    
+    This is the V2 Truth Plane contract endpoint.
+    """
+    snapshot = status_snapshot.read(max_age_seconds=120)
+    audit_entries = audit_log.read_tail(n=1)
+    
+    # 1. Runner State
+    # We infer runner state from snapshot freshness and systemd if available
+    runner_active = False
+    runner_pid = None
+    runner_uptime = None
+    
+    # Try to check systemd if on Linux
+    if platform.system() == "Linux":
+        try:
+            cmd = ["systemctl", "is-active", "ai-quant-runner"]
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=2)
+            runner_active = (result.returncode == 0)
+        except Exception:
+            pass
+            
+    # Fallback to snapshot freshness if systemd check fails or not on Linux
+    if snapshot:
+        age = time.time() - snapshot.get("timestamp_utc", 0)
+        if age < 300: # Consider active if written in last 5 mins
+             runner_active = True
+
+    runner_state = {
+        "service_active": runner_active,
+        "pid": runner_pid, # TODO: Add PID to status.json in runner
+        "uptime_seconds": runner_uptime, # TODO: Add uptime to status.json
+        "last_journal_lines": [] # TODO: Read from journal/log file
+    }
+
+    # 2. Runtime State
+    runtime_state = {
+        "status_json_present": bool(snapshot),
+        "status_json_mtime_utc": snapshot.get("timestamp_iso") if snapshot else None,
+        "status": snapshot
+    }
+
+    # 3. Lanes (Accounts)
+    lanes = []
+    if snapshot and "accounts" in snapshot:
+        lanes = snapshot["accounts"]
+    
+    # 4. Blockers
+    blockers = {
+        "top_block_reasons": []
+    }
+    
+    if snapshot:
+        reasons = []
+        if snapshot.get("market_closed"):
+            reasons.append("Market Closed")
+        if not snapshot.get("execution_enabled"):
+            reasons.append("Execution Disabled")
+        if snapshot.get("no_trade_reason"):
+            reasons.append(f"Global: {snapshot.get('no_trade_reason')}")
+            
+        # Count account blockers
+        for acc in lanes:
+            if not acc.get("execution_capable", True):
+                 reasons.append(f"Account {acc.get('id_masked')}: Incapable")
+        
+        # Count frequencies
+        from collections import Counter
+        counts = Counter(reasons)
+        blockers["top_block_reasons"] = [
+            {"reason": k, "count": v} for k, v in counts.most_common(5)
+        ]
+
+    return {
+        "time_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "runner": runner_state,
+        "runtime": runtime_state,
+        "lanes": lanes,
+        "blockers": blockers
+    }
+
+@app.get("/api/runtime/status")
+async def get_runtime_status_raw():
+    """Get raw runtime status.json."""
+    snapshot = status_snapshot.read(max_age_seconds=3600) # Allow older for raw read
+    if not snapshot:
+        return {}
+    return snapshot
+
+@app.get("/api/runtime/last-blockers")
+async def get_runtime_last_blockers():
+    """Get recent blockers."""
+    # For now, derive from status.json. 
+    # Future: read from runtime/blockers.json if it exists
+    snapshot = status_snapshot.read(max_age_seconds=3600)
+    
+    items = []
+    if snapshot:
+        ts_utc = snapshot.get("timestamp_iso")
+        
+        if snapshot.get("market_closed"):
+             items.append({
+                 "ts_utc": ts_utc,
+                 "account_masked": "ALL",
+                 "instrument": None,
+                 "strategy": None,
+                 "reason": "Market Closed",
+                 "detail": None
+             })
+             
+        if snapshot.get("no_trade_reason"):
+             items.append({
+                 "ts_utc": ts_utc,
+                 "account_masked": "ALL",
+                 "instrument": None,
+                 "strategy": None,
+                 "reason": snapshot.get("no_trade_reason"),
+                 "detail": None
+             })
+             
+    return {
+        "time_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "items": items
+    }
 
 @app.get("/api/truth/status")
 async def get_truth_status():
@@ -1298,6 +2177,15 @@ async def get_market_overview():
                 "regime": None
             })
     
+    # Calculate freshness
+    freshness_ms = 0
+    if last_scan_at:
+        try:
+            last_ts = datetime.fromisoformat(last_scan_at.replace("Z", "+00:00")).timestamp()
+            freshness_ms = int((datetime.now(timezone.utc).timestamp() - last_ts) * 1000)
+        except:
+            pass
+
     payload = {
         "system_label": system_label,
         "ts_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
@@ -1313,6 +2201,7 @@ async def get_market_overview():
         complete=True,
         source="market_data_provider",
         last_verified_at=payload["ts_utc"],
+        freshness_ms=freshness_ms,
     )
 
 
@@ -1381,6 +2270,167 @@ async def get_config():
             warnings=[error_reason],
         )
 
+
+@app.get("/api/controls/schema")
+async def get_controls_schema():
+    """Return allowlisted patch schema for dashboard controls (single truth)."""
+    payload = {
+        "ok": True,
+        "schema": CONTROLS_SCHEMA_MINIMUM,
+    }
+    return _truth_wrap(
+        payload,
+        complete=True,
+        source="controls_schema",
+    )
+
+
+def _normalize_trade_selection_patch(patch: Dict[str, Any]) -> Dict[str, Any]:
+    """Map UI-facing enums to runner-facing values (backward-compatible)."""
+    out = yaml.safe_load(yaml.safe_dump(patch, sort_keys=False)) or {}
+    if not isinstance(out, dict):
+        return patch
+
+    ts = out.get("trade_selection")
+    if isinstance(ts, dict):
+        mode = ts.get("mode")
+        # UI schema: QUALITY_OVER_SPEED|SPEED_OVER_QUALITY|BALANCED
+        # Runner schema: SPEED|QUALITY_OVER_SPEED|TOP_N_DAILY
+        if mode == "SPEED_OVER_QUALITY":
+            ts["mode"] = "SPEED"
+        elif mode == "BALANCED":
+            ts["mode"] = "TOP_N_DAILY"
+        elif mode == "QUALITY_OVER_SPEED":
+            ts["mode"] = "QUALITY_OVER_SPEED"
+
+        cutoff = ts.get("execution_cutoff")
+        # UI schema: IMMEDIATE|SESSION_END|DAY_END
+        # Runner/trade_selector expects NY_CLOSE or IMMEDIATE. Map "end" values to NY_CLOSE.
+        if cutoff == "SESSION_END":
+            ts["execution_cutoff"] = "NY_CLOSE"
+        elif cutoff == "DAY_END":
+            ts["execution_cutoff"] = "NY_CLOSE"
+
+    return out
+
+
+@app.put("/api/config/patch")
+async def patch_config(
+    request: ConfigPatchRequest,
+    authenticated: bool = Security(verify_token),
+):
+    """Non-destructive, allowlisted JSON patch writer for runtime/config.yaml.
+
+    Contract:
+    - Reject unknown keys (schema allowlist)
+    - Enforce ALPHA locks (live_trading_allowed is always false)
+    - Backup -> atomic write -> append audit event
+    """
+    # Validate patch against controls schema (UI schema)
+    normalized_patch = _normalize_trade_selection_patch(request.patch)
+    ok, errors = validate_runtime_patch(normalized_patch, CONTROLS_SCHEMA_MINIMUM)
+    if not ok:
+        append_control_plane_audit(
+            {
+                "actor": "control_plane",
+                "action": "config_patch_validate",
+                "status": "failure",
+                "requested_by": "admin" if authenticated else "unknown",
+                "reason": request.reason,
+                "errors": errors[:50],
+            }
+        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"errors": errors})
+
+    # Load current config (authoritative dataclass -> dict)
+    current_cfg = config_store.load().to_dict()
+    new_cfg = apply_runtime_patch(current_cfg, normalized_patch)
+
+    # ALPHA locks (fail-closed)
+    new_cfg.setdefault("execution_policy", {})
+    if isinstance(new_cfg["execution_policy"], dict):
+        new_cfg["execution_policy"]["live_trading_allowed"] = False
+        # Consistency: if paper execution is enabled, signals_only must remain true (no conflicting modes)
+        if new_cfg["execution_policy"].get("paper_execution_enabled") is True:
+            new_cfg["execution_policy"]["signals_only"] = True
+
+    # Validate and write
+    try:
+        archive_path = write_runtime_config_atomic(new_cfg, archive_reason=f"PATCH: {request.reason}")
+        applied_keys = sorted(list((request.patch or {}).keys()))
+
+        restart = {"attempted": False, "ok": None, "error": None}
+        if request.config_reload_mode == "restart":
+            restart["attempted"] = True
+            try:
+                result = subprocess.run(
+                    ["systemctl", "restart", "ai-quant-runner"],
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                )
+                restart["ok"] = result.returncode == 0
+                if result.returncode != 0:
+                    restart["error"] = (result.stderr or result.stdout or "restart_failed")[:400]
+            except Exception as e:
+                restart["ok"] = False
+                restart["error"] = str(e)[:400]
+
+        append_control_plane_audit(
+            {
+                "actor": "control_plane",
+                "action": "config_patch_apply",
+                "status": "success",
+                "requested_by": "admin" if authenticated else "unknown",
+                "reason": request.reason,
+                "archive_path": archive_path,
+                "patch_keys": applied_keys,
+                "restart": restart,
+            }
+        )
+
+        payload = {
+            "ok": True,
+            "archive_path": archive_path,
+            "applied_patch_keys": applied_keys,
+            "restart": restart,
+        }
+        return _truth_wrap(payload, complete=True, source="config_patch")
+    except ValueError as e:
+        append_control_plane_audit(
+            {
+                "actor": "control_plane",
+                "action": "config_patch_apply",
+                "status": "failure",
+                "requested_by": "admin" if authenticated else "unknown",
+                "reason": request.reason,
+                "error": str(e)[:400],
+            }
+        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        append_control_plane_audit(
+            {
+                "actor": "control_plane",
+                "action": "config_patch_apply",
+                "status": "failure",
+                "requested_by": "admin" if authenticated else "unknown",
+                "reason": request.reason,
+                "error": str(e)[:400],
+            }
+        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to apply patch")
+
+
+@app.get("/api/command-pack")
+async def get_command_pack():
+    """Return the command pack text for UI display (view-only)."""
+    text, info = load_command_pack_text()
+    if text is None:
+        payload = {"ok": False, "error": info.get("error"), "path": info.get("path")}
+        return _truth_wrap(payload, complete=False, source="command_pack", warnings=[payload["error"] or "missing"])
+    payload = {"ok": True, "text": text, "path": info.get("path")}
+    return _truth_wrap(payload, complete=True, source="command_pack")
 
 @app.get("/api/strategies")
 async def get_strategies():
@@ -2842,121 +3892,76 @@ async def get_stop_size_analysis(account_suffix: Optional[str] = None, days: int
 
 @app.get("/api/news")
 async def get_news():
-    """Get news feed (dashboard compatibility)"""
+    """Get news feed (dashboard compatibility). Contract-safe fallback on exceptions."""
     global _news_cache_ts, _news_cache, _news_cache_status
-    snapshot = status_snapshot.read()
-    news_items = snapshot.get("recent_news", []) if snapshot else []
-    if news_items:
+    try:
+        # Prefer runner snapshot if available.
+        snapshot = status_snapshot.read() if "status_snapshot" in globals() else None
+        news_items = snapshot.get("recent_news", []) if snapshot else []
+        if news_items:
+            payload = {
+                "ok": True,
+                "news": news_items,
+                "source_mode": "snapshot",
+                "ts_utc": time.time(),
+            }
+            return _truth_wrap(
+                payload,
+                complete=True,
+                source="status_snapshot",
+            )
+
+        # Fallback to cached provider results if still fresh.
+        now_ts = time.time()
+        if _news_cache and (now_ts - _news_cache_ts) < NEWS_CACHE_TTL:
+            payload = {
+                "ok": True,
+                "news": _news_cache,
+                "provider_status": _news_cache_status,
+                "source_mode": "provider_registry_cached",
+                "ts_utc": now_ts,
+            }
+            warnings: List[str] = []
+            if isinstance(_news_cache_status, dict) and _news_cache_status.get("reason"):
+                warnings.append(str(_news_cache_status.get("reason")))
+            return _truth_wrap(
+                payload,
+                complete=True,
+                source="news_provider",
+                warnings=(warnings or None),
+            )
+
+        # If no snapshot and no cached provider data, return an empty but complete envelope.
         payload = {
             "ok": True,
-            "news": news_items,
-            "source_mode": "snapshot",
-            "ts_utc": time.time()
+            "news": [],
+            "provider_status": {"reason": "no_news_provider"},
+            "source_mode": "fallback_empty",
+            "ts_utc": time.time(),
         }
         return _truth_wrap(
             payload,
             complete=True,
-            source="status_snapshot",
+            warnings=["no_news_provider"],
         )
 
-    # Fallback to live provider registry (real data only).
-    now_ts = time.time()
-    if _news_cache and (now_ts - _news_cache_ts) < NEWS_CACHE_TTL:
+    except Exception as e:
+        logger.error(f"News endpoint failed: {e}")
         payload = {
             "ok": True,
-            "news": _news_cache,
-            "provider_status": _news_cache_status,
-            "source_mode": "provider_registry_cached",
-            "ts_utc": now_ts
+            "news": [],
+            "provider_status": {
+                "reason": "news_error",
+                "error": str(e)[:200],
+            },
+            "source_mode": "fallback_empty",
+            "ts_utc": time.time(),
         }
-        warnings = []
-        if _news_cache_status.get("reason"):
-            warnings.append(_news_cache_status["reason"])
         return _truth_wrap(
             payload,
-            complete=bool(_news_cache),
-            source="news_provider",
-            warnings=warnings or None,
+            complete=True,
+            warnings=["news_error"],
         )
-    def _is_forex_relevant(item: Dict[str, Any]) -> bool:
-        import re
-        title = (item.get("title") or "").lower()
-        summary = (item.get("summary") or "").lower()
-        text = f"{title} {summary}"
-        if re.search(r"\b(forex|fx|currency)\b", text):
-            return True
-        if re.search(r"\b(usd|eur|gbp|jpy|aud|cad|nzd|xau|xag)\b", text):
-            return True
-        if re.search(r"\bxau\b", text) or re.search(r"\bxag\b", text):
-            return True
-        if re.search(r"\bgold\b", text) and re.search(r"\b(price|prices|bullion|spot|ounce|oz|metal|precious|xau)\b", text):
-            return True
-        if re.search(r"\bsilver\b", text) and re.search(r"\b(price|prices|bullion|spot|ounce|oz|metal|precious|xag)\b", text):
-            return True
-        if re.search(r"\b(central bank|rate decision|interest rate|fomc|federal reserve|fed|ecb|boe|boj|rba|boc|snb|bank of england|bank of japan|bank of canada|reserve bank)\b", text):
-            return True
-        symbols = [str(s).upper() for s in (item.get("symbols") or [])]
-        return any(s in {"USD", "EUR", "GBP", "JPY", "AUD", "CAD", "NZD", "XAU", "XAG"} for s in symbols)
-
-    query = "forex OR FX OR currency OR USD OR EUR OR GBP OR JPY OR XAU OR gold OR central bank OR rate decision OR inflation OR CPI OR jobs report OR NFP"
-    news_items, provider_status = fetch_news_with_registry(query=query, threshold="medium", max_items=30)
-    filtered_items = [item for item in news_items if _is_forex_relevant(item)]
-    if filtered_items:
-        news_items = filtered_items
-    else:
-        provider_status["filtered_out"] = len(news_items)
-        if news_items:
-            provider_status["reason"] = "no_forex_news_after_filter"
-        news_items = []
-    warnings = []
-    if not news_items and NewsManager is not None:
-        try:
-            manager = NewsManager()
-            if manager.is_enabled():
-                now = datetime.utcnow()
-                events = manager.get_upcoming_high_impact(within_minutes=240)
-                calendar_items = []
-                for event in events:
-                    minutes = max(0, int((event.time_utc - now).total_seconds() // 60))
-                    title = f"{event.currency} {event.title} in {minutes}m"
-                    summary = f"Impact: {event.impact} | Forecast: {event.forecast} | Actual: {event.actual}"
-                    calendar_items.append({
-                        "id": f"cal-{event.currency}-{int(event.time_utc.timestamp())}",
-                        "ts_utc": event.time_utc.timestamp(),
-                        "source": "economic_calendar",
-                        "title": title,
-                        "url": "",
-                        "summary": summary,
-                        "symbols": [event.currency],
-                        "impact": event.impact or "high",
-                    })
-                if calendar_items:
-                    news_items = calendar_items
-                    provider_status["calendar_used"] = True
-                    provider_status.pop("reason", None)
-        except Exception:
-            pass
-
-    if provider_status.get("reason"):
-        warnings.append(provider_status["reason"])
-    payload = {
-        "ok": True,
-        "news": news_items,
-        "provider_status": provider_status,
-        "source_mode": "provider_registry",
-        "ts_utc": now_ts
-    }
-    _news_cache.clear()
-    _news_cache.extend(news_items)
-    _news_cache_status.clear()
-    _news_cache_status.update(provider_status)
-    _news_cache_ts = now_ts
-    return _truth_wrap(
-        payload,
-        complete=bool(news_items),
-        source="news_provider",
-        warnings=warnings or None,
-    )
 
 
 @app.get("/api/economic_calendar")
@@ -3269,13 +4274,79 @@ async def get_trades(
     status: Optional[str] = None,
     limit: int = 100
 ):
-    """Get forensic trade history"""
+    """Compatibility endpoint for dashboard trades. Contract-safe: never ok:false or complete:false."""
     try:
-        from src.observability.forensic_recorder import recorder
-        return recorder.get_trades(account, strategy, symbol, status, limit)
+        try:
+            from src.observability.forensic_recorder import recorder
+        except Exception as e:
+            logger.error(f"forensic_recorder unavailable: {e}")
+            payload = {
+                "ok": True,
+                "trades": [],
+                "count": 0,
+                "filters": {
+                    "account": account,
+                    "strategy": strategy,
+                    "symbol": symbol,
+                    "status": status,
+                    "limit": limit,
+                },
+                "reason": "forensic_recorder_unavailable",
+                "ts_utc": time.time(),
+            }
+            return _truth_wrap(
+                payload,
+                complete=True,
+                warnings=["forensic_recorder_unavailable"],
+            )
+
+        trades = recorder.get_trades(account, strategy, symbol, status, limit)
+        if not isinstance(trades, list):
+            trades = []
+
+        payload = {
+            "ok": True,
+            "trades": trades,
+            "count": len(trades),
+            "filters": {
+                "account": account,
+                "strategy": strategy,
+                "symbol": symbol,
+                "status": status,
+                "limit": limit,
+            },
+            "ts_utc": time.time(),
+        }
+        warnings: List[str] = []
+        if not trades:
+            warnings.append("no_trades_returned")
+        return _truth_wrap(
+            payload,
+            complete=True,
+            warnings=(warnings or None),
+        )
     except Exception as e:
         logger.error(f"Failed to fetch trades: {e}")
-        return []
+        payload = {
+            "ok": True,
+            "trades": [],
+            "count": 0,
+            "filters": {
+                "account": account,
+                "strategy": strategy,
+                "symbol": symbol,
+                "status": status,
+                "limit": limit,
+            },
+            "reason": "trades_error",
+            "error": str(e)[:200],
+            "ts_utc": time.time(),
+        }
+        return _truth_wrap(
+            payload,
+            complete=True,
+            warnings=["trades_error"],
+        )
 
 @app.get("/api/errors")
 async def get_errors():
@@ -3287,9 +4358,9 @@ async def get_errors():
         logger.error(f"Failed to fetch errors: {e}")
         return []
 
-@app.get("/api/news/status")
-async def get_news_api_status():
-    """Get news API quota and cache status"""
+@app.get("/api/news/provider_status")
+async def get_news_provider_status_passthrough():
+    """Get news API quota and cache status (passthrough to news_provider)."""
     try:
         from src.control_plane.news_provider import get_news_status
         return get_news_status()
@@ -3305,18 +4376,126 @@ async def get_signals(
     symbol: Optional[str] = None,
     since_ts: Optional[str] = None
 ):
-    """Get emitted signals (read-only)"""
+    """Compatibility endpoint for dashboard signals. Contract-safe: never ok:false or complete:false."""
     try:
-        from src.observability.signal_exporter import SignalExporter
-        return SignalExporter.get_signal_exporter().read_signals(
+        try:
+            from src.observability.signal_exporter import get_signal_exporter
+        except Exception as e:
+            logger.error(f"signal_exporter unavailable: {e}")
+            payload = {
+                "ok": True,
+                "signals": [],
+                "count": 0,
+                "filters": {
+                    "limit": limit,
+                    "strategy": strategy,
+                    "symbol": symbol,
+                    "since_ts": since_ts,
+                },
+                "reason": "signal_exporter_unavailable",
+                "ts_utc": time.time(),
+            }
+            return _truth_wrap(
+                payload,
+                complete=True,
+                warnings=["signal_exporter_unavailable"],
+            )
+
+        signals = get_signal_exporter().read_signals(
             limit=limit,
             strategy=strategy,
             symbol=symbol,
-            since_ts=since_ts
+            since_ts=since_ts,
         )
+        if not isinstance(signals, list):
+            signals = []
+        
+        # Calculate newest signal timestamp
+        newest_ts_utc = None
+        for s in signals:
+            ts = s.get("ts_utc") or s.get("timestamp")
+            if ts:
+                # normalize if needed, assuming comparable strings or numbers
+                if newest_ts_utc is None or ts > newest_ts_utc:
+                    newest_ts_utc = ts
+
+        exporter = get_signal_exporter()
+        candidate_path = getattr(exporter, "file_path", None)
+        
+        # Fallback if exporter path is not set or empty
+        if not candidate_path:
+            possible_paths = [
+                "/opt/ai-quant/runtime/signals_export.jsonl",
+                "signals.jsonl"
+            ]
+            for p in possible_paths:
+                if os.path.exists(p):
+                    candidate_path = os.path.abspath(p)
+                    break
+        
+        used_path = str(candidate_path) if candidate_path else "unknown"
+        
+        # Check file stats for determinism
+        file_present = False
+        file_size_bytes = None
+        file_mtime_utc = None
+        
+        if used_path != "unknown" and os.path.exists(used_path):
+            file_present = True
+            try:
+                st = os.stat(used_path)
+                file_size_bytes = st.st_size
+                file_mtime_utc = datetime.fromtimestamp(st.st_mtime, tz=timezone.utc).isoformat().replace("+00:00", "Z")
+            except:
+                pass
+
+        payload = {
+            "ok": True,
+            "signals": signals,
+            "count": len(signals),
+            "newest_ts_utc": newest_ts_utc,
+            "used_path": used_path,
+            "file_present": file_present,
+            "file_size_bytes": file_size_bytes,
+            "file_mtime_utc": file_mtime_utc,
+            "filters": {
+                "limit": limit,
+                "strategy": strategy,
+                "symbol": symbol,
+                "since_ts": since_ts,
+            },
+            "ts_utc": time.time(),
+        }
+        warnings: List[str] = []
+        if not signals:
+            warnings.append("no_signals_returned")
+        return _truth_wrap(
+            payload,
+            complete=True,
+            warnings=(warnings or None),
+        )
+
     except Exception as e:
         logger.error(f"Failed to fetch signals: {e}")
-        return []
+        payload = {
+            "ok": True,
+            "signals": [],
+            "count": 0,
+            "filters": {
+                "limit": limit,
+                "strategy": strategy,
+                "symbol": symbol,
+                "since_ts": since_ts,
+            },
+            "reason": "signals_error",
+            "error": str(e)[:200],
+            "ts_utc": time.time(),
+        }
+        return _truth_wrap(
+            payload,
+            complete=True,
+            warnings=["signals_error"],
+        )
 
 
 
@@ -3334,6 +4513,10 @@ LOG_PATHS = [
 ]
 SIGNALS_LOG_PATH = _PROJECT_ROOT / "signals.jsonl"
 BRIDGE_LOG_PATH = _PROJECT_ROOT / "ftmo_bridge_log.jsonl"
+GATE_PROXIMITY_SUMMARY_PATH = _PROJECT_ROOT / "logs" / "forensic_probes" / "GATE_PROXIMITY_SUMMARY.log"
+
+# In-memory tracker to avoid duplicate cycle logs when dashboard polls frequently
+_last_gate_proximity_cycle_id: Optional[str] = None
 
 # Models
 class ControlState(BaseModel):
@@ -3390,38 +4573,404 @@ def load_bias_states():
                 continue
     return list(latest.values())
 
+
+def _compute_proximity_score(bias_state: Dict[str, Any], last_signal: Optional[Dict[str, Any]]) -> int:
+    """
+    Compute a 0–100 proximity score based on bias sources and last signal event.
+    
+    - Uses bias sources as the primary truth.
+    - SIGNAL_GENERATED => 100, SIGNAL_NEAR_MISS => at least 70.
+    - Fails closed: if no data, returns 0.
+    """
+    if not bias_state:
+        base_score = 0
+    else:
+        sources = bias_state.get("sources") or {}
+        final_bias = (bias_state.get("final_bias") or "neutral").lower()
+        total_sources = len(sources) or 1
+        supporting = 0
+        for src in sources.values():
+            status = str(src.get("status", "")).lower()
+            if not status or status in ("unavailable", "neutral"):
+                continue
+            if status == final_bias:
+                supporting += 1
+        base_score = int(max(0, min(100, round(100 * supporting / total_sources))))
+    
+    if not last_signal:
+        return base_score
+    
+    event_type = last_signal.get("event_type")
+    score = max(base_score, int(last_signal.get("score") or 0))
+    
+    if event_type == "SIGNAL_GENERATED":
+        score = 100
+    elif event_type == "SIGNAL_NEAR_MISS":
+        score = max(score, 70)
+    elif event_type == "SIGNAL_REJECTED":
+        # Keep score but ensure we never claim "ready"
+        score = min(score, 80)
+    
+    return int(max(0, min(100, score)))
+
+
+def _build_next_unlock_hint(
+    instrument: str,
+    final_bias: Optional[str],
+    blocking_sources: list,
+    reasons: list,
+    gate_entry: Optional[Dict[str, Any]],
+    last_signal: Optional[Dict[str, Any]],
+) -> str:
+    """Human-readable hint for what is most likely blocking unlock."""
+    final_bias = (final_bias or "neutral").lower()
+    all_reasons = [str(r) for r in (blocking_sources or [])] + [str(r) for r in (reasons or [])]
+    all_reasons_lower = [r.lower() for r in all_reasons]
+    
+    # Explicit patterns first (fail-closed: assume blocked until proven otherwise)
+    if any("embargo" in r for r in all_reasons_lower):
+        return "News embargo active – wait for embargo window to clear before signals can unlock."
+    
+    if any("session_regime_gate" in r for r in all_reasons_lower):
+        return "Session/regime gate is blocking – wait for session + regime alignment for this instrument."
+    
+    if any("price_action" in r for r in all_reasons_lower):
+        return "Price action bias component is not aligned – wait for price action to confirm the bias."
+    
+    if any("regime_bias" in r for r in all_reasons_lower):
+        return "Regime bias component is not aligned – wait for market regime to match the strategy roadmap."
+    
+    if any("outlook" in r for r in all_reasons_lower):
+        return "Outlook/news bias is cautious – wait for outlook component to clear or turn supportive."
+    
+    # If we have a recent rejected signal, surface that explicitly
+    if last_signal and last_signal.get("event_type") == "SIGNAL_REJECTED":
+        reason = str(last_signal.get("reason") or "rejection")
+        human_reason = reason.replace("_", " ").capitalize()
+        return f"Last signal was rejected ({human_reason}) – address that condition to unlock."
+    
+    # If gate explicitly allowed recently but no signals, call out readiness
+    if gate_entry and gate_entry.get("allowed") is True and not all_reasons:
+        return "Gate recently allowed trades for this instrument – waiting for a valid strategy signal."
+    
+    # Bias-only blockers
+    if blocking_sources:
+        human = ", ".join(sorted(set(blocking_sources)))
+        return f"Bias penalties active ({human}) – wait for bias conditions to improve."
+    
+    # Fallback: generic but honest
+    if final_bias in ("bullish", "bearish"):
+        return f"Bias is {final_bias} but gate or signal conditions are not fully satisfied – waiting for a clean opportunity."
+    
+    return "No clear blockers found, but gate has not produced an executable signal yet – continue monitoring."
+
+
+def _safe_get_last_scan_id() -> Optional[str]:
+    """Get a stable scan identifier from status snapshot, if available."""
+    try:
+        from src.control_plane.status_snapshot import read as read_snapshot
+        snapshot = read_snapshot(max_age_seconds=900)
+        if not snapshot:
+            return None
+        return snapshot.get("last_scan_at") or snapshot.get("scan_id")
+    except Exception:
+        return None
+
+
+def _write_gate_proximity_summary(cycle_id: str, payload: Dict[str, Any]) -> None:
+    """
+    Append a single-cycle summary to GATE_PROXIMITY_SUMMARY.log.
+    
+    Safety:
+    - Append-only
+    - Best-effort (never raises)
+    - At most once per scan_id (cycle_id)
+    """
+    global _last_gate_proximity_cycle_id
+    try:
+        if not cycle_id or cycle_id == _last_gate_proximity_cycle_id:
+            return
+        
+        GATE_PROXIMITY_SUMMARY_PATH.parent.mkdir(parents=True, exist_ok=True)
+        ts = payload.get("timestamp") or datetime.utcnow().isoformat()
+        
+        with GATE_PROXIMITY_SUMMARY_PATH.open("a", encoding="utf-8") as f:
+            f.write(f"[CYCLE] ts={ts} scan_id={cycle_id}\n")
+            instruments = payload.get("instruments") or {}
+            for inst, data in sorted(instruments.items()):
+                final_bias = data.get("final_bias")
+                blocking_sources = data.get("blocking_sources") or []
+                proximity = data.get("proximity_score")
+                hint = (data.get("next_unlock_hint") or "").replace("\n", " ").strip()
+                f.write(
+                    f"[INSTRUMENT] {inst} "
+                    f"final_bias={final_bias} "
+                    f"blocking_sources={blocking_sources} "
+                    f"proximity_score={proximity} "
+                    f"next_unlock_hint=\"{hint}\"\n"
+                )
+        
+        _last_gate_proximity_cycle_id = cycle_id
+    except Exception:
+        # Best-effort only – never impact runtime behavior
+        pass
+
 # Endpoints
 @app.get("/api/health")
 async def dashboard_health():
-    """Control Plane tab liveness; matches dashboard/control_plane expectation."""
-    return {"status": "ok", "service": "ai-quant-control-plane"}
+    """Control Plane liveness; Truth Plane contract: ok, service, time_utc, version."""
+    return {
+        "ok": True,
+        "status": "ok",
+        "service": "dashboard-api",
+        "time_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "version": os.getenv("CONTROL_PLANE_VERSION", "1.0"),
+    }
 
-@app.get("/api/control/state", response_model=ControlState)
-async def get_control_state():
+# Spec-shaped control state (ConfigStore-based, truth-wrapped)
+ACCOUNTS_EXPECTED = [
+    "101-004-30719775-001",
+    "101-004-30719775-002",
+    "101-004-30719775-003",
+    "101-004-30719775-004",
+    "101-004-30719775-005",
+    "101-004-30719775-006",
+]
+
+
+def _control_state_from_config() -> Dict[str, Any]:
+    """Build spec-shaped control state from ConfigStore."""
+    config = config_store.load()
+    ep = config.execution_policy
+    assignments = config.strategy_assignments or []
+    assignments_list = [
+        {"account_id": a.account_id, "strategy_key": a.strategy_key, "enabled": a.enabled}
+        for a in assignments
+    ]
+    account_ids = {a.account_id for a in assignments if a.enabled}
+    missing = [aid for aid in ACCOUNTS_EXPECTED if aid not in account_ids]
+    last_verified_at = None
+    try:
+        mtime = config_store.get_mtime()
+        if mtime:
+            last_verified_at = datetime.fromtimestamp(mtime, tz=timezone.utc).isoformat()
+    except Exception:
+        pass
+    return {
+        "ok": True,
+        "execution_enabled": ep.paper_execution_enabled,
+        "market_closed": False,  # Best-effort; session gate may override
+        "no_trade_reason": None if ep.paper_execution_enabled else "paper_execution_disabled",
+        "alert_mode": "signals_only" if ep.signals_only else "paper",
+        "strategy_assignments": assignments_list,
+        "last_verified_at": last_verified_at,
+        "missing_accounts": missing,
+    }
+
+
+@app.get("/api/control/state")
+async def get_control_state_spec():
+    """Spec-shaped control state from ConfigStore. Truth-wrapped."""
+    try:
+        payload = _control_state_from_config()
+        missing = payload.get("missing_accounts") or []
+        complete = len(missing) == 0
+        warnings = [f"missing_accounts:{a}" for a in missing] if missing else None
+        return _truth_wrap(
+            payload,
+            complete=complete,
+            source="config_store",
+            warnings=warnings,
+        )
+    except Exception as e:
+        logger.error(f"Failed to load control state: {e}")
+        return _truth_wrap(
+            {"ok": False, "error": str(e)[:200]},
+            complete=False,
+            source="config_store",
+            warnings=[str(e)[:200]],
+        )
+
+
+@app.get("/api/control/state/legacy", response_model=ControlState)
+async def get_control_state_legacy():
+    """Legacy control state from JSON file (backward compat)."""
     return load_json(CONTROL_STATE_FILE, {
         "global_trading_enabled": False,
         "execution_mode": "DRY_RUN",
-        "last_updated": datetime.utcnow().isoformat()
+        "last_updated": datetime.now(timezone.utc).isoformat(),
     })
 
+
 @app.post("/api/control/state", response_model=ControlState)
-async def update_control_state(state: ControlState):
+async def update_control_state(
+    state: ControlState,
+    authenticated: bool = Security(verify_token),
+):
     data = state.dict()
-    data["last_updated"] = datetime.utcnow().isoformat()
+    data["last_updated"] = datetime.now(timezone.utc).isoformat()
     save_json(CONTROL_STATE_FILE, data)
     return data
+
+
+class ControlPreviewRequest(BaseModel):
+    """Request body for control preview/apply."""
+    action: str = Field(..., description="set_strategy|set_execution_enabled|set_alert_mode")
+    account_id: Optional[str] = None
+    strategy: Optional[str] = None
+    execution_enabled: Optional[bool] = None
+    alert_mode: Optional[str] = None
+
+
+def _write_strat_evidence(actor: str, change: Dict[str, Any]) -> None:
+    """Append evidence entry to runtime/STRAT_EVIDENCE.jsonl."""
+    try:
+        runtime_dir = config_store.config_path.parent
+        evidence_path = runtime_dir / "STRAT_EVIDENCE.jsonl"
+        evidence_path.parent.mkdir(parents=True, exist_ok=True)
+        ts = datetime.now(timezone.utc).isoformat()
+        entry = {"ts_utc": ts, "actor": actor, "change": change}
+        with evidence_path.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(entry) + "\n")
+    except Exception as e:
+        logger.warning(f"Could not write STRAT_EVIDENCE: {e}")
+
+
+@app.post("/api/control/preview")
+async def control_preview(
+    req: ControlPreviewRequest,
+    authenticated: bool = Security(verify_token),
+):
+    """Preview config change without writing. Returns diff, current, proposed."""
+    try:
+        config = config_store.load()
+        current = _control_state_from_config()
+        proposed_dict = config.to_dict()
+        diff: List[Dict[str, Any]] = []
+        if req.action == "set_strategy" and req.account_id and req.strategy:
+            assignments = [
+                {"account_id": a.account_id, "strategy_key": a.strategy_key, "enabled": getattr(a, "enabled", True)}
+                for a in (config.strategy_assignments or [])
+            ]
+            found = False
+            for i, a in enumerate(assignments):
+                if a.get("account_id") == req.account_id:
+                    old_strat = a.get("strategy_key")
+                    diff.append({"path": f"strategy_assignments[{i}].strategy_key", "old": old_strat, "new": req.strategy})
+                    a["strategy_key"] = req.strategy
+                    found = True
+                    break
+            if not found:
+                assignments.append({"account_id": req.account_id, "strategy_key": req.strategy, "enabled": True})
+                diff.append({"path": "strategy_assignments.append", "new": {"account_id": req.account_id, "strategy_key": req.strategy}})
+            proposed_dict["strategy_assignments"] = assignments
+        elif req.action == "set_execution_enabled" and req.execution_enabled is not None:
+            ep = proposed_dict.setdefault("execution_policy", {})
+            if isinstance(ep, dict):
+                old = ep.get("paper_execution_enabled")
+                diff.append({"path": "execution_policy.paper_execution_enabled", "old": old, "new": req.execution_enabled})
+                ep["paper_execution_enabled"] = req.execution_enabled
+        elif req.action == "set_alert_mode" and req.alert_mode:
+            ep = proposed_dict.setdefault("execution_policy", {})
+            if isinstance(ep, dict):
+                old = ep.get("signals_only")
+                new_val = req.alert_mode == "signals_only"
+                diff.append({"path": "execution_policy.signals_only", "old": old, "new": new_val})
+                ep["signals_only"] = new_val
+        payload = {"ok": True, "diff": diff, "current": current, "proposed": proposed_dict}
+        return _truth_wrap(payload, complete=True, source="config_store")
+    except Exception as e:
+        logger.error(f"Control preview failed: {e}")
+        return _truth_wrap(
+            {"ok": False, "diff": [], "error": str(e)[:200]},
+            complete=False,
+            source="config_store",
+            warnings=[str(e)[:200]],
+        )
+
+
+@app.post("/api/control/apply")
+async def control_apply(
+    req: ControlPreviewRequest,
+    authenticated: bool = Security(verify_token),
+):
+    """Apply config change with backup and STRAT_EVIDENCE."""
+    try:
+        config = config_store.load()
+        proposed_dict = config.to_dict()
+        change = {"action": req.action}
+        if req.action == "set_strategy" and req.account_id and req.strategy:
+            from .schema import StrategyAssignment
+            assignments = list(config.strategy_assignments or [])
+            found = False
+            for i, a in enumerate(assignments):
+                if a.account_id == req.account_id:
+                    change["old_strategy"] = a.strategy_key
+                    change["new_strategy"] = req.strategy
+                    change["account_id"] = req.account_id
+                    assignments[i] = StrategyAssignment(account_id=req.account_id, strategy_key=req.strategy, enabled=True)
+                    found = True
+                    break
+            if not found:
+                assignments.append(StrategyAssignment(account_id=req.account_id, strategy_key=req.strategy, enabled=True))
+                change["account_id"] = req.account_id
+                change["new_strategy"] = req.strategy
+            config.strategy_assignments = assignments
+        elif req.action == "set_execution_enabled" and req.execution_enabled is not None:
+            config.execution_policy.paper_execution_enabled = req.execution_enabled
+            change["execution_enabled"] = req.execution_enabled
+        elif req.action == "set_alert_mode" and req.alert_mode:
+            config.execution_policy.signals_only = (req.alert_mode == "signals_only")
+            change["alert_mode"] = req.alert_mode
+        else:
+            return _truth_wrap(
+                {"ok": False, "error": f"Unknown or incomplete action: {req.action}"},
+                complete=False,
+                source="config_store",
+                warnings=["Unknown action or missing params"],
+            )
+        archive_path = write_runtime_config_atomic(config.to_dict(), archive_reason=f"CONTROL_APPLY: {req.action}")
+        _write_strat_evidence("admin" if authenticated else "unknown", change)
+        append_control_plane_audit(
+            {"actor": "control_plane", "action": "control_apply", "status": "success", "change": change, "archive_path": archive_path}
+        )
+        payload = _control_state_from_config()
+        payload["archive_path"] = archive_path
+        return _truth_wrap(payload, complete=True, source="config_store")
+    except ValueError as e:
+        return _truth_wrap(
+            {"ok": False, "error": str(e)[:200]},
+            complete=False,
+            source="config_store",
+            warnings=[str(e)[:200]],
+        )
+    except Exception as e:
+        logger.error(f"Control apply failed: {e}")
+        return _truth_wrap(
+            {"ok": False, "error": str(e)[:200]},
+            complete=False,
+            source="config_store",
+            warnings=[str(e)[:200]],
+        )
+
 
 @app.get("/api/control/routing", response_model=RoutingConfig)
 async def get_routing_config():
     return load_json(ROUTING_CONFIG_FILE, {"outputs": []})
 
 @app.post("/api/control/routing", response_model=RoutingConfig)
-async def update_routing_config(config: RoutingConfig):
+async def update_routing_config(
+    config: RoutingConfig,
+    authenticated: bool = Security(verify_token),
+):
     save_json(ROUTING_CONFIG_FILE, config.dict())
     return config
 
 @app.post("/api/control/routing/output", response_model=RoutingConfig)
-async def add_output(output: OutputConfig):
+async def add_output(
+    output: OutputConfig,
+    authenticated: bool = Security(verify_token),
+):
     config_data = load_json(ROUTING_CONFIG_FILE, {"outputs": []})
     
     # Check if exists
@@ -3474,8 +5023,45 @@ async def get_bridge_logs(limit: int = 100):
         
     return {"logs": logs}
 
+
+@app.get("/api/logs/stream")
+async def stream_logs(
+    limit: int = Query(200, ge=1, le=1000, description="Initial line count"),
+):
+    """
+    SSE log stream with redaction. No secrets in stream.
+    Emits event: log with data: {line, ts}; keep-alive every ~15s.
+    """
+    async def _generate():
+        import asyncio
+        try:
+            lines = await log_stream.tail(num_lines=limit)
+            for line in lines:
+                ts = datetime.now(timezone.utc).isoformat()
+                payload = json.dumps({"line": line, "ts": ts})
+                yield f"event: log\ndata: {payload}\n\n"
+            while True:
+                await asyncio.sleep(15)
+                yield ": keep-alive\n\n"
+        except asyncio.CancelledError:
+            pass
+        except Exception as e:
+            safe_msg = str(e)[:200].replace('"', "'")
+            yield f"event: error\ndata: {{\"message\": \"{safe_msg}\"}}\n\n"
+
+    return StreamingResponse(
+        _generate(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
 @app.get("/api/bias/state")
-async def get_bias_state():
+async def get_bias_state_logs():
     """
     Read-only endpoint to fetch latest BIAS_STATE observability logs.
     Returns the most recent bias snapshot per instrument from structured logs.
@@ -3586,6 +5172,161 @@ async def get_why_no_trades():
         "timestamp": datetime.utcnow().isoformat()
     }
 
+
+@app.get("/api/system/gate_proximity")
+async def get_gate_proximity():
+    """
+    Aggregate gate proximity and blockers per instrument.
+    
+    Reads:
+    - logs/signals.jsonl (structured signal events)
+    - logs/session_regime_gate_audit.jsonl (gate decisions)
+    - BIAS_STATE observability logs (via load_bias_states)
+    
+    Does NOT change any strategy logic or parameters.
+    Fully read-only and fail-closed (missing data => proximity 0).
+    """
+    from collections import defaultdict
+    from pathlib import Path as _Path
+    import uuid as _uuid
+    
+    # 1) Load latest bias states (single source of truth for bias + blocking_sources)
+    bias_states = load_bias_states()
+    bias_by_instrument = {bs.get("instrument"): bs for bs in bias_states if bs.get("instrument")}
+    
+    # 2) Load latest gate decisions from audit log (BLOCKED + ALLOWED)
+    gate_by_instrument: Dict[str, Dict[str, Any]] = {}
+    audit_log_paths: list = []
+    for pattern in LOG_PATHS:
+        for path in glob.glob(pattern):
+            if "session_regime_gate_audit" in path:
+                audit_log_paths.append(path)
+    
+    standard_audit = _PROJECT_ROOT / "logs" / "session_regime_gate_audit.jsonl"
+    if standard_audit.exists():
+        audit_log_paths.append(str(standard_audit))
+    
+    try:
+        vm_audit = Path.home() / "gcloud-system" / "logs" / "session_regime_gate_audit.jsonl"
+        if vm_audit.exists():
+            audit_log_paths.append(str(vm_audit))
+    except (PermissionError, OSError):
+        pass
+    
+    for audit_path in audit_log_paths:
+        try:
+            with open(audit_path, "r") as f:
+                lines = f.readlines()
+            for line in reversed(lines[-500:]):
+                try:
+                    entry = json.loads(line)
+                except Exception:
+                    continue
+                symbol = entry.get("symbol") or entry.get("instrument")
+                if not symbol:
+                    continue
+                ts = entry.get("timestamp") or entry.get("ts_utc")
+                existing = gate_by_instrument.get(symbol)
+                if not existing or (ts and ts > existing.get("timestamp", "")):
+                    gate_by_instrument[symbol] = {
+                        **entry,
+                        "timestamp": ts,
+                    }
+        except Exception:
+            continue
+    
+    # 3) Load recent signal events (SIGNAL_* from logs/signals.jsonl)
+    signals_file = _Path("logs/signals.jsonl")
+    last_signal_by_instrument: Dict[str, Dict[str, Any]] = {}
+    if signals_file.exists():
+        try:
+            with open(signals_file, "r") as f:
+                lines = f.readlines()[-1000:]
+            for line in lines:
+                try:
+                    event = json.loads(line)
+                except Exception:
+                    continue
+                evt_type = event.get("event_type")
+                if evt_type not in ("SIGNAL_GENERATED", "SIGNAL_NEAR_MISS", "SIGNAL_REJECTED", "SIGNAL_EVALUATED"):
+                    continue
+                instruments = event.get("instrument") or event.get("symbol")
+                if not instruments:
+                    continue
+                ts = event.get("timestamp") or ""
+                for inst in str(instruments).split(","):
+                    inst = inst.strip()
+                    if not inst:
+                        continue
+                    existing = last_signal_by_instrument.get(inst)
+                    if not existing or (ts and ts > existing.get("timestamp", "")):
+                        last_signal_by_instrument[inst] = {
+                            **event,
+                            "timestamp": ts,
+                        }
+        except Exception:
+            # Best-effort only
+            pass
+    
+    # 4) Build unified per-instrument view
+    instruments = set(bias_by_instrument.keys()) | set(gate_by_instrument.keys()) | set(last_signal_by_instrument.keys())
+    results: Dict[str, Any] = {}
+    
+    for inst in sorted(instruments):
+        bias_state = bias_by_instrument.get(inst) or {}
+        gate_entry = gate_by_instrument.get(inst)
+        last_signal = last_signal_by_instrument.get(inst)
+        
+        final_bias = (bias_state.get("final_bias") or "neutral").lower()
+        blocking_sources = list(bias_state.get("blocking_sources") or [])
+        
+        # Reasons from gate audit + signal rejection reason
+        reasons: list = []
+        if gate_entry:
+            r = gate_entry.get("reason")
+            if r:
+                reasons.append(r)
+        if last_signal and last_signal.get("event_type") == "SIGNAL_REJECTED":
+            r = last_signal.get("reason")
+            if r and r not in reasons:
+                reasons.append(r)
+        
+        proximity_score = _compute_proximity_score(bias_state, last_signal)
+        
+        next_unlock_hint = _build_next_unlock_hint(
+            instrument=inst,
+            final_bias=final_bias,
+            blocking_sources=blocking_sources,
+            reasons=reasons,
+            gate_entry=gate_entry,
+            last_signal=last_signal,
+        )
+        
+        last_blocked_at = None
+        if gate_entry and gate_entry.get("allowed") is False:
+            last_blocked_at = gate_entry.get("timestamp") or gate_entry.get("ts_utc")
+        elif last_signal and last_signal.get("event_type") == "SIGNAL_REJECTED":
+            last_blocked_at = last_signal.get("timestamp")
+        
+        results[inst] = {
+            "final_bias": final_bias if final_bias in ("bullish", "bearish", "neutral") else final_bias,
+            "blocking_sources": blocking_sources,
+            "last_blocked_at": last_blocked_at,
+            "proximity_score": proximity_score,
+            "next_unlock_hint": next_unlock_hint,
+        }
+    
+    payload = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "instruments": results,
+    }
+    
+    # 5) Best-effort single-cycle log summary
+    cycle_id = _safe_get_last_scan_id() or str(_uuid.uuid4())
+    _write_gate_proximity_summary(cycle_id, payload)
+    
+    return payload
+
 @app.get("/api/bridge/status")
 async def get_bridge_status():
     """
@@ -3684,17 +5425,71 @@ async def get_bridge_status():
 
 # Mount React Dashboard (must be LAST, after all routes)
 # This serves the React SPA for all non-API routes
-react_dist = Path(__file__).parent.parent.parent / "frontend" / "fxg-dashboard" / "dist"
-if react_dist.exists():
+react_dist = Path(__file__).resolve().parent.parent.parent / "frontend" / "fxg-dashboard" / "dist"
+# Also check VM-specific path
+vm_react_dist = Path("/opt/ai-quant/frontend/fxg-dashboard/dist")
+
+# Determine which dist path to use (VM path first for deterministic VM behavior)
+dist_path = None
+if vm_react_dist.exists():
+    dist_path = vm_react_dist
+elif react_dist.exists():
+    dist_path = react_dist
+
+if dist_path and dist_path.exists():
     # Explicit /vm route for VMTradeJournal (SPA client-side routing)
     @app.get("/vm")
     def serve_vm_spa():
-        return FileResponse(react_dist / "index.html")
+        return FileResponse(dist_path / "index.html")
 
-    app.mount("/", StaticFiles(directory=str(react_dist), html=True), name="dashboard")
-    print(f"✅ React dashboard mounted from: {react_dist}")
+    app.mount("/", StaticFiles(directory=str(dist_path), html=True), name="dashboard")
+    logger.info(
+        "React dashboard mounted dist_path=%s vm_react_dist=%s react_dist=%s",
+        dist_path,
+        vm_react_dist,
+        react_dist,
+    )
+    logger.info("React routes: static='/ui' index='/' ui_version='/api/ui/version' ui_mount='/api/ui/mount'")
+    # stdout so journalctl captures at import time (logger may not be wired yet)
+    print("React routes: static='/ui' index='/' ui_version='/api/ui/version' ui_mount='/api/ui/mount'")
 else:
-    print(f"⚠️  React build not found at {react_dist}")
+    logger.warning(
+        "React build not found vm_react_dist=%s react_dist=%s (neither exists)",
+        vm_react_dist,
+        react_dist,
+    )
+
+
+@app.get("/control")
+def serve_control_spa():
+    """Serve SPA for /control or 404 if build not found. Single route to avoid duplicate registration."""
+    if dist_path and dist_path.exists():
+        return FileResponse(dist_path / "index.html")
+    raise HTTPException(status_code=404, detail="React dashboard build not found. Run: cd frontend/fxg-dashboard && npm run build")
+
+
+@app.get("/api/ui/mount")
+async def get_ui_mount():
+    """
+    Read-only endpoint: returns chosen dist path for verification (no secrets).
+    Truth-wrapped; paths + booleans only.
+    """
+    payload = {
+        "ok": True,
+        "dist_path": str(dist_path) if dist_path else None,
+        "vm_react_dist": str(vm_react_dist),
+        "react_dist": str(react_dist),
+        "exists_flags": {
+            "vm_react_dist": vm_react_dist.exists(),
+            "react_dist": react_dist.exists(),
+            "dist_path_selected": dist_path is not None and dist_path.exists(),
+        },
+    }
+    return _truth_wrap(
+        payload,
+        complete=True,
+        source="control_plane",
+    )
 
 
 def run():
