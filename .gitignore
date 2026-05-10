@@ -4,6 +4,10 @@
 __pycache__/
 *.pyc
 .env
+.env.local
+.env.*.local
+bridges/windows_sidecar/.env
+artifacts/support_bundles/
 venv/
 .idea/
 .vscode/
@@ -16,6 +20,9 @@ VERIFICATION_REPORT.json.*
 
 # Dependencies and artifacts
 node_modules/
+# Next.js (never commit; Google Drive sync can corrupt these chunks → "Cannot find module './NN.js'")
+.next/
+out/
 screenshots/
 test-results/
 sandbox/
@@ -25,3 +32,8 @@ forensic_snapshot/
 archives/
 google-cloud-credentials/
 tests/playwright/.cache/
+# Added by code-review-graph
+.code-review-graph/
+
+# graphify (regenerate: graphify update . or git commit → post-commit hook)
+graphify-out/
