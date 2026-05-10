@@ -41,13 +41,16 @@ Use this only where the **same git repository** is checked out (not telemetry-on
 
 1. Install **Python 3.10+** and **Git for Windows** (includes Git Bash).
 2. Open **Git Bash**, `cd` to the repo root (path with spaces is fine if quoted).
-3. Ensure `.venv` exists and matches your Python workflow, then:
+3. Ensure `.venv` exists (Windows uses `.venv/Scripts/`; the setup script supports that). Example:
 
 ```bash
+python -m venv .venv
+source .venv/Scripts/activate
+python -m pip install -U pip wheel
 bash scripts/fxg_graphify_setup_vm.sh
 ```
 
-Git hooks use `#!/bin/sh` and `nohup`; they run under Git Bash’s environment. If `graphify` import fails in the hook, install `graphifyy` into the same interpreter your `python3` uses, or create `.venv` and re-run the script.
+Git hooks use `#!/bin/sh` and `nohup`; they run under Git Bash’s environment. If `graphify` import fails in the hook, install `graphifyy` into `.venv` (re-run the script) or into the same interpreter `python` / `python3` uses.
 
 **Optional first graph:**
 
@@ -57,5 +60,5 @@ FXG_GRAPHIFY_INITIAL_UPDATE=1 bash scripts/fxg_graphify_setup_vm.sh
 
 ## After setup
 
-- `graphify-out/` stays local; regenerate with `source .venv/bin/activate && graphify update .` or rely on hooks.
+- `graphify-out/` stays local; regenerate with `source .venv/bin/activate && graphify update .` (Linux) or `.venv/Scripts/graphify.exe update .` (Windows Git Bash), or rely on hooks.
 - HTML viz is skipped automatically for very large graphs (see Graphify messages).

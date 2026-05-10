@@ -17,19 +17,34 @@ cd "$ROOT"
 echo "=== FXG Graphify VM setup ==="
 echo "Repo: $ROOT"
 
-if ! command -v python3 >/dev/null 2>&1; then
-  echo "[ERROR] python3 not found. Install Python 3.10+ first." >&2
+if ! command -v python3 >/dev/null 2>&1 && ! command -v python >/dev/null 2>&1; then
+  echo "[ERROR] python3/python not found. Install Python 3.10+ first." >&2
   exit 1
 fi
+PY=python3
+command -v python3 >/dev/null 2>&1 || PY=python
 
 VENV="$ROOT/.venv"
+PIP=""
+GRAPHIFY_CLI=""
 if [ -x "$VENV/bin/pip" ]; then
+  PIP="$VENV/bin/pip"
+  GRAPHIFY_CLI="$VENV/bin/graphify"
+elif [ -x "$VENV/Scripts/pip.exe" ]; then
+  PIP="$VENV/Scripts/pip.exe"
+  GRAPHIFY_CLI="$VENV/Scripts/graphify.exe"
+elif [ -x "$VENV/Scripts/pip" ]; then
+  PIP="$VENV/Scripts/pip"
+  GRAPHIFY_CLI="$VENV/Scripts/graphify"
+fi
+
+if [ -n "$PIP" ]; then
   echo "--- Installing graphifyy into .venv ---"
-  "$VENV/bin/pip" install -q -U pip wheel >/dev/null 2>&1 || true
-  "$VENV/bin/pip" install -q graphifyy
+  "$PIP" install -q -U pip wheel >/dev/null 2>&1 || true
+  "$PIP" install -q graphifyy
   echo "[OK] graphifyy in .venv"
 elif [ -d "$VENV" ]; then
-  echo "[WARN] .venv exists but bin/pip missing; skip pip install"
+  echo "[WARN] .venv exists but pip not found under bin/ or Scripts/; skip pip install"
 else
   echo "[WARN] No .venv at $VENV — create venv and re-run, or: pip install --user graphifyy"
 fi
@@ -38,11 +53,11 @@ echo "--- Installing git hooks (pre-commit + graphify post-commit/post-checkout)
 bash "$ROOT/scripts/install_git_hooks.sh"
 
 if [ "${FXG_GRAPHIFY_INITIAL_UPDATE:-0}" = "1" ]; then
-  if [ -x "$VENV/bin/graphify" ]; then
+  if [ -n "$GRAPHIFY_CLI" ] && [ -x "$GRAPHIFY_CLI" ]; then
     echo "--- graphify update . (AST-only; may take several minutes) ---"
-    "$VENV/bin/graphify" update .
+    "$GRAPHIFY_CLI" update .
   else
-    echo "[WARN] FXG_GRAPHIFY_INITIAL_UPDATE=1 but $VENV/bin/graphify missing"
+    echo "[WARN] FXG_GRAPHIFY_INITIAL_UPDATE=1 but venv graphify CLI missing (expected next to pip under .venv)"
   fi
 else
   echo "[SKIP] Initial graph build (set FXG_GRAPHIFY_INITIAL_UPDATE=1 to run 'graphify update .')"
