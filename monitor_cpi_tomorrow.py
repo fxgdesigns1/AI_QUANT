@@ -11,11 +11,11 @@ from datetime import datetime, timedelta
 import schedule
 
 # Telegram credentials - from environment variables
-TELEGRAM_TOKEN = settings.telegram_bot_token
+TELEGRAM_TOKEN = REDACTED
 TELEGRAM_CHAT_ID = settings.telegram_chat_id
 
 # OANDA credentials - from environment variables
-OANDA_API_KEY = settings.oanda_api_key
+OANDA_API_KEY = REDACTED
 OANDA_ACCOUNT = os.getenv("OANDA_ACCOUNT_ID", "101-004-30719775-001")
 OANDA_ENV = os.getenv("OANDA_ENV", "practice")
 OANDA_URL = f'https://api-fx{OANDA_ENV}.oanda.com/v3/accounts/{OANDA_ACCOUNT}/pricing' if OANDA_ENV == "practice" else f"https://api-fxtrade.oanda.com/v3/accounts/{OANDA_ACCOUNT}/pricing"

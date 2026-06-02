@@ -10,9 +10,9 @@ import time
 import logging
 from datetime import datetime
 
-# Set environment variables
-os.environ['OANDA_API_KEY'] = "REMOVED_SECRET"
+# Set environment variables - API key must come from environment
 os.environ['OANDA_ENVIRONMENT'] = "practice"
+# Note: OANDA_API_KEY must be set in environment before running this test
 
 # Add the project to path
 sys.path.append('/Users/mac/quant_system_clean/google-cloud-trading-system')

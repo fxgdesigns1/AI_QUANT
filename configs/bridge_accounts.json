@@ -1,0 +1,63 @@
+{
+  "schema": "bridge_accounts_v2",
+  "master_feed": {
+    "oanda_account_id": "010"
+  },
+  "routing_rules": {
+    "fanout_enabled": true,
+    "fanout_targets": ["prop_02", "citytraders"]
+  },
+  "default_account_id": "prop_02",
+  "accounts": [
+    {
+      "id": "prop_02",
+      "label": "FTMO Prop 02",
+      "broker": "FTMO",
+      "server": "FTMO-Demo",
+      "environment": "demo",
+      "enabled": true,
+      "mt5_signal_file": "signals_prop_02.jsonl",
+      "bridge_account_value": "prop_02",
+      "mt5_login_ref": "keychain:fxg/mt5/prop_02/login",
+      "mt5_password_ref": "keychain:fxg/mt5/prop_02/password",
+      "magic_number": 223456,
+      "symbol_map": {},
+      "risk_profile_id": "default",
+      "bridge_log_file": "ftmo_bridge_log.jsonl",
+      "notes": "FTMO terminal"
+    },
+    {
+      "id": "citytraders",
+      "label": "CityTraders",
+      "broker": "CityTraders",
+      "server": "CityTraders-Demo",
+      "environment": "demo",
+      "enabled": true,
+      "mt5_signal_file": "signals_citytraders.jsonl",
+      "bridge_account_value": "citytraders",
+      "mt5_login_ref": "keychain:fxg/mt5/citytraders/login",
+      "mt5_password_ref": "keychain:fxg/mt5/citytraders/password",
+      "magic_number": 323456,
+      "symbol_map": {},
+      "risk_profile_id": "default",
+      "bridge_log_file": "citytraders_bridge_log.jsonl",
+      "notes": "CityTraders terminal"
+    },
+    {
+      "id": "ftmo_demo_01",
+      "label": "FTMO Demo 01",
+      "broker": "FTMO",
+      "server": "FTMO-Demo",
+      "environment": "demo",
+      "enabled": false,
+      "mt5_signal_file": "signals.jsonl",
+      "bridge_account_value": "ftmo_demo_01",
+      "mt5_login_ref": "keychain:fxg/mt5/ftmo_demo_01/login",
+      "mt5_password_ref": "keychain:fxg/mt5/ftmo_demo_01/password",
+      "magic_number": 123456,
+      "symbol_map": {},
+      "risk_profile_id": "default",
+      "notes": "Legacy demo"
+    }
+  ]
+}

@@ -68,7 +68,7 @@ create_or_update_secret "oanda-gold-scalp-account" "101-004-30719775-007"
 create_or_update_secret "oanda-strategy-alpha-account" "101-004-30719775-006"
 
 # Telegram
-create_or_update_secret "telegram-bot-token" "7248728383:AAEE7lkAAIUXBcK9iTPR5NIeTq3Aqbyx6IU"
+create_or_update_secret "telegram-bot-token" "7248728383:REDACTED"
 create_or_update_secret "telegram-chat-id" "6100678501"
 
 # News APIs

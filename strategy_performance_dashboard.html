@@ -299,16 +299,15 @@
             {id: '101-004-30719775-011', name: '📈 Momentum Multi-Pair', strategy: 'momentum_trading', pairs: '6 Major Pairs'},
         ];
 
-        const API_KEY = 'REMOVED_SECRET';
+        // API key must be provided by backend - remove hardcoded key
         const OANDA_BASE = 'https://api-fxpractice.oanda.com/v3';
 
         let strategiesData = [];
 
         async function fetchAccountData(accountId) {
             try {
-                const response = await fetch(`${OANDA_BASE}/accounts/${accountId}`, {
-                    headers: {'Authorization': `Bearer ${API_KEY}`}
-                });
+                // Use backend API instead of direct OANDA calls with hardcoded key
+                const response = await fetch(`/api/account/${accountId}`);
                 const data = await response.json();
                 return data.account;
             } catch (error) {

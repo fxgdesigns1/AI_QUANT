@@ -1,0 +1,48 @@
+src/control_plane/schema.py:48:    active_strategy_key: str = "momentum"  # momentum|gold|range|eur_usd_5m_safe|momentum_v2
+src/control_plane/schema.py:79:        if self.active_strategy_key not in valid_strategies:
+src/control_plane/schema.py:80:            errors.append(f"Invalid active_strategy_key: {self.active_strategy_key}. Must be one of {valid_strategies}")
+src/control_plane/schema.py:103:            if pattern in config_str and pattern != "active_strategy_key":
+templates/dashboard_advanced.html:1580:                const response = await fetch('/api/strategies/overview');
+scripts/verify_dashboard_compat.sh:138:        "/api/strategies/overview"
+templates/forensic_command.html.save:896:            const data = await fetchJson('/api/strategies/overview');
+templates/forensic_command.html.save:920:                body: JSON.stringify({ active_strategy_key: key })
+src/control_plane/api.py:63:    active_strategy_key: Optional[str] = Field(None, description="Strategy to activate")
+src/control_plane/api.py:83:    active_strategy_key: str
+src/control_plane/api.py:255:            active_strategy_key=snapshot.get("active_strategy_key", config.active_strategy_key),
+src/control_plane/api.py:285:        active_strategy_key=config.active_strategy_key,
+src/control_plane/api.py:307:@app.get("/api/strategies")
+src/control_plane/api.py:323:        "default": config.active_strategy_key if config.active_strategy_key in allowed_keys else allowed_keys[0] if allowed_keys else None,
+src/control_plane/api.py:389:            "active_strategy_key": request.strategy_key
+src/control_plane/api.py:503:@app.get("/api/strategies/overview")
+src/control_plane/api.py:512:    active_key = snapshot.get("active_strategy_key", config.active_strategy_key) if snapshot else config.active_strategy_key
+src/control_plane/api.py:569:        active_strategy = snapshot.get("active_strategy_key", config.active_strategy_key)
+src/control_plane/api.py:574:        active_strategy = config.active_strategy_key
+templates/forensic_command.html:1412:                const response = await apiGet("/api/strategies");
+templates/forensic_command.html:1418:                    console.error("Invalid /api/strategies response format:", response);
+templates/forensic_command.html:1423:                console.error("Failed to load strategy catalog:", e);
+templates/forensic_command.html:1453:                await apiPost("/api/config", { active_strategy_key: backendKey });
+templates/forensic_command.html:1582:            // Load strategy catalog FIRST (required for validation)
+scripts/verify_control_plane.sh:51:ACTIVE_STRATEGY=$(echo "$STATUS_RESP" | python3 -c "import sys,json; print(json.load(sys.stdin).get('active_strategy_key', 'unknown'))" 2>/dev/null || echo "unknown")
+scripts/verify_control_plane.sh:99:# Test 2.7: GET /api/strategies (authoritative catalog)
+scripts/verify_control_plane.sh:100:echo "2.7️⃣ Testing GET /api/strategies..."
+scripts/verify_control_plane.sh:101:STRATEGIES_RESP=$(curl -sf http://127.0.0.1:8787/api/strategies || echo "FAIL")
+scripts/verify_control_plane.sh:103:    echo "   ❌ GET /api/strategies failed"
+scripts/verify_control_plane.sh:114:    echo "   ❌ Invalid /api/strategies response: ok=$STRATEGIES_OK, count=$ALLOWED_COUNT"
+scripts/verify_control_plane.sh:125:    -d '{"active_strategy_key":"gold"}' || echo "FAIL")
+scripts/verify_control_plane.sh:152:echo "4️⃣  Verifying active_strategy_key updated..."
+scripts/verify_control_plane.sh:154:NEW_STRATEGY=$(echo "$NEW_STATUS" | python3 -c "import sys,json; print(json.load(sys.stdin).get('active_strategy_key', 'unknown'))" 2>/dev/null || echo "unknown")
+scripts/verify_control_plane.sh:157:    echo "   ✅ active_strategy_key = gold (updated successfully)"
+scripts/verify_control_plane.sh:159:    echo "   ⚠️  active_strategy_key = $NEW_STRATEGY (expected: gold)"
+scripts/verify_control_plane.sh:294:# Test 7: Verify strategy catalog and switching
+scripts/verify_control_plane.sh:295:echo "7️⃣  Verifying strategy catalog and switching..."
+scripts/verify_control_plane.sh:296:echo "   A) GET /api/strategies returns allowed keys..."
+scripts/verify_control_plane.sh:297:STRAT_RESP=$(curl -sf http://127.0.0.1:8787/api/strategies || echo "FAIL")
+scripts/verify_control_plane.sh:299:    echo "      ❌ GET /api/strategies failed"
+scripts/verify_control_plane.sh:314:    -d '{"active_strategy_key":"gold"}' || echo "FAIL")
+scripts/verify_control_plane.sh:328:echo "   C) Verifying active_strategy_key updated..."
+scripts/verify_control_plane.sh:330:FINAL_STRATEGY=$(echo "$FINAL_STATUS" | python3 -c "import sys,json; print(json.load(sys.stdin).get('active_strategy_key', 'unknown'))" 2>/dev/null || echo "unknown")
+scripts/verify_control_plane.sh:332:    echo "      ✅ active_strategy_key = gold (verified update)"
+scripts/verify_control_plane.sh:334:    echo "      ⚠️  active_strategy_key = $FINAL_STRATEGY (may have been already 'gold')"
+scripts/verify_control_plane.sh:378:echo "   ✅ GET /api/strategies: OK (returns allowed keys)"
+scripts/verify_control_plane.sh:380:echo "   ✅ Strategy update: Verified (active_strategy_key updated)"
+scripts/verify_control_plane.sh:418:echo "   6. Confirm GET /api/status shows updated active_strategy_key"

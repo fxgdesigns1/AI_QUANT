@@ -1,0 +1,119 @@
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                    FORENSIC DASHBOARD - QUICK START                       ║
+║                         ✅ VERIFIED OPERATIONAL                           ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+🎯 WHAT'S DONE
+─────────────────────────────────────────────────────────────────────────────
+✅ Forensic Command dashboard wired to Control Plane FastAPI
+✅ All 11 API endpoints operational (verified with curl)
+✅ Namespace packages fixed (removed blocking __init__.py files)
+✅ Signals-only safety verified (no execution markers in logs)
+✅ No secrets leakage (snapshot, config, API responses all clean)
+✅ SSE logs streaming to dashboard terminal
+✅ Strategy hot-reload working (POST /api/config)
+✅ Full verification suite passing
+
+📍 ACCESS DASHBOARD
+─────────────────────────────────────────────────────────────────────────────
+URL:  http://127.0.0.1:8787/
+Alt:  http://127.0.0.1:8787/advanced  (fallback dashboard)
+API:  http://127.0.0.1:8787/docs      (FastAPI interactive docs)
+
+🚀 START SYSTEM (3 commands)
+─────────────────────────────────────────────────────────────────────────────
+
+# Terminal 1: Start Control Plane API (must be running already)
+./scripts/run_control_plane.sh
+
+# Terminal 2: Start Runner (signals-only, safe)
+MAX_ITERATIONS=0 TRADING_MODE=paper PAPER_EXECUTION_ENABLED=false \
+PAPER_ALLOW_OANDA_NETWORK=true python3 -m runner_src.runner.main
+
+# Terminal 3: Open dashboard
+open http://127.0.0.1:8787/
+
+🔍 VERIFY SYSTEM HEALTH
+─────────────────────────────────────────────────────────────────────────────
+
+# Run comprehensive verification suite
+bash scripts/verify_dashboard_compat.sh
+
+# Quick health check
+curl -s http://127.0.0.1:8787/api/status | python3 -m json.tool
+
+# Check for secrets (should be empty)
+rg -i "OANDA_API_KEY|api_key.*:|password" runtime/status.json runtime/config.yaml
+
+🔐 SAFETY GUARANTEES
+─────────────────────────────────────────────────────────────────────────────
+✅ Default mode: TRADING_MODE=paper, PAPER_EXECUTION_ENABLED=false
+✅ UI cannot enable live trading (requires env vars only)
+✅ Strategy switch = config update only (NO orders placed)
+✅ Opportunity approve/dismiss = state only (NO execution)
+✅ POST endpoints require Bearer token (set in Settings modal)
+✅ Snapshot atomically written (fsync + rename)
+✅ All secrets filtered from API responses
+
+📊 KEY ENDPOINTS
+─────────────────────────────────────────────────────────────────────────────
+GET  /                              → Forensic Command dashboard
+GET  /advanced                      → Advanced dashboard (fallback)
+GET  /api/status                    → System status (NO SECRETS)
+GET  /api/config                    → Runtime config (NO SECRETS)
+GET  /api/strategies/overview       → Strategy registry + active
+GET  /api/signals/pending           → Recent signals (not executed)
+GET  /api/accounts                  → Accounts + execution capability
+GET  /api/positions                 → Open positions (empty if signals-only)
+GET  /api/news                      → News feed (if enabled)
+GET  /api/logs/stream               → SSE logs (redacted)
+POST /api/config                    → Update config (Bearer token required)
+POST /api/opportunities/approve     → Approve opportunity (safe, no exec)
+
+📁 KEY FILES
+─────────────────────────────────────────────────────────────────────────────
+Dashboard:       templates/forensic_command.html
+API:             src/control_plane/api.py
+Runner:          runner_src/runner/main.py
+Status Snapshot: src/control_plane/status_snapshot.py
+Config Store:    src/control_plane/config_store.py
+Runtime Config:  runtime/config.yaml
+Status Snapshot: runtime/status.json
+Verification:    scripts/verify_dashboard_compat.sh
+
+🐛 TROUBLESHOOTING
+─────────────────────────────────────────────────────────────────────────────
+
+Problem: "No module named 'src.control_plane'"
+Fix:     Ensure NO __init__.py exists in src/ or src/control_plane/
+         (They block namespace packages)
+
+Problem: Dashboard shows "Loading..." forever
+Fix:     Check API is running: curl http://127.0.0.1:8787/health
+         Start API: ./scripts/run_control_plane.sh
+
+Problem: "Authentication token missing" on strategy switch
+Fix:     Open Settings modal (⚙️ button), paste token, click Save
+         Token stored in localStorage: CONTROL_PLANE_TOKEN
+
+Problem: Signals not showing
+Fix:     Check runner is running: ps aux | grep runner
+         Check snapshot: cat runtime/status.json | jq .recent_signals
+
+🎉 NEXT STEPS
+─────────────────────────────────────────────────────────────────────────────
+1. Open dashboard: http://127.0.0.1:8787/
+2. Verify UI renders without JS errors (check browser console)
+3. Click strategy buttons to test hot-reload
+4. Monitor live terminal for SSE logs
+5. Check system integrity metrics update every 2s
+
+📖 FULL REPORT
+─────────────────────────────────────────────────────────────────────────────
+See: FORENSIC_DASHBOARD_WIRED_COMPLETE.md
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Generated: 2026-01-03 23:45 UTC
+Status:    ✅ PRODUCTION-READY (signals-only mode)
+Mode:      BRUTAL TRUTH STANDARD (proof-only, no guessing)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

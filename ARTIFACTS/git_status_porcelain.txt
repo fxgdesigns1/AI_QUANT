@@ -1,0 +1,50 @@
+ M docs/CANONICAL_ENTRYPOINT.md
+ M fixed_dashboard.py
+ M runner_src/runner/main.py
+ M working_beautiful_dashboard.py
+ M working_dashboard.py
+ M working_trading_system.py
+?? ARTIFACTS/
+?? COMPLETION_REPORT_CONTROL_PLANE.md
+?? CONTROL_PLANE_COMMANDS.sh
+?? CONTROL_PLANE_DEPLOYMENT_COMPLETE.md
+?? DASHBOARD_COMPAT_COMPLETE.md
+?? DASHBOARD_COMPAT_FINAL.md
+?? DEPRECATED_FLASK_SERVERS.md
+?? FORENSIC_COMMAND_DEPLOYMENT.md
+?? FORENSIC_DASHBOARD_WIRED_COMPLETE.md
+?? GIT_CHANGES_SUMMARY.txt
+?? QUICK_START_FORENSIC_DASHBOARD.txt
+?? Quant_phase2/
+?? README_CONTROL_PLANE.md
+?? VM_DEPLOYMENT.md
+?? VM_RUNBOOK.md
+?? dashboard/control_plane.html
+?? docs/CONTROL_PLANE_SETUP.md
+?? docs/DASHBOARD_ENDPOINTS_EXPECTED.md
+?? docs/DASHBOARD_RUNTIME_CONFIG.md
+?? docs/RUN_CONTROL_PLANE.md
+?? docs/forensics/
+?? package-lock.json
+?? package.json
+?? scripts/create_systemd_unit.sh
+?? scripts/deploy_vm_end_to_end.sh
+?? scripts/push_repo_to_vm.sh
+?? scripts/pw_trace_forbidden_requests.js
+?? scripts/run_control_plane.sh
+?? scripts/start_control_plane_clean.sh
+?? scripts/stop_control_plane.sh
+?? scripts/verify_control_plane.sh
+?? scripts/verify_dashboard_compat.sh
+?? scripts/vm_bootstrap_control_plane.sh
+?? scripts/vm_bootstrap_deploy_verify.sh
+?? src/ai/
+?? src/control_plane/
+?? src/core/
+?? templates/forensic_command.html
+?? templates/forensic_command.html.save
+?? tests/test_config_store.py
+?? tests/test_control_plane_config.py
+?? tests/test_dashboard_compat_endpoints.py
+?? tests/test_hot_reload_integration.py
+?? tests/test_status_snapshot.py

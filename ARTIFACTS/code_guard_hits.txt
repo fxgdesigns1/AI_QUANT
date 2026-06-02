@@ -1,0 +1,41 @@
+templates/dashboard_advanced.html:14:    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+templates/dashboard_advanced.html:1959:    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+templates/dashboard_advanced.html:2148:                path: '/socket.io',
+templates/dashboard_advanced.html:2659:                const res = await fetch('/api/insights');
+templates/dashboard_advanced.html:2884:                const response = await fetch('/tasks/full_scan', {
+templates/dashboard_advanced.html:2940:            else if (lower.startsWith('/insights')) url = '/api/insights';
+templates/dashboard_advanced.html:2941:            else if (lower.startsWith('/ideas')) url = '/api/trade_ideas';
+templates/dashboard_advanced.html:3034:                const res = await fetch('/api/insights');
+templates/dashboard_advanced.html:3067:                const res = await fetch('/api/trade_ideas');
+templates/dashboard_advanced.html:4168:            const aiSocket = io({ path: '/socket.io', forceNew: true, transports: ['websocket', 'polling'] });
+src/control_plane/api.py:191:@app.get("/socket.io/{path:path}")
+src/control_plane/api.py:192:@app.get("/socket.io/")
+src/control_plane/api.py:193:@app.post("/socket.io/{path:path}")
+src/control_plane/api.py:194:@app.post("/socket.io/")
+src/control_plane/api.py:196:    """Noise shim for /socket.io requests (returns 204 to stop 404 spam)
+src/control_plane/api.py:205:@app.get("/api/insights")
+src/control_plane/api.py:206:@app.get("/api/insights/{path:path}")
+src/control_plane/api.py:208:    """Noise shim for /api/insights requests (returns 204 to stop 404 spam)
+src/control_plane/api.py:216:@app.get("/api/trade_ideas")
+src/control_plane/api.py:217:@app.get("/api/trade_ideas/{path:path}")
+src/control_plane/api.py:219:    """Noise shim for /api/trade_ideas requests (returns 204 to stop 404 spam)
+src/control_plane/api.py:227:@app.post("/tasks/full_scan")
+src/control_plane/api.py:229:    """Noise shim for POST /tasks/full_scan (returns 204 to stop 404 spam)
+templates/simple_dashboard.html:157:    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+templates/forensic_command.html:1109:        // - forensic_command.html contains ZERO direct calls to /socket.io, /tasks/full_scan, /api/insights, /api/trade_ideas
+templates/forensic_command.html:1118:        const BLOCKED_ENDPOINTS = [
+templates/forensic_command.html:1119:            "/socket.io",
+templates/forensic_command.html:1120:            "/tasks/full_scan",
+templates/forensic_command.html:1121:            "/api/insights",
+templates/forensic_command.html:1122:            "/api/trade_ideas"
+templates/forensic_command.html:1134:                if (typeof url === 'string' && BLOCKED_ENDPOINTS.some(blocked => url.includes(blocked))) {
+templates/forensic_command.html:1143:                if (typeof url === 'string' && BLOCKED_ENDPOINTS.some(blocked => url.includes(blocked))) {
+templates/forensic_command.html:1153:        function isBlocked(path) {
+templates/forensic_command.html:1156:            //   '/api/insights' -> blocked
+templates/forensic_command.html:1157:            //   '/api/insights?x=1' -> blocked (query string removed)
+templates/forensic_command.html:1158:            //   'http://example.com/api/insights' -> blocked (path extracted)
+templates/forensic_command.html:1159:            //   '/tasks/full_scan' -> blocked
+templates/forensic_command.html:1160:            //   '/socket.io/?EIO=4&transport=polling' -> blocked
+templates/forensic_command.html:1183:            return BLOCKED_ENDPOINTS.some(blocked => {
+templates/forensic_command.html:1191:            if (isBlocked(path)) {
+templates/forensic_command.html:1203:            if (isBlocked(path)) {

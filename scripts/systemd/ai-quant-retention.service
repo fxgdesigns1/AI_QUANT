@@ -1,0 +1,8 @@
+[Unit]
+Description=AI_QUANT Retention Cleanup
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /opt/ai-quant/scripts/retention_cleanup.sh
+User=root

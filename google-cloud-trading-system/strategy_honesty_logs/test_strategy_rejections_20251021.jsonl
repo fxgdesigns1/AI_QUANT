@@ -1,2 +1,0 @@
-{"timestamp": "2025-10-21T22:08:26.743048", "instrument": "GBP_USD", "reasons": ["ADX too low", "Momentum insufficient"], "scores": {"ADX": {"value": 18, "required": 25, "passed": false}, "Momentum": {"value": 0.003, "required": 0.008, "passed": false}}, "conditions": {}}
-{"timestamp": "2025-10-21T22:36:37.326975", "instrument": "GBP_USD", "reasons": ["ADX too low", "Momentum insufficient"], "scores": {"ADX": {"value": 18, "required": 25, "passed": false}, "Momentum": {"value": 0.003, "required": 0.008, "passed": false}}, "conditions": {}}

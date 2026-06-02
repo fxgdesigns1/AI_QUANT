@@ -1,204 +1,39 @@
-# Sensitive credentials and API keys
-google-cloud-credentials/
-*.json
-!package.json
-!package-lock.json
-*credentials*.yaml
-*api_keys*.txt
-*.env
-.env.*
 
-# Exclude actual accounts file but keep template
-accounts.yaml
-**/accounts.yaml
-!accounts.yaml.template
-!**/accounts.yaml.template
-oanda_config.env
-news_api_config.env
-
-# Exclude any symlinks to credentials
-google-cloud-trading-system/accounts.yaml
-google-cloud-trading-system/oanda_config.env
-google-cloud-trading-system/news_api_config.env
-
-# Logs and temporary files
-logs/
-*.log
-temp_backup/
-backups/
-
-# Python
+# System and artifacts
+.DS_Store
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
+*.pyc
+.env
+.env.local
+.env.*.local
+bridges/windows_sidecar/.env
+artifacts/support_bundles/
 venv/
-ENV/
-env/
-
-# Test results
-test-results/
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Node modules (should never be committed)
-node_modules/
-**/node_modules/
-
-# Backups and archives
-*.zip
-*.tar.gz
-*.bak
-*_backup_*/
-AI_Trading_System_Backup_*/
-AI_Trading_System_SavePoint_*/
-DESKTOP_HANDOFF_PACKAGE/
-autonomous-trading-system/
-ai-trading-copilot-starter/
-ai_trading_copilot_starter_*.zip
-
-# IDE and OS files
-.DS_Store
-.vscode/
 .idea/
-*.swp
-*.swo
-*~
-
-# Database files (if any)
-*.db
-*.sqlite
-*.sqlite3
-
-# Large data files
-*.csv
-*.parquet
-
-# Configuration files with sensitive data
-# (Keep template versions, ignore production configs)
-*_production.yaml
-*_prod.yaml
-
-*.bak*
-
-# ===== AI_QUANT SAFETY HARDENING =====
-.DS_Store
-.cursor/
-
-# Env / secrets (allow .env.example)
-.env*
-!.env.example
-
-# Common secret/key patterns
-**/*google*credentials*.json
-**/*firebase*.json
-**/*token*
-**/*apikey*
-**/*api_key*
-**/*secret*
-**/*credentials*
-**/*.pem
-**/*.key
-
-# Data / caches / DBs
-*.db
-*.sqlite*
-runtime/
-reports/
+.vscode/
+logs/
 backups/
-archives/
-playwright-report/
-test-results/
+.BACKUPS/
+PROBE_OUTPUT.json.*
+VERIFICATION_REPORT.json.*
+*.log
 
-# Common large local folders
+# Dependencies and artifacts
 node_modules/
-Sync folder MAC TO PC/
+# Next.js (never commit; Google Drive sync can corrupt these chunks → "Cannot find module './NN.js'")
+.next/
+out/
+screenshots/
+test-results/
+sandbox/
+reports/
+runtime/
+forensic_snapshot/
+archives/
+google-cloud-credentials/
+tests/playwright/.cache/
+# Added by code-review-graph
+.code-review-graph/
 
-# Forensics / inventories / local diagnostics
-FORENSIC_*.json
-secrets_analysis.json
-state_inventory.json
-structure_inventory.json
-dependency_runtime_check.json
-execution_model.json
-execution_entrypoints.json
-local_run_feasibility.json
-side_effects.json
-trading_triggers.json
-config_sprawl.json
-
-# Local backups
-*.tar.gz
-*.bak
-
-# Local-only service files (keep templates in repo under deploy/ if needed)
-ai_trading*.service
-# Files with hardcoded secrets - untrack these
-ALL_CREDENTIALS_READABLE.txt
-API_KEY_LOCATION.txt
-API_KEY_UPDATE_COMPLETE.md
-COMPLETE_CREDENTIALS_READABLE.txt
-CREDENTIALS_SETUP.md
-QUICK_REFERENCE.md
-TRADING_SYSTEM_STATUS_COMPLETE.md
-UPLOAD_ALL_SECRETS.sh
-upload_to_secret_manager.sh
-
-# Python files with hardcoded secrets
-FORCE_TRADE_NOW.py
-aggressive_opportunity_hunter.py
-aggressive_scanner.py
-ai_trading_system.py
-automated_trading_system.py
-analyze_ai_performance.py
-complete_ai_analysis.py
-comprehensive_dashboard_test.py
-comprehensive_trading_system.py
-final_system_verification.py
-fixed_sniper_system.py
-force_all_accounts_trade.py
-force_trading_test.py
-monitor_cpi_tomorrow.py
-monitor_ppi_and_news.py
-optimized_all_strategies_system.py
-place_test_trades.py
-send_ai_status.py
-send_market_update.py
-send_notification.py
-send_performance_report.py
-sniper_trading_system.py
-stable_trading_system.py
-test_all_accounts.py
-test_complete_system.py
-test_dashboard_final.py
-test_scanner_direct.py
-
-# Service files
-ai_trading.service
-automated_trading.service
-
-# YAML configs with secrets
-analytics_f1_optimization.yaml
-
-# Dashboard files with secrets
-dashboard/*.py
-
-# Entire google-cloud-trading-system directory (contains many hardcoded secrets)
-google-cloud-trading-system/
+# graphify (regenerate: graphify update . or git commit → post-commit hook)
+graphify-out/

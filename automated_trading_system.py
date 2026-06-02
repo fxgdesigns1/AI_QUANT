@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+import os as _os
+
+if _os.getenv("ALLOW_LEGACY_RUNNERS", "false").lower() != "true":
+    raise RuntimeError("Legacy runner disabled. Use: python -m src.runner.main")
+
 from src.core.settings import settings
 """
 FULL AUTOMATED TRADING SYSTEM - DEMO ACCOUNT ONLY
@@ -14,14 +19,14 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Any
 
 # OANDA Configuration - from environment variables
-OANDA_API_KEY = settings.oanda_api_key
+OANDA_API_KEY = REDACTED
 OANDA_ACCOUNT_ID = os.getenv("OANDA_ACCOUNT_ID", "101-004-30719775-008")  # Demo account default
 OANDA_ENV = os.getenv("OANDA_ENV", "practice")
 OANDA_BASE_URL = f"https://api-fx{OANDA_ENV}.oanda.com" if OANDA_ENV == "practice" else "https://api-fxtrade.oanda.com"
 OANDA_STREAM_URL = f"https://stream-fx{OANDA_ENV}.oanda.com" if OANDA_ENV == "practice" else "https://stream-fxtrade.oanda.com"
 
 # Telegram Configuration - from environment variables
-TELEGRAM_BOT_TOKEN = settings.telegram_bot_token
+TELEGRAM_BOT_TOKEN = REDACTED
 TELEGRAM_CHAT_ID = settings.telegram_chat_id
 
 # Fail-closed: require critical env vars

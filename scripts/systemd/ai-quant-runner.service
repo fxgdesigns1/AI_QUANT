@@ -1,0 +1,34 @@
+[Unit]
+Description=AI_QUANT Runner (Account Loading, Price Polling, Signal Scanning)
+After=network-online.target
+Wants=network-online.target
+Requires=ai-quant-control-plane.service
+
+[Service]
+Type=simple
+User=aiquant
+WorkingDirectory=/opt/ai-quant
+Environment=PYTHONUNBUFFERED=1
+# Load env from file (0600 permissions)
+EnvironmentFile=/etc/ai-quant/.env
+# Start runner
+ExecStart=/bin/bash -c 'cd /opt/ai-quant && source .venv/bin/activate && python -m runner_src.runner.main'
+Restart=on-failure
+RestartSec=5s
+StartLimitIntervalSec=120
+StartLimitBurst=6
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/tmp /opt/ai-quant/runtime /opt/ai-quant/logs
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ai-quant-runner
+
+[Install]
+WantedBy=multi-user.target

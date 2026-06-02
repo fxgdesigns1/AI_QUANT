@@ -1,0 +1,2314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-QUANT | TOTAL COMMAND</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #0a0b0d 0%, #1a1b1f 100%); color: #e6e6e6; margin: 0; overflow: hidden; height: 100vh; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .nav-item { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; border-left: 3px solid transparent; position: relative; }
+        .nav-item:hover { background: #1a1c22; transform: translateX(2px); }
+        .nav-item.active { background: #14161a; border-left-color: #00ff88; color: #00ff88; }
+        .nav-item.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 60%; background: #00ff88; box-shadow: 0 0 10px #00ff88; }
+        .glass-card { background: rgba(20, 22, 26, 0.8); border: 1px solid #2d2e35; backdrop-filter: blur(10px); transition: all 0.3s ease; }
+        .glass-card:hover { border-color: #3d3e45; transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0, 255, 136, 0.1); }
+        .tab-content { display: none; height: 100%; animation: fadeIn 0.4s ease; }
+        .tab-content.active { display: flex; flex-direction: column; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 14px; color: #6b7280; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; background: rgba(0,0,0,0.3); }
+        td { padding: 14px; border-bottom: 1px solid #1f2937; font-size: 0.85rem; transition: background 0.2s; }
+        tr:hover td { background: rgba(0, 255, 136, 0.03); }
+        .status-win { color: #00ff88; background: rgba(0, 255, 136, 0.15); padding: 4px 10px; border-radius: 6px; font-weight: 700; }
+        .status-fail { color: #ff3e3e; background: rgba(255, 62, 62, 0.15); padding: 4px 10px; border-radius: 6px; font-weight: 700; }
+        
+        .diag-pulse { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; position: relative; }
+        .pulse-green { background: #00ff88; box-shadow: 0 0 12px #00ff88, 0 0 24px rgba(0, 255, 136, 0.3); animation: pulse-green 2s infinite; }
+        .pulse-red { background: #ff3e3e; box-shadow: 0 0 12px #ff3e3e; animation: blink 1s infinite; }
+        
+        @keyframes pulse-green { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+        .attribute-tag { font-size: 0.65rem; background: rgba(0, 255, 136, 0.08); color: #00ff88; padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(0, 255, 136, 0.2); margin-right: 4px; font-weight: 600; transition: all 0.2s; }
+        .attribute-tag:hover { background: rgba(0, 255, 136, 0.15); transform: scale(1.05); }
+        .weakness-tag { font-size: 0.65rem; background: rgba(255, 62, 62, 0.08); color: #ff3e3e; padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(255, 62, 62, 0.2); font-weight: 600; }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0b0d; }
+        ::-webkit-scrollbar-thumb { background: #2d2e35; border-radius: 10px; transition: background 0.3s; }
+        ::-webkit-scrollbar-thumb:hover { background: #00ff88; }
+        
+        .suggestion-overlay { position: absolute; top: 15px; right: 15px; z-index: 50; animation: slideIn 0.5s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        
+        .metric-card { transition: all 0.3s ease; cursor: pointer; }
+        .metric-card:hover { transform: scale(1.05); box-shadow: 0 8px 24px rgba(0, 255, 136, 0.2); }
+        
+        .glow-text { text-shadow: 0 0 10px rgba(0, 255, 136, 0.5); }
+        
+        .progress-bar { height: 4px; background: #1f2937; border-radius: 2px; overflow: hidden; position: relative; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #00ff88, #00cc6a); transition: width 0.5s ease; position: relative; }
+        .progress-fill::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); animation: shimmer 2s infinite; }
+        @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        
+        .stat-number { font-size: 2rem; font-weight: 900; letter-spacing: -0.05em; }
+        
+        button { transition: all 0.2s ease; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
+        button:active { transform: translateY(0); }
+        
+        .chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .chip-success { background: rgba(0, 255, 136, 0.1); color: #00ff88; border: 1px solid rgba(0, 255, 136, 0.3); }
+        .chip-warning { background: rgba(255, 193, 7, 0.1); color: #ffc107; border: 1px solid rgba(255, 193, 7, 0.3); }
+        .chip-danger { background: rgba(255, 62, 62, 0.1); color: #ff3e3e; border: 1px solid rgba(255, 62, 62, 0.3); }
+        
+        .strategy-btn { 
+            background: rgba(255, 255, 255, 0.05); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            color: #9ca3af;
+            cursor: pointer;
+        }
+        .strategy-btn:hover { 
+            background: rgba(255, 255, 255, 0.1); 
+            border-color: rgba(255, 255, 255, 0.2); 
+            color: #e5e7eb;
+        }
+        .strategy-btn.active { 
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 204, 106, 0.2)); 
+            border: 2px solid #00ff88; 
+            color: #00ff88;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+        }
+        
+        .data-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+        
+        .alert-banner { background: linear-gradient(90deg, rgba(255, 62, 62, 0.1), rgba(255, 62, 62, 0.05)); border-left: 4px solid #ff3e3e; padding: 12px; border-radius: 8px; margin-bottom: 16px; animation: alertPulse 2s infinite; }
+        @keyframes alertPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
+    </style>
+</head>
+<body class="flex flex-col">
+
+    <!-- Top Bar -->
+    <header class="h-16 border-b border-[#2d2e35] flex items-center justify-between px-6 bg-gradient-to-r from-[#0a0b0d] to-[#14161a] z-20 shrink-0 shadow-xl">
+        <div class="flex items-center gap-4">
+            <div class="w-9 h-9 bg-gradient-to-br from-[#00ff88] to-[#00cc6a] rounded-lg flex items-center justify-center font-bold text-black text-sm shadow-lg">AQ</div>
+            <h1 class="text-xl font-extrabold tracking-tighter uppercase glow-text">Forensic Command</h1>
+            <span class="chip chip-success">
+                <span class="diag-pulse pulse-green"></span>
+                LIVE
+            </span>
+        </div>
+        <div class="flex items-center gap-6">
+            <div class="flex flex-col items-end">
+                <span class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">GCP Secret Manager</span>
+                <span class="text-[11px] text-green-400 font-mono uppercase flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-green-400"></span>
+                    Vault: Connected
+                </span>
+            </div>
+            <div class="flex flex-col items-end">
+                <span class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">System Integrity</span>
+                <span class="text-[11px] text-white font-mono uppercase">All Nodes Operational</span>
+            </div>
+            <div class="bg-white/5 border border-white/10 px-4 py-2 rounded-lg flex items-center gap-3 hover:bg-white/10 transition-all">
+                <span class="diag-pulse pulse-green"></span>
+                <div>
+                    <div class="text-[9px] text-gray-400 uppercase font-bold">API Latency</div>
+                    <div class="text-sm font-bold text-[#00ff88]">42ms</div>
+                </div>
+            </div>
+            <div class="flex flex-col items-end">
+                <span class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">News Items</span>
+                <span class="text-[11px] text-gray-300 font-mono uppercase" id="news-count">0</span>
+                <span class="text-[9px] text-gray-500 font-mono uppercase" id="news-last-refresh">--</span>
+                <span class="text-[9px] text-gray-500 font-mono uppercase" id="news-top-headline">--</span>
+            </div>
+            <div class="flex flex-col items-end">
+                <span class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">UI Build</span>
+                <span class="text-[11px] text-gray-300 font-mono uppercase" id="ui-version">__UI_HASH__</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex-1 flex overflow-hidden">
+        <!-- Sidebar Navigation -->
+        <nav class="w-64 border-r border-[#2d2e35] bg-gradient-to-b from-[#0a0b0d] to-[#14161a] flex flex-col shrink-0 shadow-2xl">
+            <div class="p-4 space-y-2">
+                <div onclick="showTab('terminal')" id="nav-terminal" class="nav-item active flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold">
+                    <span class="text-lg">⚡</span> 
+                    <span>Live Terminal</span>
+                </div>
+                <div onclick="showTab('mesh')" id="nav-mesh" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold">
+                    <span class="text-lg">🕸️</span> 
+                    <span>Integrity Mesh</span>
+                </div>
+                <div onclick="showTab('journal')" id="nav-journal" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold">
+                    <span class="text-lg">📓</span> 
+                    <span>Forensic Journal</span>
+                </div>
+                <div onclick="showTab('news')" id="nav-news" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold">
+                    <span class="text-lg">🌐</span> 
+                    <span>News AI</span>
+                </div>
+                <div onclick="showTab('reports')" id="nav-reports" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold">
+                    <span class="text-lg">📊</span> 
+                    <span>Performance</span>
+                </div>
+                <div onclick="showTab('strategies')" id="nav-strategies" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold">
+                    <span class="text-lg">🛠️</span> 
+                    <span>Starters & Logic</span>
+                </div>
+            </div>
+
+            <!-- Enhanced Pre-Flight Audit -->
+            <div class="mt-auto p-5 border-t border-[#2d2e35] bg-black/60 backdrop-blur-sm">
+                <p class="text-[9px] font-bold text-gray-500 uppercase mb-4 tracking-widest flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-[#00ff88] animate-ping"></span>
+                    Forensic Pre-Flight
+                </p>
+                <div class="space-y-3 text-[11px] font-mono">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400">Node Sync</span> 
+                        <span class="chip chip-success text-[9px] py-1 px-2">READY</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400">Spread Avg</span> 
+                        <span class="text-green-400 font-bold">0.12</span>
+                    </div>
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <span class="text-gray-400">System Load</span>
+                            <span class="text-white font-bold">67%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 67%"></div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400">Logic Fail</span> 
+                        <span class="text-white font-bold">0</span>
+                    </div>
+                    <div class="flex justify-between text-yellow-400 items-center">
+                        <span>Latency Spike</span> 
+                        <span class="font-bold">NONE</span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Workspace -->
+        <main class="flex-1 relative overflow-hidden bg-[#0a0b0d]">
+            
+            <!-- LIVE TERMINAL TAB -->
+            <div id="tab-terminal" class="tab-content active p-6 overflow-y-auto">
+                <!-- Strategy/Pair Selector Bar -->
+                <div class="glass-card rounded-xl p-4 mb-4 flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Active Strategy</span>
+                        <div id="strategy-buttons" class="flex flex-wrap gap-2"></div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Chart Instrument</span>
+                        <select id="chart-symbol" onchange="changeChartSymbol()" class="bg-black/50 border border-white/20 rounded-lg px-3 py-2 font-mono text-sm text-white focus:border-[#00ff88] focus:outline-none transition-all cursor-pointer">
+                            <option value="OANDA:XAUUSD">XAUUSD (Gold)</option>
+                            <option value="OANDA:EURUSD">EURUSD</option>
+                            <option value="OANDA:GBPUSD">GBPUSD</option>
+                            <option value="OANDA:USDJPY">USDJPY</option>
+                            <option value="OANDA:AUDUSD">AUDUSD</option>
+                            <option value="OANDA:USDCAD">USDCAD</option>
+                            <option value="OANDA:NZDUSD">NZDUSD</option>
+                            <option value="OANDA:EURJPY">EURJPY</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full">
+                    <div class="lg:col-span-3 flex flex-col gap-6">
+                        <div class="glass-card rounded-2xl overflow-hidden flex-1 relative min-h-[480px] shadow-2xl">
+                             <!-- Enhanced Suggestion Overlay -->
+                             <div class="suggestion-overlay" id="signal-overlay">
+                                 <div class="bg-gradient-to-br from-black/95 to-[#00ff88]/20 backdrop-blur-xl border-2 border-[#00ff88]/50 p-4 rounded-xl shadow-2xl">
+                                     <div class="flex items-center gap-2 mb-2">
+                                         <div class="w-3 h-3 rounded-full bg-[#00ff88] animate-ping"></div>
+                                         <span class="text-[11px] font-black text-white uppercase tracking-wider">AI Active Signal</span>
+                                     </div>
+                                     <p class="text-[12px] font-bold text-[#00ff88] mono uppercase" id="signal-text">Entry: 2042.85 | TP: 2055.00</p>
+                                     <p class="text-[10px] text-gray-300 mt-2" id="signal-confidence">Confidence: 94.2%</p>
+                                 </div>
+                             </div>
+                             <div id="tradingview_terminal" class="h-full w-full"></div>
+                        </div>
+                        <div class="grid grid-cols-4 gap-4">
+                            <div class="glass-card p-5 rounded-xl metric-card border-l-4 border-blue-500">
+                                <p class="text-[10px] text-gray-500 font-bold uppercase mb-2 tracking-wider">Current Corridor</p>
+                                <p class="stat-number text-white font-mono" id="corridor">2038-2055</p>
+                            </div>
+                            <div class="glass-card p-5 rounded-xl metric-card border-l-4 border-[#00ff88]">
+                                <p class="text-[10px] text-gray-500 font-bold uppercase mb-2 tracking-wider">Active Positions</p>
+                                <p class="stat-number text-[#00ff88] font-mono glow-text" id="positions">01</p>
+                            </div>
+                            <div class="glass-card p-5 rounded-xl metric-card border-l-4 border-purple-500">
+                                <p class="text-[10px] text-gray-500 font-bold uppercase mb-2 tracking-wider">Strategy Type</p>
+                                <p class="text-lg font-bold text-purple-400" id="strategy-type">SCALP</p>
+                            </div>
+                            <div class="glass-card p-5 rounded-xl metric-card border-l-4 border-red-500">
+                                <p class="text-[10px] text-gray-500 font-bold uppercase mb-2 tracking-wider">News Block</p>
+                                <p class="text-xs font-bold text-red-500 uppercase flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                                    NFP High Impact
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Enhanced AI Insight Sidebar -->
+                    <div class="flex flex-col gap-4">
+                        <h2 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Current Active Signal</h2>
+                        <div class="bg-gradient-to-br from-[#1c1f26] via-[#14161a] to-[#1a1c22] border-2 border-[#2d2e35] p-6 rounded-2xl space-y-5 shadow-2xl">
+                            <div>
+                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Primary Signal</span>
+                                <p class="text-2xl font-black text-[#00ff88] mt-1 glow-text" id="primary-signal">NO BACKEND FACT AVAILABLE</p>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="flex justify-between text-[11px] border-b border-white/5 pb-2">
+                                    <span class="text-gray-500">Conviction</span>
+                                    <span class="font-bold text-[#00ff88]" id="conviction">NO BACKEND FACT AVAILABLE</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="conviction-bar" style="width: 0%"></div>
+                                </div>
+                                <div class="flex justify-between text-[11px] border-b border-white/5 pb-2">
+                                    <span class="text-gray-500">ATR Stability</span>
+                                    <span class="chip chip-success text-[9px] py-0.5 px-2" id="atr-stability">NO BACKEND FACT AVAILABLE</span>
+                                </div>
+                                <div class="flex justify-between text-[11px]">
+                                    <span class="text-gray-500">Market Bias</span>
+                                    <span class="text-[#00ff88] font-bold" id="market-bias">NO BACKEND FACT AVAILABLE</span>
+                                </div>
+                            </div>
+                            <div class="bg-black/30 p-4 rounded-lg border border-white/5">
+                                <p class="text-[11px] text-gray-300 italic leading-relaxed" id="ai-reasoning">NO BACKEND FACT AVAILABLE</p>
+                            </div>
+                            <button id="btn-manual-override" class="w-full bg-gradient-to-r from-[#00ff88] to-[#00cc6a] text-black font-black text-xs py-3.5 rounded-xl uppercase tracking-wider shadow-lg hover:shadow-[#00ff88]/50 transition-all">
+                                Manual Override Entry
+                            </button>
+                        </div>
+                        
+                        <!-- Upcoming Signals Queue -->
+                        <div class="mt-4">
+                            <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-3">Upcoming Signals Queue</h3>
+                            <div class="space-y-2" id="signals-queue">
+                                <!-- Signals will be populated by JS based on active strategy -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INTEGRITY MESH -->
+            <div id="tab-mesh" class="tab-content p-6 overflow-y-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-black uppercase tracking-tighter">System Integrity Mesh</h2>
+                    <span class="chip chip-danger" id="mesh-status-badge">NO BACKEND FACT AVAILABLE</span>
+                </div>
+                <div class="glass-card p-6 rounded-2xl">
+                    <p class="text-sm text-gray-400" id="mesh-status">NO BACKEND FACT AVAILABLE</p>
+                </div>
+            </div>
+
+<!-- PERFORMANCE TAB -->
+            <div id="tab-reports" class="tab-content p-6 overflow-y-auto">
+                 <h2 class="text-3xl font-black uppercase tracking-tighter mb-6">Incubator Performance Matrix</h2>
+                 <div id="performance-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                     <div class="glass-card p-6 rounded-2xl">
+                         <p class="text-sm text-gray-400" id="performance-placeholder">NO BACKEND FACT AVAILABLE</p>
+                     </div>
+                 </div>
+            </div>
+
+            <!-- FORENSIC JOURNAL TAB -->
+            <div id="tab-journal" class="tab-content p-6 overflow-y-auto">
+                 <div class="flex justify-between items-center mb-6">
+                     <h2 class="text-3xl font-black uppercase tracking-tighter">Forensic Journal</h2>
+                     <div class="flex gap-3">
+                        <button id="btn-export-csv" class="bg-white/5 border border-white/10 px-4 py-2 rounded-lg font-bold text-xs uppercase hover:bg-white/10 transition-all">
+                             Export CSV
+                        </button>
+                        <button id="btn-settings" class="bg-white/5 border border-white/10 px-4 py-2 rounded-lg font-bold text-xs uppercase hover:bg-white/10 transition-all">
+                             Settings
+                        </button>
+                        <button id="btn-filter-trades" class="bg-white/5 border border-white/10 px-4 py-2 rounded-lg font-bold text-xs uppercase hover:bg-white/10 transition-all">
+                             Filter Trades
+                        </button>
+                     </div>
+                 </div>
+                 
+                 <!-- Open Trades Section -->
+                 <div class="mb-8">
+                     <h3 class="text-xl font-bold uppercase tracking-tight mb-4 text-white">Open Trades</h3>
+                     <div id="open-trades-list" class="space-y-4 text-sm text-gray-400">
+                         <div class="text-sm text-gray-400 italic">Loading open trades...</div>
+                     </div>
+                 </div>
+                 
+                 <!-- Pending Trades Section -->
+                 <div class="mb-8">
+                     <h3 class="text-xl font-bold uppercase tracking-tight mb-4 text-white">Pending Trades</h3>
+                     <div id="pending-trades-list" class="space-y-4 text-sm text-gray-400">
+                         <div class="text-sm text-gray-400 italic">Loading pending trades...</div>
+                     </div>
+                 </div>
+                 
+                 <!-- Closed Trades Section -->
+                 <div class="mb-8">
+                     <h3 class="text-xl font-bold uppercase tracking-tight mb-4 text-white">Closed Trades (Journal)</h3>
+                     <!-- Trade Cards with Expandable Details -->
+                     <div id="journal-list" class="space-y-4 text-sm text-gray-400">
+                         <div class="text-sm text-gray-400 italic">Loading closed trades...</div>
+                     </div>
+                 </div>
+<!-- STARTERS & LOGIC TAB -->
+            <div id="tab-strategies" class="tab-content p-6 overflow-y-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-black uppercase tracking-tighter text-white">Logic Starters & Secrets</h2>
+                    <div class="flex gap-3">
+                        <button id="btn-reload-cloud-sync" class="bg-white/5 border border-white/10 px-5 py-2.5 rounded-xl font-bold text-xs uppercase hover:bg-white/10">
+                            Reload Cloud Sync
+                        </button>
+                        <button id="btn-deploy-nodes" class="bg-gradient-to-r from-[#00ff88] to-[#00cc6a] text-black px-6 py-2.5 rounded-xl font-black text-xs uppercase shadow-lg">
+                            Deploy All Nodes
+                        </button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass-card p-6 rounded-2xl">
+                        <h3 class="font-bold mb-5 flex items-center gap-2 text-lg">
+                            <span class="w-3 h-3 rounded-full bg-blue-500 shadow-lg shadow-blue-500/50"></span> 
+                            OANDA API SECRET MESH
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="bg-black/30 p-4 rounded-lg">
+                                <label class="text-gray-500 uppercase font-bold tracking-tighter text-[10px] block mb-2">Primary Account ID</label>
+                                <input class="bg-black/50 border border-white/20 rounded-lg px-3 py-2 font-mono w-full text-sm focus:border-[#00ff88] focus:outline-none transition-all" value="101-004-307-889">
+                            </div>
+                            <div class="bg-black/30 p-4 rounded-lg">
+                                <label class="text-gray-500 uppercase font-bold tracking-tighter text-[10px] block mb-2">GCP Vault Endpoint</label>
+                                <div class="font-mono text-gray-300 italic text-sm bg-black/40 p-2 rounded border border-white/10">
+                                    /projects/quant/secrets/API_KEY
+                                </div>
+                            </div>
+                            <div class="bg-black/30 p-4 rounded-lg">
+                                <label class="text-gray-500 uppercase font-bold tracking-tighter text-[10px] block mb-2">Connection Status</label>
+                                <div class="flex items-center gap-2">
+                                    <span class="diag-pulse pulse-green"></span>
+                                    <span class="text-[#00ff88] font-bold text-sm">AUTHENTICATED</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass-card p-6 rounded-2xl">
+                        <h3 class="font-bold mb-5 flex items-center gap-2 text-lg">
+                            <span class="w-3 h-3 rounded-full bg-green-500 shadow-lg shadow-green-500/50"></span> 
+                            SNIPER LOGIC PARAMS
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="bg-black/30 p-4 rounded-lg">
+                                <label class="text-gray-500 uppercase font-bold tracking-tighter text-[10px] block mb-2">Lot Calculation</label>
+                                <input class="bg-black/50 border border-white/20 rounded-lg px-3 py-2 font-mono w-full text-sm focus:border-[#00ff88] focus:outline-none transition-all" value="DYNAMIC_EQUITY_0.5%">
+                            </div>
+                            <div class="bg-black/30 p-4 rounded-lg">
+                                <label class="text-gray-500 uppercase font-bold tracking-tighter text-[10px] block mb-2">ATR Factor</label>
+                                <input class="bg-black/50 border border-white/20 rounded-lg px-3 py-2 font-mono w-full text-sm focus:border-[#00ff88] focus:outline-none transition-all" value="1.5x_STDEV">
+                            </div>
+                            <div class="bg-black/30 p-4 rounded-lg">
+                                <label class="text-gray-500 uppercase font-bold tracking-tighter text-[10px] block mb-2">Risk Per Trade</label>
+                                <input class="bg-black/50 border border-white/20 rounded-lg px-3 py-2 font-mono w-full text-sm focus:border-[#00ff88] focus:outline-none transition-all" value="MAX_0.5%">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Strategy Matrix -->
+                <div class="mt-6">
+                    <h3 class="text-xl font-bold uppercase tracking-tight mb-4 flex items-center gap-2">
+                        <span>⚙️</span> Active Strategy Matrix
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="glass-card p-4 rounded-xl border-l-4 border-[#00ff88]">
+                            <div class="flex justify-between items-start mb-3">
+                                <h4 class="font-bold text-sm">GOLD_SCALPER_v4.2</h4>
+                                <span class="chip chip-success text-[8px] py-0.5 px-2">ACTIVE</span>
+                            </div>
+                            <div class="space-y-2 text-[10px]">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Timeframe</span>
+                                    <span class="font-mono text-white">M5, M15</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Max Positions</span>
+                                    <span class="font-mono text-white">3</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Last Signal</span>
+                                    <span class="font-mono text-[#00ff88]">2m ago</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="glass-card p-4 rounded-xl border-l-4 border-blue-500">
+                            <div class="flex justify-between items-start mb-3">
+                                <h4 class="font-bold text-sm">MEAN_REV_CORE</h4>
+                                <span class="chip chip-success text-[8px] py-0.5 px-2">ACTIVE</span>
+                            </div>
+                            <div class="space-y-2 text-[10px]">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Timeframe</span>
+                                    <span class="font-mono text-white">H1, H4</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Max Positions</span>
+                                    <span class="font-mono text-white">2</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Last Signal</span>
+                                    <span class="font-mono text-gray-400">45m ago</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="glass-card p-4 rounded-xl border-l-4 border-purple-500">
+                            <div class="flex justify-between items-start mb-3">
+                                <h4 class="font-bold text-sm">BREAKOUT_HUNTER</h4>
+                                <span class="chip chip-warning text-[8px] py-0.5 px-2">STANDBY</span>
+                            </div>
+                            <div class="space-y-2 text-[10px]">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Timeframe</span>
+                                    <span class="font-mono text-white">M15, M30</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Max Positions</span>
+                                    <span class="font-mono text-white">1</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Last Signal</span>
+                                    <span class="font-mono text-gray-400">2h ago</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEWS AI TAB -->
+            <div id="tab-news" class="tab-content hidden p-6 h-full overflow-y-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-black uppercase tracking-tighter">AI Macro Flow Intelligence</h2>
+                    <button onclick="refreshNews()" class="bg-white/5 hover:bg-white/10 px-4 py-2 rounded text-xs font-bold uppercase transition-colors">
+                        Refresh
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="glass-card p-6 rounded-2xl">
+                        <h3 class="font-bold text-lg text-white mb-4">AI News Sentiment</h3>
+                        <p class="text-sm text-gray-400 mb-4" id="news-sentiment-summary">NO BACKEND FACT AVAILABLE</p>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500">Overall Sentiment:</span>
+                            <span class="font-bold text-[#00ff88]" id="news-sentiment">NO BACKEND FACT AVAILABLE</span>
+                        </div>
+                        <div class="flex items-center justify-between text-sm mt-2">
+                            <span class="text-gray-500">Impact Score:</span>
+                            <span class="font-bold text-yellow-400" id="news-impact-score">NO BACKEND FACT AVAILABLE</span>
+                        </div>
+                    </div>
+                    <div class="glass-card p-6 rounded-2xl">
+                        <h3 class="font-bold text-lg text-white mb-4">Upcoming Economic Events</h3>
+                        <div id="economic-calendar" class="space-y-3">
+                            <p class="text-sm text-gray-400">NO BACKEND FACT AVAILABLE</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass-card p-6 rounded-2xl">
+                    <h3 class="font-bold text-lg text-white mb-4">Live News Feed</h3>
+                    <div id="news-feed" class="space-y-2">
+                        <p class="text-sm text-gray-400">NO BACKEND FACT AVAILABLE</p>
+                    </div>
+                </div>
+            </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 hidden items-center justify-center bg-black/70 z-[9999]">
+        <div class="glass-card rounded-2xl p-6 w-[520px] max-w-[92vw] border-2 border-white/10 shadow-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-black uppercase tracking-tight">Control Plane Settings</h3>
+                <button id="settings-close" class="text-gray-400 hover:text-white text-xl transition-all">✕</button>
+            </div>
+            <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-2">Bearer Token (POST only)</label>
+            <input id="settings-token" type="password"
+                class="bg-black/50 border border-white/20 rounded-lg px-3 py-2 font-mono w-full text-sm text-white focus:border-[#00ff88] focus:outline-none transition-all"
+                placeholder="Paste CONTROL_PLANE_TOKEN here" />
+            <div class="flex justify-end gap-3 mt-5">
+                <button id="settings-clear" class="bg-white/5 border border-white/10 px-4 py-2 rounded-lg text-xs font-bold uppercase hover:bg-white/10 transition-all">
+                    Clear
+                </button>
+                <button id="settings-save" class="bg-gradient-to-r from-[#00ff88] to-[#00cc6a] text-black px-5 py-2 rounded-lg text-xs font-black uppercase shadow-lg transition-all">
+                    Save
+                </button>
+            </div>
+            <p class="text-[11px] text-gray-400 mt-4 leading-relaxed">
+                Stored in <span class="mono text-gray-300">localStorage.control_plane_token</span>. Never embedded in HTML.
+                Token is only sent for POST requests (e.g. strategy switch).
+            </p>
+        </div>
+    </div>
+
+    
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <script>
+    /* TRUTH_MODE_OVERRIDE: legacy JS disabled
+        // ====== Control Plane Wiring (safe, no secrets embedded) ======
+        const API_BASE = ""; // same-origin
+
+        function getToken() {
+            return localStorage.getItem("control_plane_token") || window.__CONTROL_PLANE_TOKEN || "";
+        }
+
+        // ====== Safety Guard: Block Forbidden Endpoints ======
+        // ROOT CAUSE ANALYSIS (2026-01-04 - Playwright Forensic Proof):
+        // - Playwright runtime trace (60s) confirms: ZERO forbidden endpoint requests from OUR code
+        //   See: scripts/artifacts/pw_forbidden_requests.log for proof
+        // - forensic_command.html contains ZERO direct calls to /socket.io, /tasks/full_scan, /api/insights, /api/trade_ideas
+        // - All API calls go through apiGet/apiPost functions (verified by grep + Python analysis)
+        // - No io() calls, no fetch() calls to forbidden endpoints found in code
+        // - GET / serves templates/forensic_command.html (verified in src/control_plane/api.py)
+        // - TradingView widget (external CDN) may make socket.io calls internally - this is external and expected
+        // 
+        // This guard is a defensive measure to prevent future code from accidentally calling
+        // endpoints that don't exist on the backend. If any code attempts to call these via
+        // apiGet/apiPost, it will be blocked and logged before the network request is made.
+        const BLOCKED_ENDPOINTS = [
+            "/socket.io",
+            "/tasks/full_scan",
+            "/api/insights",
+            "/api/trade_ideas"
+        ];
+
+        // ====== Network Instrumentation (Debug Only) ======
+        // Enable with: localStorage.DEBUG_NET_TRACE = '1' in browser console
+        // This wraps window.fetch and XMLHttpRequest to trace forbidden endpoint calls
+        (function installNetworkTracing() {
+            if (localStorage.getItem('DEBUG_NET_TRACE') !== '1') return;
+
+            const originalFetch = window.fetch;
+            window.fetch = function(...args) {
+                const url = args[0];
+                if (typeof url === 'string' && BLOCKED_ENDPOINTS.some(blocked => url.includes(blocked))) {
+                    console.error('[DEBUG_NET_TRACE] Forbidden fetch detected:', url);
+                    console.trace('Stack trace:');
+                }
+                return originalFetch.apply(this, args);
+            };
+
+            const originalXHROpen = XMLHttpRequest.prototype.open;
+            XMLHttpRequest.prototype.open = function(method, url, ...rest) {
+                if (typeof url === 'string' && BLOCKED_ENDPOINTS.some(blocked => url.includes(blocked))) {
+                    console.error('[DEBUG_NET_TRACE] Forbidden XHR detected:', method, url);
+                    console.trace('Stack trace:');
+                }
+                return originalXHROpen.call(this, method, url, ...rest);
+            };
+
+            console.log('[DEBUG_NET_TRACE] Network tracing enabled. Disable with: localStorage.removeItem("DEBUG_NET_TRACE")');
+        })();
+
+        function isBlocked(path) {
+            // Block both absolute and relative paths, and handle query strings
+            // Examples that should be blocked:
+            //   '/api/insights' -> blocked
+            //   '/api/insights?x=1' -> blocked (query string removed)
+            //   'http://example.com/api/insights' -> blocked (path extracted)
+            //   '/tasks/full_scan' -> blocked
+            //   '/socket.io/?EIO=4&transport=polling' -> blocked
+            //   'socket.io/' -> blocked (path normalization)
+            if (!path || typeof path !== 'string') return false;
+            
+            // Remove query string and fragment
+            const normalized = path.split('?')[0].split('#')[0].trim();
+            if (!normalized) return false;
+            
+            // Ensure path starts with / for consistency
+            const withSlash = normalized.startsWith('/') ? normalized : '/' + normalized;
+            
+            // Extract path from full URL if present
+            let pathOnly = withSlash;
+            try {
+                const url = new URL(normalized, window.location.origin);
+                pathOnly = url.pathname;
+            } catch (e) {
+                // Not a full URL, use normalized version with slash
+                pathOnly = withSlash;
+            }
+            
+            // Check against blocked endpoints (prefix match, case-insensitive)
+            const pathLower = pathOnly.toLowerCase();
+            return BLOCKED_ENDPOINTS.some(blocked => {
+                const blockedLower = blocked.toLowerCase();
+                return pathLower === blockedLower || pathLower.startsWith(blockedLower + '/');
+            });
+        }
+
+        async function apiGet(path) {
+            // Safety guard: block forbidden endpoints
+            if (isBlocked(path)) {
+                const error = new Error(`Blocked endpoint: ${path}`);
+                console.error("[apiGet] Blocked forbidden endpoint:", path);
+                throw error;
+            }
+            const r = await fetch(API_BASE + path, { credentials: "same-origin" });
+            if (!r.ok) throw new Error(`GET ${path} failed: ${r.status}`);
+            return r.json();
+        }
+
+        async function apiPost(path, bodyObj) {
+            // Safety guard: block forbidden endpoints
+            if (isBlocked(path)) {
+                const error = new Error(`Blocked endpoint: ${path}`);
+                console.error("[apiPost] Blocked forbidden endpoint:", path);
+                throw error;
+            }
+            const token = getToken();
+            if (!token) throw new Error("Missing token. Open Settings and set CONTROL_PLANE_TOKEN.");
+            const r = await fetch(API_BASE + path, {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: JSON.stringify(bodyObj),
+            });
+            if (!r.ok) throw new Error(`POST ${path} failed: ${r.status}`);
+            return r.json();
+        }
+
+        // ----- Settings Modal -----
+        (function initSettings() {
+            const modal = document.getElementById("settings-modal");
+            const btn = document.getElementById("btn-settings");
+            const close = document.getElementById("settings-close");
+            const save = document.getElementById("settings-save");
+            const clear = document.getElementById("settings-clear");
+            const input = document.getElementById("settings-token");
+
+            if (!modal || !btn || !close || !save || !clear || !input) return;
+
+            function open() {
+                input.value = localStorage.getItem("control_plane_token") || "";
+                modal.classList.remove("hidden");
+                modal.classList.add("flex");
+                input.focus();
+            }
+            function hide() {
+                modal.classList.add("hidden");
+                modal.classList.remove("flex");
+            }
+
+            btn.addEventListener("click", open);
+            close.addEventListener("click", async () => {
+                const allowed = await guardReadOnly("Close settings");
+                if (allowed) hide();
+            });
+            modal.addEventListener("click", async (e) => {
+                if (e.target !== modal) return;
+                const allowed = await guardReadOnly("Close settings");
+                if (allowed) hide();
+            });
+
+            save.addEventListener("click", async () => {
+                const allowed = await guardReadOnly("Save settings token");
+                if (!allowed) return;
+                const v = (input.value || "").trim();
+                if (!v) return alert("Token is empty.");
+                localStorage.setItem("control_plane_token", v);
+                hide();
+                alert("Token saved (local only).");
+            });
+
+            clear.addEventListener("click", async () => {
+                const allowed = await guardReadOnly("Clear settings token");
+                if (!allowed) return;
+                localStorage.removeItem("control_plane_token");
+                input.value = "";
+                alert("Token cleared.");
+            });
+        })();
+
+        // ----- DOM helpers (safe: only update if element exists) -----
+        function setText(id, text) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = text;
+        }
+        function setWidth(id, pct) {
+            const el = document.getElementById(id);
+            if (el) el.style.width = pct;
+        }
+
+        // ----- Live data polling -----
+        let lastStatus = null;
+
+        async function pollStatus() {
+            try {
+                const s = await apiGet("/api/status");
+                lastStatus = s;
+                return s;
+            } catch (e) {
+                console.error("Poll status error:", e);
+                return null;
+            }
+        }
+
+        async function pollSignals() {
+            try {
+                const data = await apiGet("/api/signals/pending");
+                const signals = Array.isArray(data) ? data : (data.signals || data.items || []);
+                renderSignalsQueue(signals);
+
+                // Set "current active signal" from the first signal if present
+                if (signals.length > 0) {
+                    const sig = signals[0];
+                    const dir = (sig.direction || sig.side || "BUY").toUpperCase();
+                    const instrument = (sig.instrument || sig.symbol || "XAUUSD").toUpperCase();
+                    const entry = sig.entry ?? sig.entry_price ?? sig.price ?? "";
+                    const tp = sig.take_profit ?? sig.tp ?? "";
+                    const conf = sig.confidence ?? sig.score ?? "";
+                    const reasoning = sig.reasoning ?? sig.strategy ?? "";
+                    const bias = sig.bias ?? sig.market_bias ?? "";
+                    const atr = sig.atr ?? sig.stability ?? "";
+                    const corridor = sig.corridor ?? sig.range ?? "";
+                    const strategyType = sig.strategy_type ?? sig.type ?? "";
+
+                    setText("primary-signal", `${instrument} ${dir}`);
+                    setText("signal-text", entry && tp ? `Entry: ${entry} | TP: ${tp}` : "");
+                    if (conf !== "") {
+                        const pct = (Number(conf) <= 1 ? Number(conf) * 100 : Number(conf));
+                        setText("conviction", `${pct.toFixed(1)}%`);
+                        setWidth("conviction-bar", `${pct}%`);
+                        setText("signal-confidence", `Confidence: ${pct.toFixed(1)}%`);
+                    } else {
+                        setText("conviction", "");
+                        setWidth("conviction-bar", "0%");
+                        setText("signal-confidence", "");
+                    }
+                    setText("ai-reasoning", reasoning);
+                    setText("market-bias", bias);
+                    setText("atr-stability", atr);
+                    setText("corridor", corridor);
+                    setText("strategy-type", strategyType);
+                } else {
+                    // Clear signal fields if no signals
+                    setText("primary-signal", "");
+                    setText("signal-text", "");
+                    setText("signal-confidence", "");
+                    setText("conviction", "");
+                    setWidth("conviction-bar", "0%");
+                    setText("ai-reasoning", "");
+                    setText("market-bias", "");
+                    setText("atr-stability", "");
+                    setText("corridor", "");
+                    setText("strategy-type", "");
+                }
+            } catch (e) {
+                console.error("Poll signals error:", e);
+                // Clear fields on error (hard start)
+                setText("primary-signal", "");
+                setText("signal-text", "");
+                setText("signal-confidence", "");
+                setText("conviction", "");
+                setWidth("conviction-bar", "0%");
+            }
+        }
+
+        function renderSignalsQueue(signals) {
+            const queue = document.getElementById("signals-queue");
+            if (!queue) return;
+
+            const filtered = filterSignalsByActive(signals);
+            if (!Array.isArray(signals) || signals.length === 0 || (activeStrategyKey && filtered.length === 0)) {
+                queue.innerHTML = '';
+                return;
+            }
+
+            const visibleSignals = (filtered.length ? filtered : signals).slice(0, 6);
+            const html = visibleSignals.map(sig => {
+                const dir = (sig.direction || sig.side || "UNKNOWN").toUpperCase();
+                const instrument = (sig.instrument || sig.symbol || "UNKNOWN").toUpperCase();
+                const entry = sig.entry ?? sig.entry_price ?? sig.price ?? "";
+                const conf = sig.confidence ?? sig.score ?? "";
+                const tp = sig.take_profit ?? sig.tp ?? "";
+                const kind = (sig.type || sig.signal_type || "POTENTIAL").toUpperCase();
+
+                const dirColor = dir === "BUY" ? "text-[#00ff88]" : (dir === "SELL" ? "text-red-400" : "text-gray-300");
+                const border = kind === "WATCH" ? "border-yellow-500" : (kind === "CONDITIONAL" ? "border-blue-500" : "border-[#00ff88]");
+                const confText = conf !== "" ? `${Number(conf).toFixed ? Number(conf).toFixed(1) : conf}%` : "";
+
+                return `
+                    <div class="glass-card p-3 rounded-lg border-l-4 ${border}">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <span class="text-[9px] font-bold text-gray-500 uppercase">${kind}</span>
+                                <p class="text-sm font-bold ${dirColor}">${instrument} ${dir} ${entry !== "" ? `@ ${entry}` : ""}</p>
+                                ${tp !== "" ? `<p class="text-[10px] text-gray-400">TP: ${tp}</p>` : ""}
+                            </div>
+                            ${confText ? `<span class="chip chip-success text-[8px] py-0.5 px-2">${confText}</span>` : ""}
+                        </div>
+                    </div>
+                `;
+            }).join("");
+
+            queue.innerHTML = html;
+        }
+
+        async function pollPositions() {
+            try {
+                const data = await apiGet("/api/positions");
+                const positions = Array.isArray(data) ? data : (data.positions || data.items || []);
+                setText("positions", String(positions.length).padStart(2, "0"));
+            } catch (e) {
+                console.error("Poll positions error:", e);
+                // Clear on error (hard start)
+                setText("positions", "");
+            }
+        }
+
+        // ----- Strategy switching (POST /api/config) -----
+        const UI_TO_BACKEND_STRATEGY = {
+            gold: "gold",
+            mean: "range",
+            breakout: "momentum_v2",
+        };
+
+        // Allowed strategy keys from backend (authoritative source)
+        let allowedStrategies = new Set();
+        let strategyCatalogLoaded = false;
+
+        async function loadStrategyCatalog() {
+            try {
+                const response = await apiGet("/api/strategies");
+                if (response.ok && Array.isArray(response.allowed)) {
+                    allowedStrategies = new Set(response.allowed);
+                    strategyCatalogLoaded = true;
+                    console.log("Strategy catalog loaded:", Array.from(allowedStrategies));
+                } else {
+                    console.error("Invalid /api/strategies response format:", response);
+                    // Fallback: use existing mapping if response format is unexpected
+                    strategyCatalogLoaded = false;
+                }
+            } catch (e) {
+                console.error("Failed to load strategy catalog:", e);
+                // If catalog load fails, block POST to prevent invalid keys
+                strategyCatalogLoaded = false;
+            }
+        }
+
+        async function switchStrategyBackend(uiKey) {
+            const backendKey = UI_TO_BACKEND_STRATEGY[uiKey] || uiKey;
+
+            // Validate against backend catalog if loaded
+            if (strategyCatalogLoaded) {
+                if (!allowedStrategies.has(backendKey)) {
+                    const errorMsg = `Invalid strategy key: ${backendKey}. Allowed keys: ${Array.from(allowedStrategies).join(", ")}`;
+                    console.error(errorMsg);
+                    alert(`Strategy switch blocked: ${errorMsg}`);
+                    return false;
+                }
+            } else {
+                // If catalog not loaded, block POST to prevent invalid keys
+                console.error("Strategy catalog not loaded. Cannot validate key. Blocking POST.");
+                alert("Strategy catalog not available. Cannot switch strategy. Please reload the page.");
+                return false;
+            }
+
+            const confirmed = confirm(
+                `Switch strategy to: ${backendKey}?\n\nThis updates config only. Execution remains gated server-side.`
+            );
+            if (!confirmed) return false;
+
+            try {
+                await apiPost("/api/config", { active_strategy_key: backendKey });
+                await pollStatus();
+                await pollSignals();
+                alert(`Strategy switched to ${backendKey}`);
+                return true;
+            } catch (e) {
+                console.error(e);
+                alert(`Strategy switch failed: ${e.message}`);
+                return false;
+            }
+        }
+        let tvWidget = null;
+        
+        // Toggle trade details
+        function toggleTradeDetails(tradeId) {
+            const details = document.getElementById(tradeId);
+            const arrow = document.getElementById(tradeId + '-arrow');
+            
+            if (details.classList.contains('hidden')) {
+                details.classList.remove('hidden');
+                arrow.style.transform = 'rotate(180deg)';
+            } else {
+                details.classList.add('hidden');
+                arrow.style.transform = 'rotate(0deg)';
+            }
+        }
+        
+        // Clear all dynamic fields (hard start: no placeholders)
+        function clearDynamicFields() {
+            setText("primary-signal", "");
+            setText("signal-text", "");
+            setText("signal-confidence", "");
+            setText("conviction", "");
+            setText("ai-reasoning", "");
+            setText("market-bias", "");
+            setText("atr-stability", "");
+            setText("corridor", "");
+            setText("positions", "");
+            setText("strategy-type", "");
+            setWidth("conviction-bar", "0%");
+            const queue = document.getElementById("signals-queue");
+            if (queue) queue.innerHTML = "";
+        }
+        
+        function switchStrategy(strategy) {
+            // Update button states (UI only)
+            document.querySelectorAll('.strategy-btn').forEach(btn => btn.classList.remove('active'));
+            const btn = document.getElementById('strategy-' + strategy);
+            if (btn) btn.classList.add('active');
+            
+            // Switch strategy on backend (authoritative source)
+            switchStrategyBackend(strategy).then(success => {
+                if (success) {
+                    // Refresh all data from backend after successful switch
+                    pollStatus().catch(() => {});
+                    pollPositions().catch(() => {});
+                    pollSignals().catch(() => {});
+                } else {
+                    // If backend switch failed, revert button state
+                    if (btn) btn.classList.remove('active');
+                }
+            }).catch(err => {
+                console.error("Strategy switch error:", err);
+                if (btn) btn.classList.remove('active');
+            });
+        }
+        
+        function changeChartSymbol() {
+            const symbol = document.getElementById('chart-symbol').value;
+            if (tvWidget) {
+                tvWidget.setSymbol(symbol, "5", function() {
+                    console.log("Symbol changed to: " + symbol);
+                });
+            }
+        }
+        
+        // OLD showTab removed - using async version with truth checking below
+        // Legacy function removed - replaced by async showTab() with truth gates
+
+        function renderChart() {
+            tvWidget = new TradingView.widget({
+                "autosize": true,
+                "symbol": document.getElementById('chart-symbol').value,
+                "interval": "5",
+                "timezone": "Etc/UTC",
+                "theme": "dark",
+                "style": "1",
+                "container_id": "tradingview_terminal",
+                "hide_side_toolbar": false,
+                "allow_symbol_change": true,
+                "save_image": false,
+                "details": true,
+                "hotlist": true,
+                "calendar": true,
+                "studies": [
+                    "RSI@tv-basicstudies",
+                    "MASimple@tv-basicstudies",
+                    "Volume@tv-basicstudies"
+                ],
+                "show_popup_button": true,
+                "popup_width": "1000",
+                "popup_height": "650",
+                "locale": "en"
+            });
+        }
+        
+        window.onload = function() {
+            // Clear all dynamic fields on boot (hard start: no placeholders)
+            clearDynamicFields();
+            
+            // Render TradingView chart
+            renderChart();
+            
+            // Boot control plane connection
+            boot();
+        };
+        
+        // ----- Boot loop (Control Plane Integration) -----
+        async function boot() {
+            // Clear fields first (hard start)
+            clearDynamicFields();
+            refreshUiVersion();
+            
+            // Load strategy catalog FIRST (required for validation)
+            await loadStrategyCatalog();
+            
+            // Poll backend data (no fallback to mock)
+            try {
+                await pollStatus();
+            } catch (e) {
+                console.error("Boot pollStatus error:", e);
+            }
+            
+            try {
+                await pollPositions();
+            } catch (e) {
+                console.error("Boot pollPositions error:", e);
+            }
+            
+            try {
+                await pollSignals();
+            } catch (e) {
+                console.error("Boot pollSignals error:", e);
+            }
+
+            try {
+                await refreshNews();
+            } catch (e) {
+                console.error("Boot refreshNews error:", e);
+            }
+
+            // Polling intervals (no fallback, just log errors)
+            setInterval_disabled(() => pollStatus().catch(err => console.error("Poll status error:", err)), 5000);
+            setInterval_disabled(() => pollPositions().catch(err => console.error("Poll positions error:", err)), 3000);
+            setInterval_disabled(() => pollSignals().catch(err => console.error("Poll signals error:", err)), 3000);
+            setInterval_disabled(() => {
+                const tab = document.getElementById("tab-news");
+                if (tab && tab.classList.contains("active")) {
+                    refreshNews().catch(err => console.error("Poll news error:", err));
+                }
+            }, 60000);
+        }
+    */
+    </script>
+    <script>
+        const API_BASE = ""; // same-origin
+        const NO_BACKEND_FACT = "NO BACKEND FACT AVAILABLE";
+        let tvWidget = null;
+        let activeStrategyKey = null;
+        let manualStrategySelectionAt = null;
+
+        function setText(id, value) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.textContent = value;
+        }
+
+        function setWidth(id, value) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.style.width = value;
+        }
+
+        function clearTruthFields() {
+            const ids = [
+                "primary-signal",
+                "signal-text",
+                "signal-confidence",
+                "conviction",
+                "ai-reasoning",
+                "market-bias",
+                "atr-stability",
+                "corridor",
+                "positions",
+                "strategy-type"
+            ];
+            ids.forEach((id) => setText(id, NO_BACKEND_FACT));
+            setWidth("conviction-bar", "0%");
+            setQueueNoFact();
+        }
+
+        function setQueueNoFact() {
+            const queue = document.getElementById("signals-queue");
+            if (queue) queue.textContent = NO_BACKEND_FACT;
+        }
+
+        function setPlaceholder(id) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = NO_BACKEND_FACT;
+        }
+
+        function setHtml(id, html) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.innerHTML = html;
+        }
+
+        function normalizeKey(value) {
+            return String(value || "").trim().toLowerCase();
+        }
+
+        function normalizeStrategyKey(key) {
+            return String(key || "").trim();
+        }
+
+        function strategyButtonId(key) {
+            const normalized = normalizeStrategyKey(key).replace(/[^a-zA-Z0-9_-]/g, "-");
+            return `strategy-${normalized || "unknown"}`;
+        }
+
+        function getSignalStrategyKey(signal) {
+            if (!signal || typeof signal !== "object") return "";
+            return normalizeKey(
+                signal.strategy_key ||
+                signal.strategy ||
+                signal.strategy_name ||
+                signal.strategyType ||
+                signal.model
+            );
+        }
+
+        function filterSignalsByActive(signals) {
+            if (!Array.isArray(signals)) return [];
+            const active = normalizeKey(activeStrategyKey);
+            if (!active) return signals;
+            return signals.filter((sig) => getSignalStrategyKey(sig) === active);
+        }
+
+        function setActiveStrategyKey(key) {
+            const normalized = normalizeStrategyKey(key);
+            if (!normalized) return;
+            activeStrategyKey = normalized;
+            document.querySelectorAll(".strategy-btn").forEach((btn) => btn.classList.remove("active"));
+            const match = document.querySelector(`[data-strategy-key="${normalized}"]`);
+            if (match) match.classList.add("active");
+        }
+
+        function markManualSelection() {
+            manualStrategySelectionAt = Date.now();
+        }
+
+        function shouldRespectManualSelection() {
+            if (!manualStrategySelectionAt) return false;
+            return (Date.now() - manualStrategySelectionAt) < 15000;
+        }
+
+        function renderStrategyButtons(strategies, activeKey) {
+            const container = document.getElementById("strategy-buttons");
+            if (!container) return;
+            container.innerHTML = "";
+            if (!Array.isArray(strategies) || !strategies.length) {
+                container.textContent = NO_BACKEND_FACT;
+                return;
+            }
+            const fragment = document.createDocumentFragment();
+            strategies.forEach((strategy) => {
+                const key = normalizeStrategyKey(strategy?.key || strategy?.strategy_key || strategy?.name);
+                if (!key) return;
+                const btn = document.createElement("button");
+                btn.id = strategyButtonId(key);
+                btn.dataset.strategyKey = key;
+                btn.className = `strategy-btn px-4 py-2 rounded-lg font-bold text-xs uppercase transition-all${key === activeKey ? " active" : ""}`;
+                const count = strategy?.count;
+                const label = strategy?.name || key;
+                btn.textContent = count ? `${label} (${count})` : label;
+                btn.addEventListener("click", () => switchStrategy(key));
+                fragment.appendChild(btn);
+            });
+            container.appendChild(fragment);
+        }
+
+        function summarizeRunningStrategies(assignments) {
+            if (!Array.isArray(assignments)) return [];
+            const buckets = new Map();
+            assignments.forEach((assignment) => {
+                if (assignment && assignment.enabled === false) return;
+                const key = normalizeStrategyKey(assignment?.strategy_key || assignment?.strategy);
+                if (!key) return;
+                if (!buckets.has(key)) {
+                    buckets.set(key, { key, name: key, count: 0, accounts: [] });
+                }
+                const entry = buckets.get(key);
+                entry.count += 1;
+                entry.accounts.push(assignment?.account_id || "");
+            });
+            return Array.from(buckets.values());
+        }
+
+        async function fetchEnvelope(path) {
+            const url = API_BASE + path;
+            const response = await fetch(url, { credentials: "same-origin" });
+            let payload = null;
+            try {
+                payload = await response.json();
+            } catch (e) {
+                return null;
+            }
+            if (!response.ok) return null;
+            if (!payload || typeof payload !== "object" || !payload.truth) return null;
+            return payload;
+        }
+
+        function truthComplete(envelope) {
+            return Boolean(envelope && envelope.truth && envelope.truth.complete === true);
+        }
+
+        function renderJson(id, data) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            try {
+                el.textContent = JSON.stringify(data);
+            } catch (e) {
+                el.textContent = NO_BACKEND_FACT;
+            }
+        }
+
+        function renderSignals(data) {
+            if (!data || typeof data !== "object") {
+                clearTruthFields();
+                return false;
+            }
+
+            let primary = data.primary || data.latest || data.signal || null;
+            const rawSignals = data.signals || data.items || data.queue || [];
+            const filteredSignals = filterSignalsByActive(rawSignals);
+            if (!primary && filteredSignals.length) {
+                primary = filteredSignals[0];
+            }
+            if (primary && typeof primary === "object") {
+                const dir = (primary.direction || primary.side || "BUY").toUpperCase();
+                const instrument = (primary.instrument || primary.symbol || "UNKNOWN").toUpperCase();
+                const entry = primary.entry || primary.entry_price || "";
+                const tp = primary.take_profit || primary.tp || "";
+                const confidence = primary.confidence;
+                const conviction = primary.conviction;
+                const reasoning = primary.reasoning || primary.strategy || "";
+                const bias = primary.bias || primary.market_bias || "";
+                const atr = primary.atr || primary.stability || "";
+                const corridor = primary.corridor || primary.range || "";
+                const strategyType = primary.strategy_type || primary.type || "";
+
+                // Format primary signal with direction
+                setText("primary-signal", `${instrument} ${dir}`);
+                
+                // Format signal text with Entry and TP
+                if (entry && tp) {
+                    setText("signal-text", `Entry: ${entry} | TP: ${tp}`);
+                } else if (entry) {
+                    setText("signal-text", `Entry: ${entry}`);
+                } else {
+                    setText("signal-text", "");
+                }
+                
+                // Format confidence as percentage
+                if (confidence !== undefined && confidence !== null && confidence !== "") {
+                    const confNum = Number(confidence);
+                    const pct = (confNum <= 1 ? confNum * 100 : confNum);
+                    setText("signal-confidence", `Confidence: ${pct.toFixed(1)}%`);
+                    setText("conviction", `${pct.toFixed(1)}%`);
+                    setWidth("conviction-bar", `${Math.min(100, pct)}%`);
+                } else if (conviction !== undefined && conviction !== null && conviction !== "") {
+                    const convNum = Number(conviction);
+                    const pct = (convNum <= 1 ? convNum * 100 : convNum);
+                    setText("conviction", `${pct.toFixed(1)}%`);
+                    setWidth("conviction-bar", `${Math.min(100, pct)}%`);
+                    setText("signal-confidence", "");
+                } else {
+                    setText("conviction", "");
+                    setWidth("conviction-bar", "0%");
+                    setText("signal-confidence", "");
+                }
+                
+                // Set other fields
+                if (reasoning) setText("ai-reasoning", String(reasoning));
+                if (bias) setText("market-bias", String(bias));
+                if (atr) setText("atr-stability", String(atr));
+                if (corridor) setText("corridor", String(corridor));
+                if (strategyType) setText("strategy-type", String(strategyType));
+                return true;
+            }
+
+            if (rawSignals.length) {
+                renderJson("signals-queue", filteredSignals.length ? filteredSignals : rawSignals);
+                return filteredSignals.length > 0;
+            }
+            return false;
+        }
+
+        function renderSignalsQueue(signals) {
+            const queue = document.getElementById("signals-queue");
+            if (!queue) return;
+
+            const filtered = filterSignalsByActive(signals);
+            if (!Array.isArray(signals) || signals.length === 0 || (activeStrategyKey && filtered.length === 0)) {
+                queue.innerHTML = '';
+                return;
+            }
+
+            const visibleSignals = (filtered.length ? filtered : signals).slice(0, 6);
+            const html = visibleSignals.map(sig => {
+                const dir = (sig.direction || sig.side || "UNKNOWN").toUpperCase();
+                const instrument = (sig.instrument || sig.symbol || "UNKNOWN").toUpperCase();
+                const entry = sig.entry ?? sig.entry_price ?? sig.price ?? "";
+                const conf = sig.confidence ?? sig.score ?? "";
+                const tp = sig.take_profit ?? sig.tp ?? "";
+                const kind = (sig.type || sig.signal_type || "POTENTIAL").toUpperCase();
+
+                const dirColor = dir === "BUY" ? "text-[#00ff88]" : (dir === "SELL" ? "text-red-400" : "text-gray-300");
+                const border = kind === "WATCH" ? "border-yellow-500" : (kind === "CONDITIONAL" ? "border-blue-500" : "border-[#00ff88]");
+                const confText = conf !== "" ? `${Number(conf).toFixed ? Number(conf).toFixed(1) : conf}%` : "";
+
+                return `
+                    <div class="glass-card p-3 rounded-lg border-l-4 ${border}">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <span class="text-[9px] font-bold text-gray-500 uppercase">${kind}</span>
+                                <p class="text-sm font-bold ${dirColor}">${instrument} ${dir} ${entry !== "" ? `@ ${entry}` : ""}</p>
+                                ${tp !== "" ? `<p class="text-[10px] text-gray-400">TP: ${tp}</p>` : ""}
+                            </div>
+                            ${confText ? `<span class="chip chip-success text-[8px] py-0.5 px-2">${confText}</span>` : ""}
+                        </div>
+                    </div>
+                `;
+            }).join("");
+
+            queue.innerHTML = html;
+        }
+
+        function renderPositions(data) {
+            if (!data || typeof data !== "object") {
+                setText("positions", NO_BACKEND_FACT);
+                return;
+            }
+            const positions = Array.isArray(data.positions) ? data.positions
+                : Array.isArray(data.items) ? data.items
+                : null;
+            const count = positions ? positions.length
+                : data.positions_count ?? data.count ?? data.total ?? data.items_count;
+            if (count === undefined || count === null) {
+                setText("positions", NO_BACKEND_FACT);
+                return;
+            }
+            setText("positions", String(count));
+        }
+
+        function applyStatusFallback(statusEnv, hasSignals) {
+            if (!truthComplete(statusEnv)) return;
+            const data = statusEnv.data || {};
+            const marketClosed = Boolean(data.market_closed || data.weekend_indicator);
+            const activeKey = data.active_strategy_key || "";
+
+            if (!hasSignals) {
+                if (marketClosed) {
+                    setText("corridor", "MARKET CLOSED");
+                    setText("strategy-type", activeKey || "MARKET CLOSED");
+                } else {
+                    setText("corridor", "NO ACTIVE SIGNALS");
+                    setText("strategy-type", activeKey || "");
+                }
+            } else if (activeKey) {
+                setText("strategy-type", activeKey);
+            }
+        }
+
+        function renderChart(symbol) {
+            const container = document.getElementById("tradingview_terminal");
+            if (!container) return;
+            if (!symbol) {
+                setHtml("tradingview_terminal", `<div class="text-sm text-gray-400">${NO_BACKEND_FACT}</div>`);
+                return;
+            }
+            if (typeof TradingView === "undefined") {
+                setHtml("tradingview_terminal", `<div class="text-sm text-gray-400">Loading TradingView...</div>`);
+                setTimeout(() => renderChart(symbol), 400);
+                return;
+            }
+            if (!tvWidget) {
+                tvWidget = new TradingView.widget({
+                    autosize: true,
+                    symbol,
+                    interval: "5",
+                    timezone: "Etc/UTC",
+                    theme: "dark",
+                    style: "1",
+                    container_id: "tradingview_terminal",
+                    hide_side_toolbar: false,
+                    allow_symbol_change: true,
+                    save_image: false,
+                    details: true,
+                    hotlist: true,
+                    calendar: true,
+                    studies: [
+                        "RSI@tv-basicstudies",
+                        "MASimple@tv-basicstudies",
+                        "Volume@tv-basicstudies"
+                    ],
+                    show_popup_button: true,
+                    popup_width: "1000",
+                    popup_height: "650",
+                    locale: "en"
+                });
+                return;
+            }
+            if (typeof tvWidget.setSymbol === "function") {
+                tvWidget.setSymbol(symbol, "5");
+            }
+        }
+
+        function renderPerformance(data) {
+            if (!data || typeof data !== "object" || !Array.isArray(data.strategies)) {
+                setHtml("performance-placeholder", 
+                    '<div class="text-sm text-gray-400 italic">Performance metrics will populate after first trade closes – system operating normally</div>');
+                return;
+            }
+            if (!data.strategies.length) {
+                setHtml("performance-placeholder", 
+                    '<div class="text-sm text-gray-400 italic">Performance metrics will populate after first trade closes – system operating normally</div>');
+                return;
+            }
+            const cards = data.strategies.map((item) => {
+                const key = item.strategy_key || item.key || "UNKNOWN";
+                const totalPnl = item.total_pnl ?? NO_BACKEND_FACT;
+                const winRate = item.win_rate ?? NO_BACKEND_FACT;
+                const profitFactor = item.profit_factor ?? NO_BACKEND_FACT;
+                return `
+                    <div class="glass-card p-6 rounded-2xl">
+                        <div class="flex justify-between items-start mb-5">
+                            <h3 class="font-bold text-[#00ff88] text-lg">${key}</h3>
+                            <span class="chip chip-success text-[9px] py-1 px-2">PF: ${profitFactor}</span>
+                        </div>
+                        <div class="data-grid mb-5">
+                            <div class="bg-black/30 p-3 rounded-lg">
+                                <p class="text-[9px] text-gray-500 uppercase mb-1">Total PnL</p>
+                                <p class="text-lg font-bold text-white">${totalPnl}</p>
+                            </div>
+                            <div class="bg-black/30 p-3 rounded-lg">
+                                <p class="text-[9px] text-gray-500 uppercase mb-1">Win Rate</p>
+                                <p class="text-lg font-bold text-[#00ff88]">${winRate}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+            setHtml("performance-cards", cards);
+        }
+
+        function renderJournal(data) {
+            if (!data || typeof data !== "object" || !Array.isArray(data.trades)) {
+                setHtml("journal-list", 
+                    '<div class="text-sm text-gray-400 italic">No closed trades yet (system operating normally)</div>');
+                return;
+            }
+            if (!data.trades.length) {
+                // Explicit empty state - show component, don't hide
+                setHtml("journal-list", 
+                    '<div class="text-sm text-gray-400 italic">No closed trades yet (system operating normally)</div>');
+                return;
+            }
+            const rows = data.trades.map((trade, idx) => {
+                const tradeId = trade.id || trade.trade_id || trade.order_id || `trade-${idx}`;
+                const instrument = trade.instrument || "UNKNOWN";
+                const pnl = trade.pnl ?? trade.realizedPL ?? NO_BACKEND_FACT;
+                const entry = trade.entry_time || trade.entryTime || trade.openTime || NO_BACKEND_FACT;
+                const exit = trade.exit_time || trade.exitTime || trade.closeTime || NO_BACKEND_FACT;
+                return `
+                    <div class="glass-card rounded-xl overflow-hidden hover:border-[#00ff88]/30 transition-all">
+                        <div class="p-5 cursor-pointer" onclick="toggleTradeDetails('${tradeId}')">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-4">
+                                    <div class="text-center">
+                                        <div class="text-[9px] text-gray-500 font-bold uppercase mb-1">Trade ID</div>
+                                        <div class="text-xs font-mono text-[#00ff88]">${tradeId}</div>
+                                    </div>
+                                    <div class="h-10 w-px bg-white/10"></div>
+                                    <div>
+                                        <div class="font-bold text-lg text-white">${instrument}</div>
+                                        <div class="text-xs text-gray-400 font-mono">${trade.strategy_key || trade.strategy || NO_BACKEND_FACT}</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-6">
+                                    <div class="text-right">
+                                        <div class="text-[9px] text-gray-500 font-bold uppercase mb-1">Entry Time</div>
+                                        <div class="text-xs font-mono text-white">${entry}</div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-[9px] text-gray-500 font-bold uppercase mb-1">Exit Time</div>
+                                        <div class="text-xs font-mono text-white">${exit}</div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-[9px] text-gray-500 font-bold uppercase mb-1">P&L</div>
+                                        <div class="text-lg font-bold text-[#00ff88]">${pnl}</div>
+                                    </div>
+                                    <div class="text-gray-500 text-xl transition-transform" id="${tradeId}-arrow">▼</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="${tradeId}" class="hidden border-t border-white/10">
+                            <div class="p-5 bg-black/30 text-xs text-gray-300">
+                                <pre class="whitespace-pre-wrap">${JSON.stringify(trade)}</pre>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+            setHtml("journal-list", rows);
+        }
+
+        function renderMeshStatus(data) {
+            if (!data || typeof data !== "object") {
+                setPlaceholder("mesh-status");
+                setText("mesh-status-badge", NO_BACKEND_FACT);
+                return;
+            }
+            if (data.system_truth_state) {
+                setText("mesh-status-badge", data.system_truth_state);
+            }
+            renderJson("mesh-status", data);
+        }
+
+        function renderNews(data) {
+            if (!data || typeof data !== "object" || !Array.isArray(data.news)) {
+                setHtml("news-feed", '<div class="text-sm text-gray-400 italic">No high-impact news at this moment</div>');
+                return;
+            }
+            let feed = document.getElementById("news-feed");
+            if (!feed) {
+                const host = document.getElementById("tab-news");
+                if (host) {
+                    feed = document.createElement("div");
+                    feed.id = "news-feed";
+                    host.appendChild(feed);
+                }
+            }
+            if (!data.news.length) {
+                // Explicit empty state - don't hide component
+                const reason = data.provider_status?.reason || data.status?.reason || "no_news_available";
+                setHtml("news-feed", 
+                    `<div class="text-sm text-gray-400 italic">No high-impact news at this moment (${reason})</div>`);
+                return;
+            }
+            const list = data.news.map((item) => {
+                const title = item.title || item.headline || NO_BACKEND_FACT;
+                const source = item.source || item.provider || "";
+                return `<div class="border-b border-white/5 py-2"><div class="text-sm text-white">${title}</div><div class="text-[10px] text-gray-400">${source}</div></div>`;
+            }).join("");
+            const rateLimits = data.provider_status?.rate_limits || {};
+            const rateLine = Object.entries(rateLimits).map(([name, meta]) => {
+                const remaining = meta?.remaining ?? "n/a";
+                const limit = meta?.limit ?? "n/a";
+                return `${name}: ${remaining}/${limit}`;
+            }).join(" | ");
+            const footer = rateLine ? `<div class="mt-3 text-[10px] text-gray-500 uppercase">API Remaining: ${rateLine}</div>` : "";
+            setHtml("news-feed", list + footer);
+        }
+
+        function renderNewsAssess(data) {
+            if (!data || typeof data !== "object") {
+                setText("news-sentiment-summary", "No news analysis available at this moment");
+                setText("news-sentiment", "N/A");
+                setText("news-impact-score", "N/A");
+                return;
+            }
+            // Handle empty news case explicitly
+            if (data.status === "NO_DATA" || (data.news_count === 0)) {
+                setText("news-sentiment-summary", "No high-impact news available for analysis");
+                setText("news-sentiment", "neutral");
+                setText("news-impact-score", "0");
+                return;
+            }
+            setText("news-sentiment-summary", data.summary || "No news analysis available");
+            setText("news-sentiment", data.sentiment || "neutral");
+            setText("news-impact-score", data.impact_score != null ? String(data.impact_score) : "N/A");
+        }
+
+        function renderEconomicCalendar(data) {
+            const container = document.getElementById("economic-calendar");
+            if (!container) return;
+            if (!data || typeof data !== "object" || !Array.isArray(data.events)) {
+                container.innerHTML = '<p class="text-sm text-gray-400 italic">No upcoming economic events</p>';
+                return;
+            }
+            if (!data.events.length) {
+                // Explicit empty state - don't hide component
+                container.innerHTML = `<p class="text-sm text-gray-400 italic">No upcoming high-impact economic events in the next 4 hours</p>`;
+                return;
+            }
+            const rows = data.events.map((event) => {
+                const title = event.title || "Economic Event";
+                const impact = event.impact || "medium";
+                const countdown = event.countdown_seconds != null ? `${Math.max(0, Math.floor(event.countdown_seconds / 60))}m` : "n/a";
+                return `<div class="flex items-center justify-between text-sm">
+                    <span class="text-gray-300">${title}</span>
+                    <span class="text-gray-500">${impact.toUpperCase()} • ${countdown}</span>
+                </div>`;
+            }).join("");
+            container.innerHTML = rows;
+        }
+
+        async function refreshTerminal() {
+            clearTruthFields();
+
+            const signalsEnv = await fetchEnvelope("/api/signals/pending");
+            if (truthComplete(signalsEnv)) {
+                const rendered = renderSignals(signalsEnv.data);
+                const active = signalsEnv.data?.active_strategy || signalsEnv.data?.active_strategy_key;
+                if (active && (!activeStrategyKey || !shouldRespectManualSelection())) {
+                    setActiveStrategyKey(active);
+                }
+                renderSignalsQueue(signalsEnv.data?.signals || signalsEnv.data?.items || signalsEnv.data?.queue || []);
+                const statusEnv = await fetchEnvelope("/api/status");
+                if (!rendered && truthComplete(statusEnv)) {
+                    const marketClosed = Boolean(statusEnv.data?.market_closed || statusEnv.data?.weekend_indicator);
+                    if (marketClosed) {
+                        setText("primary-signal", "MARKET CLOSED");
+                        setText("ai-reasoning", "market_closed=true");
+                        if (statusEnv.data?.last_scan_at) setText("signal-text", statusEnv.data.last_scan_at);
+                    }
+                }
+                applyStatusFallback(statusEnv, rendered);
+            } else {
+                clearTruthFields();
+            }
+
+            const positionsEnv = await fetchEnvelope("/api/positions");
+            if (truthComplete(positionsEnv)) {
+                renderPositions(positionsEnv.data);
+            } else {
+                setText("positions", NO_BACKEND_FACT);
+            }
+
+            await refreshChart();
+        }
+
+        async function refreshNews() {
+            // Force visibility safety
+            const tab = document.getElementById("tab-news");
+            if (tab) tab.classList.remove("hidden");
+
+            setText("news-last-refresh", new Date().toISOString().slice(11, 19) + "Z");
+            const env = await fetchEnvelope("/api/news");
+            console.log("[Forensic] News Env:", env);
+            
+            // Always try to update news count widget in top right, even if truth incomplete
+            const newsItems = env?.data?.news || [];
+            const count = newsItems.length;
+            
+            if (!truthComplete(env)) {
+                // Show explicit empty state, don't hide
+                setHtml("news-feed", '<div class="text-sm text-gray-400 italic">News feed unavailable (backend connection issue)</div>');
+                setText("news-count", String(count || "0"));
+                setText("news-top-headline", "--");
+            } else {
+                // Ensure renderNews works
+                try {
+                    renderNews(env.data);
+                    setText("news-count", String(count));
+                    const firstTitle = newsItems[0]?.title || newsItems[0]?.headline || "--";
+                    setText("news-top-headline", firstTitle.slice(0, 40));
+                    console.log("[Forensic] Rendered news count:", count);
+                } catch (e) {
+                    console.error("[Forensic] Render news error:", e);
+                    // Still update count widget even if render fails
+                    setText("news-count", String(count));
+                }
+            }
+            
+            // Update top-right connector widget even if truth incomplete (as long as we have a response)
+            if (env && env.truth && env.data) {
+                setText("news-count", String(count));
+                if (count > 0 && newsItems[0]) {
+                    const firstTitle = newsItems[0].title || newsItems[0].headline || "--";
+                    setText("news-top-headline", firstTitle.slice(0, 40));
+                }
+            }
+            
+            // ... rest of function ...
+            const assessEnv = await fetchEnvelope("/api/news/assess");
+            // Always render assess panel, even if truth incomplete
+            if (!truthComplete(assessEnv)) {
+                setText("news-sentiment-summary", "News analysis unavailable (backend connection issue)");
+                setText("news-sentiment", "N/A");
+                setText("news-impact-score", "N/A");
+            } else {
+                renderNewsAssess(assessEnv.data);
+            }
+            const calEnv = await fetchEnvelope("/api/economic_calendar");
+            if (!truthComplete(calEnv)) {
+                const container = document.getElementById("economic-calendar");
+                if (container) {
+                    const warnings = calEnv.truth?.warnings || [];
+                    container.innerHTML = `<p class="text-sm text-gray-400 italic">Economic calendar unavailable (${warnings.length > 0 ? warnings.join(', ') : 'backend connection issue'})</p>`;
+                }
+            } else {
+                renderEconomicCalendar(calEnv.data);
+            }
+        }
+
+        async function refreshReports() {
+            // Try both performance endpoints
+            let env = await fetchEnvelope("/api/performance/summary");
+            if (truthComplete(env)) {
+                // Handle NO_DATA status explicitly
+                if (env.data && env.data.status === "NO_DATA") {
+                    setHtml("performance-placeholder", 
+                        '<div class="text-sm text-gray-400 italic">Performance will appear once trades close – system operating normally</div>');
+                    return;
+                }
+            }
+            
+            // Fallback to strategies endpoint
+            env = await fetchEnvelope("/api/performance/strategies");
+            if (!truthComplete(env)) {
+                setHtml("performance-placeholder", 
+                    '<div class="text-sm text-gray-400 italic">Performance metrics unavailable – waiting for backend</div>');
+                return;
+            }
+            
+            // Render if we have data
+            if (env.data && env.data.strategies && env.data.strategies.length > 0) {
+                renderPerformance(env.data);
+            } else {
+                setHtml("performance-placeholder", 
+                    '<div class="text-sm text-gray-400 italic">Performance metrics will populate after first trade closes – system operating normally</div>');
+            }
+        }
+
+        function renderOpenTrades(data) {
+            const container = document.getElementById("open-trades-list");
+            if (!container) return;
+            
+            if (!data || typeof data !== "object") {
+                container.innerHTML = '<div class="text-sm text-gray-400 italic">No open positions at this time</div>';
+                return;
+            }
+            
+            // Extract trades from accounts structure
+            const allTrades = [];
+            if (data.accounts && Array.isArray(data.accounts)) {
+                data.accounts.forEach(acc => {
+                    if (acc.trades && Array.isArray(acc.trades)) {
+                        acc.trades.forEach(trade => {
+                            allTrades.push({
+                                ...trade,
+                                account_suffix: acc.account_suffix,
+                                account_id_masked: acc.account_id_masked
+                            });
+                        });
+                    }
+                });
+            }
+            
+            if (allTrades.length === 0) {
+                container.innerHTML = '<div class="text-sm text-gray-400 italic">No open positions at this time</div>';
+                return;
+            }
+            
+            const html = allTrades.map((trade, idx) => {
+                const tradeId = trade.id || trade.trade_id || `open-${idx}`;
+                const instrument = trade.instrument || "UNKNOWN";
+                const unrealizedPL = parseFloat(trade.unrealizedPL || 0);
+                const entryPrice = parseFloat(trade.price || 0);
+                const units = parseFloat(trade.units || 0);
+                const openTime = trade.openTime ? new Date(trade.openTime).toLocaleString() : "N/A";
+                const pnlColor = unrealizedPL >= 0 ? "text-[#00ff88]" : "text-red-400";
+                
+                return `
+                    <div class="glass-card rounded-xl overflow-hidden hover:border-[#00ff88]/30 transition-all">
+                        <div class="p-5">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-4">
+                                    <div class="text-center">
+                                        <div class="text-[9px] text-gray-500 font-bold uppercase mb-1">Trade ID</div>
+                                        <div class="text-xs font-mono text-[#00ff88]">${tradeId}</div>
+                                    </div>
+                                    <div class="h-10 w-px bg-white/10"></div>
+                                    <div>
+                                        <div class="font-bold text-lg text-white">${instrument}</div>
+                                        <div class="text-xs text-gray-400 font-mono">Account: ${trade.account_suffix || 'N/A'}</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-6">
+                                    <div class="text-right">
+                                        <div class="text-[9px] text-gray-500 font-bold uppercase mb-1">Entry Price</div>
+                                        <div class="text-xs font-mono text-white">${entryPrice.toFixed(5)}</div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-[9px] text-gray-500 font-bold uppercase mb-1">Units</div>
+                                        <div class="text-xs font-mono text-white">${units}</div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-[9px] text-gray-500 font-bold uppercase mb-1">Unrealized P&L</div>
+                                        <div class="text-lg font-bold ${pnlColor}">$${unrealizedPL.toFixed(2)}</div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-[9px] text-gray-500 font-bold uppercase mb-1">Opened</div>
+                                        <div class="text-xs font-mono text-white">${openTime}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+            container.innerHTML = html;
+        }
+        
+        function renderPendingTrades(data) {
+            const container = document.getElementById("pending-trades-list");
+            if (!container) return;
+            
+            if (!data || typeof data !== "object") {
+                container.innerHTML = '<div class="text-sm text-gray-400 italic">No pending trades in selection pool</div>';
+                return;
+            }
+            
+            const candidates = data.candidates || data.trades || [];
+            
+            if (candidates.length === 0) {
+                container.innerHTML = '<div class="text-sm text-gray-400 italic">No pending trades in selection pool (system operating normally)</div>';
+                return;
+            }
+            
+            const html = candidates.slice(0, 20).map((trade, idx) => {
+                const instrument = trade.instrument || "UNKNOWN";
+                const strategy = trade.strategy_key || trade.strategy || "N/A";
+                const score = trade.score || trade.confidence || 0;
+                const confidence = typeof score === 'number' ? (score * 100).toFixed(1) + '%' : score;
+                const regime = trade.regime || "N/A";
+                const firstSeen = trade.first_seen_at || trade.created_at || "N/A";
+                const executed = trade.executed || false;
+                const statusBadge = executed ? 
+                    '<span class="chip chip-success text-[9px] py-1 px-2">EXECUTED</span>' :
+                    '<span class="chip chip-warning text-[9px] py-1 px-2">PENDING</span>';
+                
+                return `
+                    <div class="glass-card rounded-xl overflow-hidden hover:border-[#00ff88]/30 transition-all">
+                        <div class="p-5">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-4">
+                                    <div>
+                                        <div class="font-bold text-lg text-white">${instrument}</div>
+                                        <div class="text-xs text-gray-400 font-mono">${strategy}</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-6">
+                                    <div class="text-right">
+                                        <div class="text-[9px] text-gray-500 font-bold uppercase mb-1">Confidence</div>
+                                        <div class="text-xs font-mono text-[#00ff88]">${confidence}</div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-[9px] text-gray-500 font-bold uppercase mb-1">Regime</div>
+                                        <div class="text-xs font-mono text-white">${regime}</div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-[9px] text-gray-500 font-bold uppercase mb-1">First Seen</div>
+                                        <div class="text-xs font-mono text-white">${firstSeen}</div>
+                                    </div>
+                                    <div class="text-right">
+                                        ${statusBadge}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+            container.innerHTML = html;
+        }
+
+        async function refreshJournal() {
+            // Load Open Trades
+            const openEnv = await fetchEnvelope("/api/trades/active");
+            if (truthComplete(openEnv)) {
+                renderOpenTrades(openEnv.data);
+            } else {
+                const warnings = openEnv.truth?.warnings || [];
+                setHtml("open-trades-list", 
+                    `<div class="text-sm text-gray-400 italic">Open trades unavailable (truth incomplete). ${warnings.length > 0 ? warnings.join(', ') : 'No open positions'}</div>`);
+            }
+            
+            // Load Pending Trades
+            const pendingEnv = await fetchEnvelope("/api/trade_selection/preview");
+            if (truthComplete(pendingEnv)) {
+                renderPendingTrades(pendingEnv.data);
+            } else {
+                const warnings = pendingEnv.truth?.warnings || [];
+                setHtml("pending-trades-list", 
+                    `<div class="text-sm text-gray-400 italic">Pending trades unavailable (truth incomplete). ${warnings.length > 0 ? warnings.join(', ') : 'No pending trades'}</div>`);
+            }
+            
+            // Load Closed Trades (Journal)
+            const env = await fetchEnvelope("/api/journal/trades");
+            if (!truthComplete(env)) {
+                // Show explicit empty state with truth status
+                const warnings = env.truth?.warnings || [];
+                setHtml("journal-list", 
+                    `<div class="text-sm text-gray-400 italic">Journal unavailable (truth incomplete). ${warnings.length > 0 ? warnings.join(', ') : ''}</div>`);
+                return;
+            }
+            // renderJournal handles empty arrays properly
+            renderJournal(env.data);
+        }
+
+        async function refreshMesh() {
+            const env = await fetchEnvelope("/api/truth/status");
+            if (!truthComplete(env)) {
+                setPlaceholder("mesh-status");
+                setText("mesh-status-badge", NO_BACKEND_FACT);
+                return;
+            }
+            renderMeshStatus(env.data);
+        }
+
+        async function refreshStrategies() {
+            const env = await fetchEnvelope("/api/config");
+            let strategies = [];
+            let active = null;
+            if (truthComplete(env)) {
+                const assignments = env.data?.strategy_assignments || [];
+                strategies = summarizeRunningStrategies(assignments);
+                active = env.data?.active_strategy_key || null;
+            }
+            if (!strategies.length) {
+                const statusEnv = await fetchEnvelope("/api/status");
+                if (truthComplete(statusEnv)) {
+                    active = active || statusEnv.data?.active_strategy_key || null;
+                    if (active) strategies = [{ key: active, name: active }];
+                }
+            }
+            if (!strategies.length) {
+                renderStrategyButtons([], null);
+                return;
+            }
+            renderStrategyButtons(strategies, active || activeStrategyKey);
+            if (active) setActiveStrategyKey(active);
+        }
+
+        async function refreshChart() {
+            const select = document.getElementById("chart-symbol");
+            const symbol = select ? select.value : "";
+            renderChart(symbol);
+        }
+
+        async function fetchTruthStatus() {
+            return fetchEnvelope("/api/truth/status");
+        }
+
+        async function refreshUiVersion() {
+            try {
+                const env = await fetchEnvelope("/api/ui/version");
+                if (truthComplete(env)) {
+                    const hash = env.data?.ui_hash || "unknown";
+                    setText("ui-version", hash);
+                }
+            } catch (e) {
+                console.error("UI version fetch failed:", e);
+            }
+        }
+
+        function truthIsFull(envelope) {
+            return Boolean(
+                envelope &&
+                envelope.truth &&
+                envelope.truth.complete === true &&
+                envelope.data &&
+                envelope.data.system_truth_state === "FULL"
+            );
+        }
+
+        // NEW: Check if endpoint has complete truth (for read-only views)
+        function truthCompleteForRead(envelope) {
+            return Boolean(
+                envelope &&
+                envelope.truth &&
+                envelope.truth.complete === true
+            );
+        }
+
+        async function gateTruth(actionLabel, requireConfirm, requireFullTruth = true) {
+            console.log(`[gateTruth] Called with actionLabel=${actionLabel}, requireConfirm=${requireConfirm}, requireFullTruth=${requireFullTruth}`);
+            if (requireConfirm) {
+                const proceed = confirm(`Intent: ${actionLabel}\n\nThis dashboard is read-only. Continue?`);
+                if (!proceed) return { allowed: false, reason: "cancelled" };
+            }
+            const env = await fetchTruthStatus();
+            console.log(`[gateTruth] Truth status:`, env);
+            if (requireFullTruth && !truthIsFull(env)) {
+                console.error(`[gateTruth] Blocked: requireFullTruth=true but truthIsFull=false`);
+                alert(`Action blocked: TRUTH_LEVEL is not FULL. (${actionLabel})`);
+                return { allowed: false, reason: "truth_not_full" };
+            } else if (!requireFullTruth && !truthCompleteForRead(env)) {
+                console.error(`[gateTruth] Blocked: requireFullTruth=false but truthCompleteForRead=false`);
+                alert(`Action blocked: Backend truth incomplete. (${actionLabel})`);
+                return { allowed: false, reason: "truth_incomplete" };
+            }
+            console.log(`[gateTruth] Allowed: action=${actionLabel}`);
+            return { allowed: true };
+        }
+
+        async function guardDestructive(actionLabel) {
+            const gate = await gateTruth(actionLabel, true, true);
+            if (!gate.allowed) return false;
+            alert("Blocked: UI cannot mutate system state. Use backend controls only.");
+            return false;
+        }
+
+        // NEW: Check endpoint-specific truth for read-only navigation
+        // For read-only views, allow navigation as long as endpoint responds (even if truth.complete=false)
+        // Frontend will render explicit empty states when truth is incomplete
+        async function guardReadOnlyForEndpoint(endpoint, actionLabel) {
+            try {
+                console.log(`[TruthGate] Checking endpoint truth for: ${endpoint}`);
+                const env = await fetchEnvelope(endpoint);
+                console.log(`[TruthGate] Endpoint response:`, env);
+                // Check if we got a valid response (has truth envelope)
+                if (!env || !env.truth) {
+                    console.error(`[TruthGate] Invalid response from ${endpoint}:`, env);
+                    alert(`Action blocked: Backend endpoint ${endpoint} returned invalid response. (${actionLabel})`);
+                    return false;
+                }
+                // Allow navigation even if truth.complete=false - frontend handles empty states
+                // Only block if endpoint completely fails (no response or network error)
+                console.log(`[TruthGate] Allowing navigation to ${endpoint} (truth.complete=${env.truth?.complete})`);
+                return true;
+            } catch (e) {
+                console.error(`[TruthGate] Failed to fetch ${endpoint}:`, e);
+                alert(`Action blocked: Cannot reach backend endpoint ${endpoint}. (${actionLabel})`);
+                return false;
+            }
+        }
+
+        async function guardReadOnly(actionLabel) {
+            // For read-only navigation, use aggregate truth (backward compatible)
+            // Individual tabs will check their own endpoint truth in showTab
+            const gate = await gateTruth(actionLabel, false, false);
+            return gate.allowed;
+        }
+
+        async function showTab(tabId) {
+            // Map tab IDs to their endpoint checks for read-only verification
+            const endpointMap = {
+                "news": "/api/news",
+                "journal": "/api/journal/trades",
+                "reports": "/api/performance/summary",
+                "terminal": "/api/signals/pending",
+                "mesh": "/api/truth/status",
+                "strategies": "/api/config"
+            };
+            
+            const endpoint = endpointMap[tabId];
+            
+            // For read-only tabs, check endpoint-specific truth instead of aggregate
+            if (endpoint) {
+                const allowed = await guardReadOnlyForEndpoint(endpoint, `Navigate to ${tabId}`);
+                if (!allowed) return;
+            } else {
+                // Fallback to aggregate check for unknown tabs
+                const allowed = await guardReadOnly(`Navigate to ${tabId}`);
+                if (!allowed) return;
+            }
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+                tab.classList.add('hidden');
+            });
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            const tab = document.getElementById('tab-' + tabId);
+            const nav = document.getElementById('nav-' + tabId);
+            if (tab) {
+                tab.classList.remove('hidden');
+                tab.classList.add('active');
+            }
+            if (nav) nav.classList.add('active');
+
+            if (tabId === "terminal") refreshTerminal();
+            if (tabId === "news") refreshNews();
+            if (tabId === "reports") refreshReports();
+            if (tabId === "journal") refreshJournal();
+            if (tabId === "mesh") refreshMesh();
+            if (tabId === "strategies") refreshStrategies();
+        }
+
+        function getToken() {
+            return localStorage.getItem("control_plane_token") || window.__CONTROL_PLANE_TOKEN || "";
+        }
+
+        async function apiPost(path, bodyObj) {
+            const token = getToken();
+            if (!token) throw new Error("Missing token. Open Settings and set CONTROL_PLANE_TOKEN.");
+            const response = await fetch(API_BASE + path, {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: JSON.stringify(bodyObj),
+            });
+            if (!response.ok) throw new Error(`POST ${path} failed: ${response.status}`);
+            return response.json();
+        }
+
+        async function switchStrategy(strategy) {
+            const key = normalizeStrategyKey(strategy);
+            if (!key) return;
+            const allowed = await guardReadOnly(`Select strategy: ${key}`);
+            if (!allowed) return;
+            const token = getToken();
+            markManualSelection();
+            if (!token) {
+                setActiveStrategyKey(key);
+                await refreshTerminal();
+                await refreshStrategies();
+                return;
+            }
+            try {
+                await apiPost("/api/strategy/activate", { strategy_key: key, scope: "global" });
+                setActiveStrategyKey(key);
+                await refreshTerminal();
+                await refreshStrategies();
+            } catch (e) {
+                console.error("Strategy switch failed:", e);
+                alert(`Strategy switch failed: ${e.message || e}`);
+            }
+        }
+
+        async function changeChartSymbol() {
+            const allowed = await guardReadOnly("Change chart symbol");
+            if (!allowed) return;
+            await refreshChart();
+        }
+
+        async function toggleTradeDetails(tradeId) {
+            const allowed = await guardReadOnly(`Toggle trade details: ${tradeId}`);
+            if (!allowed) return;
+            const details = document.getElementById(tradeId);
+            const arrow = document.getElementById(tradeId + '-arrow');
+            if (!details || !arrow) return;
+            if (details.classList.contains('hidden')) {
+                details.classList.remove('hidden');
+                arrow.style.transform = 'rotate(180deg)';
+            } else {
+                details.classList.add('hidden');
+                arrow.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        async function exportJournalCsv() {
+            const env = await fetchEnvelope("/api/journal/trades/export");
+            if (!truthComplete(env)) {
+                alert("Export blocked: TRUTH_LEVEL is not FULL.");
+                return;
+            }
+            const csv = env.data && env.data.csv;
+            if (!csv) {
+                alert("No CSV available.");
+                return;
+            }
+            const filename = (env.data && env.data.filename) || "journal_trades.csv";
+            const blob = new Blob([csv], { type: "text/csv" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }
+
+        function bindButton(id, handler) {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener("click", handler);
+        }
+
+        (function initSettings() {
+            const modal = document.getElementById("settings-modal");
+            const btn = document.getElementById("btn-settings");
+            const close = document.getElementById("settings-close");
+            const save = document.getElementById("settings-save");
+            const clear = document.getElementById("settings-clear");
+            const input = document.getElementById("settings-token");
+
+            if (!modal || !btn || !close || !save || !clear || !input) return;
+
+            function open() {
+                input.value = localStorage.getItem("control_plane_token") || "";
+                modal.classList.remove("hidden");
+                modal.classList.add("flex");
+                input.focus();
+            }
+            function hide() {
+                modal.classList.add("hidden");
+                modal.classList.remove("flex");
+            }
+
+            btn.addEventListener("click", async () => {
+                const allowed = await guardReadOnly("Open settings");
+                if (allowed) open();
+            });
+            close.addEventListener("click", hide);
+            modal.addEventListener("click", (e) => { if (e.target === modal) hide(); });
+
+            save.addEventListener("click", () => {
+                const v = (input.value || "").trim();
+                if (!v) return alert("Token is empty.");
+                localStorage.setItem("control_plane_token", v);
+                hide();
+                alert("Token saved (local only).");
+            });
+
+            clear.addEventListener("click", () => {
+                localStorage.removeItem("control_plane_token");
+                input.value = "";
+                alert("Token cleared.");
+            });
+        })();
+
+        document.addEventListener("DOMContentLoaded", () => {
+            clearTruthFields();
+            setPlaceholder("news-feed");
+            setPlaceholder("performance-placeholder");
+            setPlaceholder("journal-list");
+            setPlaceholder("mesh-status");
+            setText("mesh-status-badge", NO_BACKEND_FACT);
+            bindButton("btn-manual-override", () => {
+                guardDestructive("Manual Override Entry");
+            });
+            bindButton("btn-export-csv", async () => {
+                const allowed = await guardReadOnly("Export CSV");
+                if (allowed) exportJournalCsv();
+            });
+            bindButton("btn-filter-trades", async () => {
+                const allowed = await guardReadOnly("Filter Trades");
+                if (!allowed) return;
+                alert("Filter is disabled in truth mode. Use server-side filters only.");
+            });
+            bindButton("btn-reload-cloud-sync", () => {
+                guardDestructive("Reload Cloud Sync");
+            });
+            bindButton("btn-deploy-nodes", () => {
+                guardDestructive("Deploy All Nodes");
+            });
+            
+            // Initialize all dashboard data on page load
+            refreshStrategies();
+            refreshTerminal();
+            refreshNews();  // Load news count in top-right connector widget
+            refreshJournal();  // Load journal and trade info
+            refreshMesh();  // Load mesh status
+            refreshUiVersion();  // Load UI version in header
+        });
+    </script>
+
+</body>
+</html>

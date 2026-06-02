@@ -5,7 +5,7 @@ import requests
 import json
 
 # OANDA Configuration - from environment variables
-OANDA_API_KEY = settings.oanda_api_key
+OANDA_API_KEY = REDACTED
 OANDA_ACCOUNT_ID = os.getenv("OANDA_ACCOUNT_ID", "101-004-30719775-008")
 OANDA_ENV = os.getenv("OANDA_ENV", "practice")
 OANDA_BASE_URL = f'https://api-fx{OANDA_ENV}.oanda.com' if OANDA_ENV == "practice" else "https://api-fxtrade.oanda.com"

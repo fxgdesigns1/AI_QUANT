@@ -1,0 +1,49 @@
+scripts/verify_ai_providers_no_leak.py:23:    print("AI_PROVIDER:", os.getenv("AI_PROVIDER", "openai"))
+scripts/verify_ai_providers_no_leak.py:26:    print("OPENAI_API_KEY:", mark(settings.openai_api_key))
+scripts/verify_ai_providers_no_leak.py:27:    print("OPENAI_MODEL:", os.getenv("OPENAI_MODEL", "gpt-4o-mini"))
+scripts/verify_ai_providers_no_leak.py:28:    print("OPENAI_API_KEY_SHA256_PREFIX:", sha_prefix(settings.openai_api_key))
+scripts/verify_ai_providers_no_leak.py:32:    print("GEMINI_MODEL:", os.getenv("GEMINI_MODEL", "gemini-1.5-flash"))
+scripts/verify_ai_insights_no_leak.py:15:    print("OPENAI_API_KEY:", mark(settings.openai_api_key or ""))
+scripts/verify_ai_insights_no_leak.py:16:    print("OPENAI_MODEL:", settings.openai_model or "MISSING")
+scripts/verify_ai_insights_no_leak.py:19:    if settings.openai_api_key:
+scripts/verify_ai_insights_no_leak.py:20:        h = hashlib.sha256(settings.openai_api_key.encode()).hexdigest()[:12]
+scripts/verify_env_no_leak.py:11:print("TELEGRAM_CHAT_ID:", mark(settings.telegram_chat_id))
+scripts/verify_env_no_leak.py:15:print("OPENAI_API_KEY:", mark(settings.openai_api_key or ""))
+scripts/verify_env_no_leak.py:16:print("OPENAI_MODEL:", settings.openai_model or "MISSING")
+scripts/verify_env_no_leak.py:22:print("GEMINI_MODEL:", settings.gemini_model or "MISSING")
+src/ai/ai_insights.py:27:def _build_prompt(context: Dict[str, Any]) -> str:
+src/ai/ai_insights.py:42:def _call_openai(prompt: str, timeout_s: int = DEFAULT_TIMEOUT_S) -> str:
+src/ai/ai_insights.py:43:    settings.require_openai()
+src/ai/ai_insights.py:47:        from openai import OpenAI
+src/ai/ai_insights.py:49:        raise RuntimeError("OpenAI SDK not installed. Install: pip install openai") from e
+src/ai/ai_insights.py:51:    client = OpenAI(api_key=settings.openai_api_key)
+src/ai/ai_insights.py:52:    model = settings.openai_model
+src/ai/ai_insights.py:55:    resp = client.chat.completions.create(
+src/ai/ai_insights.py:59:            {"role": "user", "content": prompt},
+src/ai/ai_insights.py:68:def _call_gemini(prompt: str, timeout_s: int = DEFAULT_TIMEOUT_S) -> str:
+src/ai/ai_insights.py:69:    settings.require_gemini()
+src/ai/ai_insights.py:80:    model_name = settings.gemini_model
+src/ai/ai_insights.py:86:        prompt,
+src/ai/ai_insights.py:131:    prompt = _build_prompt(context)
+src/ai/ai_insights.py:136:        chain = ["openai"]
+src/ai/ai_insights.py:144:            if provider in ("openai", "oai"):
+src/ai/ai_insights.py:145:                out = _call_openai(prompt)
+src/ai/ai_insights.py:146:            elif provider in ("gemini", "google"):
+src/ai/ai_insights.py:147:                out = _call_gemini(prompt)
+src/core/settings.py:28:    telegram_chat_id: Optional[str]
+src/core/settings.py:36:    openai_api_key: Optional[str]
+src/core/settings.py:37:    openai_model: str
+src/core/settings.py:43:    gemini_model: str
+src/core/settings.py:56:        return bool(self.telegram_bot_token and self.telegram_chat_id)
+src/core/settings.py:62:    def require_openai(self) -> None:
+src/core/settings.py:63:        if not self.openai_api_key:
+src/core/settings.py:66:    def require_gemini(self) -> None:
+src/core/settings.py:80:    telegram_chat_id = _get_env("TELEGRAM_CHAT_ID")
+src/core/settings.py:92:    openai_api_key = _get_env("OPENAI_API_KEY")
+src/core/settings.py:93:    openai_model = _get_env("OPENAI_MODEL") or "gpt-4o-mini"
+src/core/settings.py:99:    gemini_model = _get_env("GEMINI_MODEL") or "gemini-1.5-flash"
+src/core/settings.py:102:    ai_provider = (_get_env("AI_PROVIDER") or "openai").lower()
+src/core/settings.py:115:        telegram_chat_id=telegram_chat_id,
+src/core/settings.py:119:        openai_api_key=openai_api_key,
+src/core/settings.py:120:        openai_model=openai_model,
+src/core/settings.py:124:        gemini_model=gemini_model,

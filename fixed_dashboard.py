@@ -9,6 +9,21 @@ import sys
 import json
 import requests
 from datetime import datetime
+#!/usr/bin/env python3
+"""
+⚠️ DEPRECATED: Use src/control_plane/api.py instead
+This Flask server competes with the Control Plane API for /api/status
+Use: ./scripts/run_control_plane.sh
+"""
+import sys
+print("❌ DEPRECATED: fixed_dashboard.py is no longer maintained.")
+print("   Use the Control Plane API instead:")
+print("   ./scripts/run_control_plane.sh")
+print("")
+print("   Or: python -m src.control_plane.api")
+sys.exit(1)
+
+# Legacy Flask code below (DO NOT USE)
 from flask import Flask, render_template, jsonify, request
 from flask_socketio import SocketIO, emit
 import logging

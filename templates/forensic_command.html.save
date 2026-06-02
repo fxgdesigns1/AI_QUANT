@@ -1,0 +1,1152 @@
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .status-badges {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .badge {
+            padding: 0.375rem 0.875rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge.live {
+            background: var(--accent-green);
+            color: white;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .badge.paper {
+            background: var(--accent-yellow);
+            color: var(--bg-primary);
+        }
+
+        .badge.signals-only {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .settings-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .settings-btn:hover {
+            background: var(--border-color);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1920px;
+            margin: 0 auto;
+            padding: 1.5rem;
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            gap: 1.5rem;
+            min-height: calc(100vh - 70px);
+        }
+
+        @media (max-width: 1400px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-title::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 20px;
+            background: var(--accent-blue);
+            border-radius: 2px;
+        }
+
+        /* Left Sidebar */
+        .left-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Strategy Selector */
+        .strategy-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .strategy-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.875rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-align: left;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .strategy-btn:hover {
+            background: var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .strategy-btn.active {
+            background: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+        }
+
+        .strategy-btn.active::after {
+            content: '✓';
+            position: absolute;
+            right: 1rem;
+            font-weight: 700;
+        }
+
+        /* System Integrity */
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.625rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .metric-value {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .metric-value.good {
+            color: var(--accent-green);
+        }
+
+        .metric-value.warning {
+            color: var(--accent-yellow);
+        }
+
+        .metric-value.error {
+            color: var(--accent-red);
+        }
+
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .tab {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border-radius: 0.375rem 0.375rem 0 0;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+
+        .tab.active {
+            color: var(--accent-blue);
+            background: var(--bg-tertiary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* TradingView Chart */
+        #tradingview_terminal {
+            width: 100%;
+            height: 600px;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        /* Signal Overlay */
+        .signal-overlay {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            right: 1rem;
+            background: rgba(17, 24, 39, 0.95);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+
+        .signal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .signal-instrument {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .signal-direction {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .signal-direction.buy {
+            background: var(--accent-green);
+            color: white;
+        }
+
+        .signal-direction.sell {
+            background: var(--accent-red);
+            color: white;
+        }
+
+        .conviction-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .conviction-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-red), var(--accent-yellow), var(--accent-green));
+            transition: width 0.3s ease;
+        }
+
+        /* Right Sidebar */
+        .right-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
+        }
+
+        /* Signals Queue */
+        .signal-item {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 0.875rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .signal-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .signal-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .signal-item-instrument {
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .signal-item-side {
+            padding: 0.125rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .signal-item-side.buy {
+            background: var(--accent-green);
+            color: white;
+        }
+
+        .signal-item-side.sell {
+            background: var(--accent-red);
+            color: white;
+        }
+
+        .signal-item-meta {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Terminal Logs */
+        .terminal {
+            background: #000;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            line-height: 1.5;
+            max-height: 400px;
+            overflow-y: auto;
+            color: #0f0;
+        }
+
+        .terminal-line {
+            margin-bottom: 0.25rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .terminal-line.error {
+            color: var(--accent-red);
+        }
+
+        .terminal-line.warning {
+            color: var(--accent-yellow);
+        }
+
+        .terminal-line.info {
+            color: var(--accent-blue);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* News Items */
+        .news-item {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .news-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.5rem;
+        }
+
+        .news-item-title {
+            font-weight: 600;
+            font-size: 0.875rem;
+            line-height: 1.4;
+        }
+
+        .news-item-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            margin-left: 0.75rem;
+        }
+
+        .news-item-body {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <div class="top-nav">
+        <div class="logo">AI-QUANT | TOTAL COMMAND</div>
+        <div class="status-badges">
+            <span id="mode-badge" class="badge paper">PAPER</span>
+            <span id="execution-badge" class="badge signals-only">SIGNALS-ONLY</span>
+            <span id="last-update" class="badge" style="background: var(--bg-tertiary); color: var(--text-secondary);">
+                Loading...
+            </span>
+            <button class="settings-btn" onclick="openSettings()">⚙️ Settings</button>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Left Sidebar -->
+        <aside class="left-sidebar">
+            <!-- Strategy Selector -->
+            <div class="card">
+                <div class="card-title">Active Strategy</div>
+                <div id="strategy-buttons" class="strategy-buttons">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+
+            <!-- System Integrity -->
+            <div class="card">
+                <div class="card-title">System Integrity</div>
+                <div id="system-metrics">
+                    <div class="metric-row">
+                        <span class="metric-label">Mode</span>
+                        <span id="metric-mode" class="metric-value">--</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Execution</span>
+                        <span id="metric-execution" class="metric-value">--</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Accounts</span>
+                        <span id="metric-accounts" class="metric-value">--</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Capable</span>
+                        <span id="metric-capable" class="metric-value">--</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Signals</span>
+                        <span id="metric-signals" class="metric-value">--</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Executed</span>
+                        <span id="metric-executed" class="metric-value">--</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">API Latency</span>
+                        <span id="metric-latency" class="metric-value">--</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Market</span>
+                        <span id="metric-market" class="metric-value">--</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Tabs -->
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('chart')">📊 Chart</div>
+                <div class="tab" onclick="switchTab('mesh')">🌐 Mesh Status</div>
+                <div class="tab" onclick="switchTab('news')">📰 News AI</div>
+                <div class="tab" onclick="switchTab('journal')">📖 Journal</div>
+            </div>
+
+            <!-- Tab Content: Chart -->
+            <div id="tab-chart" class="tab-content active">
+                <div class="card" style="position: relative;">
+                    <!-- TradingView Widget -->
+                    <div id="tradingview_terminal"></div>
+                    
+                    <!-- Signal Overlay -->
+                    <div id="signal-overlay" class="signal-overlay" style="display: none;">
+                        <div class="signal-header">
+                            <span id="signal-instrument" class="signal-instrument">--</span>
+                            <span id="signal-direction" class="signal-direction">--</span>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.875rem; color: var(--text-secondary);">Conviction:</span>
+                            <span id="signal-conviction" style="font-weight: 600; margin-left: 0.5rem;">--</span>
+                        </div>
+                        <div class="conviction-bar">
+                            <div id="conviction-fill" class="conviction-fill" style="width: 0%"></div>
+                        </div>
+                        <div id="signal-reasoning" style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                            Loading...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Mesh Status -->
+            <div id="tab-mesh" class="tab-content">
+                <div class="card">
+                    <div id="mesh-status">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🌐</div>
+                            <p>Mesh status loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: News AI -->
+            <div id="tab-news" class="tab-content">
+                <div class="card">
+                    <div id="news-feed">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📰</div>
+                            <p>Loading news...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Journal -->
+            <div id="tab-journal" class="tab-content">
+                <div class="card">
+                    <div id="journal-content">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📖</div>
+                            <p>No trades logged yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terminal Logs -->
+            <div class="card">
+                <div class="card-title">Live Terminal</div>
+                <div id="terminal" class="terminal">
+                    <div class="terminal-line">Connecting to log stream...</div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Sidebar -->
+        <aside class="right-sidebar">
+            <!-- Signals Queue -->
+            <div class="card">
+                <div class="card-title">Signals Queue</div>
+                <div id="signals-queue">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📡</div>
+                        <p style="font-size: 0.875rem;">No signals yet</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Positions -->
+            <div class="card">
+                <div class="card-title">Active Positions</div>
+                <div id="positions-list">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📊</div>
+                        <p style="font-size: 0.875rem;">No positions</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">Settings</div>
+            <div class="form-group">
+                <label class="form-label">Control Plane Token</label>
+                <input type="password" id="token-input" class="form-input" placeholder="Paste token here">
+                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                    Required for POST operations (strategy switch, config updates)
+                </p>
+            </div>
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="saveSettings()">Save</button>
+                <button class="btn btn-secondary" onclick="closeSettings()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TradingView Widget Script -->
+    <script src="https://s3.tradingview.com/tv.js"></script>
+    
+    <!-- Main Application Script -->
+    <script>
+        // Configuration
+        const API_BASE = '';
+        const POLL_STATUS_INTERVAL = 2000;
+        const POLL_SIGNALS_INTERVAL = 3000;
+        const POLL_NEWS_INTERVAL = 60000;
+
+        // State
+        let statusData = null;
+        let strategiesData = null;
+        let signalsData = null;
+        let newsData = null;
+        let evtSource = null;
+        let tradingViewWidget = null;
+
+        // Helpers
+        function getToken() {
+            return localStorage.getItem('CONTROL_PLANE_TOKEN') || '';
+        }
+
+        async function fetchJson(path, options = {}) {
+            const start = Date.now();
+            try {
+                const headers = {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                };
+
+                if (options.method === 'POST' || options.requireAuth) {
+                    const token = getToken();
+                    if (token) {
+                        headers['Authorization'] = `Bearer ${token}`;
+                    }
+                }
+
+                const response = await fetch(API_BASE + path, {
+                    ...options,
+                    headers
+                });
+
+                const latency = Date.now() - start;
+                updateMetric('latency', `${latency}ms`, latency < 100 ? 'good' : latency < 500 ? 'warning' : 'error');
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error(`Fetch error (${path}):`, error);
+                return null;
+            }
+        }
+
+        function updateMetric(key, value, className = '') {
+            const elem = document.getElementById(`metric-${key}`);
+            if (elem) {
+                elem.textContent = value;
+                elem.className = 'metric-value ' + className;
+            }
+        }
+
+        function formatTime(isoString) {
+            if (!isoString) return '--';
+            try {
+                const date = new Date(isoString);
+                const now = new Date();
+                const diffSec = Math.floor((now - date) / 1000);
+                
+                if (diffSec < 60) return `${diffSec}s ago`;
+                if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m ago`;
+                return date.toLocaleTimeString();
+            } catch {
+                return '--';
+            }
+        }
+
+        // Settings Modal
+        function openSettings() {
+            document.getElementById('settings-modal').classList.add('active');
+            document.getElementById('token-input').value = getToken();
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-modal').classList.remove('active');
+        }
+
+        function saveSettings() {
+            const token = document.getElementById('token-input').value.trim();
+            localStorage.setItem('CONTROL_PLANE_TOKEN', token);
+            closeSettings();
+        }
+
+        // Tab Switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+
+            if (tabName === 'news') {
+                pollNews();
+            }
+        }
+
+        // Poll Status
+        async function pollStatus() {
+            const data = await fetchJson('/api/status');
+            if (!data) return;
+
+            statusData = data;
+
+            // Update top bar badges
+            const modeText = data.mode.toUpperCase();
+            const modeBadge = document.getElementById('mode-badge');
+            modeBadge.textContent = modeText;
+            modeBadge.className = `badge ${data.mode === 'live' ? 'live' : 'paper'}`;
+
+            const execBadge = document.getElementById('execution-badge');
+            if (data.execution_enabled) {
+                execBadge.textContent = 'EXECUTION ENABLED';
+                execBadge.className = 'badge live';
+            } else {
+                execBadge.textContent = 'SIGNALS-ONLY';
+                execBadge.className = 'badge signals-only';
+            }
+
+            document.getElementById('last-update').textContent = formatTime(data.last_scan_at);
+
+            // Update metrics
+            updateMetric('mode', modeText, data.mode === 'live' ? 'warning' : '');
+            updateMetric('execution', data.execution_enabled ? 'ON' : 'OFF', data.execution_enabled ? 'warning' : 'good');
+            updateMetric('accounts', data.accounts_loaded || 0);
+            updateMetric('capable', data.accounts_execution_capable || 0, data.accounts_execution_capable > 0 ? 'warning' : '');
+            updateMetric('signals', data.last_signals_generated || 0);
+            updateMetric('executed', data.last_executed_count || 0, data.last_executed_count > 0 ? 'warning' : 'good');
+            updateMetric('market', data.weekend_indicator ? 'CLOSED' : 'OPEN', data.weekend_indicator ? 'error' : 'good');
+        }
+
+        // Poll Strategies
+        async function pollStrategies() {
+            const data = await fetchJson('/api/strategies/overview');
+            if (!data || !data.strategies) return;
+
+            strategiesData = data;
+
+            const container = document.getElementById('strategy-buttons');
+            container.innerHTML = '';
+
+            data.strategies.forEach(strategy => {
+                const btn = document.createElement('button');
+                btn.className = 'strategy-btn' + (strategy.active ? ' active' : '');
+                btn.textContent = strategy.name;
+                btn.onclick = () => switchStrategy(strategy.key);
+                container.appendChild(btn);
+            });
+        }
+
+        // Switch Strategy
+        async function switchStrategy(key) {
+            const confirmed = confirm(`Switch to strategy: ${key}?\n\nThis will update the config but NOT place any orders.`);
+            if (!confirmed) return;
+
+            const result = await fetchJson('/api/config', {
+                method: 'POST',
+                body: JSON.stringify({ active_strategy_key: key })
+            });
+
+            if (result && result.status === 'ok') {
+                await pollStrategies();
+                await pollStatus();
+            } else {
+                alert('Failed to switch strategy. Check token in Settings.');
+            }
+        }
+
+        // Poll Signals
+        async function pollSignals() {
+            const data = await fetchJson('/api/signals/pending');
+            if (!data) return;
+
+            signalsData = data;
+
+            const container = document.getElementById('signals-queue');
+            
+            if (!data.signals || data.signals.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📡</div>
+                        <p style="font-size: 0.875rem;">No signals yet</p>
+                    </div>
+                `;
+                document.getElementById('signal-overlay').style.display = 'none';
+                return;
+            }
+
+            // Show first signal in overlay
+            const firstSignal = data.signals[0];
+            if (firstSignal) {
+                document.getElementById('signal-overlay').style.display = 'block';
+                document.getElementById('signal-instrument').textContent = firstSignal.instrument || 'UNKNOWN';
+                
+                const direction = (firstSignal.side || 'UNKNOWN').toUpperCase();
+                const directionElem = document.getElementById('signal-direction');
+                directionElem.textContent = direction;
+                directionElem.className = 'signal-direction ' + direction.toLowerCase();
+
+                const conviction = firstSignal.confidence || firstSignal.probability || 0;
+                document.getElementById('signal-conviction').textContent = `${Math.round(conviction * 100)}%`;
+                document.getElementById('conviction-fill').style.width = `${conviction * 100}%`;
+                
+                document.getElementById('signal-reasoning').textContent = 
+                    firstSignal.reasoning || firstSignal.strategy || 'Signal detected';
+            }
+
+            // Render queue
+            container.innerHTML = data.signals.slice(0, 10).map(signal => `
+                <div class="signal-item">
+                    <div class="signal-item-header">
+                        <span class="signal-item-instrument">${signal.instrument || 'UNKNOWN'}</span>
+                        <span class="signal-item-side ${(signal.side || '').toLowerCase()}">${(signal.side || 'UNKNOWN').toUpperCase()}</span>
+                    </div>
+                    <div class="signal-item-meta">
+                        Confidence: ${Math.round((signal.confidence || signal.probability || 0) * 100)}%
+                        ${signal.strategy ? ` • ${signal.strategy}` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Poll Positions
+        async function pollPositions() {
+            const data = await fetchJson('/api/positions');
+            if (!data) return;
+
+            const container = document.getElementById('positions-list');
+            
+            if (!data.positions || data.positions.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📊</div>
+                        <p style="font-size: 0.875rem;">${data.reason || 'No positions'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = data.positions.map(pos => `
+                <div class="signal-item">
+                    <div class="signal-item-header">
+                        <span class="signal-item-instrument">${pos.instrument}</span>
+                        <span class="signal-item-side ${pos.side.toLowerCase()}">${pos.side}</span>
+                    </div>
+                    <div class="signal-item-meta">
+                        Units: ${pos.units} • P/L: ${pos.unrealized_pl || 0}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Poll News
+        async function pollNews() {
+            const data = await fetchJson('/api/news');
+            if (!data) return;
+
+            newsData = data;
+
+            const container = document.getElementById('news-feed');
+            
+            if (!data.items || data.items.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📰</div>
+                        <p>${data.reason || 'No news available'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = data.items.map(item => `
+                <div class="news-item">
+                    <div class="news-item-header">
+                        <div class="news-item-title">${item.title || item.headline}</div>
+                        <div class="news-item-time">${formatTime(item.timestamp || item.published_at)}</div>
+                    </div>
+                    ${item.summary || item.description ? `<div class="news-item-body">${item.summary || item.description}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        // SSE Logs
+        function connectLogsSSE() {
+            if (evtSource) {
+                evtSource.close();
+            }
+
+            evtSource = new EventSource('/api/logs/stream');
+            const terminal = document.getElementById('terminal');
+
+            evtSource.onmessage = (event) => {
+                const line = document.createElement('div');
+                line.className = 'terminal-line';
+                
+                const text = event.data;
+                if (text.toLowerCase().includes('error')) {
+                    line.className += ' error';
+                } else if (text.toLowerCase().includes('warning')) {
+                    line.className += ' warning';
+                } else if (text.toLowerCase().includes('info')) {
+                    line.className += ' info';
+                }
+                
+                line.textContent = text;
+                terminal.appendChild(line);
+                
+                // Auto-scroll and limit lines
+                if (terminal.children.length > 500) {
+                    terminal.removeChild(terminal.firstChild);
+                }
+                terminal.scrollTop = terminal.scrollHeight;
+            };
+
+            evtSource.onerror = () => {
+                const line = document.createElement('div');
+                line.className = 'terminal-line error';
+                line.textContent = 'Log stream disconnected. Reconnecting...';
+                terminal.appendChild(line);
+                
+                setTimeout(connectLogsSSE, 5000);
+            };
+        }
+
+        // Initialize TradingView Widget
+        function initTradingView() {
+            if (typeof TradingView === 'undefined') {
+                setTimeout(initTradingView, 1000);
+                return;
+            }
+
+            tradingViewWidget = new TradingView.widget({
+                container_id: "tradingview_terminal",
+                width: "100%",
+                height: "600",
+                symbol: "OANDA:XAUUSD",
+                interval: "5",
+                timezone: "Etc/UTC",
+                theme: "dark",
+                style: "1",
+                locale: "en",
+                toolbar_bg: "#0a0e1a",
+                enable_publishing: false,
+                hide_side_toolbar: false,
+                allow_symbol_change: true,
+                save_image: false,
+                studies: ["MASimple@tv-basicstudies", "RSI@tv-basicstudies"],
+                backgroundColor: "#0a0e1a",
+                gridColor: "#1a202e",
+                hide_legend: false,
+                hide_top_toolbar: false
+            });
+        }
+
+        // Initialize Application
+        async function init() {
+            console.log('🚀 AI-QUANT | TOTAL COMMAND initializing...');
+
+            // Initial data load
+            await Promise.all([
+                pollStatus(),
+                pollStrategies(),
+                pollSignals(),
+                pollPositions()
+            ]);
+
+            // Start polling
+            setInterval(pollStatus, POLL_STATUS_INTERVAL);
+            setInterval(pollSignals, POLL_SIGNALS_INTERVAL);
+            setInterval(pollPositions, POLL_SIGNALS_INTERVAL);
+            setInterval(pollNews, POLL_NEWS_INTERVAL);
+
+            // Connect SSE logs
+            connectLogsSSE();
+
+            // Initialize TradingView
+            initTradingView();
+
+            console.log('✅ Dashboard ready');
+        }
+
+        // Start on load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>

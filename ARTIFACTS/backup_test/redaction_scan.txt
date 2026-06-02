@@ -1,0 +1,4 @@
+=== Redaction Scan ===
+
+Checking backup logs for secret patterns...
+✅ No secret patterns found in logs
