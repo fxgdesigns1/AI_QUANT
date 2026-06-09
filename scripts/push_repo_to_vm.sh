@@ -29,8 +29,6 @@ tar -czf "$TARBALL" \
   --exclude='**/*token*' \
   --exclude='scripts/artifacts/*.har' \
   --exclude='scripts/artifacts/*.zip' \
-  --exclude='.BACKUPS' \
-  --exclude='sandbox' \
   .
 
 echo "[PUSH] Uploading tarball to VM..."
@@ -40,13 +38,8 @@ echo "[PUSH] Extracting on VM..."
 gcloud compute ssh --project "$PROJECT" --zone "$ZONE" "$INSTANCE" -- \
   "rm -rf ~/gcloud-system && mkdir -p ~/gcloud-system && tar -xzf ~/gcloud-system-upload.tgz -C ~/gcloud-system"
 
-echo "[PUSH] Restarting Control Plane service on VM..."
+echo "[PUSH] Running deploy script on VM..."
 gcloud compute ssh --project "$PROJECT" --zone "$ZONE" "$INSTANCE" -- \
-  "cd ~/gcloud-system && bash scripts/stop_control_plane.sh && sleep 2 && CONTROL_PLANE_BG=1 bash scripts/start_control_plane_clean.sh || echo '⚠️  Warning: Service restart may have failed. Check manually.'"
+  "cd ~/gcloud-system && chmod +x scripts/deploy_vm_end_to_end.sh && bash scripts/deploy_vm_end_to_end.sh"
 
 echo "[PUSH] Done."
-echo ""
-echo "📋 To verify deployment:"
-echo "   1. SSH to VM: gcloud compute ssh --project $PROJECT --zone $ZONE $INSTANCE"
-echo "   2. Check service: cd ~/gcloud-system && bash scripts/verify_control_plane.sh"
-echo "   3. Or check logs: tail -f /tmp/control_plane.out"

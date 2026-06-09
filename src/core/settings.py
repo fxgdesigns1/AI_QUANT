@@ -31,9 +31,6 @@ class Settings:
     newsapi_api_key: Optional[str]
     marketaux_keys: List[str]
     alphavantage_api_key: Optional[str]
-    finnhub_keys: List[str]
-    polygon_keys: List[str]
-    fmp_keys: List[str]
 
     # AI Insights (OpenAI)
     openai_api_key: Optional[str]
@@ -48,11 +45,6 @@ class Settings:
     # AI Provider Routing
     ai_provider: str
     ai_provider_chain: List[str]
-
-    # System Labeling & Account Partitioning
-    system_label: str  # ALPHA, BETA, UNKNOWN
-    account_id_prefix: str  # e.g., "101-004-30719775-"
-    account_suffix_allowlist: List[str]  # e.g., ["001","002"] or empty for no filtering
 
     def require_oanda(self) -> None:
         if not self.oanda_api_key:
@@ -96,21 +88,6 @@ def load_settings() -> Settings:
 
     alphavantage_api_key = _get_env("ALPHAVANTAGE_API_KEY")
 
-    # Finnhub: support FINNHUB_API_KEYS (csv) and legacy FINNHUB_API_KEY (single).
-    finnhub_csv = _get_env("FINNHUB_API_KEYS")
-    finnhub_single = _get_env("FINNHUB_API_KEY")
-    finnhub_keys = _split_csv(finnhub_csv) or ([finnhub_single] if finnhub_single else [])
-
-    # Polygon: support POLYGON_API_KEYS (csv) and legacy POLYGON_API_KEY (single).
-    polygon_csv = _get_env("POLYGON_API_KEYS")
-    polygon_single = _get_env("POLYGON_API_KEY")
-    polygon_keys = _split_csv(polygon_csv) or ([polygon_single] if polygon_single else [])
-
-    # FMP: support FMP_API_KEYS (csv) and legacy FMP_API_KEY (single).
-    fmp_csv = _get_env("FMP_API_KEYS")
-    fmp_single = _get_env("FMP_API_KEY")
-    fmp_keys = _split_csv(fmp_csv) or ([fmp_single] if fmp_single else [])
-
     # AI Insights (OpenAI)
     openai_api_key = _get_env("OPENAI_API_KEY")
     openai_model = _get_env("OPENAI_MODEL") or "gpt-4o-mini"
@@ -119,7 +96,7 @@ def load_settings() -> Settings:
 
     # AI Insights (Gemini/Google)
     google_api_key = _get_env("GOOGLE_API_KEY") or _get_env("GEMINI_API_KEY")
-    gemini_model = _get_env("GEMINI_MODEL") or "gemini-2.5-flash"
+    gemini_model = _get_env("GEMINI_MODEL") or "gemini-1.5-flash"
 
     # AI Provider Routing
     ai_provider = (_get_env("AI_PROVIDER") or "openai").lower()
@@ -130,12 +107,6 @@ def load_settings() -> Settings:
         else [ai_provider]
     )
 
-    # System Labeling & Account Partitioning
-    system_label = (_get_env("SYSTEM_LABEL") or "UNKNOWN").upper()
-    account_id_prefix = _get_env("ACCOUNT_ID_PREFIX") or "101-004-30719775-"
-    account_suffix_allowlist_raw = _get_env("ACCOUNT_SUFFIX_ALLOWLIST")
-    account_suffix_allowlist = _split_csv(account_suffix_allowlist_raw) if account_suffix_allowlist_raw else []
-
     return Settings(
         oanda_api_key=oanda_api_key,
         oanda_account_id=oanda_account_id,
@@ -145,9 +116,6 @@ def load_settings() -> Settings:
         newsapi_api_key=newsapi_api_key,
         marketaux_keys=marketaux_keys,
         alphavantage_api_key=alphavantage_api_key,
-        finnhub_keys=finnhub_keys,
-        polygon_keys=polygon_keys,
-        fmp_keys=fmp_keys,
         openai_api_key=openai_api_key,
         openai_model=openai_model,
         ai_insights_enabled=ai_insights_enabled,
@@ -156,9 +124,6 @@ def load_settings() -> Settings:
         gemini_model=gemini_model,
         ai_provider=ai_provider,
         ai_provider_chain=ai_provider_chain,
-        system_label=system_label,
-        account_id_prefix=account_id_prefix,
-        account_suffix_allowlist=account_suffix_allowlist,
     )
 
 # Canonical singleton

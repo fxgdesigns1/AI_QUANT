@@ -24,7 +24,7 @@ class LogStream:
         """
         import os
         if log_path is None:
-            log_path = os.getenv("LOG_FILE_PATH", "logs/runner.log")
+            log_path = os.getenv("LOG_FILE_PATH", "logs/ai_quant.log")
         
         self.log_path = Path(log_path)
         

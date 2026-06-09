@@ -2023,8 +2023,7 @@
         async function loadNewsSection() {
             try {
                 const response = await fetch('/api/news');
-                const envelope = await response.json();
-                const data = envelope.data || {};
+                const data = await response.json();
                 
                 const grid = document.getElementById('newsGrid');
                 if (grid) {
@@ -2454,7 +2453,6 @@
         
         async function loadPerformanceSection() {
             // Load performance monitoring data when performance section is accessed
-            await loadPositionsOverview(); // New Cumulative View
             await loadPerformanceOverview();
             await loadStrategyPerformanceCards();
             await loadTradeHistoryTable();
@@ -2462,168 +2460,6 @@
             await loadDatabaseStats();
         }
         
-        async function loadPositionsOverview() {
-            try {
-                // Fetch both active and closed trades
-                const [activeRes, journalRes] = await Promise.all([
-                    fetch('/api/trades/active'),
-                    fetch('/api/journal/trades?limit=1000') // Get reasonable history
-                ]);
-                
-                const activeEnvelope = await activeRes.json();
-                const journalEnvelope = await journalRes.json();
-                
-                // Check truth envelopes
-                const activeComplete = activeEnvelope.truth && activeEnvelope.truth.complete;
-                const journalComplete = journalEnvelope.truth && journalEnvelope.truth.complete;
-                
-                const activeData = activeEnvelope.data || {};
-                const journalData = journalEnvelope.data || {};
-                
-                // Aggregate by instrument
-                const aggregation = {};
-                
-                // Process Active Trades
-                if (activeComplete && activeData.accounts) {
-                    activeData.accounts.forEach(acc => {
-                        if (acc.trades && Array.isArray(acc.trades)) {
-                            acc.trades.forEach(trade => {
-                                const symbol = trade.instrument;
-                                if (!symbol) return;
-                                
-                                if (!aggregation[symbol]) {
-                                    aggregation[symbol] = {
-                                        symbol: symbol,
-                                        open_positions: 0,
-                                        total_trades: 0,
-                                        total_unrealized_pnl: 0,
-                                        total_realized_pnl: 0,
-                                        avg_entry: 0,
-                                        units_accumulated: 0
-                                    };
-                                }
-                                aggregation[symbol].open_positions += 1;
-                                aggregation[symbol].total_trades += 1;
-                                aggregation[symbol].total_unrealized_pnl += parseFloat(trade.unrealizedPL || 0);
-                                // Simple weighted avg entry for open positions
-                                const units = parseFloat(trade.units || 0);
-                                const price = parseFloat(trade.price || 0);
-                                if (units !== 0 && price !== 0) {
-                                    const totalValue = aggregation[symbol].avg_entry * aggregation[symbol].units_accumulated + (price * Math.abs(units));
-                                    aggregation[symbol].units_accumulated += Math.abs(units);
-                                    aggregation[symbol].avg_entry = totalValue / aggregation[symbol].units_accumulated;
-                                }
-                            });
-                        }
-                    });
-                }
-                
-                // Process Journal (Closed) Trades
-                if (journalComplete && journalData.trades && Array.isArray(journalData.trades)) {
-                    journalData.trades.forEach(trade => {
-                        const symbol = trade.instrument;
-                        if (!symbol) return;
-                        
-                        if (!aggregation[symbol]) {
-                            aggregation[symbol] = {
-                                symbol: symbol,
-                                open_positions: 0,
-                                total_trades: 0,
-                                total_unrealized_pnl: 0,
-                                total_realized_pnl: 0,
-                                avg_entry: 0,
-                                units_accumulated: 0
-                            };
-                        }
-                        aggregation[symbol].total_trades += 1;
-                        aggregation[symbol].total_realized_pnl += parseFloat(trade.pnl || trade.realized_pnl || 0);
-                    });
-                }
-                
-                // Render Table
-                const container = document.getElementById('positionsOverview');
-                if (container) {
-                    const symbols = Object.values(aggregation);
-                    if (symbols.length > 0) {
-                        // Sort by net PnL descending
-                        symbols.sort((a, b) => {
-                            const netA = a.total_unrealized_pnl + a.total_realized_pnl;
-                            const netB = b.total_unrealized_pnl + b.total_realized_pnl;
-                            return netB - netA;
-                        });
-                        
-                        container.innerHTML = `
-                            <div class="mb-2">
-                                <small class="text-muted">
-                                    Truth Status: 
-                                    <span class="badge ${activeComplete && journalComplete ? 'bg-success' : 'bg-warning'}">
-                                        ${activeComplete && journalComplete ? 'Complete' : 'Partial'}
-                                    </span>
-                                    ${!activeComplete ? '<span class="text-warning">Active trades incomplete</span>' : ''}
-                                    ${!journalComplete ? '<span class="text-warning">Journal incomplete</span>' : ''}
-                                </small>
-                            </div>
-                            <div class="table-responsive">
-                                <table class="table table-dark table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Instrument</th>
-                                            <th>Open Positions</th>
-                                            <th>Total Trades</th>
-                                            <th>Unrealized P&L</th>
-                                            <th>Realized P&L</th>
-                                            <th>Net P&L</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${symbols.map(item => {
-                                            const netPnl = item.total_unrealized_pnl + item.total_realized_pnl;
-                                            return `
-                                            <tr>
-                                                <td><strong>${item.symbol}</strong></td>
-                                                <td>${item.open_positions}</td>
-                                                <td>${item.total_trades}</td>
-                                                <td class="${item.total_unrealized_pnl >= 0 ? 'text-success' : 'text-danger'}">
-                                                    $${item.total_unrealized_pnl.toFixed(2)}
-                                                </td>
-                                                <td class="${item.total_realized_pnl >= 0 ? 'text-success' : 'text-danger'}">
-                                                    $${item.total_realized_pnl.toFixed(2)}
-                                                </td>
-                                                <td class="${netPnl >= 0 ? 'text-success' : 'text-danger'} fw-bold">
-                                                    $${netPnl.toFixed(2)}
-                                                </td>
-                                            </tr>
-                                            `;
-                                        }).join('')}
-                                    </tbody>
-                                </table>
-                            </div>
-                        `;
-                    } else {
-                        container.innerHTML = `
-                            <div class="alert alert-info">
-                                <strong>No trading activity found.</strong>
-                                ${activeComplete && journalComplete 
-                                    ? 'No open positions or closed trades in the system yet. Trades will appear here once execution begins.' 
-                                    : 'Data sources may be incomplete. Check truth status above.'}
-                            </div>
-                        `;
-                    }
-                }
-                
-            } catch (error) {
-                console.error('Error loading positions overview:', error);
-                const container = document.getElementById('positionsOverview');
-                if (container) {
-                    container.innerHTML = `
-                        <div class="alert alert-danger">
-                            <strong>Error calculating positions overview:</strong> ${error.message}
-                        </div>
-                    `;
-                }
-            }
-        }
-
         async function loadPerformanceOverview() {
             try {
                 const response = await fetch('/api/performance/overview');
@@ -2711,170 +2547,49 @@
         
         async function loadTradeHistoryTable() {
             try {
-                // Fetch both active and closed trades
-                const [activeRes, journalRes] = await Promise.all([
-                    fetch('/api/trades/active'),
-                    fetch('/api/journal/trades?limit=500')
-                ]);
-                
-                const activeEnvelope = await activeRes.json();
-                const journalEnvelope = await journalRes.json();
-                
-                // Check truth envelopes
-                const activeComplete = activeEnvelope.truth && activeEnvelope.truth.complete;
-                const journalComplete = journalEnvelope.truth && journalEnvelope.truth.complete;
-                
-                if (!activeComplete && !journalComplete) {
-                    const tableDiv = document.getElementById('tradeHistoryTable');
-                    if (tableDiv) {
-                        tableDiv.innerHTML = `
-                            <div class="alert alert-warning">
-                                <strong>Truth Check Failed:</strong> Data sources incomplete.
-                                ${activeEnvelope.truth?.warnings ? ' Active: ' + activeEnvelope.truth.warnings.join(', ') : ''}
-                                ${journalEnvelope.truth?.warnings ? ' Journal: ' + journalEnvelope.truth.warnings.join(', ') : ''}
-                            </div>
-                        `;
-                    }
-                    return;
-                }
-                
-                const activeData = activeEnvelope.data || {};
-                const journalData = journalEnvelope.data || {};
-                
-                // Combine all trades
-                const allTrades = [];
-                
-                // Process active trades
-                if (activeData.accounts) {
-                    activeData.accounts.forEach(acc => {
-                        if (acc.trades) {
-                            acc.trades.forEach(trade => {
-                                allTrades.push({
-                                    trade_id: trade.id || 'N/A',
-                                    instrument: trade.instrument,
-                                    strategy_key: acc.account_suffix || 'N/A',
-                                    account_id: acc.account_suffix || 'N/A',
-                                    entry_price: parseFloat(trade.price || 0),
-                                    current_price: parseFloat(trade.price || 0), // For active trades
-                                    exit_price: null,
-                                    unrealized_pnl: parseFloat(trade.unrealizedPL || 0),
-                                    realized_pnl: null,
-                                    opened_at: trade.openTime || new Date().toISOString(),
-                                    closed_at: null,
-                                    status: 'open',
-                                    units: parseFloat(trade.units || 0)
-                                });
-                            });
-                        }
-                    });
-                }
-                
-                // Process closed trades from journal
-                if (journalData.trades) {
-                    journalData.trades.forEach(trade => {
-                        allTrades.push({
-                            trade_id: trade.trade_id || trade.id || 'N/A',
-                            instrument: trade.instrument,
-                            strategy_key: trade.strategy_key || trade.strategy || 'N/A',
-                            account_id: trade.account_id_redacted || trade.account_id || 'N/A',
-                            entry_price: parseFloat(trade.entry_price || 0),
-                            current_price: null,
-                            exit_price: parseFloat(trade.exit_price || 0),
-                            unrealized_pnl: null,
-                            realized_pnl: parseFloat(trade.pnl || trade.realized_pnl || 0),
-                            opened_at: trade.opened_at || trade.open_time || 'N/A',
-                            closed_at: trade.closed_at || trade.close_time || 'N/A',
-                            status: 'closed',
-                            units: parseFloat(trade.units || 0)
-                        });
-                    });
-                }
-                
-                // Sort by opened_at descending
-                allTrades.sort((a, b) => {
-                    const dateA = new Date(a.opened_at);
-                    const dateB = new Date(b.opened_at);
-                    return dateB - dateA;
-                });
+                const response = await fetch('/api/performance/trades');
+                const data = await response.json();
                 
                 const tableDiv = document.getElementById('tradeHistoryTable');
                 if (tableDiv) {
-                    if (allTrades.length > 0) {
+                    if (data.trades && data.trades.length > 0) {
                         tableDiv.innerHTML = `
                             <div class="table-responsive">
-                                <table class="table table-dark table-striped table-hover">
+                                <table class="table table-dark table-striped">
                                     <thead>
                                         <tr>
-                                            <th>Status</th>
-                                            <th>Instrument</th>
-                                            <th>Strategy</th>
-                                            <th>Account</th>
-                                            <th>Entry Price</th>
-                                            <th>Exit Price</th>
-                                            <th>Units</th>
-                                            <th>Unrealized P&L</th>
-                                            <th>Realized P&L</th>
-                                            <th>Opened At</th>
-                                            <th>Closed At</th>
+                                            <th style="color: #ffffff;">Trade ID</th>
+                                            <th style="color: #ffffff;">Strategy</th>
+                                            <th style="color: #ffffff;">Instrument</th>
+                                            <th style="color: #ffffff;">Direction</th>
+                                            <th style="color: #ffffff;">P&L</th>
+                                            <th style="color: #ffffff;">Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${allTrades.slice(0, 100).map(trade => {
-                                            const statusBadge = trade.status === 'open' 
-                                                ? '<span class="badge bg-success">OPEN</span>' 
-                                                : '<span class="badge bg-secondary">CLOSED</span>';
-                                            const pnlColor = (trade.unrealized_pnl !== null ? trade.unrealized_pnl : trade.realized_pnl) >= 0 
-                                                ? 'text-success' 
-                                                : 'text-danger';
-                                            return `
+                                        ${data.trades.slice(0, 10).map(trade => `
                                             <tr>
-                                                <td>${statusBadge}</td>
-                                                <td><strong>${trade.instrument || 'N/A'}</strong></td>
-                                                <td style="color: #adb5bd;">${trade.strategy_key || 'N/A'}</td>
-                                                <td style="color: #adb5bd; font-size: 0.85em;">${trade.account_id || 'N/A'}</td>
-                                                <td>${trade.entry_price ? trade.entry_price.toFixed(5) : 'N/A'}</td>
-                                                <td>${trade.exit_price ? trade.exit_price.toFixed(5) : (trade.status === 'open' ? '-' : 'N/A')}</td>
-                                                <td>${trade.units || 'N/A'}</td>
-                                                <td class="${pnlColor}">
-                                                    ${trade.unrealized_pnl !== null ? '$' + trade.unrealized_pnl.toFixed(2) : '-'}
-                                                </td>
-                                                <td class="${pnlColor}">
-                                                    ${trade.realized_pnl !== null ? '$' + trade.realized_pnl.toFixed(2) : '-'}
-                                                </td>
-                                                <td style="color: #adb5bd; font-size: 0.85em;">
-                                                    ${trade.opened_at ? new Date(trade.opened_at).toLocaleString() : 'N/A'}
-                                                </td>
-                                                <td style="color: #adb5bd; font-size: 0.85em;">
-                                                    ${trade.closed_at ? new Date(trade.closed_at).toLocaleString() : '-'}
-                                                </td>
+                                                <td style="color: #adb5bd;">${trade.trade_id}</td>
+                                                <td style="color: #adb5bd;">${trade.strategy_id}</td>
+                                                <td style="color: #adb5bd;">${trade.instrument}</td>
+                                                <td style="color: ${trade.direction === 'BUY' ? '#06d6a0' : '#ff6b6b'};">${trade.direction}</td>
+                                                <td style="color: ${trade.realized_pnl >= 0 ? '#06d6a0' : '#ff6b6b'};">${trade.realized_pnl || 'N/A'}</td>
+                                                <td style="color: #adb5bd;">${trade.is_closed ? 'Closed' : 'Open'}</td>
                                             </tr>
-                                            `;
-                                        }).join('')}
+                                        `).join('')}
                                     </tbody>
                                 </table>
-                                ${allTrades.length > 100 ? `<p class="text-center text-muted mt-2">Showing first 100 of ${allTrades.length} trades</p>` : ''}
                             </div>
                         `;
                     } else {
-                        tableDiv.innerHTML = `
-                            <div class="alert alert-info">
-                                <strong>No trades found.</strong>
-                                ${activeComplete && journalComplete 
-                                    ? 'No open positions or closed trades in the system yet.' 
-                                    : 'Waiting for trading activity...'}
-                            </div>
-                        `;
+                        tableDiv.innerHTML = '<p style="color: #adb5bd; text-align: center;">No trade history available</p>';
                     }
                 }
             } catch (error) {
                 console.error('Error loading trade history:', error);
                 const tableDiv = document.getElementById('tradeHistoryTable');
                 if (tableDiv) {
-                    tableDiv.innerHTML = `
-                        <div class="alert alert-danger">
-                            <strong>Error loading trade history:</strong> ${error.message}
-                        </div>
-                    `;
+                    tableDiv.innerHTML = '<p style="color: #ff6b6b;">Error loading trade history</p>';
                 }
             }
         }
@@ -3018,25 +2733,6 @@
             <div class="container-fluid">
                 <h2>📈 Performance Monitoring</h2>
                 <div class="row">
-                    <!-- Positions Overview (Cumulative) -->
-                    <div class="col-12 mb-4">
-                        <div class="card" style="background: rgba(17, 138, 178, 0.1); border: 1px solid #118ab2;">
-                            <div class="card-header" style="background: rgba(17, 138, 178, 0.2); border-bottom: 1px solid #118ab2;">
-                                <h4 style="color: #118ab2; margin: 0; font-size: 1.2rem;">
-                                    📈 Cumulative Positions Overview
-                                </h4>
-                            </div>
-                            <div class="card-body" id="positionsOverview">
-                                <div class="text-center">
-                                    <div class="spinner-border text-info" role="status">
-                                        <span class="visually-hidden">Loading...</span>
-                                    </div>
-                                    <p class="mt-2">Calculating cumulative positions...</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Performance Overview -->
                     <div class="col-12 mb-4">
                         <div class="card" style="background: rgba(6, 214, 160, 0.1); border: 1px solid #06d6a0;">
@@ -3785,118 +3481,14 @@
             try {
                 console.log('📰 Loading news data...');
                 const response = await fetch('/api/news');
-                const envelope = await response.json();
-                const data = envelope.data || {};
+                const data = await response.json();
                 
-                if (data.ok && data.news) {
-                    updateNewsData(data.news);
-                }
-                
-                // Also load AI insights
-                try {
-                    console.log('🤖 Loading AI insights...');
-                    const assessResponse = await fetch('/api/news/assess');
-                    const assessEnvelope = await assessResponse.json();
-                    const assessData = assessEnvelope.data || {};
-                    
-                    if (assessData.ok !== false) {
-                        displayAIInsights(assessData);
-                    }
-                } catch (error) {
-                    console.error('❌ AI insights error:', error);
+                if (data.status === 'success' && data.news_data) {
+                    updateNewsData(data.news_data);
                 }
             } catch (error) {
                 console.error('❌ News data error:', error);
             }
-        }
-        
-        // Display AI insights in news section
-        function displayAIInsights(assessData) {
-            const newsContainer = document.getElementById('newsAlerts');
-            if (!newsContainer) return;
-            
-            // Check if AI insights card already exists
-            let aiCard = document.getElementById('ai-insights-card');
-            if (!aiCard) {
-                // Create AI insights card at the top of news section
-                aiCard = document.createElement('div');
-                aiCard.id = 'ai-insights-card';
-                aiCard.style.cssText = 'background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%); border: 2px solid rgba(99, 102, 241, 0.4); padding: 16px; border-radius: 10px; margin-bottom: 16px;';
-                
-                // Insert before existing content
-                if (newsContainer.firstChild) {
-                    newsContainer.insertBefore(aiCard, newsContainer.firstChild);
-                } else {
-                    newsContainer.appendChild(aiCard);
-                }
-            }
-            
-            const sentiment = (assessData.sentiment || 'neutral').toLowerCase();
-            const summary = assessData.summary || 'No summary available';
-            const impactScore = assessData.impact_score || 5;
-            const newsCount = assessData.news_count || 0;
-            
-            // Color coding based on sentiment
-            let sentimentColor = '#fbbf24'; // neutral/default
-            let sentimentEmoji = '➡️';
-            if (sentiment === 'positive') {
-                sentimentColor = '#10b981';
-                sentimentEmoji = '📈';
-            } else if (sentiment === 'negative') {
-                sentimentColor = '#ef4444';
-                sentimentEmoji = '📉';
-            }
-            
-            // Impact score color
-            let impactColor = '#94a3b8';
-            if (impactScore >= 7) impactColor = '#ef4444';
-            else if (impactScore >= 5) impactColor = '#fbbf24';
-            else impactColor = '#10b981';
-            
-            aiCard.innerHTML = `
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span style="font-size: 1.5em;">🤖</span>
-                        <h4 style="margin: 0; color: #f1f5f9; font-size: 1.1em;">AI Market Sentiment Analysis</h4>
-                    </div>
-                    <span style="background: rgba(99, 102, 241, 0.3); padding: 4px 12px; border-radius: 6px; font-size: 0.85em; color: #cbd5e1;">
-                        ${newsCount} news items analyzed
-                    </span>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
-                    <div style="background: rgba(15, 23, 42, 0.5); padding: 12px; border-radius: 8px;">
-                        <div style="color: #94a3b8; font-size: 0.85em; margin-bottom: 4px;">Sentiment</div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <span style="font-size: 1.2em;">${sentimentEmoji}</span>
-                            <span style="color: ${sentimentColor}; font-weight: 600; font-size: 1.1em; text-transform: capitalize;">
-                                ${sentiment}
-                            </span>
-                        </div>
-                    </div>
-                    
-                    <div style="background: rgba(15, 23, 42, 0.5); padding: 12px; border-radius: 8px;">
-                        <div style="color: #94a3b8; font-size: 0.85em; margin-bottom: 4px;">Impact Score</div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <span style="color: ${impactColor}; font-weight: 600; font-size: 1.1em;">
-                                ${impactScore}/10
-                            </span>
-                            <div style="flex: 1; background: rgba(30, 41, 59, 0.8); height: 6px; border-radius: 3px; overflow: hidden;">
-                                <div style="background: ${impactColor}; height: 100%; width: ${(impactScore / 10) * 100}%;"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="background: rgba(15, 23, 42, 0.5); padding: 12px; border-radius: 8px; border-left: 3px solid ${sentimentColor};">
-                    <div style="color: #94a3b8; font-size: 0.85em; margin-bottom: 6px; font-weight: 600;">AI Summary</div>
-                    <div style="color: #e2e8f0; line-height: 1.6; font-size: 0.95em;">
-                        ${summary}
-                    </div>
-                </div>
-            `;
-            
-            console.log('✅ AI insights displayed:', { sentiment, impactScore, newsCount });
         }
         
         // Load risk metrics
@@ -4243,61 +3835,23 @@
             });
         }
         
-        // Load insights (News AI & Calendar)
+        // Load insights
         async function loadInsights() {
             try {
-                // 1. Fetch Assessment (Sentiment)
-                const assessResp = await fetch('/api/news/assess');
-                const assessEnv = await assessResp.json();
-                const assessData = assessEnv.data || {};
-                
-                const tradePhase = document.getElementById('tradePhase');
-                if (tradePhase && assessData.sentiment) {
-                    const sentiment = assessData.sentiment.toUpperCase();
-                    const summary = assessData.summary || '';
-                    const color = sentiment === 'POSITIVE' ? '#10b981' : (sentiment === 'NEGATIVE' ? '#ef4444' : '#fbbf24');
-                    tradePhase.innerHTML = `<span style="color: ${color}">${sentiment}</span> - <span style="color: #94a3b8; font-size: 0.9em;">${summary.substring(0, 60)}${summary.length > 60 ? '...' : ''}</span>`;
+                const res = await fetch('/api/insights');
+                const data = await res.json();
+                const el = document.getElementById('insightsContent');
+                if (!el) return;
+                if (data.status === 'ok' && data.insights) {
+                    const s = data.insights;
+                    el.innerHTML = `
+                        <div><b>Market impact:</b> ${s.market_impact || 'neutral'}</div>
+                        <div><b>Sentiment:</b> ${(s.overall_sentiment ?? 0).toFixed(2)}</div>
+                        <div><b>Confidence:</b> ${(s.confidence ?? 0).toFixed(2)}</div>
+                        <div><b>Opportunities:</b> ${(s.opportunities || []).length}</div>
+                    `;
                 }
-
-                // 2. Fetch Economic Calendar
-                const calResp = await fetch('/api/economic_calendar');
-                const calEnv = await calResp.json();
-                const calData = calEnv.data || {};
-                
-                const upcomingNews = document.getElementById('upcomingNews');
-                const newsTimer = document.getElementById('newsTimer');
-
-                if (upcomingNews && calData.events && calData.events.length > 0) {
-                    upcomingNews.innerHTML = '';
-                    calData.events.slice(0, 3).forEach(event => {
-                        const impactColor = event.impact === 'high' ? '#ef4444' : (event.impact === 'medium' ? '#fbbf24' : '#94a3b8');
-                        const timeStr = new Date(event.time_utc).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                        upcomingNews.innerHTML += `
-                            <div class="impact-item">
-                                <div class="impact-time">${timeStr}</div>
-                                <div class="impact-medium" style="color: ${impactColor}">${event.title} (${event.currency})</div>
-                            </div>
-                        `;
-                    });
-
-                    if (newsTimer) {
-                         const next = calData.events[0];
-                         const mins = Math.max(0, Math.floor(next.countdown_seconds / 60));
-                         if (mins < 60) {
-                             newsTimer.innerHTML = `<span style="color: ${next.impact === 'high' ? '#ef4444' : '#fbbf24'}">In ${mins} mins</span>`;
-                         } else {
-                             const hours = (mins / 60).toFixed(1);
-                             newsTimer.innerHTML = `In ${hours} hours`;
-                         }
-                    }
-                } else if (upcomingNews) {
-                    upcomingNews.innerHTML = '<div class="impact-item"><div class="impact-time">Now</div><div class="impact-info">No high-impact events soon</div></div>';
-                    if (newsTimer) newsTimer.innerHTML = 'Clear';
-                }
-
-            } catch (error) {
-                console.error('❌ Insights error:', error);
-            }
+            } catch (e) { /* noop */ }
         }
 
         // Update account details display
@@ -4543,10 +4097,17 @@
             return JSON.stringify({});
         }
 
-        // Load insights (Legacy override - Removed)
-        async function loadInsightsLegacyOverride() {
-            // This function previously tried to fetch /api/insights which is deprecated.
-            // Logic is now consolidated in the main loadInsights function.
+        // Load insights
+        async function loadInsights() {
+            try {
+                const res = await fetch('/api/insights');
+                const data = await res.json();
+                if (data.status === 'success' && data.insights) {
+                    renderInsights(data.insights);
+                }
+            } catch (e) {
+                console.error('❌ Insights error:', e);
+            }
         }
 
         // Render insights
@@ -5351,7 +4912,7 @@
                     </div>
                     <div class="detail-item" style="border-left-color: #3a86ff;">
                         <div class="detail-label">Confidence</div>
-                        <div class="detail-value" style="color: #ffffff;">${confidence != null ? (confidence * 100).toFixed(0) + '%' : 'N/A'}</div>
+                        <div class="detail-value" style="color: #ffffff;">${(confidence * 100).toFixed(0)}%</div>
                     </div>
                 </div>
                 
