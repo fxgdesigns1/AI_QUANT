@@ -1,0 +1,89 @@
+{
+  "status": "PARTIAL",
+  "job_name": "FXG_UNIFY_LANE_010_EXECUTION_CONTRACT_AND_LIMIT_SUPPORT_V1",
+  "ts_utc": "2026-03-25T00:50:00Z",
+  "status_rules_note": "PASS requires unified contract + no manual append + MARKET regression + one fresh LIMIT proven on Windows MT5; last gate not met in this session.",
+  "phase_results": {
+    "1_trace_all_lane_010_signal_outputs": "COMPLETE — see artifacts/lane010_output_trace.json",
+    "2_identify_why_top3_hits_signals_jsonl_instead_of_canonical_ftmo_file": "COMPLETE — see artifacts/lane010_top3_routing_root_cause.json",
+    "3_unify_lane_010_output_contract": "COMPLETE — see artifacts/lane010_unified_contract.json",
+    "4_patch_windows_transport_if_needed_to_follow_unified_contract": "COMPLETE — derive script + transport loop; see artifacts/lane010_transport_patch_result.json",
+    "5_patch_windows_ea_for_limit_order_support": "CODE_COMPLETE — EA v1.02; MetaEditor compile not run here; see artifacts/windows_ea_limit_support_patch.json",
+    "6_verify_market_signals_still_work": "NOT_RUN — see artifacts/windows_market_regression_check.json",
+    "7_verify_fresh_limit_signal_end_to_end": "INCOMPLETE — derive path proven only; MT5 EA proof missing; see artifacts/windows_limit_end_to_end_proof.json",
+    "8_update_dashboard_and_operator_truth": "COMPLETE — GET /api/execution/lane_010_contract; see artifacts/lane010_dashboard_truth_update.json",
+    "9_run_safety_checks": "COMPLETE — see artifacts/lane010_unification_safety_check.txt"
+  },
+  "files_created": [
+    "bridges/windows_sidecar/scripts/fxg_win_derive_canonical_ftmo_from_signals_jsonl.ps1",
+    "artifacts/lane010_output_trace.json",
+    "artifacts/lane010_top3_routing_root_cause.json",
+    "artifacts/lane010_unified_contract.json",
+    "artifacts/lane010_transport_patch_result.json",
+    "artifacts/windows_ea_limit_support_patch.json",
+    "artifacts/windows_market_regression_check.json",
+    "artifacts/windows_limit_end_to_end_proof.json",
+    "artifacts/lane010_dashboard_truth_update.json",
+    "artifacts/lane010_unification_safety_check.txt",
+    "artifacts/FXG_UNIFY_LANE_010_EXECUTION_CONTRACT_AND_LIMIT_SUPPORT_V1.json"
+  ],
+  "files_modified": [
+    "bridges/windows_sidecar/scripts/fxg_win_start_canonical_transport_loop.ps1",
+    "bridges/windows_sidecar/scripts/fxg_win_sync_canonical_signals.ps1",
+    "bridges/windows_sidecar/scripts/fxg_win_inject_test_signal.ps1",
+    "ea/FTMO_Bridge_EA.mq5",
+    "src/control_plane/api.py"
+  ],
+  "files_verified": [
+    "bridges/windows_sidecar/scripts/fxg_win_derive_canonical_ftmo_from_signals_jsonl.ps1 (executed; appended test LIMIT line to logs/signals_ftmo_demo2.jsonl)",
+    "logs/signals_ftmo_demo2.jsonl (tail contained trace_20260325004148 TOP3_SNIPER_300 LIMIT line after derive)",
+    "artifacts/lane010_derive_status.json (written by derive script when run)"
+  ],
+  "files_unverified": [
+    "ea/FTMO_Bridge_EA.mq5 compiled .ex5 in MT5",
+    "MQL5/Files/signals_ftmo_demo2.jsonl on live terminal after forward sync",
+    "ftmo_bridge_log.jsonl EXECUTED/REQUEST_SUMMARY for fresh LIMIT on broker"
+  ],
+  "verification_commands_run": [
+    "powershell -NoProfile -ExecutionPolicy Bypass -File bridges/windows_sidecar/scripts/_tmp_test_derive.ps1 (temporary; deleted after run — exercised derive with TOP3_SNIPER_300 LIMIT-shaped payload)",
+    "powershell: implicit execution of fxg_win_derive_canonical_ftmo_from_signals_jsonl.ps1 via above test"
+  ],
+  "verification_commands_not_run": [
+    "MetaEditor compile of FTMO_Bridge_EA.mq5",
+    "fxg_win_sync_canonical_signals.ps1 against live MT5 Files path in this session",
+    "fxg_win_inject_test_signal.ps1 -EntryType LIMIT against live MT5"
+  ],
+  "artifacts": {
+    "lane010_output_trace": "artifacts/lane010_output_trace.json",
+    "lane010_top3_routing_root_cause": "artifacts/lane010_top3_routing_root_cause.json",
+    "lane010_unified_contract": "artifacts/lane010_unified_contract.json",
+    "lane010_transport_patch_result": "artifacts/lane010_transport_patch_result.json",
+    "windows_ea_limit_support_patch": "artifacts/windows_ea_limit_support_patch.json",
+    "windows_market_regression_check": "artifacts/windows_market_regression_check.json",
+    "windows_limit_end_to_end_proof": "artifacts/windows_limit_end_to_end_proof.json",
+    "lane010_dashboard_truth_update": "artifacts/lane010_dashboard_truth_update.json",
+    "lane010_unification_safety_check": "artifacts/lane010_unification_safety_check.txt",
+    "final_report": "artifacts/FXG_UNIFY_LANE_010_EXECUTION_CONTRACT_AND_LIMIT_SUPPORT_V1.json"
+  },
+  "runtime_findings": [
+    "Repo has no Python emitter for TOP3_SNIPER_300 located under src/; aggregate vs canonical split fixed at transport derive layer.",
+    "git diff --stat in workspace reported fatal: bad object HEAD — working tree evidence used for file lists instead of git diff.",
+    "Test line appended to logs/signals.jsonl during verification remains in working tree (operator may truncate for cleanliness)."
+  ],
+  "safety_assertions": [
+    "No new execution routes on windows_sidecar FastAPI service",
+    "No second Python writer to canonical file; derive is PowerShell transport-only",
+    "bridge_account filter unchanged (ftmo_demo2)"
+  ],
+  "open_risks": [
+    "EA v1.02 not compiled or run on MT5 in this session — LIMIT order mapping unproven against a live broker",
+    "EUR_USD BuyLimit test requires entry_price strictly below Ask — operator must pick valid price or EA will EA_PARSE_FAIL (expected)"
+  ],
+  "next_required_manual_steps": [
+    "Compile and install ea/FTMO_Bridge_EA.mq5 v1.02 to MT5 (fxg_win_install_canonical_ea.ps1 if applicable).",
+    "Run transport loop or single-shot: derive then fxg_win_sync_canonical_signals.ps1.",
+    "Prove MARKET: fxg_win_inject_test_signal.ps1 (default).",
+    "Prove LIMIT: fxg_win_inject_test_signal.ps1 -EntryType LIMIT -EntryPrice <valid BuyLimit below Ask>; read ftmo_bridge_log.jsonl for REQUEST_SUMMARY price_mode=LIMIT and EXECUTED or BROKER_REJECT.",
+    "Optionally GET /api/execution/lane_010_contract from control plane for operator truth."
+  ]
+}

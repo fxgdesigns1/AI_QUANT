@@ -1,0 +1,33 @@
+{
+  "phase": "phase_7_run_market_regression_check",
+  "status": "PASS",
+  "ea_build_banner_live": "FTMO_Bridge_EA started v1.01 (null-safe stops, dedupe, tail-read)",
+  "ea_build_banner_ts": "2026.03.25 01:53:15",
+  "fresh_market_after_limit_skip": {
+    "signal_id": "test_20260325011134",
+    "inject_command": "bridges/windows_sidecar/scripts/fxg_win_inject_test_signal.ps1 -EntryType MARKET",
+    "sequence": [
+      "SIGNAL_ACCEPT",
+      "REQUEST_SUMMARY price_mode=MARKET",
+      "EXECUTED"
+    ],
+    "request_summary_excerpt": "symbol=EURUSD side=BUY vol=0.0100 price_mode=MARKET sl_set=false tp_set=false sl=0 tp=0",
+    "ts_in_log": "2026.03.25 04:11:36",
+    "precedes_limit_attempt_in_log": false,
+    "note": "Injected after prior log line SIGNAL_SKIP entry_type not MARKET: LIMIT for trace_20260325004148 at 2026.03.25 03:41:58"
+  },
+  "same_build_prior_market_proofs": [
+    "winprove_reload_20260324225356",
+    "transportprobe_20260325001001",
+    "transporte2e_20260325001002"
+  ],
+  "dedupe_null_stop_observation": {
+    "ea_banner_claims": "null-safe stops, dedupe, tail-read",
+    "market_with_null_sl_tp": "REQUEST_SUMMARY shows sl_set=false tp_set=false sl=0 tp=0; EXECUTED for test_20260325011134",
+    "prior_duplicate_rejects_same_signal_id": "Multiple BROKER_REJECT lines for winprove_matrix_20260324213656 (pre-reload) — no new duplicate-spam on successful MARKET path post-reload in sampled tail"
+  },
+  "evidence_commands": [
+    "powershell -File bridges/windows_sidecar/scripts/fxg_win_inject_test_signal.ps1 -EntryType MARKET",
+    "Get-Content $env:APPDATA\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\ftmo_bridge_log.jsonl -Tail 15"
+  ]
+}

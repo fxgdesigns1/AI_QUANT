@@ -1,0 +1,139 @@
+{
+  "generated_at_utc": "2026-05-03T14:05:00Z",
+  "source": "cursor_mcp_user_stitch",
+  "target_project_id": "2751957610566494145",
+  "projects": [
+    {
+      "name": "projects/2751957610566494145",
+      "title": "Backtest Environment Automation",
+      "visibility": "PRIVATE",
+      "origin": "STITCH",
+      "deviceType": "DESKTOP",
+      "projectType": "TEXT_TO_UI_PRO",
+      "updateTime": "2026-05-03T12:19:11.176638Z"
+    },
+    {
+      "name": "projects/5642431141787768942",
+      "title": "FXG Alpha Truth Dashboard",
+      "visibility": "PRIVATE",
+      "origin": "STITCH",
+      "deviceType": "DESKTOP",
+      "projectType": "TEXT_TO_UI_PRO",
+      "updateTime": "2026-04-30T22:30:26.901400Z"
+    }
+  ],
+  "active_screens": [
+    {
+      "name": "projects/2751957610566494145/screens/52b967ed9ea049658dd61e0b906d2924",
+      "title": "Data-Wired Phase 8 Research Dashboard",
+      "deviceType": "DESKTOP",
+      "width": "2560",
+      "height": "2048",
+      "htmlCode": {
+        "mimeType": "text/html",
+        "downloadUrl": "redacted_url_present"
+      }
+    },
+    {
+      "name": "projects/2751957610566494145/screens/e5bf1a4bddb04c619b4fe4d67629386a",
+      "title": "Promotion & Performance Details",
+      "deviceType": "DESKTOP",
+      "width": "2560",
+      "height": "2048",
+      "htmlCode": {
+        "mimeType": "text/html",
+        "downloadUrl": "redacted_url_present"
+      }
+    }
+  ],
+  "screens": [
+    {
+      "name": "projects/2751957610566494145/screens/440e73de530440f9b812db9e83e07daa",
+      "title": "Intelligence Dashboard",
+      "deviceType": "DESKTOP",
+      "width": "2560",
+      "height": "2048",
+      "htmlCode": {
+        "mimeType": "text/html",
+        "downloadUrl": "redacted_url_present"
+      }
+    },
+    {
+      "name": "projects/2751957610566494145/screens/79f10c15d47f4117902dd7e80e7dc441",
+      "title": "Alpha Export Pack",
+      "deviceType": "DESKTOP",
+      "width": "2560",
+      "height": "2048",
+      "htmlCode": {
+        "mimeType": "text/html",
+        "downloadUrl": "redacted_url_present"
+      }
+    },
+    {
+      "name": "projects/2751957610566494145/screens/0ee9cb4d16e443ed8526c16a5ff39a92",
+      "title": "Deep Analysis & Results",
+      "deviceType": "DESKTOP",
+      "width": "2560",
+      "height": "2048",
+      "htmlCode": {
+        "mimeType": "text/html",
+        "downloadUrl": "redacted_url_present"
+      }
+    },
+    {
+      "name": "projects/2751957610566494145/screens/4201df72c4554ad48379ef8e2599a5f9",
+      "title": "Environment Config",
+      "deviceType": "DESKTOP",
+      "width": "2560",
+      "height": "2048",
+      "htmlCode": {
+        "mimeType": "text/html",
+        "downloadUrl": "redacted_url_present"
+      }
+    },
+    {
+      "name": "projects/2751957610566494145/screens/16b1100e4f7c46209f2aff4c9d88726e",
+      "title": "Automation Dashboard",
+      "deviceType": "DESKTOP",
+      "width": "2560",
+      "height": "2048",
+      "htmlCode": {
+        "mimeType": "text/html",
+        "downloadUrl": "redacted_url_present"
+      }
+    },
+    {
+      "name": "projects/2751957610566494145/screens/606a53d0bab9480bb61bd8bd2afa4367",
+      "title": "Archived Legacy Research View",
+      "deviceType": "DESKTOP",
+      "width": "2560",
+      "height": "2356",
+      "htmlCode": {
+        "mimeType": "text/html",
+        "downloadUrl": "redacted_url_present"
+      }
+    },
+    {
+      "name": "projects/2751957610566494145/screens/52b967ed9ea049658dd61e0b906d2924",
+      "title": "Data-Wired Phase 8 Research Dashboard",
+      "deviceType": "DESKTOP",
+      "width": "2560",
+      "height": "2048",
+      "htmlCode": {
+        "mimeType": "text/html",
+        "downloadUrl": "redacted_url_present"
+      }
+    },
+    {
+      "name": "projects/2751957610566494145/screens/e5bf1a4bddb04c619b4fe4d67629386a",
+      "title": "Promotion & Performance Details",
+      "deviceType": "DESKTOP",
+      "width": "2560",
+      "height": "2048",
+      "htmlCode": {
+        "mimeType": "text/html",
+        "downloadUrl": "redacted_url_present"
+      }
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+FXG_WINDOWS_LIMIT_EXPIRATION_FIX safety checklist (agent-verified where noted)
+
+1) Windows sidecar execution routes: GREP bridges/windows_sidecar *.py for OrderSend/mq5 execution — no execution routes (only scripts for jsonl transport, routes_symbols execution_mode is data field).
+2) Canonical producer semantics / emit_signal / bridge_account: NOT MODIFIED in this job (no edits to Mac canonical producer).
+3) MARKET path: CONFIRMED — mktregexpfix_20260325020336 SIGNAL_ACCEPT -> REQUEST_SUMMARY MARKET -> EXECUTED (ftmo_bridge_log.jsonl tail).
+4) Paper only: EA inputs unchanged InpPaperOnly=true in source; broker account mode not altered by agent.
+5) Single active execution consumer: OPERATOR ASSERTION — disable Mac MT5 consumer if present; Windows primary per job; agent did not start Mac MT5.
+
+Next owner: YOU — reattach EA v1.03 on Windows chart, confirm EA_START banner, rerun one fresh LIMIT signal for final PASS evidence.

@@ -1,0 +1,31 @@
+{
+  "job": "FXG_FIX_MT5_0_01_LOT_FALLBACK_ON_LIVE_CONSUMER_V1",
+  "phase": "5_explicit_lot_parse_and_execution_logging",
+  "log_file_input": "InpBridgeLogFile default ftmo_bridge_log.jsonl (MQL5/Files)",
+  "startup_line": {
+    "type": "EA_START",
+    "includes": [
+      "version v1.04",
+      "watch=MQL5/Files/<InpSignalFilePath>",
+      "log=<InpBridgeLogFile>"
+    ]
+  },
+  "lot_resolution_line": {
+    "type": "LOT_RESOLVE",
+    "fields_in_msg": [
+      "field=lots|volume",
+      "signal_lots=<raw from JSON>",
+      "parsed_lots=<same numeric after parse; equals signal_lots when valid>",
+      "fallback_used=false (always for successful parse)",
+      "final_vol=<broker-normalized volume>",
+      "watch=<InpSignalFilePath>"
+    ],
+    "signal_id": "present in JSON envelope"
+  },
+  "reject_line": {
+    "type": "LOT_PARSE_REJECT",
+    "purpose": "Explicit rejection; never masks as REQUEST_SUMMARY/EXECUTED with wrong volume"
+  },
+  "request_summary_unchanged": "REQUEST_SUMMARY still includes vol= final lots sent to CTrade / pending send",
+  "impossibility_note": "No silent 0.01: missing lots no longer reaches REQUEST_SUMMARY with invented volume"
+}

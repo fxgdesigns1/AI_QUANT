@@ -1,0 +1,25 @@
+{
+  "job_name": "FXG_UNIFY_LANE_010_EXECUTION_CONTRACT_AND_LIMIT_SUPPORT_V1",
+  "phase": "4_patch_windows_transport_if_needed_to_follow_unified_contract",
+  "ts_utc": "2026-03-25T00:45:00Z",
+  "status": "COMPLETE",
+  "changes": [
+    {
+      "file": "bridges/windows_sidecar/scripts/fxg_win_derive_canonical_ftmo_from_signals_jsonl.ps1",
+      "action": "added",
+      "description": "Derives logs/signals_ftmo_demo2.jsonl from logs/signals.jsonl with ftmo_demo2 filter and signal_id dedupe; writes artifacts/lane010_derive_status.json"
+    },
+    {
+      "file": "bridges/windows_sidecar/scripts/fxg_win_start_canonical_transport_loop.ps1",
+      "action": "modified",
+      "description": "Invokes derive script before forward sync; aggregates forward errors from derive and sync"
+    },
+    {
+      "file": "bridges/windows_sidecar/scripts/fxg_win_sync_canonical_signals.ps1",
+      "action": "modified",
+      "description": "Header comment documents derive prerequisite"
+    }
+  ],
+  "verification_command": "powershell -NoProfile -ExecutionPolicy Bypass -File bridges/windows_sidecar/scripts/fxg_win_derive_canonical_ftmo_from_signals_jsonl.ps1",
+  "verification_evidence": "DERIVE: appended=1 ... (test run with TOP3_SNIPER_300 LIMIT line in aggregate; line appeared in logs/signals_ftmo_demo2.jsonl)"
+}

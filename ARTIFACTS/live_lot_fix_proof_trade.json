@@ -1,0 +1,14 @@
+{
+  "job": "FXG_FIX_MT5_0_01_LOT_FALLBACK_ON_LIVE_CONSUMER_V1",
+  "phase": "7_run_one_controlled_paper_proof_trade_above_0_01_lots",
+  "status": "NOT_EXECUTED_BY_AGENT",
+  "reason": "Single proof trade requires operator ALPHA MANUAL_010 with emitted canonical lots > 0.01; no API invocation performed in this Cursor session.",
+  "required_operator_capture": [
+    "signal_id",
+    "oanda_create_id / oanda_fill_id from meta",
+    "canonical signals_ftmo_demo2.jsonl line",
+    "emitted lots value",
+    "MT5 ftmo_bridge_log.jsonl LOT_RESOLVE + REQUEST_SUMMARY + EXECUTED or LOT_PARSE_REJECT"
+  ],
+  "enforcement": "Job constraint: exactly one trade; agent did not fire trades"
+}

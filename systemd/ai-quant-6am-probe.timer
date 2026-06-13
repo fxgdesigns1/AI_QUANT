@@ -1,0 +1,21 @@
+# ai-quant-6am-probe.timer — 6AM Market Open Probe Timer
+#
+# Runs daily at 06:00 UTC (London session open)
+#
+# INSTALLATION:
+#   1. Copy this file to /etc/systemd/system/ai-quant-6am-probe.timer
+#   2. Run: sudo systemctl daemon-reload
+#   3. Run: sudo systemctl enable --now ai-quant-6am-probe.timer
+
+[Unit]
+Description=AI-QUANT 6AM Market Open System Health Probe Timer
+Requires=ai-quant-6am-probe.service
+
+[Timer]
+# Run daily at 06:00 UTC (London session open)
+OnCalendar=*-*-* 06:00:00
+Timezone=UTC
+Persistent=true
+
+[Install]
+WantedBy=timers.target

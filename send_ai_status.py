@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
+import os
 import requests
 
 # Telegram credentials
 BOT_TOKEN = '7248728383:REDACTED'
 CHAT_ID = '6100678501'
 
-message = """🤖 AI TRADING SYSTEM WITH TELEGRAM COMMANDS IS LIVE!
+aid = os.getenv("OANDA_ACCOUNT_ID", "").strip() or "(configured via OANDA_ACCOUNT_ID)"
+
+message = f"""🤖 AI TRADING SYSTEM WITH TELEGRAM COMMANDS IS LIVE!
 
 STATUS: RUNNING & RESPONDING TO COMMANDS
-Demo Account: 101-004-30719775-008
+Demo Account: {aid}
 Current P&L: +$976.49
 
 ✅ NEW AI FEATURES:

@@ -1,0 +1,13 @@
+{
+  "status": "no_dashboard_paths_in_repo",
+  "paths_checked": [
+    "dashboard/src/app/api/bridge/route.ts",
+    "dashboard/src/app/api/bridge/status/route.ts"
+  ],
+  "result": "Glob search returned 0 files; no dashboard truth panels updated in this workspace.",
+  "declared_truth_unchanged": {
+    "execution_bridge_semantics_owner": "canonical_mac_file_bridge_v1",
+    "execution_consumer": "Windows MT5 FTMO_Bridge_EA",
+    "data_diagnostics_bridge": "parallel_windows_sidecar_bridge_v1"
+  }
+}

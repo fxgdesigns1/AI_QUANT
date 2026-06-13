@@ -1,0 +1,11 @@
+{
+  "executed": true,
+  "exit_code": 0,
+  "summary": "PASS: Healthcheck OK",
+  "output": {
+    "health": "service_up=True, terminal=True, account=True",
+    "account": "login=1512827972, server=FTMO-Demo, balance=97275.63",
+    "tick": "bid=1.15618, ask=1.15619"
+  },
+  "ts_utc": "2026-03-23T00:30:00Z"
+}

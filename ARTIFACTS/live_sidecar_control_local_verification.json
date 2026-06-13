@@ -1,0 +1,19 @@
+{
+  "job": "FXG_PORT_LIVE_WINDOWS_SIDECAR_CONTROL_AND_VERIFY_FROM_MAC_V1",
+  "phase": "5_restart_and_local_windows_health",
+  "sid_ecar_process": {
+    "restart_note": "Stopped PID holding port 8877 (64236 then 65740) and started bridges/windows_sidecar/run.py via Start-Process",
+    "listening": "netstat LISTENING 0.0.0.0:8877 (PID 64720 at last check; PID may change on restart)"
+  },
+  "curl_local_evidence": {
+    "tool": "Python urllib with x-api-key from bridges/windows_sidecar/.env (key not logged)",
+    "results": {
+      "/health": "200 service_up true",
+      "/account": "200 login present",
+      "/positions": "200 count=0 after flatten run",
+      "/orders": "200 count=0 after flatten run",
+      "/": "200 read_only false when write gate true"
+    }
+  },
+  "hard_pass_local_telemetry": "PASS after restart"
+}

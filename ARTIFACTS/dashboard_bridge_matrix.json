@@ -1,0 +1,14 @@
+{
+  "dashboard_bridge_matrix": {
+    "canonical_mac_file_bridge_v1": {
+      "panel": "CriticalCanonicalBridgePanel",
+      "data_source": "/api/bridge/status",
+      "bridge_id": "canonical_mac_file_bridge_v1"
+    },
+    "parallel_windows_sidecar_bridge_v1": {
+      "panel": "WindowsSidecarPanel",
+      "data_source": "/api/mt5_sidecar/health",
+      "bridge_id": "parallel_windows_sidecar_bridge_v1"
+    }
+  }
+}

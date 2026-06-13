@@ -1,0 +1,307 @@
+{
+  "saved_at_utc": "2026-05-03T12:15:40.711162Z",
+  "provider": "rapidapi_economic_calendar",
+  "fingerprint": "c68fb89936156da3bee9bdf0",
+  "rows": [
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "GB",
+      "event": "Nationwide house price mm*",
+      "date": "2026-02-02T07:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "GB",
+      "event": "Nationwide house price yy*",
+      "date": "2026-02-02T07:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "GB",
+      "event": "BBA Mortgage Rate*",
+      "date": "2026-02-02T09:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "GB",
+      "event": "S&P GLOBAL MANUFACTURING PMI",
+      "date": "2026-02-02T09:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "S&P Global Mfg PMI Final",
+      "date": "2026-02-02T14:45:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "ISM Manuf Employment Idx",
+      "date": "2026-02-02T15:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "ISM Manuf New Orders Idx",
+      "date": "2026-02-02T15:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "ISM Manufacturing PMI",
+      "date": "2026-02-02T15:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "ISM Mfg Prices Paid",
+      "date": "2026-02-02T15:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "All Car Sales*",
+      "date": "2026-02-02T15:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "All Truck Sales*",
+      "date": "2026-02-02T15:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "Exp Soybean Inspected *",
+      "date": "2026-02-02T16:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "Export Corn Inspected *",
+      "date": "2026-02-02T16:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "Export Wheat Inspected *",
+      "date": "2026-02-02T16:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "6M Bill Auc - BTC*",
+      "date": "2026-02-02T16:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "6M Bill Auc - HAP*",
+      "date": "2026-02-02T16:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "6M Bill Auc - HR*",
+      "date": "2026-02-02T16:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "6M Bill Auc - TA*",
+      "date": "2026-02-02T16:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "3M Bill Auc - BTC*",
+      "date": "2026-02-02T16:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "3M Bill Auc - HAP*",
+      "date": "2026-02-02T16:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "3M Bill Auc - HR*",
+      "date": "2026-02-02T16:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "3M Bill Auc - TA*",
+      "date": "2026-02-02T16:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "Redbook YY *",
+      "date": "2026-02-03T13:55:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "API Cushing number",
+      "date": "2026-02-03T21:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "API Wkly crude runs",
+      "date": "2026-02-03T21:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "API Wkly dist. Stk",
+      "date": "2026-02-03T21:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "API Wkly gsln stk",
+      "date": "2026-02-03T21:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "API weekly crude imports",
+      "date": "2026-02-03T21:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "API weekly heating oil",
+      "date": "2026-02-03T21:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "API weekly product imports",
+      "date": "2026-02-03T21:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "API wkly crude Stk",
+      "date": "2026-02-03T21:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "GB",
+      "event": "S&P GLOBAL PMI: COMPOSITE - OUTPUT",
+      "date": "2026-02-04T09:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "GB",
+      "event": "S&P GLOBAL SERVICE PMI",
+      "date": "2026-02-04T09:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "GB",
+      "event": "Reserve Assets Total*",
+      "date": "2026-02-04T09:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "MBA 15-Yr Contract Rate",
+      "date": "2026-02-04T12:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "MBA 15-Yr Effective Rate",
+      "date": "2026-02-04T12:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "MBA 15-Yr FRM Points",
+      "date": "2026-02-04T12:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "MBA 30-Yr Mortgage Rate",
+      "date": "2026-02-04T12:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "MBA 5-Yr ARM Points",
+      "date": "2026-02-04T12:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "MBA 5-Yr Contract Rate",
+      "date": "2026-02-04T12:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "MBA 5-Yr Effective Rate",
+      "date": "2026-02-04T12:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "MBA Mortgage Applications",
+      "date": "2026-02-04T12:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "MBA Purchase Index",
+      "date": "2026-02-04T12:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "Mortgage Market Index",
+      "date": "2026-02-04T12:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "Mortgage Refinance Index",
+      "date": "2026-02-04T12:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "ADP National Employment",
+      "date": "2026-02-04T13:15:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "S&P Global Svcs PMI Final",
+      "date": "2026-02-04T14:45:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "S&P Global Comp PMI Final",
+      "date": "2026-02-04T14:45:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "ISM N-Mfg Bus Act",
+      "date": "2026-02-04T15:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "ISM N-Mfg Employment Idx",
+      "date": "2026-02-04T15:00:00.000Z"
+    }
+  ]
+}

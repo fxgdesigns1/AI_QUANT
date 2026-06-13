@@ -1,0 +1,37 @@
+{
+  "artifact": "windows_ea_test_matrix_requests",
+  "host_paths": {
+    "signals_jsonl": "%APPDATA%\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\signals_ftmo_demo2.jsonl"
+  },
+  "cases": [
+    {
+      "case_id": "market_null_stops_buy",
+      "signal_id": "winprove_matrix_20260324213656",
+      "signal": {
+        "take_profit": null,
+        "signal_id": "winprove_matrix_20260324213656",
+        "strategy": "MANUAL_010_TEST",
+        "block_reason": "[null](null)",
+        "news_state": "none",
+        "confidence": 0.5,
+        "side": "BUY",
+        "execution_allowed": true,
+        "stop_loss": null,
+        "entry_type": "MARKET",
+        "symbol": "EUR_USD",
+        "regime": "test",
+        "account": "010",
+        "bridge_account": "ftmo_demo2",
+        "units": 1000,
+        "session": "test"
+      },
+      "inject_method": "PowerShell ConvertTo-Json -Compress | Add-Content signals_ftmo_demo2.jsonl"
+    },
+    {
+      "case_id": "duplicate_replay_same_signal",
+      "replay_signal_id": "winprove_matrix_20260324213656",
+      "inject_method": "Second Add-Content with identical JSON object"
+    }
+  ],
+  "optional_market_with_valid_stops": "not_run — requires live bid/ask-aware stop prices from host"
+}

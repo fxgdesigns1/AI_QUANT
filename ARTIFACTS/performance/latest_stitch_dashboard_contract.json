@@ -1,0 +1,65 @@
+{
+  "contract_version": "phase8t_v1",
+  "description": "Stitch and external front-ends must consume canonical JSON payload/contract artifacts. Static Phase 8P HTML is fallback-only.",
+  "generated_at_utc": "2026-05-03T13:40:30.586814Z",
+  "mcp_and_api_mapping": {
+    "non_secrets_endpoints": [
+      "file://<repo>/ARTIFACTS/performance/latest_research_dashboard.json",
+      "file://<repo>/ARTIFACTS/performance/latest_stitch_dashboard_contract.json",
+      "file://<repo>/ARTIFACTS/performance/latest_stitch_dashboard_payload.json"
+    ],
+    "note": "This repo does not host a dedicated dashboard API service by default. Operators deploy compact JSON artifacts under ARTIFACTS/performance. The static HTML page is fallback-only and must not be treated as Stitch source of truth."
+  },
+  "ok": true,
+  "phase": "Phase 8T",
+  "primary_payload": {
+    "format": "json",
+    "path": "ARTIFACTS/performance/latest_research_dashboard.json",
+    "required_top_level_fields": [
+      "generated_at_utc",
+      "dashboard_freshness_seconds",
+      "result_rows_indexed",
+      "research_summary",
+      "latest_research_runs",
+      "promotion_candidates",
+      "continue_forward_candidates",
+      "watch_only_candidates",
+      "demoted_blocked_candidates",
+      "fail_closed_data_incomplete_runs",
+      "proxy_rows",
+      "fail_closed_rows",
+      "providers_working",
+      "providers_blocked",
+      "calendar_calls_this_month",
+      "calendar_budget_remaining",
+      "calendar_cache_hit_rate",
+      "last_calendar_api_call_utc",
+      "latest_phase8o_classification",
+      "exact_strategy_replay",
+      "news_reconstruction_available",
+      "calendar_reconstruction_available",
+      "alpha_latest_pointers",
+      "stitch_mcp_contract_health",
+      "paper_review_only",
+      "live_permission",
+      "ny_live_enabled",
+      "send_trade_unlock_changed",
+      "execution_paths_changed"
+    ]
+  },
+  "row_separation_rules": {
+    "continue_forward_candidates": "CONTINUE_FORWARD_PAPER_REVIEW (not promotable as first-class).",
+    "fail_closed_rows": "Rows labeled FAIL_CLOSED_DATA_INCOMPLETE or fail-closed classification.",
+    "promotion_candidates": "PROMOTE_REVIEW_CANDIDATE only; must not include proxy or fail-closed replay modes.",
+    "proxy_rows": "Rows whose replay_mode indicates proxy / best_available_proxy_reconstruction.",
+    "watch_only_candidates": "WATCH_ONLY"
+  },
+  "supporting_artifacts": {
+    "latest_calendar_api_usage": "ARTIFACTS/performance/latest_calendar_api_usage_report.json",
+    "latest_phase8o_backtest_summary": "ARTIFACTS/performance/latest_phase8o_backtest_summary.json",
+    "latest_phase8r_provider_capability_report": "ARTIFACTS/performance/latest_phase8r_provider_capability_report.json"
+  },
+  "validation": {
+    "command": "python scripts/phase8t_validate_stitch_dashboard_contract.py --repo-root . --validate"
+  }
+}

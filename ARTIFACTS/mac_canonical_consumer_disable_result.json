@@ -1,0 +1,7 @@
+{
+  "status": "OPERATOR_ACTION_REQUIRED",
+  "action": "On Mac: detach FTMO_Bridge_EA from chart, or stop Mac MT5/Wine instance that consumes signals_ftmo_demo2.jsonl",
+  "before_test_trade": "Mac canonical consumer MUST be inactive before running Windows test trade",
+  "verify": "Confirm only Windows MT5 EA is reading the signal file",
+  "ts_utc": "2026-03-23T00:55:00Z"
+}

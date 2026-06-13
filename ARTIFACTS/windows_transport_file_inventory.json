@@ -1,0 +1,37 @@
+﻿{
+    "ts_utc":  "2026-03-25T00:04:49.1459118Z",
+    "files":  [
+                  {
+                      "path":  "H:\\My Drive\\AI Trading\\Gcloud system\\logs\\signals_ftmo_demo2.jsonl",
+                      "exists":  true,
+                      "length_bytes":  0,
+                      "last_write_utc":  "2026-03-25T00:04:27.0800000Z",
+                      "link_type":  null,
+                      "attributes":  "Normal"
+                  },
+                  {
+                      "path":  "H:\\My Drive\\AI Trading\\Gcloud system\\logs\\ftmo_bridge_log.jsonl",
+                      "exists":  true,
+                      "length_bytes":  0,
+                      "last_write_utc":  "2026-03-25T00:04:27.1010000Z",
+                      "link_type":  null,
+                      "attributes":  "Normal"
+                  },
+                  {
+                      "path":  "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\signals_ftmo_demo2.jsonl",
+                      "exists":  true,
+                      "length_bytes":  1712,
+                      "last_write_utc":  "2026-03-24T22:53:56.9204294Z",
+                      "link_type":  null,
+                      "attributes":  "Archive"
+                  },
+                  {
+                      "path":  "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\ftmo_bridge_log.jsonl",
+                      "exists":  true,
+                      "length_bytes":  1922,
+                      "last_write_utc":  "2026-03-24T22:53:57.3952933Z",
+                      "link_type":  null,
+                      "attributes":  "Archive"
+                  }
+              ]
+}

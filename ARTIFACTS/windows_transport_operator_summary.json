@@ -1,0 +1,11 @@
+{
+  "ts_utc": "2026-03-25T00:12:00Z",
+  "job_name": "FXG_WINDOWS_CANONICAL_SIGNAL_TRANSPORT_REPAIR_AND_VERIFY_V1",
+  "overall_status": "PASS",
+  "summary": "Forward sync (repo logs/signals_ftmo_demo2.jsonl -> active MT5 MQL5/Files) and reverse sync (MT5 ftmo_bridge_log.jsonl -> repo logs/ftmo_bridge_log.jsonl) are implemented via PowerShell scripts under bridges/windows_sidecar/scripts. Fresh probe and E2E signals reached MT5; FTMO_Bridge_EA logged EXECUTED; lines mirrored to shared repo bridge log.",
+  "how_to_run": "powershell -ExecutionPolicy Bypass -File .\\bridges\\windows_sidecar\\scripts\\fxg_win_run_canonical_transport_once.ps1",
+  "how_to_verify": "powershell -ExecutionPolicy Bypass -File .\\bridges\\windows_sidecar\\scripts\\fxg_win_verify_canonical_transport.ps1",
+  "autostart": "Scheduled task registration failed with Access denied; create Task Scheduler task manually as Administrator or run the loop in a session. See artifacts/windows_transport_autostart_result.json.",
+  "documentation": "docs/bridges/WINDOWS_CANONICAL_SIGNAL_TRANSPORT.md",
+  "backup_note": "artifacts/windows_transport_backup_20260325_000644 may have two files with the same leaf name (signals_ftmo_demo2.jsonl / ftmo_bridge_log.jsonl) where the second copy overwrote the first; use windows_transport_pre_fix_tails.json for distinct pre-fix snapshots."
+}

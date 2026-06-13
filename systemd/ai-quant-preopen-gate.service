@@ -1,0 +1,30 @@
+# ai-quant-preopen-gate.service — Pre-market open gate checker
+#
+# Checks readiness gates before market open:
+# 1) DNS gate: getent + curl -I to OANDA practice API
+# 2) Health gate: curl http://127.0.0.1:8787/health
+# 3) Status freshness gate: /api/status last_scan_at not null and not older than 120s
+#
+# If any fails: logs PREOPEN_GATE_FAIL + reason
+#
+# INSTALLATION:
+#   1. Copy this file to /etc/systemd/system/ai-quant-preopen-gate.service
+#   2. Run: sudo systemctl daemon-reload
+#   3. Enable timer: sudo systemctl enable --now ai-quant-preopen-gate.timer
+
+[Unit]
+Description=AI-QUANT Pre-Market Open Gate Checker
+After=network.target ai-quant-control-plane.service
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/opt/ai-quant
+
+# Pre-open gate checks (bounded, fast, <=10s total)
+ExecStart=/bin/bash /opt/ai-quant/scripts/preopen_gate_check.sh
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ai-quant-preopen-gate

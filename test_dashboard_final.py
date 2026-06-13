@@ -32,8 +32,11 @@ class FinalDashboardTester:
             print("🚀 Starting AI Trading Dashboard with OANDA integration...")
             
             # Set environment variables for credentials
-            os.environ['OANDA_API_KEY'] = 'REMOVED_SECRET'
-            os.environ['OANDA_ACCOUNT_ID'] = '101-004-30719775-008'
+            # Do not overwrite lane/account selection here; require caller to provide real env.
+            if 'OANDA_API_KEY' not in os.environ or not os.environ.get('OANDA_API_KEY', '').strip():
+                raise RuntimeError("OANDA_API_KEY must be set in environment for this test.")
+            if 'OANDA_ACCOUNT_ID' not in os.environ or not os.environ.get('OANDA_ACCOUNT_ID', '').strip():
+                raise RuntimeError("OANDA_ACCOUNT_ID must be set in environment for this test.")
             
             # Start dashboard in background
             self.dashboard_process = subprocess.Popen([

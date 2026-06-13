@@ -1,0 +1,27 @@
+{
+  "generated_at_utc": "2026-05-04T10:20:53.800823Z",
+  "phase": "Phase 8S",
+  "classification": "CALENDAR_API_USAGE_REPORT",
+  "month_key": "2026-05",
+  "calendar_calls_this_month": 4,
+  "calendar_budget_remaining": 996,
+  "calendar_budget_monthly_cap": 1000,
+  "calendar_cache_hit_rate": 0.1667,
+  "calendar_cache_hits_month": 1,
+  "budget_blocked_events_month": 1,
+  "last_calendar_api_call_utc": "2026-05-04T10:20:53.763410Z",
+  "budget_soft_warning_at": 650,
+  "budget_hard_stop_at": 850,
+  "budget_absolute_stop_at": 900,
+  "next_paid_call_allowed": true,
+  "budget_decision_reason": "within_budget",
+  "providers_usage_counts": {
+    "rapidapi_economic_calendar": 3,
+    "fmp_economic_calendar": 1
+  },
+  "secrets_exposed": false,
+  "paper_review_only": true,
+  "ny_live_enabled": false,
+  "send_trade_unlock_changed": false,
+  "execution_paths_changed": false
+}

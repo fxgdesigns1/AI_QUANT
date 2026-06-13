@@ -1,0 +1,54 @@
+{
+  "classification": "PHASE8Y_API_COST_ESTIMATE",
+  "estimated_api_calls_needed": 0,
+  "estimated_paid_calendar_calls_needed": 0,
+  "estimated_paid_calls_within_budget": true,
+  "execution_paths_changed": false,
+  "fail_closed_reasons": [],
+  "generated_at_utc": "2026-05-04T18:52:01.397053Z",
+  "max_paid_calendar_calls_budget_for_preflight": 0,
+  "monthly_calendar_calls_remaining": 996,
+  "monthly_calendar_calls_used": 4,
+  "ny_live_enabled": false,
+  "paper_review_only": true,
+  "phase": "Phase 8Y",
+  "provider_estimates": {
+    "alphavantage": {
+      "estimated_calls": 0,
+      "strategy": "NEWS_SENTIMENT limit=1000; broad FX buckets"
+    },
+    "fmp": {
+      "estimated_calls": 0,
+      "strategy": "Fallback calendar/economic source only when primary fails"
+    },
+    "fred": {
+      "estimated_calls": 1,
+      "strategy": "Pull once per macro series/date-window and cache"
+    },
+    "marketaux": {
+      "estimated_calls": 0,
+      "strategy": "Use plan max limit; stop when returned rows < limit"
+    },
+    "newsapi": {
+      "estimated_calls": 0,
+      "strategy": "pageSize=100; page only until target coverage met; cache by query/window"
+    },
+    "polygon": {
+      "estimated_calls": 0,
+      "strategy": "limit=1000 + pagination where available"
+    },
+    "rapidapi_calendar": {
+      "countries": "US,GB,EU",
+      "estimated_calls": 0,
+      "max_calls_per_preflight": 1,
+      "strategy": "Pull once per country-set/date-window and reuse cache for all jobs"
+    }
+  },
+  "recommended_batching": {
+    "cache_first": true,
+    "do_not_call_news_or_calendar_per_job": true,
+    "rapidapi_calendar_prefetch_max_calls": 1,
+    "shared_context_pack_required": true
+  },
+  "safe_to_run_batch": true
+}

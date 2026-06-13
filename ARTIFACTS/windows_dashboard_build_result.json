@@ -1,0 +1,8 @@
+{
+  "executed": true,
+  "exit_code": 1,
+  "summary": "FAIL: vite not recognized. npm run build invokes vite build but vite binary not in PATH. node_modules may be incomplete (npm install had TAR_ENTRY_ERROR on Google Drive path).",
+  "dashboard_path": "H:\\My Drive\\AI Trading\\Gcloud system\\frontend\\fxg-dashboard",
+  "recommended_fix": "Run 'npm install' from frontend/fxg-dashboard with stable drive, then 'npm run build'. Or use npx vite build if node_modules exists.",
+  "ts_utc": "2026-03-23T00:30:00Z"
+}

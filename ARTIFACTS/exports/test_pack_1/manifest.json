@@ -1,0 +1,35 @@
+{
+  "pack_id": "test_pack_1",
+  "created_utc": "2026-03-24T18:37:23.901284+00:00",
+  "source_machine": "G-Machine",
+  "dataset_coverage_start": null,
+  "dataset_coverage_end": null,
+  "enrichment_coverage_start": null,
+  "enrichment_coverage_end": null,
+  "scoring_window": null,
+  "mode": "research_pack",
+  "instruments_tested": [
+    "EUR_USD"
+  ],
+  "variants_tested": 1,
+  "calendar_included": false,
+  "news_included": false,
+  "winner_shapes": [
+    {
+      "variant_id": "v1",
+      "instrument": "EUR_USD",
+      "expectancy_r": 1.9999999999999982
+    }
+  ],
+  "trade_counts": [
+    4
+  ],
+  "win_rates_if_available": [
+    1.0
+  ],
+  "expectancy_R": 1.9999999999999982,
+  "max_drawdown_R": 0.0069962975759519964,
+  "rr_min": null,
+  "import_intent": "review_only",
+  "monte_carlo_run_id": "mc_20260324T183720Z"
+}

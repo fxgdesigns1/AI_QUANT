@@ -1,0 +1,9 @@
+{
+  "test_signal_injected": true,
+  "signal_id": "test_20260323011859",
+  "signal_file_contains_signal": true,
+  "bridge_log_contains_entry": "UNKNOWN - EA must be attached to consume",
+  "status": "PENDING_EA_ATTACH",
+  "operator_action": "Attach FTMO_Bridge_EA to chart, enable AutoTrading, then run fxg_win_inject_test_signal.ps1. Check ftmo_bridge_log.jsonl for EXECUTED or BROKER_REJECT.",
+  "ts_utc": "2026-03-23T01:20:00Z"
+}

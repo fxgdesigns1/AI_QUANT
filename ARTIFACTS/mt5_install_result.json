@@ -1,0 +1,8 @@
+{
+  "phase": "3_detect_or_install_native_mt5",
+  "status": "PASS",
+  "install_type": "newly_performed",
+  "installer_source": "https://download.terminal.free/cdn/web/metaquotes.ltd/mt5/mt5setup.exe",
+  "terminal_path": "C:\\Program Files\\MetaTrader 5\\terminal64.exe",
+  "terminal_detected": true
+}

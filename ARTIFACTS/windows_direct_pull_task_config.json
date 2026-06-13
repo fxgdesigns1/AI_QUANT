@@ -1,0 +1,27 @@
+{
+  "ts_utc": "2026-03-26T07:16:10Z",
+  "task_name": "FXG Windows Direct Pull ALPHA MT5 ftmo_demo2",
+  "trigger": {
+    "kind": "Once + Repetition",
+    "repetition_interval": "PT1M",
+    "repetition_duration": "P3650D",
+    "enabled": true
+  },
+  "action": {
+    "execute": "powershell.exe",
+    "arguments": "-NoProfile -ExecutionPolicy Bypass -File \"H:\\My Drive\\AI Trading\\Gcloud system\\bridges\\windows_sidecar\\scripts\\fxg_win_pull_alpha_signals_to_mt5.ps1\""
+  },
+  "settings": {
+    "StartWhenAvailable": true,
+    "RestartCount": 999,
+    "RestartInterval": "PT1M",
+    "MultipleInstances": "IgnoreNew"
+  },
+  "verification": {
+    "observed_last_run_time_local": "2026-03-26 07:15:49",
+    "observed_last_task_result": 0,
+    "observed_next_run_time_local": "2026-03-26 07:16:49",
+    "number_of_missed_runs": 0
+  },
+  "hard_pass": true
+}

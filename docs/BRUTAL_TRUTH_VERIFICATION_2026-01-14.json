@@ -1,0 +1,87 @@
+{
+  "timestamp": "2026-01-14T07:32:09.430747",
+  "base_url": "https://alpha.fxgdesigns.co.uk",
+  "sections": {
+    "pending_orders": {
+      "exists": false,
+      "has_balance": false
+    }
+  },
+  "errors": [],
+  "evidence": [
+    {
+      "section": "Active Trades",
+      "finding": "Navigation failed",
+      "status": "FAIL",
+      "details": {
+        "reason": "Could not find navigation element"
+      },
+      "timestamp": "2026-01-14T07:32:40.285478"
+    },
+    {
+      "section": "Pending Orders",
+      "finding": "Section not found",
+      "status": "FAIL",
+      "details": {},
+      "timestamp": "2026-01-14T07:32:40.292424"
+    },
+    {
+      "section": "Pending Orders",
+      "finding": "Account balance missing",
+      "status": "FAIL",
+      "details": {
+        "expected": "Account balance should be displayed with pending orders"
+      },
+      "timestamp": "2026-01-14T07:32:40.292453"
+    },
+    {
+      "section": "Performance",
+      "finding": "Navigation failed",
+      "status": "FAIL",
+      "details": {},
+      "timestamp": "2026-01-14T07:33:00.313799"
+    },
+    {
+      "section": "Structural Scanner",
+      "finding": "Navigation failed",
+      "status": "FAIL",
+      "details": {},
+      "timestamp": "2026-01-14T07:33:15.331197"
+    },
+    {
+      "section": "Market Outlook",
+      "finding": "Navigation failed",
+      "status": "FAIL",
+      "details": {},
+      "timestamp": "2026-01-14T07:33:30.348216"
+    },
+    {
+      "section": "Forensic Journal",
+      "finding": "Navigation failed",
+      "status": "FAIL",
+      "details": {},
+      "timestamp": "2026-01-14T07:33:45.366407"
+    },
+    {
+      "section": "News AI",
+      "finding": "Navigation failed",
+      "status": "FAIL",
+      "details": {},
+      "timestamp": "2026-01-14T07:34:00.383383"
+    },
+    {
+      "section": "Logic Starters",
+      "finding": "Navigation failed",
+      "status": "FAIL",
+      "details": {},
+      "timestamp": "2026-01-14T07:34:15.399783"
+    }
+  ],
+  "summary": {
+    "total_checks": 9,
+    "passed": 0,
+    "failed": 9,
+    "warnings": 0,
+    "pass_rate": "0.0%"
+  }
+}

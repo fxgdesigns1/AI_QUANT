@@ -1,0 +1,9 @@
+{
+  "remote_overlay_client": null,
+  "tailscale_installed": false,
+  "dashboard_sidecar_target": "from MT5_SIDECAR_BASE_URL env at Control Plane startup",
+  "home_lan_ip_reference": "192.168.0.190 mentioned in job spec as current hard-coded dependency",
+  "existing_remote_docs": ["scripts/setup_cloudflare_tunnel.sh - for VM dashboard, not Windows sidecar"],
+  "sidecar_startup_scripts": ["fxg_win_start_sidecar.ps1", "fxg_win_start_mt5_and_sidecar.ps1"],
+  "ts_utc": "2026-03-23T01:30:00Z"
+}

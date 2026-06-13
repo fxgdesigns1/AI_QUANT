@@ -1,0 +1,20 @@
+{
+  "job_name": "FXG_UNIFY_LANE_010_EXECUTION_CONTRACT_AND_LIMIT_SUPPORT_V1",
+  "phase": "3_unify_lane_010_output_contract",
+  "ts_utc": "2026-03-25T00:45:00Z",
+  "status": "COMPLETE",
+  "lane_010_execution_contract": {
+    "source_of_truth": "All MT5-facing executable lines for bridge_account ftmo_demo2 resolve into logs/signals_ftmo_demo2.jsonl before Windows forward sync.",
+    "canonical_signal_file": "logs/signals_ftmo_demo2.jsonl",
+    "transport_destination": "Active Windows MT5 MQL5/Files/signals_ftmo_demo2.jsonl",
+    "consumer": "FTMO_Bridge_EA",
+    "bridge_account": "ftmo_demo2"
+  },
+  "derivation_rule": {
+    "from": "logs/signals.jsonl",
+    "to": "logs/signals_ftmo_demo2.jsonl",
+    "filter": "bridge_account == \"ftmo_demo2\" AND non-empty signal_id",
+    "dedupe": "signal_id must not already exist in canonical file"
+  },
+  "producer_semantics": "Unchanged: producers continue to set lane ownership and bridge_account; no new writers added to sidecar."
+}

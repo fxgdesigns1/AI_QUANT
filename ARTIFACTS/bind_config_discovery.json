@@ -1,0 +1,7 @@
+{
+  "env_file": "bridges/windows_sidecar/.env",
+  "env_has_BIND_HOST": "0.0.0.0",
+  "config_reads": "BIND_HOST from os.getenv, default 127.0.0.1",
+  "run_py_load_order": "load_dotenv(sidecar/.env) then import config",
+  "root_cause_hypothesis": "config.load_dotenv() with no path loads cwd .env; if config is imported before run.py load_dotenv in some code paths, or cwd .env overrides, BIND_HOST could default to 127.0.0.1"
+}

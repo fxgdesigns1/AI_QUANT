@@ -1,0 +1,6 @@
+{
+  "path": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\signals_ftmo_demo2.jsonl",
+  "full_file_content_at_capture": "\r\n{\"take_profit\":null,\"signal_id\":\"test_20260323011859\",\"strategy\":\"MANUAL_010_TEST\",\"block_reason\":null,\"news_state\":\"none\",\"confidence\":0.5,\"side\":\"BUY\",\"execution_allowed\":true,\"stop_loss\":null,\"entry_type\":\"MARKET\",\"symbol\":\"EUR_USD\",\"regime\":\"test\",\"account\":\"010\",\"bridge_account\":\"ftmo_demo2\",\"units\":1000,\"session\":\"test\"}\r\n",
+  "note": "No new line appended in this job; phase 5 not executed.",
+  "captured_utc": "2026-03-24T20:47:00Z"
+}

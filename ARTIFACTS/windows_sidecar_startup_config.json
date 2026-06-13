@@ -1,0 +1,7 @@
+{
+  "task_name": "FXG Windows Sidecar 8877",
+  "trigger": "AtLogOn",
+  "command": "bridges\\windows_sidecar\\.venv\\Scripts\\python.exe bridges/windows_sidecar/run.py",
+  "working_directory": "h:\\My Drive\\AI Trading\\Gcloud system",
+  "disable_command": "Disable-ScheduledTask -TaskName 'FXG Windows Sidecar 8877'"
+}

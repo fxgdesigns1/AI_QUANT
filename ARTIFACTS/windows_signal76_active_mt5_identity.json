@@ -1,0 +1,21 @@
+{
+  "job_name": "FXG_WINDOWS_SIGNAL_76B6_CONSUMER_TRACE_AND_FIX_V1",
+  "phase": "1_find_active_mt5_instance_and_files",
+  "signal_id_traced": "76b6f9fc-6801-45ae-88b2-cc5181adc741",
+  "active_terminal64": {
+    "process_id": 44888,
+    "executable_path": "C:\\Program Files\\MetaTrader 5\\terminal64.exe",
+    "command_line": "\"C:\\Program Files\\MetaTrader 5\\terminal64.exe\" ",
+    "evidence_command": "Get-CimInstance Win32_Process -Filter \"Name='terminal64.exe'\" | Select-Object ProcessId, ExecutablePath, CommandLine",
+    "captured_utc": "2026-03-24T23:47:58Z"
+  },
+  "post_audit_reverify_utc": "2026-03-24T23:47:58.6330790Z",
+  "data_folder_id": "D0E8209F77C8CF37AD8BF550E51FF075",
+  "origin_txt_path": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\origin.txt",
+  "origin_txt_content": "C:\\Program Files\\MetaTrader 5",
+  "origin_matches_executable": true,
+  "ftmo_account_login_from_logs": "1512849121",
+  "ftmo_server_from_logs": "FTMO-Demo",
+  "evidence_log_path": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\logs\\20260324.log",
+  "notes": "Single terminal64.exe instance; origin.txt directory matches running terminal install path."
+}

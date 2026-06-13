@@ -1,0 +1,124 @@
+{
+  "job_name": "FXG_WINDOWS_ACTIVE_EA_ATTACH_AND_CANONICAL_PIPELINE_TEST_V1",
+  "status": "FAIL",
+  "phase_results": {
+    "1_discover_active_windows_mt5_instance_and_data_folder": "PASS. terminal64 PID 44888; origin D0E8209F77C8CF37AD8BF550E51FF075 matches C:\\\\Program Files\\\\MetaTrader 5; MQL5 Experts/Files paths recorded; account 1512849121 on FTMO-Demo from sidecar /account.",
+    "2_verify_correct_ea_exists_and_is_visible_to_this_mt5_instance": "PARTIAL. FTMO_Bridge_EA.mq5 and FTMO_Bridge_EA.ex5 exist in active Experts; compile log shows 0 errors. Navigator visibility not verified (no UI automation).",
+    "3_attach_activate_and_validate_correct_ea_inputs": "PARTIAL. EA defaults match repo; EA_START logged in ftmo_bridge_log.jsonl; sidecar now reports trade_expert true; historical BROKER_REJECT for test signal when auto trading was disabled. Chart attach, Journal tab, and saved profile not evidenced this session.",
+    "4_verify_only_windows_is_the_active_execution_consumer": "BLOCKED_ON_WINDOWS. Mac EA consumer state cannot be proven from this host.",
+    "5_verify_signal_and_bridge_log_wiring_for_this_mt5_instance": "PASS. signals_ftmo_demo2.jsonl and ftmo_bridge_log.jsonl exist under active MQL5/Files; sample lines recorded.",
+    "6_capture_pretrade_idle_health": "PASS. /health, /account, /symbols/EURUSD/tick captured to artifacts; bridge log tail captured.",
+    "7_run_one_tiny_canonical_manual_010_paper_trade": "FAIL. src/core/manual_execution.py absent from workspace; canonical manual 010 not executed in this session; no request/response from producer.",
+    "8_verify_signal_arrival_and_mt5_consume_result": "PARTIAL. Prior signal test_20260323011859 present in signals file; bridge log shows BROKER_REJECT with explicit reason tied to signal_id. Not a fresh canonical manual_010 emission from this job run.",
+    "9_update_dashboard_truth_if_needed": "SKIP. dashboard/src/app/api/bridge routes not found in repo; no UI updates applied.",
+    "10_run_full_safety_checks": "PARTIAL. git diff on listed paths returned empty earlier; rg unavailable on PATH (used grep/Select-String subset). See windows_active_ea_pipeline_safety_check_final.txt.",
+    "11_emit_final_structured_json_only": "This file."
+  },
+  "files_created": [
+    "artifacts/windows_active_mt5_identity_final.json",
+    "artifacts/windows_active_mt5_paths_final.json",
+    "artifacts/windows_active_ea_visibility_final.json",
+    "artifacts/windows_active_ea_compile_final.json",
+    "artifacts/windows_ea_input_snapshot_final.json",
+    "artifacts/windows_ea_attach_activation_final.json",
+    "artifacts/windows_ea_autoload_profile_final.json",
+    "artifacts/windows_single_consumer_enforcement_final.json",
+    "artifacts/windows_signal_file_wiring_final.json",
+    "artifacts/windows_bridge_log_wiring_final.json",
+    "artifacts/windows_pretrade_sidecar_health_final.json",
+    "artifacts/windows_pretrade_sidecar_account_final.json",
+    "artifacts/windows_pretrade_sidecar_tick_final.json",
+    "artifacts/windows_pretrade_mt5_logs_final.json",
+    "artifacts/windows_canonical_pipeline_test_request_final.json",
+    "artifacts/windows_canonical_pipeline_test_response_final.json",
+    "artifacts/windows_pipeline_signal_visibility_final.json",
+    "artifacts/windows_pipeline_bridge_log_final.json",
+    "artifacts/windows_pipeline_mt5_consume_result_final.json",
+    "artifacts/windows_pipeline_failure_bucket_final.json",
+    "artifacts/windows_pipeline_dashboard_truth_final.json",
+    "artifacts/windows_active_ea_pipeline_safety_check_final.txt",
+    "artifacts/FXG_WINDOWS_ACTIVE_EA_ATTACH_AND_CANONICAL_PIPELINE_TEST_V1.json"
+  ],
+  "files_modified": [],
+  "files_verified": [
+    "runtime/config.yaml",
+    "ea/FTMO_Bridge_EA.mq5",
+    "bridges/windows_sidecar/service/main.py"
+  ],
+  "files_unverified": [
+    "src/core/manual_execution.py",
+    "dashboard/src/app/api/bridge/route.ts",
+    "dashboard/src/app/api/bridge/status/route.ts",
+    "configs/bridge_accounts.json"
+  ],
+  "verification_commands_run": [
+    "Get-Process terminal64 → Path C:\\\\Program Files\\\\MetaTrader 5\\\\terminal64.exe, PID 44888",
+    "Get-CimInstance Win32_Process terminal64 command line",
+    "Enumerate %APPDATA%\\\\MetaQuotes\\\\Terminal\\\\*\\\\origin.txt → data folder D0E8209F77C8CF37AD8BF550E51FF075",
+    "Get-ChildItem active MQL5\\\\Experts and MQL5\\\\Files (FTMO_Bridge_EA.*, signals_ftmo_demo2.jsonl, ftmo_bridge_log.jsonl)",
+    "Read signals_ftmo_demo2.jsonl and ftmo_bridge_log.jsonl content",
+    "Invoke-RestMethod http://127.0.0.1:8877/health|/account|/symbols/EURUSD/tick with X-API-Key from bridges/windows_sidecar/.env",
+    "git diff -- src/core/manual_execution.py dashboard/src/app/api/bridge/route.ts dashboard/src/app/api/bridge/status/route.ts configs/bridge_accounts.json (exit 0, empty)",
+    "Grep tool: forbidden patterns in bridges/windows_sidecar, src, ea; bridge strings in bridges/ and ea/; bridge_account in src"
+  ],
+  "verification_commands_not_run": [
+    "rg -n ... (rg not installed on Windows PATH in this environment)",
+    "git status -s; git diff --stat (command hit long timeout on Google Drive workspace; not relied on for PASS)",
+    "Browser verification of dashboard",
+    "MT5 Navigator screenshot / UI confirmation",
+    "Mac-side verification of disabled execution consumer"
+  ],
+  "artifacts": {
+    "windows_active_mt5_identity_final.json": "PID, exe, data folder, login/server from sidecar",
+    "windows_active_mt5_paths_final.json": "MQL5 Experts/Files and canonical file paths",
+    "windows_active_ea_visibility_final.json": "EA on disk; Navigator not automated",
+    "windows_active_ea_compile_final.json": "Compile log summary",
+    "windows_ea_input_snapshot_final.json": "EA input defaults",
+    "windows_ea_attach_activation_final.json": "EA_START + trade_expert context",
+    "windows_ea_autoload_profile_final.json": "Not captured",
+    "windows_single_consumer_enforcement_final.json": "Mac not verified",
+    "windows_signal_file_wiring_final.json": "signals file wiring",
+    "windows_bridge_log_wiring_final.json": "bridge log lines",
+    "windows_pretrade_sidecar_health_final.json": "GET /health",
+    "windows_pretrade_sidecar_account_final.json": "GET /account",
+    "windows_pretrade_sidecar_tick_final.json": "GET /symbols/EURUSD/tick",
+    "windows_pretrade_mt5_logs_final.json": "Bridge log tail reference",
+    "windows_canonical_pipeline_test_request_final.json": "No canonical run this session",
+    "windows_canonical_pipeline_test_response_final.json": "No canonical run this session",
+    "windows_pipeline_signal_visibility_final.json": "signal_id file presence",
+    "windows_pipeline_bridge_log_final.json": "consume line for signal_id",
+    "windows_pipeline_mt5_consume_result_final.json": "explicit reject",
+    "windows_pipeline_failure_bucket_final.json": "broker_reject_fail (historical)",
+    "windows_pipeline_dashboard_truth_final.json": "no dashboard paths",
+    "windows_active_ea_pipeline_safety_check_final.txt": "diff + pattern scans",
+    "FXG_WINDOWS_ACTIVE_EA_ATTACH_AND_CANONICAL_PIPELINE_TEST_V1.json": "final structured record"
+  },
+  "runtime_findings": {
+    "active_mt5": "C:\\\\Program Files\\\\MetaTrader 5\\\\terminal64.exe PID 44888",
+    "data_folder": "C:\\\\Users\\\\gavin\\\\AppData\\\\Roaming\\\\MetaQuotes\\\\Terminal\\\\D0E8209F77C8CF37AD8BF550E51FF075",
+    "ftmo_bridge_ea_binaries_present": true,
+    "canonical_signal_file_has_line": "test_20260323011859 MANUAL_010_TEST (not emitted in this job)",
+    "bridge_log_reject_example": "BROKER_REJECT auto trading disabled by client for test_20260323011859",
+    "sidecar_health": "parallel_windows_sidecar_bridge_v1; terminal_connected true; trade_expert true as of capture",
+    "producer_gap": "src/core/manual_execution.py missing locally; canonical manual 010 cannot be invoked from this workspace"
+  },
+  "safety_assertions": {
+    "canonical_mac_file_bridge_v1_remains_semantics_owner": "unchanged_by_this_session (no producer edits; owner label in operator scripts only)",
+    "windows_sidecar_read_only_first": "main.py still exposes read-only diagnostics API; no execution routes added",
+    "no_duplicate_canonical_writers_introduced": true,
+    "no_live_trading_enablement_introduced": "runtime/config.yaml execution_policy.live_trading_allowed false (file read)",
+    "single_execution_consumer_at_test_time": "not_proven (Mac unverified)"
+  },
+  "open_risks": [
+    "Navigator/chart attachment not evidenced; EA could be unloaded without UI check.",
+    "Mac and Windows could both consume if Mac EA not disabled — not verified.",
+    "Historical broker reject may not reflect current AutoTrading state (sidecar now reports trade_expert true)."
+  ],
+  "next_required_manual_steps": [
+    "YOU: On Mac, disable Mac MT5 FTMO_Bridge_EA / execution consumer and document.",
+    "YOU: In Windows MT5, confirm FTMO_Bridge_EA appears in Navigator, attach to chart, enable Algo Trading, verify Experts shows EA_START.",
+    "YOU: On Mac (or host where src/core/manual_execution.py exists), run exactly one canonical manual 010 paper emit per ops procedure; ensure signals_ftmo_demo2.jsonl syncs to Windows MQL5/Files path listed in artifacts.",
+    "YOU: After emission, confirm new signal_id appears in Windows signals file and ftmo_bridge_log.jsonl (execute or explicit reject with reason).",
+    "CURSOR: Re-run this job after canonical producer path exists in clone or after pasting evidence paths."
+  ]
+}

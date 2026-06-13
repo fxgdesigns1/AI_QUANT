@@ -74,6 +74,30 @@ if [ "$BG_MODE" = "1" ] || [ "$BG_MODE" = "true" ]; then
         # Try to reach /api/status
         if curl -sf http://127.0.0.1:8787/api/status > /dev/null 2>&1; then
             echo "   ✅ Server is ready (took ${WAIT_COUNT}s)"
+            
+            # Runtime guard: Verify deployed_version endpoint
+            echo "   🔍 Verifying deployed version..."
+            VERSION_RESPONSE=$(curl -sf http://127.0.0.1:8787/api/system/deployed_version 2>&1)
+            if [ $? -eq 0 ]; then
+                GIT_HASH=$(echo "$VERSION_RESPONSE" | grep -o '"git_hash":"[^"]*"' | cut -d'"' -f4 || echo "UNKNOWN")
+                MODE=$(echo "$VERSION_RESPONSE" | grep -o '"mode":"[^"]*"' | cut -d'"' -f4 || echo "UNKNOWN")
+                echo "   ✅ Version check passed (git_hash: ${GIT_HASH:0:8}..., mode: $MODE)"
+                
+                # Optional: Check against expected hash if EXPECTED_GIT_HASH is set
+                if [ -n "${EXPECTED_GIT_HASH:-}" ]; then
+                    if [ "$GIT_HASH" != "$EXPECTED_GIT_HASH" ]; then
+                        echo "   ❌ VERSION MISMATCH: Expected $EXPECTED_GIT_HASH, got $GIT_HASH" >&2
+                        echo "   ❌ Deployment verification FAILED - exiting" >&2
+                        kill "$SERVER_PID" 2>/dev/null || true
+                        exit 1
+                    else
+                        echo "   ✅ Git hash matches expected: ${GIT_HASH:0:8}..."
+                    fi
+                fi
+            else
+                echo "   ⚠️  Could not verify deployed version (endpoint may not be available yet)"
+            fi
+            
             echo ""
             echo "📋 Background server info:"
             echo "   PID: $SERVER_PID (stored in /tmp/control_plane_pid)"

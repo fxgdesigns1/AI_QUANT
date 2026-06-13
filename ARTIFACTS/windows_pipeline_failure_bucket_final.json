@@ -1,0 +1,13 @@
+{
+  "bucket": "broker_reject_fail",
+  "rationale": "EA attempted path and logged broker-side rejection with explicit reason tied to signal_id (auto trading disabled by client at time of that event).",
+  "session_scope": "Historical line from 2026-03-23; this job did not emit a new canonical manual_010 signal.",
+  "required_buckets_reference": [
+    "producer_fail",
+    "transport_fail",
+    "consumer_path_fail",
+    "ea_parse_fail",
+    "broker_reject_fail",
+    "unknown_fail"
+  ]
+}

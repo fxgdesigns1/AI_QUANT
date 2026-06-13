@@ -4,10 +4,16 @@
   "description": "Control Plane verification dependencies",
   "private": true,
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "playwright": "^1.57.0"
   },
   "scripts": {
     "pw:install": "playwright install chromium",
-    "pw:trace": "node scripts/pw_trace_forbidden_requests.js"
+    "pw:trace": "node scripts/pw_trace_forbidden_requests.js",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:mock": "DASHBOARD_URL=http://127.0.0.1:8787 playwright test",
+    "test:live": "DASHBOARD_URL=http://127.0.0.1:28787 playwright test"
   }
 }

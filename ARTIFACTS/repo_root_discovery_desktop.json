@@ -1,0 +1,26 @@
+{
+  "repo_root": "h:\\My Drive\\AI Trading\\Gcloud system",
+  "repo_root_normalized": "Gcloud system (workspace)",
+  "discovered_at_utc": "2026-03-22T00:00:00Z",
+  "git_repo": true,
+  "key_paths": {
+    "control_plane_api": "src/control_plane/api.py",
+    "frontend_dashboard": "frontend/fxg-dashboard",
+    "dashboard_root": "dashboard",
+    "logs": "logs",
+    "bridge_log_paths": [
+      "ftmo_bridge_log.jsonl",
+      "logs/ftmo_bridge_log.jsonl",
+      "~/gcloud-system/logs/ftmo_bridge_log.jsonl"
+    ],
+    "config": "runtime/config.yaml",
+    "working_trading_system": "working_trading_system.py"
+  },
+  "existing_bridge_related": {
+    "api_bridge_status": "/api/bridge/status",
+    "api_logs_bridge": "/api/logs/bridge",
+    "control_routing": "/api/control/routing",
+    "signal_exporter_import": "src.observability.signal_exporter (referenced by working_trading_system.py)",
+    "bridge_account_in": ["src/control_plane/api.py OutputConfig", "frontend ControlPlaneDashboard routing"]
+  }
+}

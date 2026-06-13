@@ -1,0 +1,6 @@
+{
+  "dashboard_path": "frontend/fxg-dashboard",
+  "control_plane_api": "src/control_plane/api.py",
+  "env_file_for_control_plane": ".env at repo root (or systemd env for ALPHA)",
+  "note": "Control Plane serves the dashboard and proxies /api/mt5_sidecar/* to Windows sidecar. Set MT5_SIDECAR_BASE_URL and MT5_SIDECAR_API_KEY in the Control Plane process environment."
+}

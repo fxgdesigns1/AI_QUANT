@@ -1,0 +1,15 @@
+{
+  "job": "FXG_PORT_LIVE_WINDOWS_SIDECAR_CONTROL_AND_VERIFY_FROM_MAC_V1",
+  "phase": "4_wire_control_routes",
+  "main_py_changes": [
+    "import control router and SIDECAR_ENABLE_WRITE_ACTIONS",
+    "app.include_router(control_router)",
+    "GET / returns read_only: not SIDECAR_ENABLE_WRITE_ACTIONS",
+    "FastAPI description updated; removed unused require_api_key import from main"
+  ],
+  "unchanged": [
+    "BRIDGE_ID",
+    "BIND_HOST/BIND_PORT semantics in run.py uvicorn",
+    "Existing telemetry routers and paths"
+  ]
+}

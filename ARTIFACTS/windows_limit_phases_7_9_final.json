@@ -1,0 +1,72 @@
+{
+  "status": "PARTIAL",
+  "phase_results": {
+    "phase_7_run_market_regression_check": "PASS. Fresh MARKET inject test_20260325011134 after LIMIT SIGNAL_SKIP line: SIGNAL_ACCEPT -> REQUEST_SUMMARY price_mode=MARKET -> EXECUTED. Same EA banner v1.01 as prior MARKET rows.",
+    "phase_8_update_operator_truth_if_needed": "COMPLETE. LIMIT not proven live (chart EA v1.01 skips LIMIT; repo has v1.02). No operator markdown updated; truth captured in artifacts/windows_limit_operator_truth_final.json only.",
+    "phase_9_run_full_safety_checks": "PASS with gaps. Sidecar read-only verified in code; MARKET path verified in log; paper-only from runtime/config.yaml; Mac single-consumer not remotely verified; git HEAD broken."
+  },
+  "files_created": [
+    "artifacts/windows_limit_market_regression_final.json",
+    "artifacts/windows_limit_operator_truth_final.json",
+    "artifacts/windows_limit_support_safety_check.txt",
+    "artifacts/windows_limit_phases_7_9_final.json"
+  ],
+  "files_modified": [
+    "artifacts/windows_limit_operator_truth_final.json"
+  ],
+  "files_verified": [
+    "bridges/windows_sidecar/service/main.py",
+    "bridges/windows_sidecar/service/routes_orders.py",
+    "runtime/config.yaml",
+    "ea/FTMO_Bridge_EA.mq5",
+    "docs/bridges/CANONICAL_MAC_FILE_BRIDGE.md",
+    "src/control_plane/api.py",
+    "$env:APPDATA/MetaQuotes/Terminal/D0E8209F77C8CF37AD8BF550E51FF075/MQL5/Files/ftmo_bridge_log.jsonl"
+  ],
+  "files_unverified": [
+    "Mac canonical consumer stopped (single Windows execution consumer)",
+    "Git repository integrity (fatal: bad object HEAD)"
+  ],
+  "verification_commands_run": [
+    "powershell -File bridges/windows_sidecar/scripts/fxg_win_inject_test_signal.ps1 -EntryType MARKET",
+    "powershell Get-Content (Join-Path $env:APPDATA 'MetaQuotes/Terminal/D0E8209F77C8CF37AD8BF550E51FF075/MQL5/Files/ftmo_bridge_log.jsonl') -Tail 45",
+    "rg OrderSend|TRADE_ACTION_DEAL|position_open bridges/windows_sidecar",
+    "Set-Location repo; git diff --name-only; git status -sb (failed: fatal: bad object HEAD)"
+  ],
+  "verification_commands_not_run": [
+    "Browser verification of dashboard",
+    "MetaEditor compile of EA 1.02 to MT5 Experts folder"
+  ],
+  "artifacts": [
+    "artifacts/windows_limit_market_regression_final.json",
+    "artifacts/windows_limit_operator_truth_final.json",
+    "artifacts/windows_limit_support_safety_check.txt",
+    "artifacts/windows_limit_phases_7_9_final.json",
+    "artifacts/windows_limit_end_to_end_proof.json"
+  ],
+  "runtime_findings": {
+    "live_ea_version": "v1.01 per EA_START message in ftmo_bridge_log.jsonl",
+    "repo_ea_version": "1.02 per ea/FTMO_Bridge_EA.mq5 #property version",
+    "limit_signal_outcome": "SIGNAL_SKIP entry_type not MARKET: LIMIT for trace_20260325004148",
+    "fresh_market_signal_id": "test_20260325011134",
+    "sidecar": "Not exercised in this phase; prior artifacts confirm read-only HTTP API.",
+    "api_lane_010_contract_entry_types": "MARKET and LIMIT listed in src/control_plane/api.py; live EA v1.01 does not accept LIMIT until build matches."
+  },
+  "safety_assertions": {
+    "canonical_mac_file_bridge_v1 remains the canonical execution bridge semantics owner": true,
+    "Windows sidecar remains additive and read_only_first": true,
+    "no duplicate canonical writers created": true,
+    "no live trading enablement introduced": true,
+    "MARKET path remains intact": true
+  },
+  "open_risks": [
+    "Chart EA not aligned with repo 1.02; LIMIT live proof blocked until reinstall/reload.",
+    "Git working copy unhealthy (bad object HEAD); diff-based verification unavailable.",
+    "Single execution consumer (Mac off) not verified from this environment."
+  ],
+  "next_required_manual_steps": [
+    "Compile ea/FTMO_Bridge_EA.mq5 v1.02 in MetaEditor; install to MT5; reload EA on chart until EA_START log shows v1.02.",
+    "Inject LIMIT via fxg_win_inject_test_signal.ps1 -EntryType LIMIT -EntryPrice <valid buy limit below ask>; capture REQUEST_SUMMARY price_mode=LIMIT and pending or broker outcome.",
+    "Repair git repo or clone fresh if commit history is required for audits."
+  ]
+}

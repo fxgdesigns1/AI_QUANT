@@ -1,0 +1,7 @@
+{
+  "artifact": "windows_ea_compile_postpatch",
+  "compiler": "C:\\Program Files\\MetaTrader 5\\metaeditor64.exe",
+  "command": "/compile:C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Experts\\FTMO_Bridge_EA.mq5 /log:C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Experts\\FTMO_Bridge_EA_compile.log",
+  "last_compile_log_tail": "Result: 0 errors, 0 warnings, 681 msec elapsed, cpu='X64 Regular'",
+  "source_sync": "Copied from workspace ea/FTMO_Bridge_EA.mq5 immediately before compile"
+}

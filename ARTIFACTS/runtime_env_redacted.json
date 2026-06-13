@@ -1,0 +1,10 @@
+{
+  "phase": "5_create_runtime_secret_config",
+  "status": "PASS",
+  "env_keys_present": ["MT5_TERMINAL_PATH", "MT5_LOGIN", "MT5_PASSWORD", "MT5_SERVER", "SIDECAR_API_KEY", "BIND_HOST", "BIND_PORT"],
+  "MT5_TERMINAL_PATH": "C:\\Program Files\\MetaTrader 5\\terminal64.exe",
+  "BIND_HOST": "127.0.0.1",
+  "BIND_PORT": "8877",
+  "gitignored": true,
+  "note": "MT5_LOGIN, MT5_PASSWORD, MT5_SERVER must be filled by operator for real broker data"
+}

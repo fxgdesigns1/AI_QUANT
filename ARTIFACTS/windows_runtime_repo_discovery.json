@@ -1,0 +1,19 @@
+{
+  "job": "FXG_WINDOWS_SIDECAR_RUNTIME_INSTALL_AND_VERIFICATION_V1",
+  "phase": "1_detect_workspace_and_existing_scaffold",
+  "status": "PASS",
+  "repo_root": "H:/My Drive/AI Trading/Gcloud system",
+  "repo_root_normalized": "h:\\My Drive\\AI Trading\\Gcloud system",
+  "scaffold_verified": true,
+  "required_files": {
+    "bridges/windows_sidecar/service/main.py": true,
+    "bridges/windows_sidecar/scripts/install_windows_sidecar.ps1": true,
+    "bridges/windows_sidecar/scripts/start_windows_sidecar.ps1": true,
+    "bridges/windows_sidecar/scripts/verify_windows_sidecar.ps1": true
+  },
+  "dashboard_paths": {
+    "dashboard_root": "dashboard (Flask/Python)",
+    "frontend_dashboard": "frontend/fxg-dashboard (React - active)",
+    "active_dashboard": "frontend/fxg-dashboard"
+  }
+}

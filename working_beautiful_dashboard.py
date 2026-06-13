@@ -68,8 +68,8 @@ def get_working_data():
                 'instruments': ['XAU_USD']
             },
             {
-                'id': '101-004-30719775-007',
-                'name': 'Momentum Trading', 
+                'id': '101-004-30719775-011',
+                'name': 'Lane 011 (Automated Paper)', 
                 'balance': 98905.20,
                 'currency': 'USD',
                 'status': 'active',

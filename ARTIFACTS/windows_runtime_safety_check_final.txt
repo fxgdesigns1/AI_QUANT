@@ -1,0 +1,20 @@
+FXG_WINDOWS_SIDECAR_BIND_FIX - Safety Check Final
+================================================
+
+1. git diff (canonical bridge, manual_execution, bridge routes, bridge_accounts):
+   - No changes to src/core/manual_execution.py
+   - No changes to dashboard/src/app/api/bridge/route.ts
+   - No changes to configs/bridge_accounts.json
+   => canonical writer path unchanged
+
+2. rg "orders/send|order_send|positions/close|send_order|close_position" bridges/windows_sidecar:
+   - Only test_contracts.py: forbidden_paths = ["/orders/send", "/orders/preview", "/positions/close"]
+   => These routes are explicitly FORBIDDEN in tests; no write/send/close routes enabled
+
+3. canonical_mac_file_bridge_v1 vs parallel_windows_sidecar_bridge_v1:
+   - src/control_plane/api.py: canonical_mac_file_bridge_v1 remains canonical; parallel_windows_sidecar_bridge_v1 is additive proxy
+   => bridge identities remain explicit, estate separation intact
+
+4. No duplicate canonical writers introduced; no live trading enablement.
+
+5. Windows sidecar remains read_only_first (health, account, symbols/tick only).

@@ -41,8 +41,9 @@ except Exception:
     # Fallback for direct execution
     from agent_controller import AgentController  # type: ignore
 
-# Initialize lightweight controller bound to single demo account
-AGENT_DEMO_ACCOUNT_ID = os.getenv('AGENT_DEMO_ACCOUNT_ID', os.getenv('OANDA_ACCOUNT_ID', '101-004-30719775-008'))
+# Initialize lightweight controller bound to single demo account.
+# Avoid hardcoding unproven lanes (e.g., 007-009). Prefer explicit env configuration.
+AGENT_DEMO_ACCOUNT_ID = os.getenv('AGENT_DEMO_ACCOUNT_ID', os.getenv('OANDA_ACCOUNT_ID', ''))
 agent_controller = AgentController(account_id=AGENT_DEMO_ACCOUNT_ID)
 agent_controller.start()
 
@@ -62,7 +63,7 @@ def load_config():
             'api_keys': {
                 'oanda': {
                     'api_key': os.getenv('OANDA_API_KEY', 'REMOVED_SECRET'),
-                    'account_id': os.getenv('OANDA_ACCOUNT_ID', '101-004-30719775-008'),
+                    'account_id': os.getenv('OANDA_ACCOUNT_ID', ''),
                     'environment': 'practice',
                     'base_url': 'https://api-fxpractice.oanda.com'
                 }
@@ -212,10 +213,11 @@ class AdvancedDashboardManager:
     async def update_system_status(self):
         """Update status of all trading systems with validation"""
         # Map trading systems to their account IDs
+        configured = os.getenv("OANDA_ACCOUNT_ID", "").strip()
         system_account_map = {
-            'ultra_strict': '101-004-30719775-008',
-            'gold_scalping': '101-004-30719775-008', 
-            'momentum': '101-004-30719775-008'
+            'ultra_strict': configured,
+            'gold_scalping': configured,
+            'momentum': configured,
         }
         
         for system_id, system_info in self.trading_systems.items():
@@ -225,7 +227,7 @@ class AdvancedDashboardManager:
                     # Check if data feed is active and providing live data
                     try:
                         # Get the account ID for this system
-                        account_id = system_account_map.get(system_id, '101-004-30719775-008')
+                        account_id = system_account_map.get(system_id) or configured
                         
                         # Try to get data freshness with the correct account ID
                         is_live = self.data_feed.is_data_fresh(account_id, max_age_seconds=300)
@@ -280,7 +282,7 @@ class AdvancedDashboardManager:
             # Get live market data from OANDA - NO MOCK DATA ALLOWED
             from src.core.oanda_client import OandaClient
             api_key = os.getenv('OANDA_API_KEY', 'REMOVED_SECRET')
-            account_id = "101-004-30719775-008"
+            account_id = os.getenv("OANDA_ACCOUNT_ID", "").strip()
             
             if not api_key:
                 logger.error("❌ CRITICAL: OANDA_API_KEY not set - NO TRADING ALLOWED")
@@ -843,38 +845,21 @@ def get_pending_signals():
 def get_strategies_overview():
     """Get strategies overview"""
     try:
-        strategies = [
-            {
-                'id': 'ultra_strict_forex',
-                'name': 'Ultra Strict Forex',
-                'account_id': '101-004-30719775-008',
-                'status': 'active',
-                'type': 'momentum_trading',
-                'instruments': ['EUR_USD', 'GBP_USD', 'USD_JPY', 'AUD_USD'],
-                'risk_level': 'medium',
-                'performance': 'good'
-            },
-            {
-                'id': 'gold_scalping',
-                'name': 'Gold Scalping',
-                'account_id': '101-004-30719775-007',
-                'status': 'active',
-                'type': 'scalping',
-                'instruments': ['XAU_USD'],
-                'risk_level': 'high',
-                'performance': 'excellent'
-            },
-            {
-                'id': 'momentum_trading',
-                'name': 'Momentum Trading',
-                'account_id': '101-004-30719775-006',
-                'status': 'active',
-                'type': 'momentum_trading',
-                'instruments': ['EUR_USD', 'GBP_USD'],
-                'risk_level': 'medium',
-                'performance': 'good'
-            }
-        ]
+        aid = os.getenv("OANDA_ACCOUNT_ID", "").strip()
+        strategies = []
+        if aid:
+            strategies.append(
+                {
+                    'id': 'configured_account',
+                    'name': 'Configured Account',
+                    'account_id': aid,
+                    'status': 'active',
+                    'type': 'unknown',
+                    'instruments': ['EUR_USD', 'GBP_USD', 'USD_JPY', 'AUD_USD', 'XAU_USD'],
+                    'risk_level': 'unknown',
+                    'performance': 'unknown'
+                }
+            )
         
         return jsonify({
             'status': 'success',
@@ -1267,7 +1252,7 @@ def get_performance():
         # Get live account data from OANDA
         from src.core.oanda_client import OandaClient
         api_key = os.getenv('OANDA_API_KEY', 'REMOVED_SECRET')
-        account_id = "101-004-30719775-008"
+        account_id = os.getenv('OANDA_ACCOUNT_ID', '').strip()
         
         if not api_key:
             logger.error("❌ CRITICAL: OANDA_API_KEY not set for performance data")
@@ -1294,10 +1279,10 @@ def get_performance():
         strategies = []
         
         # Map strategies to their actual account IDs
+        # Legacy dashboard mapping: do not assume 007-009 exist. Use configured lanes only.
+        # If you need per-lane performance, set these explicitly via env or use the control-plane endpoints.
         strategy_accounts = {
-            'Ultra Strict Forex': '101-004-30719775-008',
-            'Gold Scalping': '101-004-30719775-007', 
-            'Momentum Trading': '101-004-30719775-006'
+            'Momentum Trading': os.getenv('OANDA_ACCOUNT_ID', '').strip()
         }
         
         for strategy_name, account_id in strategy_accounts.items():
@@ -1366,16 +1351,9 @@ def get_accounts():
         from src.core.oanda_client import OandaClient
         api_key = os.getenv('OANDA_API_KEY', 'REMOVED_SECRET')
         # Get all account IDs from the Google Cloud system
-        all_accounts = {
-            '101-004-30719775-008': 'Primary Trading Account',
-            '101-004-30719775-007': 'Gold Scalping Account', 
-            '101-004-30719775-006': 'Strategy Alpha Account',
-            '101-004-30719775-004': 'Strategy Gamma Account',
-            '101-004-30719775-003': 'Strategy Delta Account',
-            '101-004-30719775-001': 'Strategy Zeta Account',
-            '101-004-30719775-009': '75% WR Champion Strategy',
-            '101-004-30719775-010': 'Trump DNA Gold Strategy'
-        }
+        # Do not invent lanes. This legacy dashboard is not authoritative; prefer the control-plane API.
+        aid = os.getenv('OANDA_ACCOUNT_ID', '').strip()
+        all_accounts = {aid: 'Configured Account'} if aid else {}
         
         if not api_key:
             logger.error("❌ CRITICAL: OANDA_API_KEY not set for account data")

@@ -1,0 +1,8 @@
+{
+  "fresh_consume_for_phase5_signal_true_false": false,
+  "fresh_bridge_log_line": null,
+  "last_known_lines": [
+    "{\"type\":\"EA_START\",\"msg\":\"FTMO_Bridge_EA started\",\"signal_id\":\"\",\"ts\":\"2026.03.23 10:09:34\"}",
+    "{\"type\":\"BROKER_REJECT\",\"msg\":\"auto trading disabled by client\",\"signal_id\":\"test_20260323011859\",\"ts\":\"2026.03.23 10:09:35\"}"
+  ]
+}

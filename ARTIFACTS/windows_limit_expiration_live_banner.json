@@ -1,0 +1,7 @@
+{
+  "phase": "5_verify_new_live_banner",
+  "expected_banner_substring": "v1.03",
+  "observed_after_patch": false,
+  "evidence": "Tail read of C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\ftmo_bridge_log.jsonl as of agent run showed no EA_START line containing v1.03; latest EA_START remained v1.02.",
+  "operator_required": "Remove/reattach FTMO_Bridge_EA on chart or restart MT5 so OnInit runs against compiled FTMO_Bridge_EA.ex5 v1.03."
+}

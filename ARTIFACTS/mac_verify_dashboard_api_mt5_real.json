@@ -1,0 +1,6 @@
+{
+  "status": "manual_on_mac",
+  "instructions": "On Mac: 1) Ensure .env has MT5_SIDECAR_BASE_URL=http://<WINDOWS_LAN_IP>:8877 and MT5_SIDECAR_API_KEY. 2) Start Control Plane. 3) curl http://127.0.0.1:8787/api/mt5_sidecar/health should return real bridge data.",
+  "windows_lan_ip": "192.168.0.190",
+  "firewall_note": "Create firewall rule on Windows (admin): New-NetFirewallRule -DisplayName 'FXG Windows Sidecar 8877' -Direction Inbound -Protocol TCP -LocalPort 8877 -Action Allow -Profile Private"
+}

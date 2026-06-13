@@ -1,0 +1,1 @@
+{"service_up": true, "ts_utc": "2026-03-22T19:32:18.110812+00:00", "version": "1.0.0", "terminal_connected": true, "account_connected": true, "degraded": false, "bridge_id": "parallel_windows_sidecar_bridge_v1", "endpoint": "http://192.168.0.190:8877/health", "pass": true}

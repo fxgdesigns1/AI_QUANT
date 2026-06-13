@@ -1,0 +1,19 @@
+{
+  "ts_utc": "2026-03-25T00:05:00Z",
+  "shared_repo_root": "H:\\My Drive\\AI Trading\\Gcloud system",
+  "shared_repo_signal_file": "H:\\My Drive\\AI Trading\\Gcloud system\\logs\\signals_ftmo_demo2.jsonl",
+  "shared_repo_bridge_log": "H:\\My Drive\\AI Trading\\Gcloud system\\logs\\ftmo_bridge_log.jsonl",
+  "active_windows_mt5_data_folder": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075",
+  "active_windows_signal_file": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\signals_ftmo_demo2.jsonl",
+  "active_windows_bridge_log": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\ftmo_bridge_log.jsonl",
+  "path_validation": {
+    "shared_repo_logs_dir_exists": true,
+    "active_mql5_files_dir_exists": true,
+    "symlink_or_junction_in_use": false,
+    "evidence": "windows_transport_file_inventory.json: all four paths exist; link_type null; attributes Normal/Archive (regular files)."
+  },
+  "transport_model": {
+    "forward": "shared_repo_signal_file -> active_windows_signal_file (append unseen ftmo_demo2 by signal_id)",
+    "reverse": "active_windows_bridge_log -> shared_repo_bridge_log (append unseen by ts+type+signal_id+msg)"
+  }
+}

@@ -1,0 +1,6 @@
+{"event":"paid_calendar_call","provider":"rapidapi_economic_calendar","fingerprint":"7061cb6379d199db88d31945","http_status":200,"ts_utc":"2026-05-03T12:10:31.381172Z","month_key":"2026-05"}
+{"event":"paid_calendar_call","provider":"fmp_economic_calendar","fingerprint":"e7fb40b9dffb3a0938fe116b","http_status":403,"ts_utc":"2026-05-03T12:15:00.515263Z","month_key":"2026-05"}
+{"event":"budget_blocked","provider":"rapidapi_economic_calendar","fingerprint":"c68fb89936156da3bee9bdf0","reason":"session_call_cap_exceeded","ts_utc":"2026-05-03T12:15:00.603345Z","month_key":"2026-05"}
+{"event":"paid_calendar_call","provider":"rapidapi_economic_calendar","fingerprint":"c68fb89936156da3bee9bdf0","http_status":200,"ts_utc":"2026-05-03T12:15:40.705510Z","month_key":"2026-05"}
+{"event":"calendar_cache_hit","provider":"rapidapi_economic_calendar","fingerprint":"c68fb89936156da3bee9bdf0","ts_utc":"2026-05-03T12:16:57.941402Z","month_key":"2026-05"}
+{"event":"paid_calendar_call","provider":"rapidapi_economic_calendar","fingerprint":"797d539922c382b277bd3ba5","http_status":200,"ts_utc":"2026-05-04T10:20:53.763410Z","month_key":"2026-05"}

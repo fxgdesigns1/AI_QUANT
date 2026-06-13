@@ -1,0 +1,34 @@
+# ai-quant-report-daily.service — Daily transaction-based performance report (NO SECRETS)
+#
+# This template does NOT contain any hardcoded credentials.
+# Secrets are loaded from EnvironmentFile at runtime.
+#
+# Generates transaction-based performance report from OANDA ORDER_FILL transactions.
+# Single source of truth: transaction PL field only (no account summary/NAV/balance deltas).
+#
+# INSTALLATION:
+#   1. Copy this file to /etc/systemd/system/ai-quant-report-daily.service
+#   2. Ensure /etc/ai-quant/.env exists with required environment variables
+#   3. Run: sudo systemctl daemon-reload
+#   4. Enable timer: sudo systemctl enable --now ai-quant-report-daily.timer
+
+[Unit]
+Description=AI-QUANT Daily Transaction Performance Report
+After=network.target
+
+[Service]
+Type=oneshot
+User=aiquant
+Group=aiquant
+WorkingDirectory=/opt/ai-quant
+
+# Load secrets from env file
+EnvironmentFile=/etc/ai-quant/.env
+
+# Run transaction-based report script
+ExecStart=/bin/bash -lc 'cd /opt/ai-quant && source .venv/bin/activate && python3 scripts/generate_daily_transaction_report.py || echo "Report script failed"'
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ai-quant-report-daily

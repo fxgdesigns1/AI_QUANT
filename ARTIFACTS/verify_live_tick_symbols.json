@@ -1,0 +1,7 @@
+{
+  "live_tick_verified": true,
+  "symbols_added": ["EURUSD", "GBPUSD", "USDJPY", "XAUUSD"],
+  "EURUSD": {"bid": 1.15705, "ask": 1.15714, "real": true},
+  "GBPUSD": {"bid": 1.33424, "real": true},
+  "XAUUSD": {"bid": 4497.16, "real": true}
+}

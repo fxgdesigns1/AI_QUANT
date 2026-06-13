@@ -1,0 +1,8 @@
+{
+  "repo_root": "H:\\My Drive\\AI Trading\\Gcloud system",
+  "detection_method": "script_location (PSScriptRoot -> bridges -> repo)",
+  "git_rev_parse": "H:/My Drive/AI Trading/Gcloud system",
+  "bridges_windows_sidecar_exists": true,
+  "frontend_fxg_dashboard_exists": true,
+  "ts_utc": "2026-03-23T00:30:00Z"
+}

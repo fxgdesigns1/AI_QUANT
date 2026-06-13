@@ -1,0 +1,9 @@
+{
+  "artifact": "windows_ea_dedupe_design",
+  "scope": "single EA instance lifecycle (same MT5 terminal process attachment)",
+  "structure": "dynamic string array g_seenSignalIds — linear membership test IsAlreadySeenSignalId before trade path",
+  "remember_policy": "RememberSignalId called after successful Buy/Sell (EXECUTED) or failed trade return (BROKER_REJECT) so the same signal_id is never re-sent in the same session",
+  "replay_behavior": "EA_PARSE_FAIL and SIGNAL_SKIP paths do not Remember — operator may correct payload and re-append with same signal_id if desired",
+  "tail_read": "g_lastFilePos seeded to EOF in OnInit — prevents processing entire history after chart reattach without relying solely on dedupe RAM",
+  "log_token": "DUPLICATE_SKIP with msg explaining same signal_id already processed this session"
+}

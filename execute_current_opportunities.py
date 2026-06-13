@@ -26,56 +26,29 @@ if not TELEGRAM_TOKEN:
 if not TELEGRAM_CHAT_ID:
     raise ValueError("TELEGRAM_CHAT_ID environment variable is required")
 
-# Trades to execute (Trump DNA sniper style)
+# Trade execution scripts must not invent lanes/accounts.
+# Lane 010 is manual_only/protected and must not be targeted by automated helper scripts.
+# Require explicit account selection via env allowlist.
+ACCOUNT_ID_PREFIX = os.getenv("ACCOUNT_ID_PREFIX", "101-004-30719775-").strip()
+ACCOUNT_SUFFIX_ALLOWLIST = [s.strip() for s in os.getenv("ACCOUNT_SUFFIX_ALLOWLIST", "").split(",") if s.strip()]
+ALLOW_LANE_010_TESTS = os.getenv("ALLOW_LANE_010_TESTS", "false").lower() == "true"
+
+if not ACCOUNT_SUFFIX_ALLOWLIST:
+    raise ValueError("ACCOUNT_SUFFIX_ALLOWLIST is required (e.g., '011'). Refusing to use hardcoded lane assumptions.")
+if ("010" in ACCOUNT_SUFFIX_ALLOWLIST) and (not ALLOW_LANE_010_TESTS):
+    raise ValueError("Refusing to target protected lane 010. Set ALLOW_LANE_010_TESTS=true to override explicitly.")
+
+# Minimal safe default: execute on allowed lanes only; caller must set instrument/size params explicitly.
 TRADES = [
     {
-        'account': '101-004-30719775-009',
-        'name': 'Gold Primary',
-        'instrument': 'XAU_USD',
-        'units': 50,  # Small size
-        'sl_pips': 5,
-        'tp_pips': 8
-    },
-    {
-        'account': '101-004-30719775-008',
-        'name': 'GBP Rank #1',
-        'instrument': 'GBP_USD',
-        'units': 100,
-        'sl_pips': 20,
-        'tp_pips': 60
-    },
-    {
-        'account': '101-004-30719775-007',
-        'name': 'GBP Rank #2',
-        'instrument': 'GBP_USD',
-        'units': 100,
-        'sl_pips': 20,
-        'tp_pips': 60
-    },
-    {
-        'account': '101-004-30719775-006',
-        'name': 'GBP Rank #3',
-        'instrument': 'GBP_USD',
-        'units': 100,
-        'sl_pips': 20,
-        'tp_pips': 60
-    },
-    {
-        'account': '101-004-30719775-010',
-        'name': 'Ultra Strict Forex',
-        'instrument': 'EUR_USD',
-        'units': 100,
-        'sl_pips': 20,
-        'tp_pips': 50
-    },
-    {
-        'account': '101-004-30719775-011',
-        'name': 'Momentum Trading',
-        'instrument': 'USD_JPY',
-        'units': 100,
-        'sl_pips': 30,
-        'tp_pips': 80
-    },
+        "account": f"{ACCOUNT_ID_PREFIX}{suffix}",
+        "name": f"Lane {suffix}",
+        "instrument": os.getenv("EXECUTE_INSTRUMENT", "EUR_USD"),
+        "units": int(os.getenv("EXECUTE_UNITS", "100")),
+        "sl_pips": int(os.getenv("EXECUTE_SL_PIPS", "20")),
+        "tp_pips": int(os.getenv("EXECUTE_TP_PIPS", "50")),
+    }
+    for suffix in ACCOUNT_SUFFIX_ALLOWLIST
 ]
 
 def send_telegram(msg):

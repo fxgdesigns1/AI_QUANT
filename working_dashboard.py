@@ -43,7 +43,8 @@ dashboard_data = {
     'accounts': [
         {'id': '101-004-30719775-005', 'name': 'Ultra Strict Forex', 'balance': 98672.13, 'currency': 'USD', 'status': 'active'},
         {'id': '101-004-30719775-006', 'name': 'Gold Scalping', 'balance': 103399.43, 'currency': 'USD', 'status': 'active'},
-        {'id': '101-004-30719775-007', 'name': 'Momentum Trading', 'balance': 98905.20, 'currency': 'USD', 'status': 'active'},
+        # Do not invent lanes beyond allocated legacy + active estate.
+        {'id': '101-004-30719775-011', 'name': 'Lane 011 (Automated Paper)', 'balance': 98905.20, 'currency': 'USD', 'status': 'active'},
     ],
     'market_data': {
         'EUR_USD': {'bid': 1.0856, 'ask': 1.0858, 'change': '+0.0012'},

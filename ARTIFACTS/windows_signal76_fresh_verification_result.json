@@ -1,0 +1,14 @@
+{
+  "job_name": "FXG_WINDOWS_SIGNAL_76B6_CONSUMER_TRACE_AND_FIX_V1",
+  "phase": "8_if_same_signal_cannot_be_replayed_safely_run_one_fresh_tiny_verification_signal",
+  "status": "SKIPPED_NOT_REQUIRED",
+  "secondary_proof_already_present": {
+    "signal_id": "winprove_reload_20260324225356",
+    "bridge_log_types": [
+      "SIGNAL_ACCEPT",
+      "REQUEST_SUMMARY",
+      "EXECUTED"
+    ],
+    "evidence_file": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\ftmo_bridge_log.jsonl"
+  }
+}

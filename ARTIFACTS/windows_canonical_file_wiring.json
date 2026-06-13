@@ -1,0 +1,9 @@
+{
+  "signal_file": "signals_ftmo_demo2.jsonl",
+  "bridge_log": "ftmo_bridge_log.jsonl",
+  "location": "MT5 MQL5/Files (terminal data folder)",
+  "wiring_script": "bridges/windows_sidecar/scripts/fxg_win_wire_canonical_signals.ps1",
+  "producer_path": "Defined by operations. Mac/ALPHA SignalExporter writes; sync must deliver to Windows MT5 Files.",
+  "note": "src.observability.signal_exporter is not in Gcloud workspace - producer may be in FXG Mac project.",
+  "ts_utc": "2026-03-23T00:50:00Z"
+}

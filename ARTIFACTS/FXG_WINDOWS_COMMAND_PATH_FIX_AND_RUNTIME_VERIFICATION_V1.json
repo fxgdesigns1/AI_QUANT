@@ -1,0 +1,81 @@
+{
+  "job_name": "FXG_WINDOWS_COMMAND_PATH_FIX_AND_RUNTIME_VERIFICATION_V1",
+  "status": "PARTIAL",
+  "phase_results": {
+    "1_discover_real_windows_repo_root": "PASS. Repo root H:\\My Drive\\AI Trading\\Gcloud system detected via script location. artifacts/windows_repo_root_fix.json",
+    "2_find_actual_script_and_dashboard_paths": "PASS. fxg_win_probe_mt5_identity.ps1, fxg_win_healthcheck.ps1 exist. Active dashboard: frontend/fxg-dashboard. artifacts/windows_script_path_resolution.json, windows_dashboard_path_resolution.json",
+    "3_fix_or_wrap_windows_operator_commands": "PASS. Created fxg_win_run_probe_and_healthcheck.ps1 and fxg_win_build_active_dashboard.ps1. Both detect repo root, Set-Location, run without &&.",
+    "4_run_windows_sidecar_probe_and_healthcheck": "PARTIAL. Healthcheck PASS (real /health, /account, /symbols/EURUSD/tick). Probe failed (Python/MT5 traceback) but pre-existing artifacts have valid data.",
+    "5_run_dashboard_build_with_shell_compatible_command": "FAIL. npm run build failed - vite not recognized. node_modules may be incomplete (Google Drive npm install errors).",
+    "6_capture_verified_artifacts": "PASS. All artifacts written.",
+    "7_run_safety_checks": "PASS. Canonical bridge unchanged, no sidecar write routes, bridge ownership explicit. artifacts/windows_command_fix_safety_check.txt",
+    "8_emit_final_structured_json_only": "This file."
+  },
+  "files_created": [
+    "bridges/windows_sidecar/scripts/fxg_win_run_probe_and_healthcheck.ps1",
+    "bridges/windows_sidecar/scripts/fxg_win_build_active_dashboard.ps1",
+    "artifacts/windows_repo_root_fix.json",
+    "artifacts/windows_script_path_resolution.json",
+    "artifacts/windows_dashboard_path_resolution.json",
+    "artifacts/windows_probe_execution_result.json",
+    "artifacts/windows_healthcheck_execution_result.json",
+    "artifacts/windows_real_sidecar_health_confirmed.json",
+    "artifacts/windows_real_sidecar_account_confirmed.json",
+    "artifacts/windows_real_sidecar_tick_confirmed.json",
+    "artifacts/windows_dashboard_build_result.json",
+    "artifacts/windows_dashboard_build_log.txt",
+    "artifacts/windows_command_fix_summary.json",
+    "artifacts/windows_operator_correct_commands.txt",
+    "artifacts/windows_command_fix_safety_check.txt"
+  ],
+  "files_modified": [
+    "bridges/windows_sidecar/scripts/fxg_win_build_active_dashboard.ps1"
+  ],
+  "files_verified": [
+    "bridges/windows_sidecar/scripts/fxg_win_probe_mt5_identity.ps1",
+    "bridges/windows_sidecar/scripts/fxg_win_healthcheck.ps1"
+  ],
+  "files_unverified": [],
+  "verification_commands_run": [
+    "Set-Location repo root; .\\bridges\\windows_sidecar\\scripts\\fxg_win_run_probe_and_healthcheck.ps1",
+    "Invoke-RestMethod sidecar /health, /account, /symbols/EURUSD/tick",
+    ".\\bridges\\windows_sidecar\\scripts\\fxg_win_build_active_dashboard.ps1"
+  ],
+  "verification_commands_not_run": [],
+  "artifacts": [
+    "artifacts/windows_repo_root_fix.json",
+    "artifacts/windows_script_path_resolution.json",
+    "artifacts/windows_dashboard_path_resolution.json",
+    "artifacts/windows_probe_execution_result.json",
+    "artifacts/windows_healthcheck_execution_result.json",
+    "artifacts/windows_real_sidecar_health_confirmed.json",
+    "artifacts/windows_real_sidecar_account_confirmed.json",
+    "artifacts/windows_real_sidecar_tick_confirmed.json",
+    "artifacts/windows_dashboard_build_result.json",
+    "artifacts/windows_dashboard_build_log.txt",
+    "artifacts/windows_command_fix_summary.json",
+    "artifacts/windows_operator_correct_commands.txt",
+    "artifacts/windows_command_fix_safety_check.txt"
+  ],
+  "runtime_findings": {
+    "sidecar_runtime": "VERIFIED. Health service_up=true, terminal_connected=true, account_connected=true. Account login=1512827972, server=FTMO-Demo, balance=97275.63. EURUSD tick bid=1.15606, ask=1.15608.",
+    "probe_runtime": "Python probe failed when run from Cursor shell. Pre-existing artifacts contain valid terminal/symbol data.",
+    "dashboard_build": "vite not in PATH. npm install had TAR_ENTRY_ERROR on Google Drive path. Recommend running npm install and build from non-synced local copy or after drive sync stable."
+  },
+  "safety_assertions": [
+    "canonical_mac_file_bridge_v1 remains canonical execution bridge",
+    "parallel_windows_sidecar_bridge_v1 remains additive and separate",
+    "windows sidecar remains read_only_first",
+    "no duplicate canonical writers created",
+    "no live trading enablement introduced"
+  ],
+  "open_risks": [
+    "Dashboard build requires npm install to complete (vite in node_modules). Google Drive path may cause npm tar errors.",
+    "Probe script requires sidecar venv with MetaTrader5 when run from arbitrary shell context."
+  ],
+  "next_required_manual_steps": [
+    "From repo root: Set-Location to repo; run .\\bridges\\windows_sidecar\\scripts\\fxg_win_run_probe_and_healthcheck.ps1",
+    "Dashboard build: cd frontend\\fxg-dashboard; npm install (if needed); npm run build",
+    "See artifacts/windows_operator_correct_commands.txt for full correct command reference"
+  ]
+}

@@ -1,0 +1,17 @@
+﻿{
+    "ts_utc":  "2026-03-26T07:15:20.3002703Z",
+    "signal_id":  "4acc6cfe-fd77-4794-ae7d-83035702b370",
+    "bridge_log":  "C:\\\\Users\\\\gavin\\\\AppData\\\\Roaming\\\\MetaQuotes\\\\Terminal\\\\D0E8209F77C8CF37AD8BF550E51FF075\\\\MQL5\\\\Files\\\\ftmo_bridge_log.jsonl",
+    "match_count":  3,
+    "sample_lines":  [
+                         "{\"type\":\"SIGNAL_ACCEPT\",\"msg\":\"BUY EUR_USD units=1000 symbol_norm=EURUSD entry=MARKET\",\"signal_id\":\"4acc6cfe-fd77-4794-ae7d-83035702b370\",\"ts\":\"2026.03.26 04:25:28\"}",
+                         "{\"type\":\"REQUEST_SUMMARY\",\"msg\":\"symbol=EURUSD side=BUY vol=0.0100 price_mode=MARKET sl_set=true tp_set=true sl=1.1532 tp=1.16022 bid=1.15618 ask=1.1562\",\"signal_id\":\"4acc6cfe-fd77-4794-ae7d-83035702b370\",\"ts\":\"2026.03.26 04:25:28\"}",
+                         "{\"type\":\"EXECUTED\",\"msg\":\"MARKET EURUSD BUY 0.0100\",\"signal_id\":\"4acc6cfe-fd77-4794-ae7d-83035702b370\",\"ts\":\"2026.03.26 04:25:28\"}"
+                     ],
+    "required_tokens_present":  {
+                                    "REQUEST_SUMMARY":  true,
+                                    "SIGNAL_ACCEPT":  true,
+                                    "EXECUTED":  true
+                                },
+    "note":  "This proves EA consumer execution for the traced signal_id; fresh post-cutover proof still requires a new manual_010 emitted after scheduler cutover."
+}

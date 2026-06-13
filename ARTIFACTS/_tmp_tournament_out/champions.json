@@ -1,0 +1,19 @@
+{
+  "schema": "fxg.tournament.champions.v1",
+  "run_id": "tournament_20260324T183717Z",
+  "generated_at": "2026-03-24T18:37:17.353399+00:00",
+  "top_n": 10,
+  "champions": [
+    {
+      "variant_id": "v1",
+      "strategy": "sma_crossover_research",
+      "instrument": "EUR_USD",
+      "score": 0.5333333333333329,
+      "total_trades": 4,
+      "win_rate": 1.0,
+      "expectancy_r": 1.9999999999999982,
+      "max_drawdown": 0.0069962975759519964,
+      "total_pnl": 824.3215999999993
+    }
+  ]
+}

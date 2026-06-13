@@ -1,0 +1,88 @@
+{
+  "job": "FXG_WINDOWS_SIDECAR_LAN_AUTOSTART_AND_MAC_REMOTE_FINALIZATION_V1",
+  "status": "PARTIAL",
+  "phase_results": {
+    "1_enable_market_watch_symbols_on_windows_mt5": "PASS",
+    "2_switch_sidecar_bind_to_lan_if_requested": "PASS",
+    "3_create_windows_firewall_rule_for_sidecar": "PARTIAL",
+    "4_restart_sidecar_and_verify_local_runtime_again": "PASS",
+    "5_configure_safe_autostart": "PASS",
+    "6_discover_windows_lan_ip_and_publish_runtime_endpoint_artifact": "PASS",
+    "7_update_mac_dashboard_server_env": "PARTIAL",
+    "8_restart_mac_dashboard_and_verify_remote_sidecar_access": "BLOCKED",
+    "9_verify_dashboard_shows_separate_canonical_and_windows_sidecar_estates": "BLOCKED"
+  },
+  "files_created": [],
+  "files_modified": [
+    "bridges/windows_sidecar/.env",
+    ".env"
+  ],
+  "files_verified": [
+    "bridges/windows_sidecar/service/routes_symbols.py"
+  ],
+  "files_unverified": [],
+  "verification_commands_run": [
+    "Market Watch symbols added (EURUSD, GBPUSD, USDJPY, XAUUSD)",
+    "BIND_HOST=0.0.0.0 in .env",
+    "Firewall rule attempted (Access denied - requires admin)",
+    "Sidecar restarted, all endpoints verified locally",
+    "Task Scheduler task created: FXG Windows Sidecar 8877",
+    "LAN IP detected: 192.168.0.190"
+  ],
+  "verification_commands_not_run": [
+    "Mac remote curl to Windows sidecar (run on Mac)",
+    "Mac dashboard proxy verification"
+  ],
+  "artifacts": [
+    "artifacts/windows_market_watch_symbols.json",
+    "artifacts/verify_live_tick_symbols.json",
+    "artifacts/runtime_env_redacted_after_lan_enable.json",
+    "artifacts/windows_firewall_rule_result.json",
+    "artifacts/windows_firewall_rule_export.txt",
+    "artifacts/verify_sidecar_health_post_lan.json",
+    "artifacts/verify_sidecar_diagnostics_post_lan.json",
+    "artifacts/verify_sidecar_account_post_lan.json",
+    "artifacts/verify_sidecar_positions_post_lan.json",
+    "artifacts/verify_sidecar_orders_post_lan.json",
+    "artifacts/verify_sidecar_tick_post_lan.json",
+    "artifacts/verify_sidecar_spec_post_lan.json",
+    "artifacts/windows_sidecar_startup_config.json",
+    "artifacts/windows_sidecar_startup_disable_instructions.txt",
+    "artifacts/windows_sidecar_lan_endpoint.json",
+    "artifacts/mac_dashboard_path_discovery.json",
+    "artifacts/mac_dashboard_env_redacted.json",
+    "artifacts/mac_verify_dashboard_api_mt5_real.json",
+    "artifacts/dashboard_bridge_estate_render_check.json",
+    "artifacts/bridge_switch_matrix_runtime.json",
+    "artifacts/windows_runtime_safety_check_post_lan.txt"
+  ],
+  "runtime_findings": {
+    "live_tick_verified": true,
+    "EURUSD_bid": 1.15705,
+    "EURUSD_ask": 1.15714,
+    "account_balance": 97275.63,
+    "lan_ip": "192.168.0.190",
+    "base_url": "http://192.168.0.190:8877",
+    "firewall_rule": "requires_admin_manual",
+    "autostart_task": "FXG Windows Sidecar 8877"
+  },
+  "safety_assertions": [
+    "canonical_mac_file_bridge_v1 remains canonical execution bridge",
+    "parallel_windows_sidecar_bridge_v1 is additive and separate",
+    "lane 010 canonical emit semantics unchanged",
+    "no duplicate canonical writers created",
+    "no live trading enablement introduced",
+    "windows sidecar initial mode remains read_only_first",
+    "mock sidecar is not counted as runtime truth"
+  ],
+  "open_risks": [
+    "Firewall rule not created - run as Administrator to allow Mac->Windows LAN access"
+  ],
+  "next_required_manual_steps": [
+    "Run PowerShell as Administrator: New-NetFirewallRule -DisplayName 'FXG Windows Sidecar 8877' -Direction Inbound -Protocol TCP -LocalPort 8877 -Action Allow -Profile Private",
+    "On Mac: Add MT5_SIDECAR_BASE_URL=http://192.168.0.190:8877 and MT5_SIDECAR_API_KEY to Control Plane env",
+    "On Mac: Restart Control Plane, verify /api/mt5_sidecar/health returns real data",
+    "Verify dashboard shows Canonical Bridge and Windows Sidecar as separate estates",
+    "Do not cut over execution away from canonical bridge"
+  ]
+}

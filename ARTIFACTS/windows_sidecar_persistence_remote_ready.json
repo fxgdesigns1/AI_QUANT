@@ -1,0 +1,14 @@
+{
+  "ts_utc": "2026-03-25T14:13:15Z",
+  "windows_host_readiness": {
+    "sidecar_listening_port_8877": true,
+    "bind": "0.0.0.0:8877",
+    "tailscale_ip": "100.122.152.80",
+    "tailscale_endpoint_responds": true,
+    "mt5_terminal_connected": true,
+    "mt5_account_connected": true,
+    "telemetry_endpoints_ok": ["/health", "/account", "/symbols/EURUSD/tick", "/positions", "/orders"]
+  },
+  "operator_readiness_rule": "Remote Mac operation is ready once the Mac probe commands in artifacts/windows_sidecar_persistence_mac_probe_pack.json pass.",
+  "no_trade_actions_taken": true
+}

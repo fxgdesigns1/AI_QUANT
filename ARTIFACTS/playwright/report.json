@@ -1,0 +1,22 @@
+{
+  "results": [
+    {
+      "label": "forensic_root",
+      "url": "http://127.0.0.1:8787/",
+      "console": [],
+      "pageErrors": [],
+      "requestFailed": [],
+      "status": 200,
+      "ok": true
+    },
+    {
+      "label": "advanced",
+      "url": "http://127.0.0.1:8787/advanced",
+      "console": [],
+      "pageErrors": [],
+      "requestFailed": [],
+      "status": 200,
+      "ok": true
+    }
+  ]
+}

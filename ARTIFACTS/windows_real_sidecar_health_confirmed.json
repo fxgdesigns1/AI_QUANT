@@ -1,0 +1,10 @@
+{
+  "service_up": true,
+  "terminal_connected": true,
+  "account_connected": true,
+  "degraded": false,
+  "failure_bucket": null,
+  "bridge_id": "parallel_windows_sidecar_bridge_v1",
+  "ts_utc": "2026-03-23T00:22:42Z",
+  "source": "GET http://127.0.0.1:8877/health"
+}

@@ -1,0 +1,52 @@
+{
+  "cache_dir": "H:\\My Drive\\AI Trading\\Gcloud system\\ARTIFACTS\\performance\\phase8y_context_cache\\candles",
+  "classification": "PHASE8Y_CANDLE_CACHE_MANIFEST",
+  "entries": [
+    {
+      "complete_for_required_window": true,
+      "compressed_size_bytes": 99286,
+      "coverage_end_day": "2026-05-10",
+      "coverage_end_utc": "2026-05-10T21:45:00Z",
+      "coverage_start_day": "2026-02-03",
+      "coverage_start_utc": "2026-02-03T18:45:00Z",
+      "granularity": "M15",
+      "instrument": "EUR_USD",
+      "kind": "candles",
+      "lookback_days": 90,
+      "path": "H:\\My Drive\\AI Trading\\Gcloud system\\ARTIFACTS\\performance\\phase8y_context_cache\\candles\\phase8y_candles_EUR_USD_M15_90d.jsonl.gz",
+      "required_end_day": "2026-05-10",
+      "required_end_utc": "2026-05-10T22:07:28.462222Z",
+      "required_start_day": "2026-02-03",
+      "required_start_utc": "2026-02-03T18:42:28.431856Z",
+      "row_count": 6523,
+      "saved_at_utc": "2026-05-10T22:07:29.242046Z",
+      "sha256": "b17df16d270c4ab229578b9d327b75407956b39ba0cc0d1d4b57e34cfc72e7da"
+    },
+    {
+      "complete_for_required_window": true,
+      "compressed_size_bytes": 275292,
+      "coverage_end_day": "2026-05-10",
+      "coverage_end_utc": "2026-05-10T22:00:00Z",
+      "coverage_start_day": "2026-02-03",
+      "coverage_start_utc": "2026-02-03T18:45:00Z",
+      "granularity": "M5",
+      "instrument": "EUR_USD",
+      "kind": "candles",
+      "lookback_days": 90,
+      "path": "H:\\My Drive\\AI Trading\\Gcloud system\\ARTIFACTS\\performance\\phase8y_context_cache\\candles\\phase8y_candles_EUR_USD_M5_90d.jsonl.gz",
+      "required_end_day": "2026-05-10",
+      "required_end_utc": "2026-05-10T22:07:29.242074Z",
+      "required_start_day": "2026-02-03",
+      "required_start_utc": "2026-02-03T18:42:35.548328Z",
+      "row_count": 19571,
+      "saved_at_utc": "2026-05-10T22:07:31.318685Z",
+      "sha256": "519de6a27424865eca47f8f2d276697070ca31cf32e9894f0303c484a02734df"
+    }
+  ],
+  "execution_paths_changed": false,
+  "generated_at_utc": "2026-05-10T22:07:31.318700Z",
+  "ny_live_enabled": false,
+  "paper_review_only": true,
+  "phase": "Phase 8Y",
+  "secrets_exposed": false
+}

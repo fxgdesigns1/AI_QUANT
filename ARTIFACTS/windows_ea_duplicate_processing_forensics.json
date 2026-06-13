@@ -1,0 +1,13 @@
+{
+  "artifact": "windows_ea_duplicate_processing_forensics",
+  "pre_patch_findings": {
+    "per_session_file_cursor": "g_lastFilePos updated after each OnTick read loop — correct for tail-append jsonl within one attach",
+    "restart_or_reload_behavior": "g_lastFilePos global initializer 0 — OnInit did not seek to EOF, so entire signals_ftmo_demo2.jsonl was re-scanned on every EA (re)start, re-attempting each historical line",
+    "signal_id_memory": "no in-memory record of processed signal_id — duplicate JSONL lines with same signal_id could be executed multiple times if file cursor rewound or full file replayed",
+    "duplicate_log_lines_hypothesis": "same signal_id appearing twice in ftmo_bridge_log.jsonl commonly explained by (a) full-file replay after EA reload, or (b) two append operations with identical payload, or (c) two chart instances — not ruled out from code path alone"
+  },
+  "post_patch_v1_01": {
+    "tail_mode_on_init": "SeedFilePositionToEnd() sets g_lastFilePos to EOF before first tick — avoids historical replay on attach",
+    "session_dedupe": "g_seenSignalIds[] — RememberSignalId after EXECUTED or BROKER_REJECT; DUPLICATE_SKIP log when same signal_id seen again"
+  }
+}

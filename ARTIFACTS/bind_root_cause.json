@@ -1,0 +1,5 @@
+{
+  "classification": "config_load_order_or_stale_process",
+  "evidence": "netstat shows 127.0.0.1:8877, .env has BIND_HOST=0.0.0.0",
+  "fix": "Make run.py explicitly load sidecar .env and read BIND_HOST/BIND_PORT directly before uvicorn, bypassing config module import order"
+}

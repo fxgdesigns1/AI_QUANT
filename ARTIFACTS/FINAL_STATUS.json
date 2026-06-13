@@ -1,0 +1,48 @@
+{
+  "timestamp_utc": "2026-01-05T14:05:00Z",
+  "git_branch": "safety/savepoint-pre-lockin",
+  "git_head": "550d3ca",
+  "phases_completed": [
+    "P0_SANITY_BASELINE",
+    "P1_SECRETS_HYGIENE",
+    "P2_ACCOUNT_MANAGER_PAPER_SAFE",
+    "P3_LOCAL_BRINGUP",
+    "P4_TELEGRAM_HEALTH_CHECK",
+    "P5_VM_DEPLOY_GATED",
+    "P6_EXECUTION_UNLOCK_SAFE_PATH",
+    "P7_FINAL_VERIFICATION"
+  ],
+  "gates_status": {
+    "EXECUTION_UNLOCK_OK": "locked (default: false)",
+    "DEPLOY_APPROVED": "locked (default: false)",
+    "SECRETS_ROTATED_OK": "locked (default: false)",
+    "TELEGRAM_TEST_APPROVED": "locked (default: false)"
+  },
+  "proofs": {
+    "compileall": "PASS",
+    "secrets_scan": "PASS (all matches are REDACTED patterns)",
+    "account_manager_paper_safe": "PASS (handles missing OANDA_ACCOUNT_ID when EXECUTION_UNLOCK_OK=false)",
+    "telegram_gated": "PASS (requires SECRETS_ROTATED_OK + TELEGRAM_TEST_APPROVED)",
+    "vm_deploy_gated": "PASS (requires DEPLOY_APPROVED, placeholder detection, SSH preflight)"
+  },
+  "artifacts": {
+    "verify_all_local.sh": "scripts/verify_all_local.sh",
+    "MONDAY_UNLOCK_SEQUENCE.md": "ARTIFACTS/MONDAY_UNLOCK_SEQUENCE.md",
+    "VM_DEPLOY_INSTRUCTIONS.md": "ARTIFACTS/VM_DEPLOY_INSTRUCTIONS.md",
+    "FINAL_STATUS.json": "ARTIFACTS/FINAL_STATUS.json",
+    "FINAL_STATUS.md": "ARTIFACTS/FINAL_STATUS.md"
+  },
+  "what_remains_locked": [
+    "Execution: disabled by default (EXECUTION_UNLOCK_OK=false)",
+    "Live trading: requires TRADING_MODE=live + LIVE_TRADING=true + LIVE_TRADING_CONFIRM=true",
+    "Telegram test: requires SECRETS_ROTATED_OK=true + TELEGRAM_TEST_APPROVED=true",
+    "VM deploy: requires DEPLOY_APPROVED=true"
+  ],
+  "safety_features": [
+    "Account manager fails closed when EXECUTION_UNLOCK_OK=true but OANDA_ACCOUNT_ID missing",
+    "Telegram check refuses placeholders and never prints tokens",
+    "VM deploy refuses placeholders and tests SSH before deployment",
+    "Pre-commit hook blocks secret-like patterns",
+    ".env is gitignored and not committed"
+  ]
+}

@@ -1,0 +1,10 @@
+[Unit]
+Description=Run Pre-Open Gate Check every 5 minutes
+
+[Timer]
+OnBootSec=75s
+OnUnitActiveSec=300s
+Unit=ai-quant-preopen-gate.service
+
+[Install]
+WantedBy=timers.target

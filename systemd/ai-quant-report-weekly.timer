@@ -1,0 +1,20 @@
+# ai-quant-report-weekly.timer — Weekly report timer
+#
+# Runs weekly on Monday at 17:00 UTC
+#
+# INSTALLATION:
+#   1. Copy this file to /etc/systemd/system/ai-quant-report-weekly.timer
+#   2. Run: sudo systemctl daemon-reload
+#   3. Run: sudo systemctl enable --now ai-quant-report-weekly.timer
+
+[Unit]
+Description=AI-QUANT Weekly Performance Report Timer
+Requires=ai-quant-report-weekly.service
+
+[Timer]
+# Run weekly on Monday at 17:00 UTC
+OnCalendar=Mon *-*-* 17:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,108 @@
+{
+  "alpha_pointers": {
+    "latest_phase8o_backtest_summary": "ARTIFACTS/performance/latest_phase8o_backtest_summary.json",
+    "latest_phase8r_provider_capability_report": "ARTIFACTS/performance/latest_phase8r_provider_capability_report.json",
+    "latest_research_dashboard": "ARTIFACTS/performance/latest_research_dashboard.json",
+    "latest_stitch_dashboard_contract": "ARTIFACTS/performance/latest_stitch_dashboard_contract.json",
+    "research_dashboard_html_dir": "ARTIFACTS/performance/research_dashboard/"
+  },
+  "calendar_budget": {
+    "calendar_budget_remaining": 996,
+    "calendar_cache_hit_rate": 0.1667,
+    "calendar_calls_this_month": 4,
+    "last_calendar_api_call_utc": "2026-05-04T10:20:53.763410Z"
+  },
+  "contract_version": "phase8t_v1",
+  "exact_replay_status": {
+    "calendar_reconstruction_available": false,
+    "exact_strategy_replay": false,
+    "latest_phase8o_classification": null,
+    "news_reconstruction_available": false
+  },
+  "filters": {
+    "instrument": [],
+    "promotion_label": [],
+    "provider_status": [
+      "working",
+      "blocked"
+    ],
+    "replay_mode": [],
+    "session_bucket": [],
+    "timeframe": []
+  },
+  "freshness": {
+    "seconds": 21101,
+    "stale": false,
+    "status": "FRESH"
+  },
+  "generated_at_utc": "2026-05-04T23:21:21.211497Z",
+  "ok": true,
+  "phase8x_batch_progress": null,
+  "phase8y_coverage": {
+    "cache_hit_rate": 0.1667,
+    "estimated_api_calls_needed": null,
+    "estimated_paid_calendar_calls_needed": null,
+    "exact_replay_readiness": null,
+    "missing_data_windows": [],
+    "phase8y_api_cost_estimate_present": null,
+    "phase8y_context_pack_verified": null,
+    "phase8y_data_coverage_manifest_present": null,
+    "safe_to_run_batch": null
+  },
+  "provider_capability": {
+    "providers_blocked": [],
+    "providers_working": [
+      "rapidapi_economic_calendar"
+    ],
+    "stitch_mcp_contract_health": {
+      "contract_version": "phase8t_v1",
+      "notes": "Static research_dashboard/index.html is fallback-only. Stitch integration must read canonical JSON payload/contract artifacts. Run Phase 8T/8U validators after each dashboard rebuild.",
+      "validation_script": "scripts/phase8t_validate_stitch_dashboard_contract.py"
+    }
+  },
+  "safety": {
+    "execution_paths_changed": false,
+    "live_permission": false,
+    "ny_live_enabled": false,
+    "paper_review_only": true,
+    "send_trade_unlock_changed": false
+  },
+  "source": {
+    "contract_path": "ARTIFACTS/performance/latest_stitch_dashboard_contract.json",
+    "dashboard_path": "ARTIFACTS/performance/latest_research_dashboard.json",
+    "source_generated_at_utc": "2026-05-04T17:29:39.760912Z"
+  },
+  "summary_cards": {
+    "cache_hit_rate": 0.1667,
+    "calendar_budget_remaining": 996,
+    "calendar_calls_this_month": 4,
+    "dashboard_freshness": {
+      "seconds": 21101,
+      "stale": false,
+      "status": "FRESH"
+    },
+    "estimated_calls_needed_next_batch": null,
+    "estimated_paid_calendar_calls_needed": null,
+    "exact_replay_readiness": null,
+    "exact_replay_status": false,
+    "missing_data_windows_count": 0,
+    "phase8x_batch_progress_present": false,
+    "promotion_candidates_count": 0,
+    "providers_blocked_count": 0,
+    "providers_working_count": 1,
+    "result_rows_indexed": 0,
+    "safe_to_run_batch": null
+  },
+  "tables": {
+    "continue_forward": [],
+    "demoted_blocked": [],
+    "fail_closed": [],
+    "latest_runs": [],
+    "promotion_candidates": [],
+    "proxy_research": [],
+    "watch_only": []
+  },
+  "warnings": [
+    "exact_strategy_replay_false"
+  ]
+}

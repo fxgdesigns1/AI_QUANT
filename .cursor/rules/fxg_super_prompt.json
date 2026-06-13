@@ -1,0 +1,257 @@
+{
+  "title": "FXG Cursor Super Prompt (GCP Cloud-First, SAFE-by-Default, No-Duplicates, Verification-First)",
+  "version": "1.1.0",
+  "assistant_model_identity": {
+    "current_chat_model": "GPT-5.2 Thinking"
+  },
+  "scope": "Apply as a single Cursor Project Rule + operating procedure for the FXG trading system repo. Cloud-first on GCP. Headless/CI compatible. Paper-by-default. No duplicate scripts. Secrets hygiene enforced.",
+  "non_negotiables": {
+    "cloud_first_gcp": [
+      "Assume deployment on GCP (VMs/Cloud Run/CI).",
+      "Design stateless services where possible; config via env; secrets via GCP Secret Manager.",
+      "Do not implement local-only flows unless explicitly requested."
+    ],
+    "no_duplicate_scripts": [
+      "Before creating any new file: search for existing functionality (repo-wide).",
+      "Extend/refactor in place; prefer single source of truth for adapters/config/entrypoints.",
+      "Do not create *_v2, *_test, *_patched, *_fixed, copy_* or parallel scripts unless explicitly approved."
+    ],
+    "safe_trading": [
+      "Default execution mode is PAPER (SAFE).",
+      "LIVE trading requires explicit user confirmation + hard execution gate + audit trail.",
+      "Every order/trade action must be logged, auditable, and recoverable where possible."
+    ],
+    "secrets_security": [
+      "Never hard-code secrets or commit them to git.",
+      "All secrets must come from environment variables or GCP Secret Manager.",
+      "If required credentials are missing: fail fast with an actionable error.",
+      "Never print tokens/keys/Authorization headers in logs."
+    ],
+    "determinism_verification": [
+      "Every wiring/change includes a verification command and expected output.",
+      "Never say 'should work'—instrument and verify."
+    ],
+    "communication": [
+      "Be direct and decisive.",
+      "Avoid rambling; deliver concrete steps.",
+      "Prefer best-practice single approach unless user asks for alternatives."
+    ]
+  },
+  "repo_canonicalization": {
+    "canonical_repo_root_rule": "Treat the Git top-level directory (from `git rev-parse --show-toplevel`) as the only canonical repo root. Do not run git commands outside that root.",
+    "anti_duplication_rule": "If multiple .git directories exist under the working directory, stop and surface them; do not modify until reviewed.",
+    "commands": [
+      "cd \"<PATH_TO_PROJECT>\"",
+      "git rev-parse --show-toplevel 2>/dev/null || true",
+      "find . -maxdepth 6 -type d -name \".git\" -print || true"
+    ]
+  },
+  "cursor_operating_procedure": [
+    {
+      "step": 0,
+      "name": "Confirm SAFE defaults before touching anything",
+      "commands": [
+        "python3 - <<'PY'\nimport os\nprint('FXG_EXECUTION_MODE=', os.getenv('FXG_EXECUTION_MODE','PAPER'))\nprint('FXG_EXECUTION_ENABLED=', os.getenv('FXG_EXECUTION_ENABLED','false'))\nPY"
+      ],
+      "expected": [
+        "FXG_EXECUTION_MODE defaults to PAPER if unset.",
+        "FXG_EXECUTION_ENABLED defaults to false if unset."
+      ],
+      "failure_action": [
+        "If defaults are not SAFE, fix config loading in-place (do not add new config scripts) so unset envs resolve to PAPER + disabled execution."
+      ]
+    },
+    {
+      "step": 1,
+      "name": "Establish canonical repo root",
+      "commands": [
+        "cd \"<PATH_TO_PROJECT>\"",
+        "ROOT=$(git rev-parse --show-toplevel) && echo \"CANONICAL_ROOT=$ROOT\" && cd \"$ROOT\"",
+        "pwd",
+        "git status"
+      ],
+      "expected": [
+        "CANONICAL_ROOT prints a single absolute path.",
+        "git status returns branch/state and does NOT say 'not a git repository'."
+      ],
+      "failure_action": [
+        "If git rev-parse fails: treat this as an export/copy; do a non-git secret scan; locate the original repo before making structural changes.",
+        "If multiple .git dirs are found: stop and surface the list; pick ONE intended root; do not modify others until reviewed."
+      ]
+    },
+    {
+      "step": 2,
+      "name": "Secrets scan (git-based)",
+      "commands": [
+        "cd \"$(git rev-parse --show-toplevel)\"",
+        "git grep -nE \"(OANDA_API_KEY|TELEGRAM_BOT_TOKEN|BEGIN PRIVATE KEY|api-fxpractice|Authorization: Bearer|OANDA_ACCOUNT_ID|SECRET|PRIVATE_KEY)\" -- . || true",
+        "git check-ignore -v .env .env.fxg.local .env.* 2>/dev/null || true"
+      ],
+      "expected": [
+        "No committed secret values found (references to os.getenv(...) are OK).",
+        ".env* should be ignored if present."
+      ],
+      "failure_action": [
+        "If secrets or tokens are committed: immediately stop; rotate compromised keys; remove secrets from repo history if necessary; replace with env/Secret Manager references."
+      ]
+    },
+    {
+      "step": 3,
+      "name": "Secrets scan (fallback without git/ripgrep)",
+      "commands": [
+        "cd \"<PROJECT_ROOT_OR_TARGET_DIR>\"",
+        "grep -RInE \"(OANDA_API_KEY|TELEGRAM_BOT_TOKEN|BEGIN PRIVATE KEY|api-fxpractice|Authorization: Bearer|OANDA_ACCOUNT_ID|SECRET|PRIVATE_KEY)\" . --exclude-dir=.git --exclude-dir=node_modules --exclude=\"*.tar.gz\" --exclude=\"*.zip\" --exclude=\".DS_Store\" || true"
+      ],
+      "expected": [
+        "No plaintext secrets discovered; only code references should appear."
+      ],
+      "failure_action": [
+        "If plaintext secrets are found: stop; rotate keys; scrub files; ensure .gitignore blocks env files; then re-scan."
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Locate canonical OANDA adapter and verify read-only connectivity + pricing (SAFE)",
+      "preconditions": [
+        "OANDA_API_KEY, OANDA_ACCOUNT_ID, OANDA_BASE_URL are set via env OR injected from Secret Manager at runtime.",
+        "Execution mode remains PAPER and execution gating prevents live orders."
+      ],
+      "commands": [
+        "cd \"$(git rev-parse --show-toplevel)\"",
+        "find . -maxdepth 6 -iname \"*oanda*\" -print",
+        "python3 -V",
+        "python3 check_oanda_connection.py || python3 test_oanda_api.py || python3 -c \"import os; print('No known OANDA verify script found; use repo search to locate canonical adapter and existing verification path.')\""
+      ],
+      "expected": [
+        "A verification path exits 0 and prints successful connectivity and/or bid/ask pricing for at least one instrument.",
+        "No trade/order placement occurs."
+      ],
+      "failure_action": [
+        "If it fails: do not add a new adapter script. Identify the canonical OANDA adapter module and fix in place.",
+        "Add/adjust clear error messages: missing env vars -> fail fast with actionable message.",
+        "If any code attempts order placement during verification: stop and add hard gating so verification is read-only."
+      ]
+    },
+    {
+      "step": 5,
+      "name": "Paper smoke test only after pricing is green",
+      "commands": [
+        "cd \"$(git rev-parse --show-toplevel)\"",
+        "FXG_EXECUTION_MODE=PAPER FXG_EXECUTION_ENABLED=true PYTHONPATH=. python3 planned_deployment/scripts/run_paper_trade_smoke_test.py || true"
+      ],
+      "expected": [
+        "Explicit banner indicating PAPER mode active.",
+        "Ledger/log entry created.",
+        "No LIVE execution; execution gate decision clearly logged."
+      ],
+      "failure_action": [
+        "Fix gating/ledger/logging in place; do not create a second runner or alternate smoke test script."
+      ]
+    }
+  ],
+  "model_routing_guidance": {
+    "goal": "Minimize use of high-power models; use smaller models for low-risk work. Escalate only when changes are complex/high-stakes.",
+    "default_rule": "Use the smallest model that can deterministically complete the task without risking trading safety, secrets, or architecture correctness.",
+    "use_small_models_when": {
+      "auto": [
+        "Repo navigation, command generation, operational checklists.",
+        "Summarizing code sections without changing execution logic.",
+        "Non-execution-facing doc/runbook updates."
+      ],
+      "gemini_mini": [
+        "File searching/grepping, repo navigation, mapping modules and call graphs.",
+        "Documentation/README/runbook/comment updates.",
+        "Mechanical refactors with minimal blast radius AFTER verification steps are defined."
+      ],
+      "gpt_nano": [
+        "Tiny bounded edits (tighten error messages, fix CLI help text, small JSON/YAML transformations).",
+        "Generating deterministic verification commands + expected outputs."
+      ]
+    },
+    "use_high_power_models_when": {
+      "sonnet_4_5_or_equivalent": [
+        "Any change touching execution gating (PAPER vs LIVE), order placement, risk controls, position sizing.",
+        "Adapter refactors that affect API behavior, retries, idempotency, or error handling.",
+        "Architectural consolidation to remove duplicates across multiple directories/files.",
+        "Observability work spanning multiple components (structured logging/tracing).",
+        "Security-sensitive changes (Secret Manager integration, credential loading paths)."
+      ]
+    },
+    "escalation_triggers": [
+      "Task requires changing more than ~3 core modules.",
+      "Any ambiguity about which file is canonical.",
+      "Any change could cause orders to be placed or execution gates to fail.",
+      "Tests/verification are missing and must be added."
+    ],
+    "deescalation_triggers": [
+      "After architecture decisions are made and written down, subsequent mechanical edits can move back to Gemini Mini / GPT Nano.",
+      "Doc/runbook updates and simple command-line diagnostics should stay on smaller models."
+    ]
+  },
+  "cursor_response_format_rule": {
+    "when_user_says": [
+      "copy and paste for Cursor",
+      "bulk prompt",
+      "one prompt",
+      "json super prompt"
+    ],
+    "must_do": [
+      "Return exactly ONE JSON block and no prose outside it.",
+      "Include deterministic, step-by-step instructions Cursor can execute.",
+      "Include verification commands + expected outputs."
+    ]
+  },
+  "verification_standards": {
+    "every_change_requires": [
+      "A single command to verify the change",
+      "Expected output or success condition",
+      "Clear rollback guidance if applicable"
+    ],
+    "observability_minimum": [
+      "Structured logs for key events (pricing fetch, signal decision, execution gate decision, order request/response metadata)",
+      "No logging of secrets or tokens"
+    ]
+  },
+  "audit_findings_integration": {
+    "note": "Based on 2025-12-31 clean-room forensic audit",
+    "critical_remediations_required": [
+      {
+        "finding": "NO_GLOBAL_KILL_SWITCH",
+        "requirement": "Add TRADING_ENABLED environment flag that defaults to 'false'. System must NOT trade unless explicitly enabled.",
+        "implementation": "Check this flag in execute_trade() and run_trading_cycle() before any OANDA API calls.",
+        "verification": "Confirm system exits or logs error if TRADING_ENABLED is unset or 'false'."
+      },
+      {
+        "finding": "HARDCODED_CREDENTIALS",
+        "requirement": "Remove all hardcoded API keys, tokens, account IDs from source code.",
+        "implementation": "All credentials MUST come from environment variables or GCP Secret Manager with NO fallback values.",
+        "verification": "Run secrets scan (step 2-3 above). grep must find ZERO hardcoded credentials."
+      },
+      {
+        "finding": "MAIN_LOOP_DISABLED_VIA_COMMENT",
+        "requirement": "Replace code comment with explicit configuration flag.",
+        "implementation": "Add AUTO_TRADING_ENABLED flag. Do not rely on code comments for safety.",
+        "verification": "System behavior must be controlled by config, not code edits."
+      },
+      {
+        "finding": "TELEGRAM_BYPASS",
+        "requirement": "Telegram commands must respect same gates as automatic trading.",
+        "implementation": "Check TRADING_ENABLED flag in telegram /trade command handler.",
+        "verification": "Confirm /trade command is rejected when TRADING_ENABLED=false."
+      },
+      {
+        "finding": "CONFIG_SPRAWL",
+        "requirement": "Consolidate to single service file. Remove all duplicate .service files.",
+        "implementation": "Keep only ai_trading.service. Remove credentials from service files; use Secret Manager.",
+        "verification": "Count service files: should be exactly 1. Verify no credentials in service file."
+      }
+    ],
+    "mandatory_gates": [
+      "TRADING_ENABLED must default to 'false'",
+      "EXECUTION_MODE must default to 'PAPER'",
+      "LIVE mode requires explicit confirmation flag + audit log entry",
+      "All OANDA API calls must check execution gates before submission",
+      "Every order must be logged with timestamp, mode, and source"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "job_name": "FXG_WINDOWS_SIGNAL_76B6_CONSUMER_TRACE_AND_FIX_V1",
+  "phase": "2_trace_exact_signal_id_in_signal_file_and_logs",
+  "signal_id": "76b6f9fc-6801-45ae-88b2-cc5181adc741",
+  "file_path": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\signals_ftmo_demo2.jsonl",
+  "file_exists": true,
+  "select_string_match_count": 0,
+  "evidence_command": "Select-String -Path <signals_ftmo_demo2.jsonl> -Pattern '76b6f9fc-6801-45ae-88b2-cc5181adc741' -SimpleMatch",
+  "conclusion": "EXACT_SIGNAL_ID_NOT_PRESENT_IN_ACTIVE_MT5_SIGNAL_FILE",
+  "lines_present_sample_tail": [
+    "test_20260323011859",
+    "winprove_20260324212015",
+    "winprove_matrix_20260324213656",
+    "winprove_reload_20260324225356"
+  ],
+  "notes": "Full file read confirms only test and winprove_* signal_id values; UUID 76b6 never appended on Windows."
+}

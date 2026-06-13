@@ -1,0 +1,28 @@
+{
+  "sync_timestamp": "2025-11-16T19:28:32Z",
+  "timezone": "Europe/London",
+  "source": "google-cloud-trading-system",
+  "destination": "backtesting_system",
+  "files_synced": [
+    "live_trade_blotter.json",
+    "live_trade_blotter_trades.csv",
+    "live_trade_blotter_trades.json",
+    "all_accounts_blotter.json",
+    "combined_blotter_101_accounts.csv"
+  ],
+  "account_blotters": [
+    "blotter_101-004-30719775-003.csv",
+    "blotter_101-004-30719775-005.csv",
+    "blotter_101-004-30719775-006.csv",
+    "blotter_101-004-30719775-007.csv",
+    "blotter_101-004-30719775-008.csv",
+    "blotter_101-004-30719775-009.csv",
+    "blotter_101-004-30719775-010.csv",
+    "blotter_101-004-30719775-011.csv"
+  ],
+  "notes": [
+    "Paper-trading only. All accounts isolated per user directive.",
+    "Blotter data synced for backtesting parity validation.",
+    "Use this data to ensure live trading matches backtest expectations."
+  ]
+}

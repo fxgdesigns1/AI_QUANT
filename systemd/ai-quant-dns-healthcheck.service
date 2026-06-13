@@ -1,0 +1,29 @@
+# ai-quant-dns-healthcheck.service — DNS healthcheck and self-heal
+#
+# Checks OANDA API DNS resolution and connectivity:
+# - getent hosts api-fxpractice.oanda.com
+# - curl -I https://api-fxpractice.oanda.com/v3/accounts --max-time 10
+#
+# If failing: restarts systemd-resolved (safe) and logs failure marker
+#
+# INSTALLATION:
+#   1. Copy this file to /etc/systemd/system/ai-quant-dns-healthcheck.service
+#   2. Run: sudo systemctl daemon-reload
+#   3. Enable timer: sudo systemctl enable --now ai-quant-dns-healthcheck.timer
+
+[Unit]
+Description=AI-QUANT DNS Healthcheck (OANDA API)
+After=network.target
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/opt/ai-quant
+
+# DNS healthcheck script (inline for simplicity)
+ExecStart=/bin/bash -c 'set -euo pipefail; if ! getent hosts api-fxpractice.oanda.com >/dev/null 2>&1; then echo "DNS_HEALTHCHECK_FAIL: getent hosts api-fxpractice.oanda.com failed" >&2; systemctl restart systemd-resolved || true; exit 1; fi; if ! curl -I https://api-fxpractice.oanda.com/v3/accounts --max-time 10 --silent --output /dev/null 2>&1; then echo "DNS_HEALTHCHECK_FAIL: curl to api-fxpractice.oanda.com failed" >&2; systemctl restart systemd-resolved || true; exit 1; fi; echo "DNS_HEALTHCHECK_OK: OANDA API DNS and connectivity verified"'
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ai-quant-dns-healthcheck

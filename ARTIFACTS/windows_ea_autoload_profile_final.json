@@ -1,0 +1,5 @@
+{
+  "status": "not_captured",
+  "reason": "MT5 terminal profile / autosave chart state not exported in this session.",
+  "next_manual_step": "If required, use File > Profiles > Save As after FTMO_Bridge_EA is attached with correct inputs."
+}

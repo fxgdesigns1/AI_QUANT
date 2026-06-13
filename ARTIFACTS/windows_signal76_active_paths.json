@@ -1,0 +1,28 @@
+{
+  "job_name": "FXG_WINDOWS_SIGNAL_76B6_CONSUMER_TRACE_AND_FIX_V1",
+  "phase": "1_find_active_mt5_instance_and_files",
+  "signal_id_traced": "76b6f9fc-6801-45ae-88b2-cc5181adc741",
+  "mt5_install_dir": "C:\\Program Files\\MetaTrader 5",
+  "mt5_data_folder": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075",
+  "mql5_experts": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Experts",
+  "mql5_files": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files",
+  "canonical_signal_file": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\signals_ftmo_demo2.jsonl",
+  "bridge_log_file": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\ftmo_bridge_log.jsonl",
+  "terminal_journal_logs_glob": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\logs\\*.log",
+  "mql5_logs_glob": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Logs\\*.log",
+  "other_terminal_instances_scanned": [
+    {
+      "id": "Common",
+      "has_mql5": false
+    },
+    {
+      "id": "Community",
+      "has_mql5": false
+    },
+    {
+      "id": "D0E8209F77C8CF37AD8BF550E51FF075",
+      "has_mql5": true,
+      "has_signals_ftmo_demo2_jsonl": true
+    }
+  ]
+}

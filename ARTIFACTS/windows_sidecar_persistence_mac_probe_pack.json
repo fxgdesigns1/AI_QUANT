@@ -1,0 +1,25 @@
+{
+  "ts_utc": "2026-03-25T14:12:20Z",
+  "target": {
+    "tailscale_ip": "100.122.152.80",
+    "port": 8877,
+    "base_url": "http://100.122.152.80:8877"
+  },
+  "operator_commands_mac": [
+    "export MT5_SIDECAR_API_KEY=\"$(grep '^MT5_SIDECAR_API_KEY=' dashboard/.env.local | cut -d= -f2-)\"",
+    "nc -vz -w 5 100.122.152.80 8877",
+    "curl -sS -m 8 -H \"x-api-key: $MT5_SIDECAR_API_KEY\" http://100.122.152.80:8877/health",
+    "curl -sS -m 8 -H \"x-api-key: $MT5_SIDECAR_API_KEY\" http://100.122.152.80:8877/account",
+    "bash scripts/fxg_switch_sidecar_target_remote_overlay.sh",
+    "bash scripts/fxg_verify_remote_overlay_sidecar.sh",
+    "bash scripts/fxg_remote_access_smoke.sh"
+  ],
+  "expected_success_signals": {
+    "nc": "succeeds (open)",
+    "health_http": 200,
+    "account_http": 200,
+    "verify_script": "prints PASS and writes artifacts/mac_remote_overlay_status.json with reachable=true",
+    "smoke_script": "remote_access_smoke_latest.json shows sidecar_reachable=true and mode=remote_ready"
+  },
+  "secrets_handling": "Do not paste API keys into logs; rely on env var MT5_SIDECAR_API_KEY."
+}

@@ -1,0 +1,22 @@
+﻿{
+    "request":  {
+                    "lookback_days":  90,
+                    "job_type":  "phase8l_backtest",
+                    "session_window_utc":  "13:30-16:00",
+                    "instrument":  "EUR_USD",
+                    "granularity":  "M15",
+                    "session_bucket":  "NY_OPEN_SECONDARY_PROPOSED"
+                },
+    "ok":  false,
+    "finished_at_utc":  "2026-05-02T10:09:35Z",
+    "partial":  {
+                    "alpha_latest_pointer_local":  "H:\\My Drive\\AI Trading\\Gcloud system\\artifacts\\PHASE8N_latest_research_job_result_20260501T183939Z.json",
+                    "alpha_latest_pointer_remote":  "/opt/ai-quant/ARTIFACTS/performance/latest_research_job_result.json",
+                    "job_id":  "20260501T183955Z_phase8l_backtest_a16c4006f0",
+                    "job_status":  "PENDING"
+                },
+    "error":  "FATAL ERROR: Network error: Software caused connection abort",
+    "phase":  "Phase 8N",
+    "classification":  "PHASE8N_ONE_CLICK_FINAL_REPORT",
+    "started_at_utc":  "2026-05-01T18:39:39Z"
+}

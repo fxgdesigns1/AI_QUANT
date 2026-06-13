@@ -1,0 +1,85 @@
+{
+  "job": "FXG_WINDOWS_SIDECAR_RUNTIME_INSTALL_AND_VERIFICATION_V1",
+  "status": "PASS",
+  "phase_results": {
+    "1_detect_workspace_and_existing_scaffold": "PASS",
+    "2_run_windows_preflight": "PASS",
+    "3_detect_or_install_native_mt5": "PASS",
+    "4_detect_or_install_python_and_sidecar_deps": "PASS",
+    "5_create_runtime_secret_config": "PASS",
+    "6_log_into_mt5_and_confirm_terminal_state": "PASS",
+    "7_launch_sidecar_read_only": "PASS",
+    "8_verify_real_sidecar_endpoints": "PASS",
+    "9_configure_firewall_and_lan_binding": "SKIPPED",
+    "10_configure_safe_autostart": "SKIPPED"
+  },
+  "files_created": [],
+  "files_modified": [
+    "bridges/windows_sidecar/service/routes_symbols.py",
+    ".gitignore"
+  ],
+  "files_verified": [
+    "bridges/windows_sidecar/service/main.py",
+    "bridges/windows_sidecar/service/routes_symbols.py"
+  ],
+  "files_unverified": [],
+  "verification_commands_run": [
+    "git rev-parse --show-toplevel",
+    "Test-Path scaffold files",
+    "Get-ComputerInfo, python --version, Test-NetConnection 8877",
+    "MT5 detection, mt5setup.exe /auto install",
+    "venv create, pip install requirements.txt, import MetaTrader5",
+    "Create .env from .env.example",
+    "MT5 initialize, account_info (login 1512827972, FTMO-Demo)",
+    "Start sidecar process",
+    "GET /health, /diagnostics, /account, /positions, /orders, /symbols/EURUSD/tick, /symbols/EURUSD/spec"
+  ],
+  "verification_commands_not_run": [],
+  "artifacts": [
+    "artifacts/windows_runtime_repo_discovery.json",
+    "artifacts/windows_preflight.json",
+    "artifacts/mt5_install_result.json",
+    "artifacts/mt5_terminal_detection.json",
+    "artifacts/python_install_result.json",
+    "artifacts/runtime_env_redacted.json",
+    "artifacts/mt5_runtime_state.json",
+    "artifacts/sidecar_start_result.json",
+    "artifacts/verify_sidecar_health.json",
+    "artifacts/verify_sidecar_account.json",
+    "artifacts/verify_sidecar_positions.json",
+    "artifacts/verify_sidecar_orders.json",
+    "artifacts/verify_sidecar_tick.json",
+    "artifacts/verify_sidecar_diagnostics.json",
+    "artifacts/verify_sidecar_spec.json",
+    "artifacts/windows_runtime_safety_check.txt",
+    "artifacts/bridge_switch_matrix_runtime.json",
+    "artifacts/windows_sidecar_startup_config.json"
+  ],
+  "runtime_findings": {
+    "mt5_terminal_path": "C:\\Program Files\\MetaTrader 5\\terminal64.exe",
+    "mt5_login": 1512827972,
+    "mt5_server": "FTMO-Demo",
+    "account_balance": 97275.63,
+    "account_equity": 97464.87,
+    "sidecar_listen": "127.0.0.1:8877",
+    "bridge_id": "parallel_windows_sidecar_bridge_v1",
+    "tick_note": "Add symbols to MT5 Market Watch for live bid/ask; endpoint returns valid structure"
+  },
+  "safety_assertions": [
+    "canonical_mac_file_bridge_v1 remains canonical execution bridge",
+    "parallel_windows_sidecar_bridge_v1 is additive and separate",
+    "lane 010 canonical emit semantics unchanged",
+    "no duplicate canonical writers created",
+    "no live trading enablement introduced",
+    "windows sidecar initial mode is read_only_first",
+    "mock sidecar is not counted as runtime truth"
+  ],
+  "open_risks": [],
+  "next_required_manual_steps": [
+    "If LAN access needed, set BIND_HOST=0.0.0.0 and add firewall rule for port 8877",
+    "Point Mac dashboard MT5_SIDECAR_BASE_URL at http://192.168.0.190:8877 (when LAN enabled)",
+    "Set MT5_SIDECAR_API_KEY on dashboard host to match bridges/windows_sidecar/.env",
+    "Add symbols to MT5 Market Watch for live tick data",
+    "Do not cut over execution away from canonical bridge"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "ok": true,
+  "phase": "Phase 8X",
+  "rows_scored": 0,
+  "input_jsonl": "H:\\My Drive\\AI Trading\\Gcloud system\\ARTIFACTS\\performance\\research_results_index.jsonl",
+  "index_json": "H:\\My Drive\\AI Trading\\Gcloud system\\ARTIFACTS\\performance\\research_results_index.json",
+  "thresholds_applied": {
+    "minimum_clean_samples_for_review": 80,
+    "preferred_clean_samples_for_review": 100,
+    "minimum_expectancy_r_for_review": 0.1,
+    "minimum_profit_factor_for_review": 1.25,
+    "maximum_loss_streak_for_review": 5,
+    "maximum_drawdown_proxy_r_for_review": -6.0,
+    "news_calendar_required_for_clean_promotion": true
+  },
+  "promotion_gate": {
+    "minimum_trades": 80,
+    "minimum_profit_factor": 1.25,
+    "minimum_expectancy_r": 0.1,
+    "maximum_drawdown_r": -6.0,
+    "maximum_loss_streak": 5,
+    "exact_replay_required": true,
+    "news_calendar_required": true,
+    "sha256_verified_required": true,
+    "paper_review_only": true,
+    "live_permission": false
+  }
+}

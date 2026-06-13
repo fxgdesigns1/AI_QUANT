@@ -1,0 +1,10 @@
+{
+  "rollback_steps": [
+    "1. Detach FTMO_Bridge_EA from Windows MT5 chart",
+    "2. Re-attach FTMO_Bridge_EA on Mac MT5 (or Wine MT5)",
+    "3. Ensure Mac sync delivers signals_ftmo_demo2.jsonl to Mac MT5 Files",
+    "4. Update dashboard if showing Windows consumer"
+  ],
+  "docs": "docs/bridges/WINDOWS_CANONICAL_EA_CUTOVER.md",
+  "ts_utc": "2026-03-23T00:55:00Z"
+}

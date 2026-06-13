@@ -1,0 +1,18 @@
+{
+  "job": "FXG_FIX_MT5_0_01_LOT_FALLBACK_ON_LIVE_CONSUMER_V1",
+  "phase": "6_rebuild_redeploy_and_restart_active_consumer",
+  "command_run": "powershell -File bridges/windows_sidecar/scripts/fxg_win_install_canonical_ea.ps1 (from repo root)",
+  "exit_code": 0,
+  "stdout_key_lines": [
+    "Copied FTMO_Bridge_EA.mq5 to C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Experts\\FTMO_Bridge_EA.mq5",
+    "Compiled: ...\\FTMO_Bridge_EA.ex5",
+    "PASS: EA installed."
+  ],
+  "ex5_last_write_time_utc": "2026-03-27T19:00:21Z",
+  "ex5_path": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Experts\\FTMO_Bridge_EA.ex5",
+  "runtime_signature_check": {
+    "status": "PENDING_OPERATOR",
+    "detail": "Bridge log tail showed EA_STOP before deploy; EA_START v1.04 line will appear only after chart reattach/restart"
+  },
+  "sidecar_untouched": true
+}

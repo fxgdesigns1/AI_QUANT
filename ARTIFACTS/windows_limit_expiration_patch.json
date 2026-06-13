@@ -1,0 +1,15 @@
+{
+  "phase": "3_patch_pending_order_time_and_expiration_handling",
+  "version_bump": "1.02 -> 1.03",
+  "changes": [
+    "LIMIT path uses ZeroMemory(MqlTradeRequest) + OrderSend (SendPendingLimitRaw) with correct symbol and limit price.",
+    "ResolveLimitOrderTimePolicy: ORDER_TIME_GTC + expiration=0 when SYMBOL_EXPIRATION_GTC; else ORDER_TIME_SPECIFIED + 30d or session EOD when only DAY mode is advertised.",
+    "REQUEST_SUMMARY for LIMIT appends type_time= and expiration= (truthful).",
+    "MARKET path unchanged (still g_trade.Buy/Sell).",
+    "OnInit banner updated to v1.03 string."
+  ],
+  "files": [
+    "h:\\My Drive\\AI Trading\\Gcloud system\\ea\\FTMO_Bridge_EA.mq5",
+    "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Experts\\FTMO_Bridge_EA.mq5"
+  ]
+}

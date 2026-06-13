@@ -1,0 +1,30 @@
+# Local research estate (WSL2 / Linux). Not used for live execution.
+schema: fxg.local_research.system.v1
+
+research_root: "${FXG_RESEARCH_ROOT}"
+
+paths:
+  artifacts: "${FXG_RESEARCH_ROOT}/ARTIFACTS"
+  backtests: "${FXG_RESEARCH_ROOT}/ARTIFACTS/backtests"
+  monte_carlo: "${FXG_RESEARCH_ROOT}/ARTIFACTS/monte_carlo"
+  exports: "${FXG_RESEARCH_ROOT}/ARTIFACTS/exports"
+  datasets: "${FXG_RESEARCH_ROOT}/data/datasets"
+  cache: "${FXG_RESEARCH_ROOT}/data/cache"
+
+compute:
+  monte_carlo_workers: 24
+  monte_carlo_memory_budget_gb: 48
+  tournament_granularity: "M5"
+
+monte_carlo:
+  default_iterations: 500
+  default_seed: 42
+  default_mode: "reshuffle"
+
+dataset:
+  default_cache_hint: "${FXG_RESEARCH_ROOT}/data/cache/candles"
+
+# Optional: VM copy target for import helper (dry-run unless ALPHA_IMPORT_APPLY=1)
+alpha_import:
+  remote_user_host: "${ALPHA_SSH_TARGET}"
+  remote_import_dir: "${ALPHA_RESEARCH_IMPORT_DIR}"

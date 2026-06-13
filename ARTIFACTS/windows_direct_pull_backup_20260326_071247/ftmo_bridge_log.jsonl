@@ -1,0 +1,65 @@
+﻿
+{"type":"EA_START","msg":"FTMO_Bridge_EA started","signal_id":"","ts":"2026.03.23 10:09:34"}
+{"type":"BROKER_REJECT","msg":"auto trading disabled by client","signal_id":"test_20260323011859","ts":"2026.03.23 10:09:35"}
+{"type":"EA_START","msg":"FTMO_Bridge_EA started","signal_id":"","ts":"2026.03.24 23:54:59"}
+{"type":"BROKER_REJECT","msg":"invalid stops","signal_id":"test_20260323011859","ts":"2026.03.25 00:05:05"}
+{"type":"BROKER_REJECT","msg":"invalid stops","signal_id":"winprove_20260324212015","ts":"2026.03.25 00:21:14"}
+{"type":"BROKER_REJECT","msg":"invalid stops","signal_id":"winprove_20260324212015","ts":"2026.03.25 00:21:14"}
+{"type":"BROKER_REJECT","msg":"invalid stops","signal_id":"winprove_matrix_20260324213656","ts":"2026.03.25 00:37:03"}
+{"type":"BROKER_REJECT","msg":"invalid stops","signal_id":"winprove_matrix_20260324213656","ts":"2026.03.25 00:37:03"}
+{"type":"BROKER_REJECT","msg":"invalid stops","signal_id":"winprove_matrix_20260324213656","ts":"2026.03.25 00:37:03"}
+{"type":"EA_STOP","msg":"FTMO_Bridge_EA stopped","signal_id":"","ts":"2026.03.25 01:53:05"}
+{"type":"EA_STOP","msg":"FTMO_Bridge_EA stopped","signal_id":"","ts":"2026.03.25 01:53:09"}
+{"type":"FILE_READ","msg":"tail mode: file_pos=1371","signal_id":"","ts":"2026.03.25 01:53:15"}
+{"type":"EA_START","msg":"FTMO_Bridge_EA started v1.01 (null-safe stops, dedupe, tail-read)","signal_id":"","ts":"2026.03.25 01:53:15"}
+{"type":"SIGNAL_ACCEPT","msg":"BUY EUR_USD units=1000 symbol_norm=EURUSD","signal_id":"winprove_reload_20260324225356","ts":"2026.03.25 01:53:57"}
+{"type":"REQUEST_SUMMARY","msg":"symbol=EURUSD side=BUY vol=0.0100 price_mode=MARKET sl_set=false tp_set=false sl=0 tp=0 bid=1.16123 ask=1.16125","signal_id":"winprove_reload_20260324225356","ts":"2026.03.25 01:53:57"}
+{"type":"EXECUTED","msg":"EURUSD BUY 0.0100","signal_id":"winprove_reload_20260324225356","ts":"2026.03.25 01:53:57"}
+{"signal_id":"transportprobe_20260325001001","msg":"safe_verification_line","type":"TRANSPORT_REVERSE_PROBE","ts":"2026-03-25T00:10:01.8853702Z"}
+{"type":"SIGNAL_ACCEPT","msg":"BUY EUR_USD units=1000 symbol_norm=EURUSD","signal_id":"transportprobe_20260325001001","ts":"2026.03.25 03:10:05"}
+{"type":"REQUEST_SUMMARY","msg":"symbol=EURUSD side=BUY vol=0.0100 price_mode=MARKET sl_set=false tp_set=false sl=0 tp=0 bid=1.1623 ask=1.16232","signal_id":"transportprobe_20260325001001","ts":"2026.03.25 03:10:05"}
+{"type":"EXECUTED","msg":"EURUSD BUY 0.0100","signal_id":"transportprobe_20260325001001","ts":"2026.03.25 03:10:05"}
+{"type":"SIGNAL_ACCEPT","msg":"BUY EUR_USD units=1000 symbol_norm=EURUSD","signal_id":"transporte2e_20260325001002","ts":"2026.03.25 03:10:05"}
+{"type":"REQUEST_SUMMARY","msg":"symbol=EURUSD side=BUY vol=0.0100 price_mode=MARKET sl_set=false tp_set=false sl=0 tp=0 bid=1.1623 ask=1.16232","signal_id":"transporte2e_20260325001002","ts":"2026.03.25 03:10:05"}
+{"type":"EXECUTED","msg":"EURUSD BUY 0.0100","signal_id":"transporte2e_20260325001002","ts":"2026.03.25 03:10:05"}
+{"type":"SIGNAL_SKIP","msg":"entry_type not MARKET: LIMIT","signal_id":"trace_20260325004148","ts":"2026.03.25 03:41:58"}
+{"type":"SIGNAL_ACCEPT","msg":"BUY EUR_USD units=1000 symbol_norm=EURUSD","signal_id":"test_20260325011134","ts":"2026.03.25 04:11:36"}
+{"type":"REQUEST_SUMMARY","msg":"symbol=EURUSD side=BUY vol=0.0100 price_mode=MARKET sl_set=false tp_set=false sl=0 tp=0 bid=1.16232 ask=1.16233","signal_id":"test_20260325011134","ts":"2026.03.25 04:11:36"}
+{"type":"EXECUTED","msg":"EURUSD BUY 0.0100","signal_id":"test_20260325011134","ts":"2026.03.25 04:11:36"}
+{"type":"EA_STOP","msg":"FTMO_Bridge_EA stopped","signal_id":"","ts":"2026.03.25 04:18:05"}
+{"type":"FILE_READ","msg":"tail mode: file_pos=2993","signal_id":"","ts":"2026.03.25 04:18:05"}
+{"type":"EA_START","msg":"FTMO_Bridge_EA started v1.01 (null-safe stops, dedupe, tail-read)","signal_id":"","ts":"2026.03.25 04:18:05"}
+{"type":"EA_STOP","msg":"FTMO_Bridge_EA stopped","signal_id":"","ts":"2026.03.25 04:18:24"}
+{"type":"FILE_READ","msg":"tail mode: file_pos=2993","signal_id":"","ts":"2026.03.25 04:18:31"}
+{"type":"EA_START","msg":"FTMO_Bridge_EA started v1.01 (null-safe stops, dedupe, tail-read)","signal_id":"","ts":"2026.03.25 04:18:31"}
+{"type":"SIGNAL_SKIP","msg":"entry_type not MARKET: LIMIT","signal_id":"limitprove_20260325011942","ts":"2026.03.25 04:19:43"}
+{"type":"EA_STOP","msg":"FTMO_Bridge_EA stopped","signal_id":"","ts":"2026.03.25 04:36:17"}
+{"type":"FILE_READ","msg":"tail mode: file_pos=3347","signal_id":"","ts":"2026.03.25 04:36:17"}
+{"type":"EA_START","msg":"FTMO_Bridge_EA started v1.01 (null-safe stops, dedupe, tail-read)","signal_id":"","ts":"2026.03.25 04:36:17"}
+{"type":"EA_STOP","msg":"FTMO_Bridge_EA stopped","signal_id":"","ts":"2026.03.25 04:41:16"}
+{"type":"FILE_READ","msg":"tail mode: file_pos=3347","signal_id":"","ts":"2026.03.25 04:41:16"}
+{"type":"EA_START","msg":"FTMO_Bridge_EA started v1.02 (MARKET+LIMIT, null-safe stops, dedupe, tail-read)","signal_id":"","ts":"2026.03.25 04:41:16"}
+{"type":"EA_STOP","msg":"FTMO_Bridge_EA stopped","signal_id":"","ts":"2026.03.25 04:43:15"}
+{"type":"FILE_READ","msg":"tail mode: file_pos=3347","signal_id":"","ts":"2026.03.25 04:43:15"}
+{"type":"EA_START","msg":"FTMO_Bridge_EA started v1.02 (MARKET+LIMIT, null-safe stops, dedupe, tail-read)","signal_id":"","ts":"2026.03.25 04:43:15"}
+{"type":"EA_STOP","msg":"FTMO_Bridge_EA stopped","signal_id":"","ts":"2026.03.25 04:43:30"}
+{"type":"FILE_READ","msg":"tail mode: file_pos=3347","signal_id":"","ts":"2026.03.25 04:43:43"}
+{"type":"EA_START","msg":"FTMO_Bridge_EA started v1.02 (MARKET+LIMIT, null-safe stops, dedupe, tail-read)","signal_id":"","ts":"2026.03.25 04:43:43"}
+{"type":"SIGNAL_ACCEPT","msg":"BUY EUR_USD units=1000 symbol_norm=EURUSD entry=LIMIT","signal_id":"limitprove_20260325014628","ts":"2026.03.25 04:46:30"}
+{"type":"REQUEST_SUMMARY","msg":"symbol=EURUSD side=BUY vol=0.0100 price_mode=LIMIT entry=1.16 sl_set=false tp_set=false sl=0 tp=0 bid=1.16174 ask=1.16178","signal_id":"limitprove_20260325014628","ts":"2026.03.25 04:46:30"}
+{"type":"BROKER_REJECT","msg":"invalid expiration","signal_id":"limitprove_20260325014628","ts":"2026.03.25 04:46:30"}
+{"type":"SIGNAL_ACCEPT","msg":"BUY EUR_USD units=1000 symbol_norm=EURUSD entry=LIMIT","signal_id":"limitexpfix_20260325020336","ts":"2026.03.25 05:03:39"}
+{"type":"REQUEST_SUMMARY","msg":"symbol=EURUSD side=BUY vol=0.0100 price_mode=LIMIT entry=1.1 sl_set=false tp_set=false sl=0 tp=0 bid=1.16107 ask=1.16113","signal_id":"limitexpfix_20260325020336","ts":"2026.03.25 05:03:39"}
+{"type":"BROKER_REJECT","msg":"invalid expiration","signal_id":"limitexpfix_20260325020336","ts":"2026.03.25 05:03:39"}
+{"type":"SIGNAL_ACCEPT","msg":"BUY EUR_USD units=1000 symbol_norm=EURUSD entry=MARKET","signal_id":"mktregexpfix_20260325020336","ts":"2026.03.25 05:03:39"}
+{"type":"REQUEST_SUMMARY","msg":"symbol=EURUSD side=BUY vol=0.0100 price_mode=MARKET sl_set=false tp_set=false sl=0 tp=0 bid=1.16106 ask=1.16112","signal_id":"mktregexpfix_20260325020336","ts":"2026.03.25 05:03:39"}
+{"type":"EXECUTED","msg":"MARKET EURUSD BUY 0.0100","signal_id":"mktregexpfix_20260325020336","ts":"2026.03.25 05:03:40"}
+{"type":"EA_STOP","msg":"FTMO_Bridge_EA stopped","signal_id":"","ts":"2026.03.25 09:42:16"}
+{"type":"FILE_READ","msg":"tail mode: file_pos=4425","signal_id":"","ts":"2026.03.25 09:42:27"}
+{"type":"EA_START","msg":"FTMO_Bridge_EA started v1.03 (MARKET+LIMIT, pending ZeroSend+expiration policy, LIMIT price/symbol fix)","signal_id":"","ts":"2026.03.25 09:42:27"}
+{"type":"SIGNAL_ACCEPT","msg":"BUY EUR_USD units=1000 symbol_norm=EURUSD entry=LIMIT","signal_id":"limitprove_20260325071718","ts":"2026.03.25 10:17:19"}
+{"type":"REQUEST_SUMMARY","msg":"symbol=EURUSD side=BUY vol=0.0100 price_mode=LIMIT entry=1.16 sl_set=false tp_set=false sl=0 tp=0 bid=1.16012 ask=1.16014 type_time=ORDER_TIME_GTC expiration=0","signal_id":"limitprove_20260325071718","ts":"2026.03.25 10:17:19"}
+{"type":"EXECUTED","msg":"LIMIT EURUSD BUY 0.0100 @1.16","signal_id":"limitprove_20260325071718","ts":"2026.03.25 10:17:19"}
+{"type":"SIGNAL_ACCEPT","msg":"BUY EUR_USD units=1000 symbol_norm=EURUSD entry=MARKET","signal_id":"4acc6cfe-fd77-4794-ae7d-83035702b370","ts":"2026.03.26 04:25:28"}
+{"type":"REQUEST_SUMMARY","msg":"symbol=EURUSD side=BUY vol=0.0100 price_mode=MARKET sl_set=true tp_set=true sl=1.1532 tp=1.16022 bid=1.15618 ask=1.1562","signal_id":"4acc6cfe-fd77-4794-ae7d-83035702b370","ts":"2026.03.26 04:25:28"}
+{"type":"EXECUTED","msg":"MARKET EURUSD BUY 0.0100","signal_id":"4acc6cfe-fd77-4794-ae7d-83035702b370","ts":"2026.03.26 04:25:28"}

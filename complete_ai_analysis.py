@@ -6,13 +6,15 @@ import json
 
 # OANDA Configuration - from environment variables
 OANDA_API_KEY = REDACTED
-OANDA_ACCOUNT_ID = os.getenv("OANDA_ACCOUNT_ID", "101-004-30719775-008")
+OANDA_ACCOUNT_ID = os.getenv("OANDA_ACCOUNT_ID", "").strip()
 OANDA_ENV = os.getenv("OANDA_ENV", "practice")
 OANDA_BASE_URL = f'https://api-fx{OANDA_ENV}.oanda.com' if OANDA_ENV == "practice" else "https://api-fxtrade.oanda.com"
 
 # Fail-closed: require API key
 if not OANDA_API_KEY:
     raise ValueError("OANDA_API_KEY environment variable is required")
+if not OANDA_ACCOUNT_ID:
+    raise ValueError("OANDA_ACCOUNT_ID environment variable is required")
 
 headers = {
     'Authorization': f'Bearer {OANDA_API_KEY}',

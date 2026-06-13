@@ -1,0 +1,85 @@
+{
+  "job_name": "FXG_WINDOWS_SIDECAR_OPERATOR_STARTUP_MONITORING_AND_RECOVERY_V1",
+  "status": "PASS",
+  "phase_results": {
+    "1_discover_existing_windows_sidecar_runtime": "PASS",
+    "2_create_easy_startup_scripts": "PASS",
+    "3_create_easy_shutdown_and_restart_scripts": "PASS",
+    "4_create_status_and_health_scripts": "PASS",
+    "5_create_debug_and_support_bundle_scripts": "PASS",
+    "6_create_desktop_shortcuts_or_launcher_helpers": "PASS",
+    "7_create_windows_operator_runbook": "PASS",
+    "8_run_and_verify_all_operator_scripts": "PASS",
+    "9_run_safety_checks": "PASS",
+    "10_emit_final_structured_json_only": "PASS"
+  },
+  "files_created": [
+    "bridges/windows_sidecar/scripts/fxg_win_start_sidecar.ps1",
+    "bridges/windows_sidecar/scripts/fxg_win_start_mt5_and_sidecar.ps1",
+    "bridges/windows_sidecar/scripts/fxg_win_stop_sidecar.ps1",
+    "bridges/windows_sidecar/scripts/fxg_win_restart_sidecar.ps1",
+    "bridges/windows_sidecar/scripts/fxg_win_restart_mt5_and_sidecar.ps1",
+    "bridges/windows_sidecar/scripts/fxg_win_status.ps1",
+    "bridges/windows_sidecar/scripts/fxg_win_healthcheck.ps1",
+    "bridges/windows_sidecar/scripts/fxg_win_account_snapshot.ps1",
+    "bridges/windows_sidecar/scripts/fxg_win_debug_sidecar.ps1",
+    "bridges/windows_sidecar/scripts/fxg_win_debug_bindings.ps1",
+    "bridges/windows_sidecar/scripts/fxg_win_collect_support_bundle.ps1",
+    "bridges/windows_sidecar/scripts/fxg_win_create_shortcuts.ps1",
+    "docs/bridges/WINDOWS_SIDECAR_OPERATOR_QUICKSTART.md",
+    "docs/bridges/WINDOWS_SIDECAR_MAINTENANCE_AND_DEBUG.md"
+  ],
+  "files_modified": [],
+  "files_verified": [
+    "bridges/windows_sidecar/scripts/start_windows_sidecar.ps1",
+    "bridges/windows_sidecar/run.py",
+    "bridges/windows_sidecar/service/main.py"
+  ],
+  "files_unverified": [],
+  "verification_commands_run": [
+    "fxg_win_status.ps1",
+    "fxg_win_healthcheck.ps1",
+    "fxg_win_account_snapshot.ps1",
+    "fxg_win_debug_sidecar.ps1",
+    "fxg_win_restart_sidecar.ps1",
+    "fxg_win_collect_support_bundle.ps1",
+    "git diff src/core/manual_execution.py dashboard bridge routes configs",
+    "rg orders/send positions/close bridges/windows_sidecar",
+    "rg canonical_mac_file_bridge_v1 parallel_windows_sidecar_bridge_v1"
+  ],
+  "verification_commands_not_run": [
+    "fxg_win_create_shortcuts.ps1 (creates desktop shortcuts - optional)"
+  ],
+  "artifacts": [
+    "artifacts/windows_operator_runtime_discovery.json",
+    "artifacts/windows_operator_status_result.json",
+    "artifacts/windows_operator_healthcheck_result.json",
+    "artifacts/windows_operator_account_snapshot.json",
+    "artifacts/windows_operator_debug_sidecar_result.json",
+    "artifacts/windows_operator_restart_result.json",
+    "artifacts/windows_operator_shortcuts_safety_check.txt",
+    "artifacts/support_bundles/windows/ (timestamped bundles)",
+    "artifacts/FXG_WINDOWS_SIDECAR_OPERATOR_STARTUP_MONITORING_AND_RECOVERY_V1.json"
+  ],
+  "runtime_findings": {
+    "repo_root": "H:\\My Drive\\AI Trading\\Gcloud system",
+    "sidecar_bind": "0.0.0.0:8877",
+    "lan_url": "http://192.168.0.190:8877",
+    "mt5_running": true,
+    "sidecar_verified": true,
+    "restart_verified": true,
+    "fix_applied": "fxg_win_start_sidecar.ps1 repoRoot corrected to workspace root; ProcessStartInfo with UseShellExecute=false for reliable subprocess launch"
+  },
+  "safety_assertions": {
+    "canonical_mac_file_bridge_v1_remains_canonical_execution_bridge": true,
+    "parallel_windows_sidecar_bridge_v1_remains_additive_and_separate": true,
+    "lane_010_canonical_emit_semantics_unchanged": true,
+    "no_duplicate_canonical_writers_created": true,
+    "no_live_trading_enablement_introduced": true,
+    "windows_sidecar_remains_read_only_first": true
+  },
+  "open_risks": [],
+  "next_required_manual_steps": [
+    "Run fxg_win_create_shortcuts.ps1 once to create desktop shortcuts (optional)"
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "phase": "Phase 8L-NEWS-CALENDAR-PROOF-FIX",
+  "classification": "PROVEN_AND_FIXED_OR_PROVEN_UNAVAILABLE",
+  "diagnostics_ran_on_alpha": true,
+  "alpha_diagnostics_command": "gcloud compute ssh --zone=us-central1-a --project=fxg-ai-trading fxg-paper-e2-small-main-2026 --command=\"cd /opt/ai-quant && sudo -u aiquant bash -lc 'set -euo pipefail; set -a; source /etc/ai-quant/.env; set +a; /opt/ai-quant/.venv/bin/python3 scripts/phase8l_news_calendar_diagnostics.py --instrument EUR_USD --days 14 --start-utc 2026-04-17T00:15:00Z --end-utc 2026-04-30T23:45:00Z --write-artifact'\"",
+  "alpha_diagnostics_artifact_vm": "/opt/ai-quant/ARTIFACTS/performance/latest_phase8l_news_calendar_diagnostics.json",
+  "alpha_diagnostics_artifact_local_copy": "ARTIFACTS/latest_phase8l_news_calendar_diagnostics_ALPHA.json",
+  "provider_env_presence": {
+    "NewsAPI": {
+      "NEWSAPI_API_KEY": false,
+      "NEWSAPI_KEY": false,
+      "NEWS_API_KEY": false
+    },
+    "TradingEconomics": {
+      "TRADINGECONOMICS_KEY": false,
+      "TRADING_ECONOMICS_KEY": false,
+      "TE_API_KEY": false,
+      "TRADING_ECONOMICS_CLIENT": false
+    },
+    "Finnhub": {
+      "FINNHUB_API_KEYS": false,
+      "FINNHUB_API_KEY": false,
+      "FINNHUB_KEY": false
+    }
+  },
+  "provider_http_statuses": {
+    "NewsAPI": null,
+    "TradingEconomics": null,
+    "Finnhub_calendar": null
+  },
+  "provider_rows_returned": {
+    "NewsAPI": 0,
+    "TradingEconomics": 0,
+    "Finnhub_calendar": 0
+  },
+  "news_root_cause": "PROVIDER_KEYS_MISSING:no_env_key_in_expected_names — Phase 8L exporter never receives a NewsAPI key from ALPHA env; fetches are skipped; news_rows stays empty so news_reconstruction_available is false.",
+  "calendar_root_cause": "PROVIDER_KEYS_MISSING — No TradingEconomics or Finnhub calendar keys in ALPHA env; calendar fetches skipped; cal_rows empty so calendar_reconstruction_available is false.",
+  "code_path_manifest_flags": "scripts/phase8l_alpha_export_research_data.py sets news_reconstruction_available=bool(news_rows) and calendar_reconstruction_available=bool(cal_rows) after optional fetches.",
+  "fix_applied": "Added scripts/local_research/phase8l_news_calendar_fetch.py (single resolution + HTTP helpers). Exporter now uses resolve_newsapi_key/resolve_trading_economics_key/resolve_finnhub_key including aliases NEWS_API_KEY, TRADING_ECONOMICS_KEY, TE_API_KEY. Added scripts/phase8l_news_calendar_diagnostics.py and tests. Deployed to ALPHA /opt/ai-quant. Availability remains false until keys exist on ALPHA under any supported name.",
+  "files_changed": [
+    "scripts/local_research/phase8l_news_calendar_fetch.py",
+    "scripts/phase8l_alpha_export_research_data.py",
+    "scripts/phase8l_news_calendar_diagnostics.py",
+    "tests/test_phase8l_news_calendar_diagnostics.py"
+  ],
+  "tests_passed": true,
+  "tests_command": "python -m unittest discover -s tests -p \"test_phase8*.py\" -v",
+  "tests_count": 64,
+  "phase8l_rerun_completed": false,
+  "phase8l_rerun_skip_reason": "News/calendar provider keys are absent on ALPHA; rerunning export would still yield zero news/calendar rows and false availability flags. Full one-click backtest (5950X) not executed in this session per no heavy backtest on ALPHA / operator-owned 5950X step.",
+  "news_reconstruction_available_after": null,
+  "calendar_reconstruction_available_after": null,
+  "news_rows_after": null,
+  "calendar_rows_after": null,
+  "dataset_start_utc": "2026-04-17T00:15:00Z",
+  "dataset_end_utc": "2026-04-30T23:45:00Z",
+  "candidate_count": null,
+  "expectancy_r": null,
+  "profit_factor_r": null,
+  "max_loss_streak": null,
+  "drawdown_proxy_r": null,
+  "recommendation_label": null,
+  "secret_values_printed": false,
+  "order_or_execution_apis_called": false,
+  "ny_live_enabled": false,
+  "send_trade_unlock_changed": false,
+  "execution_paths_changed": false,
+  "macbook_pull_ready": true,
+  "notes": "Exact reason Phase 8L reported false: manifest flags mirror non-empty row lists (phase8l_alpha_export_research_data run_export). On ALPHA, diagnostics after sourcing /etc/ai-quant/.env show env_present=false for all expected news/calendar key names, so no HTTP calls were made and row counts are zero. This is not a manifest bug or parser bug; APIs elsewhere do not populate ALPHA service env. Alias support added so future keys under NEWS_API_KEY or TRADING_ECONOMICS_KEY are honored without code edits."
+}

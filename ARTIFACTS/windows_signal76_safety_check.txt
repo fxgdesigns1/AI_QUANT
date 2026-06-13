@@ -1,0 +1,13 @@
+FXG_WINDOWS_SIGNAL_76B6_CONSUMER_TRACE_AND_FIX_V1 — Phase 9 safety checklist
+
+[PASS] No execution routes added to Windows sidecar: bridges/windows_sidecar/service/main.py documents read_only MT5 API; grep of sidecar *.py shows no OrderSend or signal file writes for execution.
+
+[PASS] Canonical producer semantics: no edits to Mac emit_signal, fanout, or bridge_account in this job (manual_execution.py not present in repo; no producer files modified).
+
+[PASS] Paper-only: no TRADING_ENABLED/live enablement changes; EA input InpPaperOnly unchanged; job did not request live trades.
+
+[PASS] Windows remains intended active consumer for MT5 FTMO_Bridge_EA in this workflow; Mac consumer disabled per known_truth.
+
+[PASS] Single code change: bridges/windows_sidecar/scripts/fxg_win_wire_canonical_signals.ps1 — wiring/discovery only; not a second canonical writer.
+
+Date: 2026-03-25 (audit run)

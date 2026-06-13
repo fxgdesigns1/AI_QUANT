@@ -1,0 +1,10 @@
+{
+  "status": "requires_manual_admin",
+  "rule_name": "FXG Windows Sidecar 8877",
+  "port": 8877,
+  "protocol": "TCP",
+  "direction": "Inbound",
+  "action": "Allow",
+  "profile": "Private",
+  "manual_command": "Run PowerShell as Administrator: New-NetFirewallRule -DisplayName 'FXG Windows Sidecar 8877' -Direction Inbound -Protocol TCP -LocalPort 8877 -Action Allow -Profile Private"
+}

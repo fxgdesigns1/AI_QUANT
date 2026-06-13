@@ -1,0 +1,117 @@
+{
+  "generated_at_utc": "2026-05-01T00:20:17.705035Z",
+  "phase": "Phase 8L-NEWS-CALENDAR-DIAGNOSTICS",
+  "classification": "PROVIDER_KEYS_MISSING",
+  "host": "fxg-paper-e2-small-main-2026",
+  "repo_path": "/opt/ai-quant",
+  "instrument": "EUR_USD",
+  "days_requested": 14,
+  "date_window_start_utc": "2026-04-17T00:15:00Z",
+  "date_window_end_utc": "2026-04-30T23:45:00Z",
+  "provider_results": [
+    {
+      "provider": "NewsAPI",
+      "env_present": false,
+      "env_presence_by_name": {
+        "NEWSAPI_API_KEY": false,
+        "NEWSAPI_KEY": false,
+        "NEWS_API_KEY": false
+      },
+      "selected_env_name": null,
+      "http_status": null,
+      "rate_limited": false,
+      "auth_failed": false,
+      "rows_returned": 0,
+      "date_range_supported": false,
+      "parser_ok": false,
+      "failure_reason": "no_env_key_in_expected_names",
+      "api_error_redacted_shape": null
+    },
+    {
+      "provider": "TradingEconomics",
+      "env_present": false,
+      "env_presence_by_name": {
+        "TRADINGECONOMICS_KEY": false,
+        "TRADING_ECONOMICS_KEY": false,
+        "TE_API_KEY": false,
+        "TRADING_ECONOMICS_CLIENT": false
+      },
+      "selected_env_name": null,
+      "http_status": null,
+      "rate_limited": false,
+      "auth_failed": false,
+      "rows_returned": 0,
+      "date_range_supported": false,
+      "parser_ok": false,
+      "failure_reason": "no_env_key_in_expected_names",
+      "api_error_redacted_shape": null
+    },
+    {
+      "provider": "Finnhub",
+      "env_present": false,
+      "env_presence_by_name": {
+        "FINNHUB_API_KEYS": false,
+        "FINNHUB_API_KEY": false,
+        "FINNHUB_KEY": false
+      },
+      "selected_env_name": null,
+      "http_status": null,
+      "rate_limited": false,
+      "auth_failed": false,
+      "rows_returned": 0,
+      "date_range_supported": false,
+      "parser_ok": false,
+      "failure_reason": "no_env_key_in_expected_names",
+      "api_error_redacted_shape": null
+    }
+  ],
+  "env_presence_summary": {
+    "NewsAPI": {
+      "NEWSAPI_API_KEY": false,
+      "NEWSAPI_KEY": false,
+      "NEWS_API_KEY": false
+    },
+    "TradingEconomics": {
+      "TRADINGECONOMICS_KEY": false,
+      "TRADING_ECONOMICS_KEY": false,
+      "TE_API_KEY": false,
+      "TRADING_ECONOMICS_CLIENT": false
+    },
+    "Finnhub": {
+      "FINNHUB_API_KEYS": false,
+      "FINNHUB_API_KEY": false,
+      "FINNHUB_KEY": false
+    }
+  },
+  "http_status_summary": {
+    "NewsAPI": null,
+    "TradingEconomics_te": null,
+    "Finnhub_calendar": null
+  },
+  "rows_by_provider": {
+    "NewsAPI": 0,
+    "TradingEconomics": 0,
+    "Finnhub_calendar": 0,
+    "calendar_combined": 0
+  },
+  "parser_failures": [],
+  "filtering_failures": [],
+  "manifest_logic_check": "Phase 8L manifest sets news_reconstruction_available=true iff news row list non-empty after fetch; calendar_reconstruction_available=true iff TE or Finnhub yields at least one row.",
+  "news_root_cause": "PROVIDER_KEYS_MISSING:no_env_key_in_expected_names",
+  "calendar_root_cause": "PROVIDER_KEYS_MISSING:TE=0:no_env_key_in_expected_names;FH=0:no_env_key_in_expected_names",
+  "news_root_cause_classification": "PROVIDER_KEYS_MISSING",
+  "calendar_root_cause_classification": "PROVIDER_KEYS_MISSING",
+  "root_cause": "news:PROVIDER_KEYS_MISSING; calendar:PROVIDER_KEYS_MISSING (TE rows=0, Finnhub rows=0)",
+  "fix_required": true,
+  "fix_applied": null,
+  "fix_type": "env_mapping_or_provision_keys",
+  "recommended_patch": "Ensure ALPHA /etc/ai-quant/.env defines at least one name per provider from the expected list; Phase 8L exporter resolves aliases via phase8l_news_calendar_fetch.",
+  "safe_to_rerun_phase8l": true,
+  "secret_values_printed": false,
+  "order_or_execution_apis_called": false,
+  "paper_review_only": true,
+  "live_permission": false,
+  "ny_live_enabled": false,
+  "send_trade_unlock_changed": false,
+  "execution_paths_changed": false
+}

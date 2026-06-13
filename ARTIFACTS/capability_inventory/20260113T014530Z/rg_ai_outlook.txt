@@ -1,0 +1,302 @@
+scripts/local_preflight.sh:84:  "OPENAI_API_KEY","GOOGLE_API_KEY","GEMINI_API_KEY",
+src/control_plane/outlook_engine.py:1:"""Outlook Engine - Deterministic Market Analysis
+src/control_plane/outlook_engine.py:3:Generates Daily/Weekly/Monthly outlooks based on market data snapshots.
+src/control_plane/outlook_engine.py:16:class OutlookEngine:
+src/control_plane/outlook_engine.py:17:    """Deterministic outlook generator"""
+src/control_plane/outlook_engine.py:30:    def _get_stub_outlook(self, horizon: str) -> Dict[str, Any]:
+src/control_plane/outlook_engine.py:31:        """Generate a safe stub/baseline outlook if no models active"""
+src/control_plane/outlook_engine.py:37:        outlooks = []
+src/control_plane/outlook_engine.py:39:            outlooks.append({
+src/control_plane/outlook_engine.py:63:            "outlooks": outlooks,
+src/control_plane/outlook_engine.py:64:            "note": "Baseline outlook (waiting for full market data integration)"
+src/control_plane/outlook_engine.py:68:        """Compute outlook for horizon (daily, weekly, monthly)"""
+src/control_plane/outlook_engine.py:78:        result = self._get_stub_outlook(horizon)
+src/control_plane/outlook_engine.py:86:        """Save outlook snapshot atomically"""
+src/control_plane/outlook_engine.py:87:        filename = f"outlook_{horizon}.json"
+src/control_plane/outlook_engine.py:97:        """Get latest cached outlook"""
+src/control_plane/outlook_engine.py:98:        path = self._runtime_dir / f"outlook_{horizon}.json"
+src/control_plane/outlook_engine.py:109:_outlook_engine = None
+src/control_plane/outlook_engine.py:111:def get_outlook_engine() -> OutlookEngine:
+src/control_plane/outlook_engine.py:112:    global _outlook_engine
+src/control_plane/outlook_engine.py:113:    if _outlook_engine is None:
+src/control_plane/outlook_engine.py:114:        _outlook_engine = OutlookEngine()
+src/control_plane/outlook_engine.py:115:    return _outlook_engine
+scripts/verify_ai_providers_no_leak.py:21:    print("AI_INSIGHTS_ENABLED:", os.getenv("AI_INSIGHTS_ENABLED", "0"))
+scripts/verify_ai_providers_no_leak.py:22:    print("AI_INSIGHTS_MODE:", os.getenv("AI_INSIGHTS_MODE", "advisory"))
+scripts/verify_ai_providers_no_leak.py:23:    print("AI_PROVIDER:", os.getenv("AI_PROVIDER", "openai"))
+scripts/verify_ai_providers_no_leak.py:26:    print("OPENAI_API_KEY:", mark(settings.openai_api_key))
+scripts/verify_ai_providers_no_leak.py:27:    print("OPENAI_MODEL:", os.getenv("OPENAI_MODEL", "gpt-4o-mini"))
+scripts/verify_ai_providers_no_leak.py:28:    print("OPENAI_API_KEY_SHA256_PREFIX:", sha_prefix(settings.openai_api_key))
+scripts/verify_ai_providers_no_leak.py:30:    # Accept GOOGLE_API_KEY or GEMINI_API_KEY
+scripts/verify_ai_providers_no_leak.py:32:    print("GEMINI_MODEL:", os.getenv("GEMINI_MODEL", "gemini-1.5-flash"))
+scripts/verify_ai_providers_no_leak.py:35:    if os.getenv("AI_INSIGHTS_ENABLED", "0") not in ("1", "true", "True", "YES", "yes"):
+scripts/verify_ai_providers_no_leak.py:36:        print("OK: AI insights disabled; nothing to call")
+scripts/verify_ai_providers_no_leak.py:40:    if os.getenv("AI_INSIGHTS_CALL_SMOKE", "0") in ("1", "true", "True", "YES", "yes"):
+scripts/verify_ai_providers_no_leak.py:41:        from src.ai.ai_insights import get_ai_insight
+scripts/verify_ai_providers_no_leak.py:48:        insight, meta = get_ai_insight(ctx)
+scripts/verify_ai_providers_no_leak.py:49:        # Print only safe meta and whether we got any insight.
+scripts/verify_ai_providers_no_leak.py:50:        print("SMOKE_RESULT_HAS_INSIGHT:", bool(insight))
+scripts/verify_ai_insights_no_leak.py:13:    print("AI_INSIGHTS_ENABLED:", "ON" if settings.ai_insights_enabled else "OFF")
+scripts/verify_ai_insights_no_leak.py:14:    print("AI_INSIGHTS_MODE:", settings.ai_insights_mode)
+scripts/verify_ai_insights_no_leak.py:15:    print("OPENAI_API_KEY:", mark(settings.openai_api_key or ""))
+scripts/verify_ai_insights_no_leak.py:16:    print("OPENAI_MODEL:", settings.openai_model or "MISSING")
+scripts/verify_ai_insights_no_leak.py:19:    if settings.openai_api_key:
+scripts/verify_ai_insights_no_leak.py:20:        h = hashlib.sha256(settings.openai_api_key.encode()).hexdigest()[:12]
+scripts/verify_ai_insights_no_leak.py:21:        print("OPENAI_API_KEY_SHA256_PREFIX:", h)
+scripts/verify_ai_insights_no_leak.py:24:    if not settings.ai_insights_enabled:
+scripts/verify_ai_insights_no_leak.py:25:        print("OK: AI insights disabled; nothing to call")
+scripts/verify_ai_insights_no_leak.py:29:    from src.ai.ai_insights import get_ai_insight
+scripts/verify_ai_insights_no_leak.py:30:    print("OK: imported get_ai_insight")
+scripts/verify_ai_insights_no_leak.py:33:    if os.getenv("AI_INSIGHTS_CALL_SMOKE", "0") == "1":
+scripts/verify_ai_insights_no_leak.py:36:        r = get_ai_insight(ctx)
+scripts/vm_bootstrap_control_plane.sh:123:curl -s -o /dev/null -w 'insights=%{http_code}\n' http://127.0.0.1:8787/api/insights
+scripts/dashboard_probe.py:25:    "/api/v1/outlook/daily",
+scripts/dashboard_probe.py:34:    "outlook",
+scripts/dashboard_probe.py:441:            # Summaries
+scripts/verify_env_no_leak.py:15:print("OPENAI_API_KEY:", mark(settings.openai_api_key or ""))
+scripts/verify_env_no_leak.py:16:print("OPENAI_MODEL:", settings.openai_model or "MISSING")
+scripts/verify_env_no_leak.py:17:print("AI_INSIGHTS_ENABLED:", "ON" if settings.ai_insights_enabled else "OFF")
+scripts/verify_env_no_leak.py:18:print("AI_INSIGHTS_MODE:", settings.ai_insights_mode)
+scripts/verify_env_no_leak.py:22:print("GEMINI_MODEL:", settings.gemini_model or "MISSING")
+src/control_plane/api.py:32:from .outlook_engine import get_outlook_engine
+src/control_plane/api.py:46:outlook_engine = get_outlook_engine()
+src/control_plane/api.py:256:@app.get("/api/v1/outlook/{horizon}")
+src/control_plane/api.py:257:async def get_outlook(horizon: str):
+src/control_plane/api.py:258:    """Get market outlook for horizon (daily/weekly/monthly)
+src/control_plane/api.py:266:    snapshot = outlook_engine.get_latest(horizon)
+src/control_plane/api.py:270:            snapshot = outlook_engine.compute(horizon)
+src/control_plane/api.py:272:            raise HTTPException(status_code=500, detail=f"Failed to generate outlook: {str(e)}")
+src/control_plane/api.py:277:        "outlook": snapshot,
+src/control_plane/api.py:282:@app.post("/api/v1/outlook/recompute")
+src/control_plane/api.py:283:async def recompute_outlook(
+src/control_plane/api.py:287:    """Force recompute of outlook snapshots (Admin Gated)"""
+src/control_plane/api.py:292:            results[h] = outlook_engine.compute(h)
+src/control_plane/api.py:296:            action="recompute_outlook",
+src/control_plane/api.py:298:            details={"path": "/api/v1/outlook/recompute", "method": "POST", "note": "Recomputed all outlook horizons"}
+src/control_plane/api.py:303:            "message": "Outlook recomputed successfully",
+src/control_plane/api.py:310:            action="recompute_outlook",
+src/control_plane/api.py:312:            details={"path": "/api/v1/outlook/recompute", "method": "POST", "error": str(e)}
+src/control_plane/api.py:352:@app.get("/api/insights")
+src/control_plane/api.py:353:@app.get("/api/insights/{path:path}")
+src/control_plane/api.py:354:async def insights_noise_shim(path: str = ""):
+src/control_plane/api.py:355:    """Noise shim for /api/insights requests (returns 204 to stop 404 spam)
+src/control_plane/api.py:1050:        "insights_available": False,
+src/control_plane/api.py:1923:    from src.ai.ai_insights import get_ai_insight
+src/control_plane/api.py:1963:    # Get AI insight
+src/control_plane/api.py:1964:    insight_text, ai_meta = get_ai_insight(context)
+src/control_plane/api.py:1973:    if insight_text:
+src/control_plane/api.py:1974:        text_lower = insight_text.lower()
+src/control_plane/api.py:1997:        "summary": insight_text,
+scripts/verify_repo_state.py:62:    re.compile(r"\b(OANDA_API_KEY|TELEGRAM_BOT_TOKEN|GOOGLE_API_KEY|GEMINI_API_KEY|OPENAI_API_KEY)\b\s*[:=]\s*['\"][^'\"]{10,}['\"]"),
+scripts/update_md_probe_results.py:25:# Summarize news_assess: count occurrences of common item fields
+templates/dashboard_advanced.html:600:        /* AI Assistant Widget (scoped) */
+templates/dashboard_advanced.html:601:        .ai-assistant-panel {
+templates/dashboard_advanced.html:616:        .ai-assistant-header {
+templates/dashboard_advanced.html:624:        .ai-assistant-title { font-weight: 600; }
+templates/dashboard_advanced.html:717:        /* Contextual Insights Styles */
+templates/dashboard_advanced.html:718:        #contextual-insights { padding: 16px; }
+templates/dashboard_advanced.html:1100:                <a class="nav-link" href="#insights" data-section="insights">
+templates/dashboard_advanced.html:1102:                    AI Insights
+templates/dashboard_advanced.html:1371:                <!-- Insights & Trade Ideas (Full-width Row) -->
+templates/dashboard_advanced.html:1373:                    <div class="card full-width" id="insightsSection">
+templates/dashboard_advanced.html:1374:                        <h3><span class="card-icon">🧭</span>Market Insights</h3>
+templates/dashboard_advanced.html:1375:                        <div id="insightsContent">
+templates/dashboard_advanced.html:1376:                            <div style="text-align: center; padding: 16px; color: #94a3b8;">Loading live insights…</div>
+templates/dashboard_advanced.html:1387:                <!-- News & AI Insights Section -->
+templates/dashboard_advanced.html:1389:                    <!-- AI Insights & Recommendations -->
+templates/dashboard_advanced.html:1391:                        <h3><span class="card-icon">🧠</span>AI Insights & Recommendations</h3>
+templates/dashboard_advanced.html:1410:                    <!-- Market Context & Quality Insights -->
+templates/dashboard_advanced.html:1412:                        <h3><span class="card-icon">🎯</span>Market Context & Quality Insights</h3>
+templates/dashboard_advanced.html:1413:                        <div id="contextual-insights">
+templates/dashboard_advanced.html:1824:        async function loadInsightsSection() {
+templates/dashboard_advanced.html:1825:            const content = document.getElementById('insightsContent');
+templates/dashboard_advanced.html:1830:                            <h5>AI Market Insights</h5>
+templates/dashboard_advanced.html:1831:                            <p>Loading AI insights...</p>
+templates/dashboard_advanced.html:1832:                            <p><a href="/insights" class="btn btn-primary">Open Full Insights Dashboard</a></p>
+templates/dashboard_advanced.html:1861:                            <p>Your AI assistant for trading decisions and market analysis.</p>
+templates/dashboard_advanced.html:1918:        <!-- AI Insights Section -->
+templates/dashboard_advanced.html:1919:        <section id="insights" class="content-section">
+templates/dashboard_advanced.html:1921:                <h2><i class="bi bi-lightbulb me-2"></i>AI Insights</h2>
+templates/dashboard_advanced.html:1922:                <div id="insightsContent">
+templates/dashboard_advanced.html:1923:                    <p>Loading AI insights...</p>
+templates/dashboard_advanced.html:1996:                            'insights': loadInsightsSection,
+templates/dashboard_advanced.html:2174:            // Initialize AI Assistant
+templates/dashboard_advanced.html:2175:            initAIAssistant();
+templates/dashboard_advanced.html:2184:            loadInsights();
+templates/dashboard_advanced.html:2209:            // Insights and trade ideas: Every 30 seconds
+templates/dashboard_advanced.html:2211:                console.log('🔄 Refreshing insights...');
+templates/dashboard_advanced.html:2212:                loadInsights();
+templates/dashboard_advanced.html:2543:                                EUR/USD Consolidates Near 1.1700 - Traders Await ECB Commentary
+templates/dashboard_advanced.html:2656:        // Load insights
+templates/dashboard_advanced.html:2657:        async function loadInsights() {
+templates/dashboard_advanced.html:2659:                const res = await fetch('/api/insights');
+templates/dashboard_advanced.html:2661:                const el = document.getElementById('insightsContent');
+templates/dashboard_advanced.html:2663:                if (data.status === 'ok' && data.insights) {
+templates/dashboard_advanced.html:2664:                    const s = data.insights;
+templates/dashboard_advanced.html:2698:        // Initialize AI Assistant
+templates/dashboard_advanced.html:2699:        function initAIAssistant() {
+templates/dashboard_advanced.html:2700:            console.log('🤖 Initializing AI Assistant...');
+templates/dashboard_advanced.html:2702:            // Create AI assistant panel if it doesn't exist
+templates/dashboard_advanced.html:2703:            if (!document.querySelector('.ai-assistant-panel')) {
+templates/dashboard_advanced.html:2705:                panel.className = 'ai-assistant-panel';
+templates/dashboard_advanced.html:2707:                    <div class="ai-assistant-header">
+templates/dashboard_advanced.html:2708:                        <div class="ai-assistant-title">🤖 AI Assistant</div>
+templates/dashboard_advanced.html:2744:                    // Call real AI assistant API
+templates/dashboard_advanced.html:2940:            else if (lower.startsWith('/insights')) url = '/api/insights';
+templates/dashboard_advanced.html:2950:                aiMsg.textContent = 'Unknown command. Try: /status /accounts /risk /metrics /positions /signals /news /insights /ideas';
+templates/dashboard_advanced.html:3031:        // Load insights
+templates/dashboard_advanced.html:3032:        async function loadInsights() {
+templates/dashboard_advanced.html:3034:                const res = await fetch('/api/insights');
+templates/dashboard_advanced.html:3036:                if (data.status === 'success' && data.insights) {
+templates/dashboard_advanced.html:3037:                    renderInsights(data.insights);
+templates/dashboard_advanced.html:3040:                console.error('❌ Insights error:', e);
+templates/dashboard_advanced.html:3044:        // Render insights
+templates/dashboard_advanced.html:3045:        function renderInsights(insights) {
+templates/dashboard_advanced.html:3046:            const el = document.getElementById('insightsContent');
+templates/dashboard_advanced.html:3049:                const focus = (insights.focus || []).map(x => `<span class="tag">${x}</span>`).join(' ');
+templates/dashboard_advanced.html:3050:                const regimes = Object.entries(insights.regimes || {}).map(([k,v]) => `<div class="kv"><span>${k}</span><span class="pill">${v}</span></div>`).join('');
+templates/dashboard_advanced.html:3052:                    <div class="insights">
+templates/dashboard_advanced.html:3053:                        <div class="summary">${insights.summary || 'Live market insights unavailable right now.'}</div>
+templates/dashboard_advanced.html:3056:                        <div class="risk">Risk Level: <span class="pill">${insights.risk_level || 'low'}</span></div>
+templates/dashboard_advanced.html:3060:                el.innerHTML = '<div class="muted" style="padding: 12px;">Insights temporarily unavailable.</div>';
+templates/dashboard_advanced.html:3657:        // INITIAL DATA LOAD: Fetch AI insights on page load (don't wait for WebSocket)
+templates/dashboard_advanced.html:3658:        async function loadInitialAIInsights() {
+templates/dashboard_advanced.html:3660:                console.log('🔄 Loading initial AI insights...');
+templates/dashboard_advanced.html:3691:                console.error('❌ Failed to load initial AI insights:', error);
+templates/dashboard_advanced.html:3695:        // Load AI insights after 2 seconds (give time for page to fully load)
+templates/dashboard_advanced.html:3696:        setTimeout(loadInitialAIInsights, 2000);
+templates/dashboard_advanced.html:3698:        // Update Contextual Insights
+templates/dashboard_advanced.html:3699:        async function updateContextualInsights() {
+templates/dashboard_advanced.html:3706:                    console.log('⚠️ Contextual insights not available yet');
+templates/dashboard_advanced.html:3711:                console.log('✅ Contextual insights loaded:', data);
+templates/dashboard_advanced.html:3740:                console.error('❌ Failed to update contextual insights:', error);
+templates/dashboard_advanced.html:3744:        // Update contextual insights every 30 seconds
+templates/dashboard_advanced.html:3745:        setInterval(updateContextualInsights, 30000);
+templates/dashboard_advanced.html:3747:        setTimeout(updateContextualInsights, 3000);
+templates/dashboard_advanced.html:4022:    <!-- AI Assistant Widget Loader (flag + health-checked) -->
+templates/dashboard_advanced.html:4024:      (async function initAIAssistant() {
+templates/dashboard_advanced.html:4027:          if (!res.ok) return; // Assistant disabled or not registered
+templates/dashboard_advanced.html:4030:          if (document.querySelector('.ai-assistant-panel')) return;
+templates/dashboard_advanced.html:4034:          panel.className = 'ai-assistant-panel';
+templates/dashboard_advanced.html:4036:            <div class="ai-assistant-header">
+templates/dashboard_advanced.html:4037:              <div class="ai-assistant-title">🤖 AI Assistant</div>
+templates/dashboard_advanced.html:4105:              if (resp.reply) appendMessage(`Assistant: ${resp.reply}`);
+templates/dashboard_advanced.html:4150:              console.error('AI assistant error:', e);
+templates/dashboard_advanced.html:4151:              appendMessage(`Assistant error: ${(e && e.message) || e}`);
+templates/dashboard_advanced.html:4172:            aiSocket.on('assistant_reply', (data) => {
+templates/dashboard_advanced.html:4173:              if (data && data.reply) appendMessage(`Assistant: ${data.reply}`);
+templates/dashboard_advanced.html:4179:          // Assistant disabled or unreachable; do nothing
+templates/dashboard_advanced.html:4182:        // Fallback: Ensure AI assistant panel is always available
+templates/dashboard_advanced.html:4184:          if (!document.querySelector('.ai-assistant-panel')) {
+templates/dashboard_advanced.html:4185:            console.log('Creating fallback AI assistant panel...');
+templates/dashboard_advanced.html:4187:            panel.className = 'ai-assistant-panel';
+templates/dashboard_advanced.html:4189:              <div class="ai-assistant-header">
+templates/dashboard_advanced.html:4190:                <div class="ai-assistant-title">🤖 AI Assistant</div>
+scripts/git-hooks/pre-commit:40:PATTERN='-----BEGIN|PRIVATE KEY|OPENSSH|xox[baprs]-|bot[0-9]+:|AIza[0-9A-Za-z_\-]{10,}|sk-[0-9A-Za-z_\-]{10,}|c01de9eb4d79|a3699a9d6b6d94d4e2c4c59748e73e2d|7248728383:|Environment=(OANDA_API_KEY|TELEGRAM_BOT_TOKEN|OPENAI_API_KEY|GEMINI_API_KEY|GOOGLE_API_KEY|MARKETAUX_KEY|MARKETAUX_KEYS)=|OANDA_API_KEY[[:space:]]*=[[:space:]]*["\x27]|TELEGRAM_BOT_TOKEN[[:space:]]*=[[:space:]]*["\x27]|api[_-]?key[[:space:]]*=[[:space:]]*["\x27]|token[[:space:]]*=[[:space:]]*["\x27]|secret[[:space:]]*=[[:space:]]*["\x27]|password[[:space:]]*=[[:space:]]*["\x27]'
+scripts/systemd/install_canonical_service.sh:46:if rg -q "Environment=(OANDA_API_KEY|TELEGRAM_BOT_TOKEN|OPENAI_API_KEY|GEMINI_API_KEY|GOOGLE_API_KEY|MARKETAUX_KEY|MARKETAUX_KEYS)=\S+" "$TEMPLATE" 2>/dev/null; then
+scripts/systemd/install_canonical_service.sh:104:# OpenAI: https://platform.openai.com/api-keys
+scripts/systemd/install_canonical_service.sh:105:OPENAI_API_KEY=
+scripts/pw_trace_forbidden_requests.js:8: * - /api/insights
+scripts/pw_trace_forbidden_requests.js:25:    '/api/insights',
+scripts/pw_trace_forbidden_requests.js:140:            if (typeof url === 'string' && ['/socket.io', '/tasks/full_scan', '/api/insights', '/api/trade_ideas'].some(prefix => url.includes(prefix))) {
+scripts/pw_trace_forbidden_requests.js:149:            if (typeof url === 'string' && ['/socket.io', '/tasks/full_scan', '/api/insights', '/api/trade_ideas'].some(prefix => url.includes(prefix))) {
+scripts/pw_trace_forbidden_requests.js:158:            if (typeof url === 'string' && ['/socket.io', '/tasks/full_scan', '/api/insights', '/api/trade_ideas'].some(prefix => url.includes(prefix))) {
+src/ai/ai_insights.py:10:# Advisory-only AI insights router.
+src/ai/ai_insights.py:32:        "You are an FX trading assistant. Provide advisory-only insight. "
+src/ai/ai_insights.py:42:def _call_openai(prompt: str, timeout_s: int = DEFAULT_TIMEOUT_S) -> str:
+src/ai/ai_insights.py:43:    settings.require_openai()
+src/ai/ai_insights.py:47:        from openai import OpenAI
+src/ai/ai_insights.py:49:        raise RuntimeError("OpenAI SDK not installed. Install: pip install openai") from e
+src/ai/ai_insights.py:51:    client = OpenAI(api_key=settings.openai_api_key)
+src/ai/ai_insights.py:52:    model = settings.openai_model
+src/ai/ai_insights.py:68:def _call_gemini(prompt: str, timeout_s: int = DEFAULT_TIMEOUT_S) -> str:
+src/ai/ai_insights.py:69:    settings.require_gemini()
+src/ai/ai_insights.py:76:            "Gemini SDK not installed. Install: pip install google-generativeai"
+src/ai/ai_insights.py:80:    model_name = settings.gemini_model
+src/ai/ai_insights.py:102:def get_ai_insight(context: Dict[str, Any]) -> Tuple[Optional[str], Dict[str, Any]]:
+src/ai/ai_insights.py:103:    """Return (insight_text_or_none, meta).
+src/ai/ai_insights.py:111:    enabled = bool(settings.ai_insights_enabled)
+src/ai/ai_insights.py:112:    mode = (settings.ai_insights_mode or "advisory").lower()
+src/ai/ai_insights.py:136:        chain = ["openai"]
+src/ai/ai_insights.py:144:            if provider in ("openai", "oai"):
+src/ai/ai_insights.py:145:                out = _call_openai(prompt)
+src/ai/ai_insights.py:146:            elif provider in ("gemini", "google"):
+src/ai/ai_insights.py:147:                out = _call_gemini(prompt)
+scripts/audit_vm_phases.sh:143:rg -n "openai|gpt|gemini|google-genai|anthropic|llm|prompt|completion|chat" src scripts | head -400 | tee ARTIFACTS/ai_code_hits_vm.txt || true
+scripts/audit_vm_phases.sh:148:keys=['OPENAI_API_KEY','GOOGLE_API_KEY','GEMINI_API_KEY','MARKETAUX_API_KEY','MARKETAUX_API_KEYS']
+scripts/audit_vm_phases.sh:159:  rg -n "/api/(ai|llm|predict|analysis)" src/control_plane templates 2>/dev/null | head -50 | tee -a ARTIFACTS/ai_e2e_test.log || true
+scripts/audit_vm_phases.sh:184:rg -n "openai|gpt|gemini|google-genai|anthropic|llm|prompt|completion|chat" src scripts | head -400 | tee ARTIFACTS/vm_code_ai_hits.txt || true
+src/core/settings.py:38:    # AI Insights (OpenAI)
+src/core/settings.py:39:    openai_api_key: Optional[str]
+src/core/settings.py:40:    openai_model: str
+src/core/settings.py:41:    ai_insights_enabled: bool
+src/core/settings.py:42:    ai_insights_mode: str
+src/core/settings.py:44:    # AI Insights (Gemini/Google)
+src/core/settings.py:46:    gemini_model: str
+src/core/settings.py:70:    def require_openai(self) -> None:
+src/core/settings.py:71:        if not self.openai_api_key:
+src/core/settings.py:72:            raise RuntimeError("OPENAI_API_KEY is required when using OpenAI AI insights")
+src/core/settings.py:74:    def require_gemini(self) -> None:
+src/core/settings.py:76:            raise RuntimeError("GOOGLE_API_KEY (or GEMINI_API_KEY) is required when using Gemini AI insights")
+src/core/settings.py:114:    # AI Insights (OpenAI)
+src/core/settings.py:115:    openai_api_key = _get_env("OPENAI_API_KEY")
+src/core/settings.py:116:    openai_model = _get_env("OPENAI_MODEL") or "gpt-4o-mini"
+src/core/settings.py:117:    ai_insights_enabled = _get_env("AI_INSIGHTS_ENABLED") == "1"
+src/core/settings.py:118:    ai_insights_mode = _get_env("AI_INSIGHTS_MODE") or "advisory"
+src/core/settings.py:120:    # AI Insights (Gemini/Google)
+src/core/settings.py:121:    google_api_key = _get_env("GOOGLE_API_KEY") or _get_env("GEMINI_API_KEY")
+src/core/settings.py:122:    gemini_model = _get_env("GEMINI_MODEL") or "gemini-1.5-flash"
+src/core/settings.py:125:    ai_provider = (_get_env("AI_PROVIDER") or "openai").lower()
+src/core/settings.py:151:        openai_api_key=openai_api_key,
+src/core/settings.py:152:        openai_model=openai_model,
+src/core/settings.py:153:        ai_insights_enabled=ai_insights_enabled,
+src/core/settings.py:154:        ai_insights_mode=ai_insights_mode,
+src/core/settings.py:156:        gemini_model=gemini_model,
+scripts/verify_control_plane.sh:70:INSIGHTS_CODE=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8787/api/insights || echo "000")
+scripts/verify_control_plane.sh:80:if [ "$INSIGHTS_CODE" = "204" ]; then
+scripts/verify_control_plane.sh:81:    echo "   ✅ GET /api/insights: HTTP 204 (noise shim active)"
+scripts/verify_control_plane.sh:83:    echo "   ⚠️  GET /api/insights: HTTP $INSIGHTS_CODE (expected 204)"
+scripts/verify_control_plane.sh:191:    FORBIDDEN_ENDPOINTS=$(rg -n "/tasks/full_scan|/api/insights|/api/trade_ideas" templates/forensic_command.html 2>/dev/null | \
+scripts/verify_control_plane.sh:202:    FORBIDDEN_ENDPOINTS=$(grep -n "/tasks/full_scan\|/api/insights\|/api/trade_ideas" templates/forensic_command.html 2>/dev/null | \
+scripts/verify_control_plane.sh:242:    if re.search(r"fetch\s*\(['\"]/api/insights", line, re.IGNORECASE):
+scripts/verify_control_plane.sh:246:            found.append(f"Line {i}: direct fetch('/api/insights')")
+scripts/verify_control_plane.sh:377:echo "   ✅ Noise shims: /socket.io, /api/insights, /api/trade_ideas, /tasks/full_scan return 204 (no 404 spam)"
+scripts/verify_control_plane.sh:382:echo "   ✅ Safety guard: Active in apiGet/apiPost (blocks /socket.io, /tasks/full_scan, /api/insights, /api/trade_ideas)"
+scripts/verify_control_plane.sh:392:echo "🔒 Safety: apiGet/apiPost block /socket.io, /tasks/full_scan, /api/insights, /api/trade_ideas"
+scripts/verify_control_plane.sh:393:echo "🔇 Noise reduction: Server returns 204 for /socket.io, /api/insights, /api/trade_ideas, /tasks/full_scan (no 404 spam)"
+scripts/verify_control_plane.sh:406:echo "   3. Filter for: full_scan, insights, trade_ideas"
+scripts/verify_control_plane.sh:408:echo "   5. Expected: ZERO requests to /tasks/full_scan, /api/insights, /api/trade_ideas"
+templates/forensic_command.html:144:                <div onclick="showTab('outlook')" id="nav-outlook" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold">
+templates/forensic_command.html:146:                    <span>Outlook</span>
+templates/forensic_command.html:299:                    <!-- Enhanced AI Insight Sidebar -->
+templates/forensic_command.html:343:            <!-- OUTLOOK TAB (NEW) -->
+templates/forensic_command.html:344:            <div id="tab-outlook" class="tab-content p-6 overflow-y-auto">
+templates/forensic_command.html:346:                    <h2 class="text-3xl font-black uppercase tracking-tighter">Market Outlook</h2>
+templates/forensic_command.html:348:                        <button onclick="loadOutlook('daily')" class="bg-white/5 px-4 py-2 rounded-lg text-xs font-bold uppercase">Daily</button>
+templates/forensic_command.html:349:                        <button onclick="loadOutlook('weekly')" class="bg-white/5 px-4 py-2 rounded-lg text-xs font-bold uppercase">Weekly</button>
+templates/forensic_command.html:350:                        <button onclick="loadOutlook('monthly')" class="bg-white/5 px-4 py-2 rounded-lg text-xs font-bold uppercase">Monthly</button>
+templates/forensic_command.html:351:                        <button onclick="recomputeOutlook()" class="bg-[#00ff88]/20 text-[#00ff88] px-4 py-2 rounded-lg text-xs font-bold uppercase border border-[#00ff88]/30">Recompute</button>
+templates/forensic_command.html:354:                <div id="outlook-content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+templates/forensic_command.html:676:            "/api/insights",
+templates/forensic_command.html:1300:        // NEW: Load Outlook
+templates/forensic_command.html:1301:        async function loadOutlook(horizon = 'daily') {
+templates/forensic_command.html:1302:            const container = document.getElementById("outlook-content");
+templates/forensic_command.html:1303:            container.innerHTML = '<div class="col-span-3 text-center text-gray-500 py-10">Loading outlook...</div>';
+templates/forensic_command.html:1306:                const data = await apiGet(`/api/v1/outlook/${horizon}`);
+templates/forensic_command.html:1307:                const outlook = data.outlook;
+templates/forensic_command.html:1309:                if (!outlook || !outlook.outlooks) {
+templates/forensic_command.html:1310:                    container.innerHTML = '<div class="col-span-3 text-center text-gray-500">No outlook generated yet.</div>';
+templates/forensic_command.html:1314:                const html = outlook.outlooks.map(item => `
+templates/forensic_command.html:1344:                console.error("Outlook load error:", e);
+templates/forensic_command.html:1345:                container.innerHTML = '<div class="col-span-3 text-center text-red-500">Failed to load outlook.</div>';
+templates/forensic_command.html:1349:        async function recomputeOutlook() {
+templates/forensic_command.html:1350:            if (!confirm("Recompute outlooks? This requires Admin Token.")) return;
+templates/forensic_command.html:1352:                await apiPost("/api/v1/outlook/recompute", {});
+templates/forensic_command.html:1353:                alert("Outlook recomputed!");
+templates/forensic_command.html:1354:                loadOutlook('daily');
+templates/forensic_command.html:1647:            if(tabId === 'outlook') loadOutlook('daily');
+scripts/audit_cloud_readiness_complete.sh:281:rg -n "openai|gpt|gemini|google-genai|anthropic|llm|prompt|completion|chat" src scripts 2>/dev/null | head -500 | tee ARTIFACTS/ai_code_hits.txt || echo "no matches" | tee ARTIFACTS/ai_code_hits.txt
+scripts/audit_cloud_readiness_complete.sh:286:keys=['OPENAI_API_KEY','GOOGLE_API_KEY','GEMINI_API_KEY','MARKETAUX_API_KEY','MARKETAUX_API_KEYS']
+scripts/audit_cloud_readiness_complete.sh:293:curl -s -o /dev/null -w "egress_openai=%{http_code}\n" https://api.openai.com | tee -a ARTIFACTS/ai_egress_check.txt || true
+scripts/audit_cloud_readiness_complete.sh:294:curl -s -o /dev/null -w "egress_gemini=%{http_code}\n" https://generativelanguage.googleapis.com | tee -a ARTIFACTS/ai_egress_check.txt || true
+scripts/audit_cloud_readiness_complete.sh:296:rg -n "/api/(ai|llm|predict|analysis)" src/control_plane templates 2>/dev/null | head -100 | tee ARTIFACTS/ai_internal_endpoints_find.txt || echo "no matches" | tee ARTIFACTS/ai_internal_endpoints_find.txt

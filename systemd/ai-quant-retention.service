@@ -1,0 +1,29 @@
+# ai-quant-retention.service — Daily retention cleanup
+#
+# Enforces retention policies to keep VMs lean:
+# - Delete old /opt/ai-quant.prev.* beyond newest 1
+# - Delete /tmp/backup_* older than 1 day
+# - Delete stale /opt/ai-quant/runtime/.status_*.tmp older than 1 day
+# - Keep /var/backups/ai-quant/*.tgz max 0-1
+#
+# INSTALLATION:
+#   1. Copy this file to /etc/systemd/system/ai-quant-retention.service
+#   2. Run: sudo systemctl daemon-reload
+#   3. Enable timer: sudo systemctl enable --now ai-quant-retention.timer
+
+[Unit]
+Description=AI-QUANT Daily Retention Cleanup
+After=network.target
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/opt/ai-quant
+
+# Run cleanup script
+ExecStart=/bin/bash /opt/ai-quant/scripts/retention_cleanup.sh
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ai-quant-retention

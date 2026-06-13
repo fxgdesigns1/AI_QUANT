@@ -1,0 +1,87 @@
+{
+  "status": "PARTIAL",
+  "phase_results": {
+    "1_identify_active_live_consumer_and_active_watch_path": "PASS",
+    "2_capture_current_lot_parsing_logic_and_runtime_inputs": "PASS",
+    "3_prove_root_cause_of_0_01_fallback": "PASS",
+    "4_patch_live_consumer_to_honor_signal_lots_or_fail_closed": "PASS",
+    "5_add_explicit_lot_parse_and_execution_logging": "PASS",
+    "6_rebuild_redeploy_and_restart_active_consumer": "PASS_COMPILE_AND_COPY",
+    "7_run_one_controlled_paper_proof_trade_above_0_01_lots": "NOT_RUN_BY_AGENT",
+    "8_verify_mt5_executed_volume_matches_signal_lots": "PENDING"
+  },
+  "files_created": [
+    "artifacts/live_lot_fix_consumer_identity.json",
+    "artifacts/live_lot_fix_code_trace.json",
+    "artifacts/live_lot_fix_root_cause.json",
+    "artifacts/live_lot_fix_patch_design.json",
+    "artifacts/live_lot_fix_logging_contract.json",
+    "artifacts/live_lot_fix_deploy_verification.json",
+    "artifacts/live_lot_fix_proof_trade.json",
+    "artifacts/live_lot_fix_final_proof.json",
+    "artifacts/FXG_FIX_MT5_0_01_LOT_FALLBACK_ON_LIVE_CONSUMER_V1.json"
+  ],
+  "files_modified": [
+    "ea/FTMO_Bridge_EA.mq5"
+  ],
+  "files_verified": [
+    "ea/FTMO_Bridge_EA.mq5 (v1.04 source after patch)",
+    "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Experts\\FTMO_Bridge_EA.mq5 (post-install)",
+    "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Experts\\FTMO_Bridge_EA.ex5 (LastWriteTimeUtc 2026-03-27T19:00:21Z)"
+  ],
+  "files_unverified": [
+    "Runtime-attached EA instance hash vs deployed ex5 after MT5 chart reload",
+    "Fresh REQUEST_SUMMARY with vol>0.01 after v1.04 attach"
+  ],
+  "verification_commands_run": [
+    "powershell -File \"H:\\My Drive\\AI Trading\\Gcloud system\\bridges\\windows_sidecar\\scripts\\fxg_win_install_canonical_ea.ps1\" (exit 0; MetaEditor compile succeeded)",
+    "Get-Item \"C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Experts\\FTMO_Bridge_EA.ex5\"",
+    "Get-Content \"C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\ftmo_bridge_log.jsonl\" -Tail 8"
+  ],
+  "verification_commands_not_run": [
+    "ALPHA MANUAL_010 single paper trade with lots>0.01",
+    "MT5 Terminal trade/deal history volume cross-check for that signal_id",
+    "browser_verification (not applicable to EA)"
+  ],
+  "artifacts": {
+    "consumer_identity": "artifacts/live_lot_fix_consumer_identity.json",
+    "code_trace": "artifacts/live_lot_fix_code_trace.json",
+    "root_cause": "artifacts/live_lot_fix_root_cause.json",
+    "patch_design": "artifacts/live_lot_fix_patch_design.json",
+    "logging_contract": "artifacts/live_lot_fix_logging_contract.json",
+    "deploy_verification": "artifacts/live_lot_fix_deploy_verification.json",
+    "proof_trade": "artifacts/live_lot_fix_proof_trade.json",
+    "final_proof": "artifacts/live_lot_fix_final_proof.json",
+    "master": "artifacts/FXG_FIX_MT5_0_01_LOT_FALLBACK_ON_LIVE_CONSUMER_V1.json"
+  },
+  "runtime_findings": {
+    "mt5_terminal_present": "C:\\Program Files\\MetaTrader 5\\terminal64.exe exists",
+    "active_data_folder_instance": "Terminal ID D0E8209F77C8CF37AD8BF550E51FF075 (from install script resolution)",
+    "bridge_log_tail": "Last line EA_STOP 2026.03.27 21:47:38; prior REQUEST_SUMMARY lines show vol=0.0100 from pre-v1.04 behavior"
+  },
+  "root_cause": "Windows MT5 consumer FTMO_Bridge_EA ignored JSON field lots; volume used MathMin(InpMaxLotSize, units*0.0001) with default InpMaxLotSize=0.01, producing a silent 0.01 cap even when canonical lots or unit-implied size was larger.",
+  "signal_vs_mt5_lot_comparison": {
+    "fresh_proof_signal_lots": null,
+    "bridge_log_final_vol": null,
+    "mt5_deal_volume": null,
+    "notes": "Historical log lines show REQUEST_SUMMARY vol=0.0100 while units could imply larger notional; after fix, expect LOT_RESOLVE final_vol to match REQUEST_SUMMARY vol up to broker step."
+  },
+  "safety_assertions": {
+    "alpha_oanda_unmodified": true,
+    "windows_sidecar_run_py_unmodified": true,
+    "manual_execution_py_unmodified": true,
+    "second_consumer_path_not_created": true,
+    "signal_missing_lots_now_fails_closed": true,
+    "inp_max_lot_size_silent_cap_removed_for_signals": true
+  },
+  "open_risks": [
+    "Signals lacking numeric lots will now LOT_PARSE_REJECT (behavior change vs old unit-derived fill).",
+    "EA must be reattached or terminal restarted so active chart loads new ex5 and emits EA_START v1.04."
+  ],
+  "next_required_manual_steps": [
+    "In MT5, attach or reattach FTMO_Bridge_EA so EA_START logs v1.04 with watch path.",
+    "Run exactly one MANUAL_010 paper trade with canonical emitted lots > 0.01.",
+    "Confirm LOT_RESOLVE + REQUEST_SUMMARY + EXECUTED show the same volume (broker-rounded) or LOT_PARSE_REJECT with explicit reason — no silent 0.01 from missing lots.",
+    "Update artifacts/live_lot_fix_proof_trade.json and artifacts/live_lot_fix_final_proof.json with signal_id, canonical line, and MT5 deal volume; then set master status to PASS if proven."
+  ]
+}

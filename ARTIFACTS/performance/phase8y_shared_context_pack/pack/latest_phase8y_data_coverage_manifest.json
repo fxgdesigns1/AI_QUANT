@@ -1,0 +1,63 @@
+{
+  "cache_hits": {
+    "calendar_cache_manifest_entries": 3,
+    "monthly_calendar_cache_hits": 1
+  },
+  "calendar_by_provider_date_range": {
+    "rapidapi_economic_calendar": {
+      "covered": true,
+      "date_window_end_day": "2026-05-04",
+      "date_window_start_day": "2026-02-03",
+      "rows_count": 50
+    }
+  },
+  "candles_by_instrument_granularity_date_range": {
+    "EUR_USD": {
+      "M15": {
+        "complete_for_required_window": true,
+        "coverage_end_utc": "2026-05-10T21:45:00Z",
+        "coverage_start_utc": "2026-02-03T18:45:00Z",
+        "evidence_sources": [
+          "ARTIFACTS\\performance\\phase8aa_jobs\\test_8aa_001\\phase8l_candles_EUR_USD_M15_59d.jsonl.gz",
+          "ARTIFACTS\\performance\\phase8aa_jobs\\test_8aa_inject_full\\phase8l_candles_EUR_USD_M15_59d.jsonl.gz",
+          "phase8y_context_cache.candle_manifest"
+        ],
+        "required_end_utc": "2026-05-10T22:07:38.217128Z",
+        "required_start_utc": "2026-02-09T22:07:38.217128Z"
+      },
+      "M5": {
+        "complete_for_required_window": true,
+        "coverage_end_utc": "2026-05-10T22:00:00Z",
+        "coverage_start_utc": "2026-02-03T18:45:00Z",
+        "evidence_sources": [
+          "phase8y_context_cache.candle_manifest"
+        ],
+        "required_end_utc": "2026-05-10T22:07:38.217128Z",
+        "required_start_utc": "2026-02-09T22:07:38.217128Z"
+      }
+    }
+  },
+  "classification": "PHASE8Y_DATA_COVERAGE_MANIFEST",
+  "estimated_api_calls_needed": 1,
+  "estimated_paid_calendar_calls_needed": 0,
+  "exact_replay_possible": true,
+  "execution_paths_changed": false,
+  "fail_closed_reasons": [],
+  "generated_at_utc": "2026-05-10T22:07:45.053043Z",
+  "instrument": "EUR_USD",
+  "lookback_days": 90,
+  "macro_by_provider_series_date_range": {},
+  "max_paid_calendar_calls_budget_for_preflight": 0,
+  "missing_windows": [],
+  "monthly_calendar_calls_remaining": 996,
+  "monthly_calendar_calls_used": 4,
+  "news_by_provider_date_range": {},
+  "ny_live_enabled": false,
+  "paper_review_only": true,
+  "phase": "Phase 8Y",
+  "provider_credentials_missing": [],
+  "required_window_end_day": "2026-05-10",
+  "required_window_start_day": "2026-02-09",
+  "safe_to_run_batch": true,
+  "shared_context_pack_verified": true
+}

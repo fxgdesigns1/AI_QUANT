@@ -1,0 +1,48 @@
+﻿{
+    "ts_utc":  "2026-03-25T00:06:44.7728138Z",
+    "tails":  [
+                  {
+                      "tail_lines":  [
+
+                                     ],
+                      "path":  "H:\\My Drive\\AI Trading\\Gcloud system\\logs\\signals_ftmo_demo2.jsonl"
+                  },
+                  {
+                      "tail_lines":  [
+
+                                     ],
+                      "path":  "H:\\My Drive\\AI Trading\\Gcloud system\\logs\\ftmo_bridge_log.jsonl"
+                  },
+                  {
+                      "tail_lines":  [
+                                         "",
+                                         "{\"take_profit\":null,\"signal_id\":\"test_20260323011859\",\"strategy\":\"MANUAL_010_TEST\",\"block_reason\":null,\"news_state\":\"none\",\"confidence\":0.5,\"side\":\"BUY\",\"execution_allowed\":true,\"stop_loss\":null,\"entry_type\":\"MARKET\",\"symbol\":\"EUR_USD\",\"regime\":\"test\",\"account\":\"010\",\"bridge_account\":\"ftmo_demo2\",\"units\":1000,\"session\":\"test\"}",
+                                         "{\"take_profit\":null,\"signal_id\":\"winprove_20260324212015\",\"strategy\":\"MANUAL_010_TEST\",\"block_reason\":null,\"news_state\":\"none\",\"confidence\":0.5,\"side\":\"BUY\",\"execution_allowed\":true,\"stop_loss\":null,\"entry_type\":\"MARKET\",\"symbol\":\"EUR_USD\",\"regime\":\"test\",\"account\":\"010\",\"bridge_account\":\"ftmo_demo2\",\"units\":1000,\"session\":\"test\"}",
+                                         "{\"take_profit\":null,\"signal_id\":\"winprove_matrix_20260324213656\",\"strategy\":\"MANUAL_010_TEST\",\"block_reason\":\"[null](null)\",\"news_state\":\"none\",\"confidence\":0.5,\"side\":\"BUY\",\"execution_allowed\":true,\"stop_loss\":null,\"entry_type\":\"MARKET\",\"symbol\":\"EUR_USD\",\"regime\":\"test\",\"account\":\"010\",\"bridge_account\":\"ftmo_demo2\",\"units\":1000,\"session\":\"test\"}",
+                                         "{\"take_profit\":null,\"signal_id\":\"winprove_matrix_20260324213656\",\"strategy\":\"MANUAL_010_TEST\",\"block_reason\":\"[null](null)\",\"news_state\":\"none\",\"confidence\":0.5,\"side\":\"BUY\",\"execution_allowed\":true,\"stop_loss\":null,\"entry_type\":\"MARKET\",\"symbol\":\"EUR_USD\",\"regime\":\"test\",\"account\":\"010\",\"bridge_account\":\"ftmo_demo2\",\"units\":1000,\"session\":\"test\"}",
+                                         "{\"take_profit\":null,\"signal_id\":\"winprove_reload_20260324225356\",\"strategy\":\"MANUAL_010_TEST\",\"block_reason\":null,\"news_state\":\"none\",\"confidence\":0.5,\"side\":\"BUY\",\"execution_allowed\":true,\"stop_loss\":null,\"entry_type\":\"MARKET\",\"symbol\":\"EUR_USD\",\"regime\":\"test\",\"account\":\"010\",\"bridge_account\":\"ftmo_demo2\",\"units\":1000,\"session\":\"test\"}"
+                                     ],
+                      "path":  "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\signals_ftmo_demo2.jsonl"
+                  },
+                  {
+                      "tail_lines":  [
+                                         "{\"type\":\"BROKER_REJECT\",\"msg\":\"auto trading disabled by client\",\"signal_id\":\"test_20260323011859\",\"ts\":\"2026.03.23 10:09:35\"}",
+                                         "{\"type\":\"EA_START\",\"msg\":\"FTMO_Bridge_EA started\",\"signal_id\":\"\",\"ts\":\"2026.03.24 23:54:59\"}",
+                                         "{\"type\":\"BROKER_REJECT\",\"msg\":\"invalid stops\",\"signal_id\":\"test_20260323011859\",\"ts\":\"2026.03.25 00:05:05\"}",
+                                         "{\"type\":\"BROKER_REJECT\",\"msg\":\"invalid stops\",\"signal_id\":\"winprove_20260324212015\",\"ts\":\"2026.03.25 00:21:14\"}",
+                                         "{\"type\":\"BROKER_REJECT\",\"msg\":\"invalid stops\",\"signal_id\":\"winprove_20260324212015\",\"ts\":\"2026.03.25 00:21:14\"}",
+                                         "{\"type\":\"BROKER_REJECT\",\"msg\":\"invalid stops\",\"signal_id\":\"winprove_matrix_20260324213656\",\"ts\":\"2026.03.25 00:37:03\"}",
+                                         "{\"type\":\"BROKER_REJECT\",\"msg\":\"invalid stops\",\"signal_id\":\"winprove_matrix_20260324213656\",\"ts\":\"2026.03.25 00:37:03\"}",
+                                         "{\"type\":\"BROKER_REJECT\",\"msg\":\"invalid stops\",\"signal_id\":\"winprove_matrix_20260324213656\",\"ts\":\"2026.03.25 00:37:03\"}",
+                                         "{\"type\":\"EA_STOP\",\"msg\":\"FTMO_Bridge_EA stopped\",\"signal_id\":\"\",\"ts\":\"2026.03.25 01:53:05\"}",
+                                         "{\"type\":\"EA_STOP\",\"msg\":\"FTMO_Bridge_EA stopped\",\"signal_id\":\"\",\"ts\":\"2026.03.25 01:53:09\"}",
+                                         "{\"type\":\"FILE_READ\",\"msg\":\"tail mode: file_pos=1371\",\"signal_id\":\"\",\"ts\":\"2026.03.25 01:53:15\"}",
+                                         "{\"type\":\"EA_START\",\"msg\":\"FTMO_Bridge_EA started v1.01 (null-safe stops, dedupe, tail-read)\",\"signal_id\":\"\",\"ts\":\"2026.03.25 01:53:15\"}",
+                                         "{\"type\":\"SIGNAL_ACCEPT\",\"msg\":\"BUY EUR_USD units=1000 symbol_norm=EURUSD\",\"signal_id\":\"winprove_reload_20260324225356\",\"ts\":\"2026.03.25 01:53:57\"}",
+                                         "{\"type\":\"REQUEST_SUMMARY\",\"msg\":\"symbol=EURUSD side=BUY vol=0.0100 price_mode=MARKET sl_set=false tp_set=false sl=0 tp=0 bid=1.16123 ask=1.16125\",\"signal_id\":\"winprove_reload_20260324225356\",\"ts\":\"2026.03.25 01:53:57\"}",
+                                         "{\"type\":\"EXECUTED\",\"msg\":\"EURUSD BUY 0.0100\",\"signal_id\":\"winprove_reload_20260324225356\",\"ts\":\"2026.03.25 01:53:57\"}"
+                                     ],
+                      "path":  "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\ftmo_bridge_log.jsonl"
+                  }
+              ]
+}

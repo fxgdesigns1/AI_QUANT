@@ -1,0 +1,7 @@
+{
+  "executed": true,
+  "exit_code": 1,
+  "summary": "Probe script ran but Python/MetaTrader5 probe failed (traceback). Pre-existing artifacts windows_mt5_terminal_identity.json, windows_marketwatch_selected_symbols.json, windows_symbol_name_probe.json contain valid data from prior run.",
+  "note": "Probe requires sidecar venv Python with MetaTrader5. Healthcheck (HTTP) passed with real data.",
+  "ts_utc": "2026-03-23T00:30:00Z"
+}

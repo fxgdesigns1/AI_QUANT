@@ -1,0 +1,244 @@
+{
+  "run_id": "mc_20260324T183720Z",
+  "config": {
+    "run_id": "mc_20260324T183720Z",
+    "seed": 1,
+    "iterations": 20,
+    "workers": 2,
+    "mode": "reshuffle",
+    "jitter_params": null,
+    "input_tournament": "ARTIFACTS\\_tmp_tournament_out\\tournament_results.json",
+    "input_candles": null
+  },
+  "iterations": 20,
+  "completed": 20,
+  "expectancy_distribution": {
+    "mean": 1.9999999999999982,
+    "std": 0.0,
+    "min": 1.9999999999999982,
+    "max": 1.9999999999999982,
+    "p25": 1.9999999999999982,
+    "p50": 1.9999999999999982,
+    "p75": 1.9999999999999982,
+    "p95": 1.9999999999999982
+  },
+  "win_rate_distribution": {
+    "mean": 1.0,
+    "min": 1.0,
+    "max": 1.0,
+    "p50": 1.0
+  },
+  "drawdown_distribution": {
+    "mean": 0.0,
+    "max": 0.0,
+    "p95": 0.0
+  },
+  "robustness_percentiles": {
+    "expectancy_p5": 1.9999999999999982,
+    "expectancy_p95": 1.9999999999999982,
+    "win_rate_p5": 1.0,
+    "win_rate_p95": 1.0
+  },
+  "results": [
+    {
+      "iteration": 0,
+      "seed": 1,
+      "trades": 4,
+      "win_rate": 1.0,
+      "expectancy_r": 1.9999999999999982,
+      "total_pnl": 824.3215999999993,
+      "max_drawdown": 0.0,
+      "sharpe_ratio": null
+    },
+    {
+      "iteration": 1,
+      "seed": 2,
+      "trades": 4,
+      "win_rate": 1.0,
+      "expectancy_r": 1.9999999999999982,
+      "total_pnl": 824.3215999999993,
+      "max_drawdown": 0.0,
+      "sharpe_ratio": null
+    },
+    {
+      "iteration": 2,
+      "seed": 3,
+      "trades": 4,
+      "win_rate": 1.0,
+      "expectancy_r": 1.9999999999999982,
+      "total_pnl": 824.3215999999993,
+      "max_drawdown": 0.0,
+      "sharpe_ratio": null
+    },
+    {
+      "iteration": 3,
+      "seed": 4,
+      "trades": 4,
+      "win_rate": 1.0,
+      "expectancy_r": 1.9999999999999982,
+      "total_pnl": 824.3215999999993,
+      "max_drawdown": 0.0,
+      "sharpe_ratio": null
+    },
+    {
+      "iteration": 4,
+      "seed": 5,
+      "trades": 4,
+      "win_rate": 1.0,
+      "expectancy_r": 1.9999999999999982,
+      "total_pnl": 824.3215999999993,
+      "max_drawdown": 0.0,
+      "sharpe_ratio": null
+    },
+    {
+      "iteration": 5,
+      "seed": 6,
+      "trades": 4,
+      "win_rate": 1.0,
+      "expectancy_r": 1.9999999999999982,
+      "total_pnl": 824.3215999999993,
+      "max_drawdown": 0.0,
+      "sharpe_ratio": null
+    },
+    {
+      "iteration": 6,
+      "seed": 7,
+      "trades": 4,
+      "win_rate": 1.0,
+      "expectancy_r": 1.9999999999999982,
+      "total_pnl": 824.3215999999993,
+      "max_drawdown": 0.0,
+      "sharpe_ratio": null
+    },
+    {
+      "iteration": 7,
+      "seed": 8,
+      "trades": 4,
+      "win_rate": 1.0,
+      "expectancy_r": 1.9999999999999982,
+      "total_pnl": 824.3215999999993,
+      "max_drawdown": 0.0,
+      "sharpe_ratio": null
+    },
+    {
+      "iteration": 8,
+      "seed": 9,
+      "trades": 4,
+      "win_rate": 1.0,
+      "expectancy_r": 1.9999999999999982,
+      "total_pnl": 824.3215999999993,
+      "max_drawdown": 0.0,
+      "sharpe_ratio": null
+    },
+    {
+      "iteration": 9,
+      "seed": 10,
+      "trades": 4,
+      "win_rate": 1.0,
+      "expectancy_r": 1.9999999999999982,
+      "total_pnl": 824.3215999999993,
+      "max_drawdown": 0.0,
+      "sharpe_ratio": null
+    },
+    {
+      "iteration": 10,
+      "seed": 11,
+      "trades": 4,
+      "win_rate": 1.0,
+      "expectancy_r": 1.9999999999999982,
+      "total_pnl": 824.3215999999993,
+      "max_drawdown": 0.0,
+      "sharpe_ratio": null
+    },
+    {
+      "iteration": 11,
+      "seed": 12,
+      "trades": 4,
+      "win_rate": 1.0,
+      "expectancy_r": 1.9999999999999982,
+      "total_pnl": 824.3215999999993,
+      "max_drawdown": 0.0,
+      "sharpe_ratio": null
+    },
+    {
+      "iteration": 12,
+      "seed": 13,
+      "trades": 4,
+      "win_rate": 1.0,
+      "expectancy_r": 1.9999999999999982,
+      "total_pnl": 824.3215999999993,
+      "max_drawdown": 0.0,
+      "sharpe_ratio": null
+    },
+    {
+      "iteration": 13,
+      "seed": 14,
+      "trades": 4,
+      "win_rate": 1.0,
+      "expectancy_r": 1.9999999999999982,
+      "total_pnl": 824.3215999999993,
+      "max_drawdown": 0.0,
+      "sharpe_ratio": null
+    },
+    {
+      "iteration": 14,
+      "seed": 15,
+      "trades": 4,
+      "win_rate": 1.0,
+      "expectancy_r": 1.9999999999999982,
+      "total_pnl": 824.3215999999993,
+      "max_drawdown": 0.0,
+      "sharpe_ratio": null
+    },
+    {
+      "iteration": 15,
+      "seed": 16,
+      "trades": 4,
+      "win_rate": 1.0,
+      "expectancy_r": 1.9999999999999982,
+      "total_pnl": 824.3215999999993,
+      "max_drawdown": 0.0,
+      "sharpe_ratio": null
+    },
+    {
+      "iteration": 16,
+      "seed": 17,
+      "trades": 4,
+      "win_rate": 1.0,
+      "expectancy_r": 1.9999999999999982,
+      "total_pnl": 824.3215999999993,
+      "max_drawdown": 0.0,
+      "sharpe_ratio": null
+    },
+    {
+      "iteration": 17,
+      "seed": 18,
+      "trades": 4,
+      "win_rate": 1.0,
+      "expectancy_r": 1.9999999999999982,
+      "total_pnl": 824.3215999999993,
+      "max_drawdown": 0.0,
+      "sharpe_ratio": null
+    },
+    {
+      "iteration": 18,
+      "seed": 19,
+      "trades": 4,
+      "win_rate": 1.0,
+      "expectancy_r": 1.9999999999999982,
+      "total_pnl": 824.3215999999993,
+      "max_drawdown": 0.0,
+      "sharpe_ratio": null
+    },
+    {
+      "iteration": 19,
+      "seed": 20,
+      "trades": 4,
+      "win_rate": 1.0,
+      "expectancy_r": 1.9999999999999982,
+      "total_pnl": 824.3215999999993,
+      "max_drawdown": 0.0,
+      "sharpe_ratio": null
+    }
+  ]
+}

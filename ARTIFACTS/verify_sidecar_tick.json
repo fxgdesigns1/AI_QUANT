@@ -1,0 +1,1 @@
+{"symbol":"EURUSD","bridge_id":"parallel_windows_sidecar_bridge_v1","note":"Returns valid structure; bid/ask zero when symbol not in Market Watch - add symbols in MT5 UI for live quotes"}

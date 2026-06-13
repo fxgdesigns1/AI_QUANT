@@ -1,0 +1,13 @@
+{
+  "artifact": "windows_ea_root_cause_final",
+  "classified_bugs": [
+    "stop_loss_null_handling_bug",
+    "take_profit_null_handling_bug",
+    "market_order_request_build_bug",
+    "duplicate_reprocessing_bug"
+  ],
+  "invalid_stops_explanation": "JSON null for stop_loss/take_profit was parsed by ExtractJsonDouble which produced numeric 0. Pre-patch code always passed sl=0 and tp=0 into CTrade.PositionOpen. On FTMO/MT5 this is treated as explicit stop/take values at zero distance or invalid relative to price, yielding BROKER_REJECT invalid stops rather than 'no stops'.",
+  "null_vs_zero": "Parser could not distinguish null from missing; both collapsed to 0. No branch omitted SL/TP from the trade request.",
+  "duplicate_signal_id_explanation": "Pre-patch: restarting the EA reset g_lastFilePos to 0 (OnInit did not seed EOF), re-reading the full jsonl and re-sending the same signal_id. Within a single run, duplicate appends of the same line could also double-execute because there was no processed-id guard.",
+  "responsible_pre_patch_lines": "ea/FTMO_Bridge_EA.mq5 lines 149-150 (ExtractJsonDouble for stop_loss/take_profit), 165 (PositionOpen with sl,tp), 111-117 OnInit (no EOF seed), 132-172 OnTick (no processed signal_id tracking)"
+}

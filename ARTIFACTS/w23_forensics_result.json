@@ -1,0 +1,431 @@
+{
+  "summary": {
+    "total_w23_signals": 34,
+    "embargo_hits": 6,
+    "hit_rate_pct": 17.6,
+    "against_news": 0,
+    "with_news": 0,
+    "neutral_hits": 6,
+    "no_timestamp": 0
+  },
+  "signals": [
+    {
+      "signal_id": "csv_row_2",
+      "strategy": "trend_pullback_v1#15",
+      "symbol": "AUD_JPY",
+      "side": "BUY",
+      "signal_ts": "2026-06-02 05:00:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_3",
+      "strategy": "trend_pullback_v1#13",
+      "symbol": "EUR_NZD",
+      "side": "BUY",
+      "signal_ts": "2026-06-02 05:00:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_4",
+      "strategy": "session_extreme_reversion_v2#1",
+      "symbol": "EUR_GBP",
+      "side": "SELL",
+      "signal_ts": "2026-06-02 06:00:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_5",
+      "strategy": "sweep_reclaim_reversal_v2#1",
+      "symbol": "EUR_AUD",
+      "side": "BUY",
+      "signal_ts": "2026-06-02 10:00:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_6",
+      "strategy": "range_edge_v1#10",
+      "symbol": "USD_CAD",
+      "side": "BUY",
+      "signal_ts": "2026-06-02 13:30:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_7",
+      "strategy": "trend_pullback_v1#3",
+      "symbol": "GBP_USD",
+      "side": "BUY",
+      "signal_ts": "2026-06-02 14:00:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_8",
+      "strategy": "trend_pullback_v1#4",
+      "symbol": "EUR_USD",
+      "side": "BUY",
+      "signal_ts": "2026-06-02 15:00:00",
+      "status": "EMBARGO_HIT",
+      "hits": [
+        {
+          "event": "ISM Manufacturing PMI",
+          "event_utc": "2026-06-02 15:00:00",
+          "impact": "MEDIUM",
+          "embargo_minutes": 30,
+          "seconds_from_event": 0,
+          "affected_currencies": [
+            "USD"
+          ],
+          "usd_direction": "NEUTRAL",
+          "signal_direction_alignment": "NEUTRAL"
+        }
+      ],
+      "direction": "NEUTRAL"
+    },
+    {
+      "signal_id": "csv_row_9",
+      "strategy": "sweep_reclaim_reversal_v2#2",
+      "symbol": "NZD_USD",
+      "side": "SELL",
+      "signal_ts": "2026-06-02 15:00:00",
+      "status": "EMBARGO_HIT",
+      "hits": [
+        {
+          "event": "ISM Manufacturing PMI",
+          "event_utc": "2026-06-02 15:00:00",
+          "impact": "MEDIUM",
+          "embargo_minutes": 30,
+          "seconds_from_event": 0,
+          "affected_currencies": [
+            "USD"
+          ],
+          "usd_direction": "NEUTRAL",
+          "signal_direction_alignment": "NEUTRAL"
+        }
+      ],
+      "direction": "NEUTRAL"
+    },
+    {
+      "signal_id": "csv_row_10",
+      "strategy": "range_edge_v1#1",
+      "symbol": "GBP_USD",
+      "side": "BUY",
+      "signal_ts": "2026-06-03 05:45:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_11",
+      "strategy": "range_edge_v1#2",
+      "symbol": "AUD_JPY",
+      "side": "BUY",
+      "signal_ts": "2026-06-03 06:00:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_12",
+      "strategy": "trend_pullback_v1#4",
+      "symbol": "GBP_AUD",
+      "side": "BUY",
+      "signal_ts": "2026-06-03 08:30:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_13",
+      "strategy": "range_edge_v1#16",
+      "symbol": "GBP_USD",
+      "side": "BUY",
+      "signal_ts": "2026-06-03 13:45:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_14",
+      "strategy": "range_edge_v1#10",
+      "symbol": "XAU_USD",
+      "side": "BUY",
+      "signal_ts": "2026-06-03 13:45:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_15",
+      "strategy": "range_edge_v1#1",
+      "symbol": "AUD_USD",
+      "side": "BUY",
+      "signal_ts": "2026-06-03 14:00:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_16",
+      "strategy": "range_edge_v1#1",
+      "symbol": "EUR_USD",
+      "side": "BUY",
+      "signal_ts": "2026-06-03 14:00:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_17",
+      "strategy": "range_edge_v1#1",
+      "symbol": "NZD_USD",
+      "side": "BUY",
+      "signal_ts": "2026-06-03 14:00:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_18",
+      "strategy": "sweep_reclaim_reversal_v2#1",
+      "symbol": "EUR_USD",
+      "side": "SELL",
+      "signal_ts": "2026-06-03 15:00:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_19",
+      "strategy": "range_edge_v1#2",
+      "symbol": "AUD_JPY",
+      "side": "BUY",
+      "signal_ts": "2026-06-04 05:00:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_20",
+      "strategy": "trend_pullback_v1#11",
+      "symbol": "EUR_AUD",
+      "side": "BUY",
+      "signal_ts": "2026-06-04 08:30:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_21",
+      "strategy": "trend_pullback_v1#3",
+      "symbol": "EUR_JPY",
+      "side": "BUY",
+      "signal_ts": "2026-06-04 09:00:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_22",
+      "strategy": "trend_pullback_v1#4",
+      "symbol": "EUR_USD",
+      "side": "BUY",
+      "signal_ts": "2026-06-04 14:00:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_23",
+      "strategy": "trend_pullback_v1#3",
+      "symbol": "GBP_USD",
+      "side": "BUY",
+      "signal_ts": "2026-06-04 14:00:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_24",
+      "strategy": "trend_pullback_v1#4",
+      "symbol": "AUD_USD",
+      "side": "BUY",
+      "signal_ts": "2026-06-04 14:00:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_25",
+      "strategy": "session_extreme_reversion_v2#1",
+      "symbol": "EUR_GBP",
+      "side": "SELL",
+      "signal_ts": "2026-06-05 06:00:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_26",
+      "strategy": "trend_pullback_v1#13",
+      "symbol": "EUR_NZD",
+      "side": "BUY",
+      "signal_ts": "2026-06-05 06:00:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_27",
+      "strategy": "trend_pullback_v1#4",
+      "symbol": "GBP_AUD",
+      "side": "BUY",
+      "signal_ts": "2026-06-05 08:45:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_28",
+      "strategy": "range_edge_v1#13",
+      "symbol": "USD_CAD",
+      "side": "BUY",
+      "signal_ts": "2026-06-05 09:30:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_29",
+      "strategy": "trend_pullback_v1#19",
+      "symbol": "NZD_JPY",
+      "side": "BUY",
+      "signal_ts": "2026-06-05 10:00:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_30",
+      "strategy": "range_edge_v1#16",
+      "symbol": "GBP_USD",
+      "side": "BUY",
+      "signal_ts": "2026-06-05 13:30:00",
+      "status": "EMBARGO_HIT",
+      "hits": [
+        {
+          "event": "US Initial Jobless Claims",
+          "event_utc": "2026-06-05 13:30:00",
+          "impact": "MEDIUM",
+          "embargo_minutes": 30,
+          "seconds_from_event": 0,
+          "affected_currencies": [
+            "USD"
+          ],
+          "usd_direction": "NEUTRAL",
+          "signal_direction_alignment": "NEUTRAL"
+        }
+      ],
+      "direction": "NEUTRAL"
+    },
+    {
+      "signal_id": "csv_row_31",
+      "strategy": "range_edge_v1#10",
+      "symbol": "XAU_USD",
+      "side": "BUY",
+      "signal_ts": "2026-06-05 13:45:00",
+      "status": "EMBARGO_HIT",
+      "hits": [
+        {
+          "event": "US Initial Jobless Claims",
+          "event_utc": "2026-06-05 13:30:00",
+          "impact": "MEDIUM",
+          "embargo_minutes": 30,
+          "seconds_from_event": 900,
+          "affected_currencies": [
+            "USD"
+          ],
+          "usd_direction": "NEUTRAL",
+          "signal_direction_alignment": "NEUTRAL"
+        }
+      ],
+      "direction": "NEUTRAL"
+    },
+    {
+      "signal_id": "csv_row_32",
+      "strategy": "range_edge_v1#1",
+      "symbol": "AUD_USD",
+      "side": "BUY",
+      "signal_ts": "2026-06-05 14:00:00",
+      "status": "EMBARGO_HIT",
+      "hits": [
+        {
+          "event": "US Initial Jobless Claims",
+          "event_utc": "2026-06-05 13:30:00",
+          "impact": "MEDIUM",
+          "embargo_minutes": 30,
+          "seconds_from_event": 1800,
+          "affected_currencies": [
+            "USD"
+          ],
+          "usd_direction": "NEUTRAL",
+          "signal_direction_alignment": "NEUTRAL"
+        }
+      ],
+      "direction": "NEUTRAL"
+    },
+    {
+      "signal_id": "csv_row_33",
+      "strategy": "range_edge_v1#6",
+      "symbol": "EUR_JPY",
+      "side": "BUY",
+      "signal_ts": "2026-06-05 14:00:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_34",
+      "strategy": "range_edge_v1#5",
+      "symbol": "GBP_JPY",
+      "side": "BUY",
+      "signal_ts": "2026-06-05 14:00:00",
+      "status": "CLEAR",
+      "hits": [],
+      "direction": null
+    },
+    {
+      "signal_id": "csv_row_35",
+      "strategy": "range_edge_v1#1",
+      "symbol": "NZD_USD",
+      "side": "BUY",
+      "signal_ts": "2026-06-05 14:00:00",
+      "status": "EMBARGO_HIT",
+      "hits": [
+        {
+          "event": "US Initial Jobless Claims",
+          "event_utc": "2026-06-05 13:30:00",
+          "impact": "MEDIUM",
+          "embargo_minutes": 30,
+          "seconds_from_event": 1800,
+          "affected_currencies": [
+            "USD"
+          ],
+          "usd_direction": "NEUTRAL",
+          "signal_direction_alignment": "NEUTRAL"
+        }
+      ],
+      "direction": "NEUTRAL"
+    }
+  ]
+}

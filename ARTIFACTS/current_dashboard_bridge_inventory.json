@@ -1,0 +1,24 @@
+{
+  "inventory_at_utc": "2026-03-22T00:00:00Z",
+  "dashboard_root": "frontend/fxg-dashboard",
+  "bridge_related": [
+    {
+      "component": "ControlPlaneDashboard",
+      "path": "src/components/ControlPlaneDashboard.jsx",
+      "fetches": ["/api/bridge/status", "/api/logs/bridge"],
+      "state": "bridgeStatus, bridgeLogs",
+      "ui_label": "MT5 Bridge Status",
+      "bridge_id_shown": "none - generic"
+    },
+    {
+      "component": "Routing outputs",
+      "path": "src/components/ControlPlaneDashboard.jsx",
+      "field": "bridge_account",
+      "purpose": "Add output with bridge account ID"
+    }
+  ],
+  "api_routes": {
+    "/api/bridge/status": "src/control_plane/api.py get_bridge_status",
+    "/api/logs/bridge": "src/control_plane/api.py get_bridge_logs"
+  }
+}

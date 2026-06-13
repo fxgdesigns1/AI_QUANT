@@ -1,0 +1,26 @@
+{
+  "ts_utc": "2026-03-25T14:12:55Z",
+  "canonical_execution_owner": "canonical_mac_file_bridge_v1",
+  "active_execution_consumer_expected": "Windows MT5 FTMO_Bridge_EA",
+  "windows_sidecar_role": "telemetry_and_diagnostics_only",
+  "repo_evidence": {
+    "windows_status_script": {
+      "path": "bridges/windows_sidecar/scripts/fxg_win_status.ps1",
+      "prints_execution_truth": "Execution:    canonical_mac_file_bridge_v1 (unchanged)",
+      "prints_sidecar_truth": "Data/Diag:    parallel_windows_sidecar_bridge_v1 (read-only)"
+    },
+    "sidecar_routes_inventory": {
+      "path": "bridges/windows_sidecar/service/main.py",
+      "routers": [
+        "routes_health",
+        "routes_account",
+        "routes_positions",
+        "routes_orders",
+        "routes_symbols",
+        "routes_history"
+      ],
+      "execution_endpoints_present": false
+    }
+  },
+  "result": "PASS"
+}

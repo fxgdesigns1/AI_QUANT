@@ -1,0 +1,13 @@
+{
+  "classification": "PHASE8T_STITCH_CONTRACT_VALIDATION",
+  "contract_json": "H:\\My Drive\\AI Trading\\Gcloud system\\ARTIFACTS\\performance\\latest_stitch_dashboard_contract.json",
+  "dashboard_freshness_seconds_computed": 0,
+  "dashboard_json": "H:\\My Drive\\AI Trading\\Gcloud system\\ARTIFACTS\\performance\\latest_research_dashboard.json",
+  "errors": [],
+  "generated_at_utc": "2026-05-03T12:36:00.347989Z",
+  "ok": true,
+  "phase": "Phase 8T",
+  "warnings": [
+    "exact_strategy_replay_false"
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "job_name": "FXG_WINDOWS_EA_LOG_DISCOVERY_AND_CONSUMER_REMEDIATION_V1",
+  "status": "PARTIAL",
+  "status_rule_applied": "Live Windows EA/Journal not observed; hypothesis formed from code+architecture; fix and polling reproof not executed.",
+  "phase_results": {
+    "1_discover_actual_windows_host_access_path": "PARTIAL — repo + sidecar reachability (401); no Windows shell",
+    "2_find_live_mt5_ea_process_and_terminal_instance": "BLOCKED",
+    "3_find_real_experts_journal_and_ea_log_paths": "PARTIAL — theoretical paths from EA/docs only",
+    "4_find_real_watched_signal_file_path_on_windows": "PARTIAL — EA+script define MQL5/Files; no live stat",
+    "5_correlate_target_signal_ids": "unverifiable — no Windows file reads",
+    "6_determine_exact_root_cause": "medium_low_confidence — primary_hypothesis sync_not_reaching_windows_watch_path",
+    "7_apply_minimum_safe_fix": "SKIPPED — not confirmed",
+    "8_verify_ea_polling": "NOT_RUN",
+    "9_validation_trade": "NOT_EXECUTED",
+    "10_stage_chain_if_trade": "N/A"
+  },
+  "files_created": [
+    "artifacts/windows_host_access_path_discovery.json",
+    "artifacts/windows_mt5_process_discovery.json",
+    "artifacts/windows_mt5_log_path_discovery.json",
+    "artifacts/windows_signal_watch_path_discovery.json",
+    "artifacts/windows_signal_id_correlation.json",
+    "artifacts/windows_ea_root_cause.json",
+    "artifacts/windows_ea_fix_applied.json",
+    "artifacts/windows_ea_polling_reverification.json",
+    "artifacts/windows_ea_validation_trade_request.json",
+    "artifacts/windows_ea_validation_trade_response.json",
+    "artifacts/windows_ea_validation_stage_chain.json",
+    "artifacts/FXG_WINDOWS_EA_LOG_DISCOVERY_AND_CONSUMER_REMEDIATION_V1.json"
+  ],
+  "files_modified": [],
+  "files_verified": [
+    "ea/FTMO_Bridge_EA.mq5",
+    "bridges/windows_sidecar/service/main.py",
+    "bridges/windows_sidecar/service/diagnostics.py",
+    "bridges/windows_sidecar/service/routes_health.py",
+    "bridges/windows_sidecar/service/config.py",
+    "bridges/windows_sidecar/scripts/fxg_win_wire_canonical_signals.ps1"
+  ],
+  "verification_commands_run": [
+    "Invoke-WebRequest http://100.122.152.80:8877/health → 401 Unauthorized",
+    "Repository read: EA OnTick polling and LogBridge behavior",
+    "Repository read: sidecar diagnostics do not export MQL5/Files or EA attachment"
+  ],
+  "verification_commands_not_run": [
+    "Authenticated GET /diagnostics with SIDECAR_API_KEY",
+    "Windows: Get-Process terminal64, MT5 Experts/Journal tail",
+    "Windows: (Get-Item).LastWriteTime on MQL5\\\\Files\\\\signals_ftmo_demo2.jsonl",
+    "Linux VM: ssh aiquant@alpha tail signals_ftmo_demo2.jsonl vs diff to Windows copy",
+    "POST /api/execution/manual/010 validation trade"
+  ],
+  "artifacts": [
+    "artifacts/windows_host_access_path_discovery.json",
+    "artifacts/windows_mt5_process_discovery.json",
+    "artifacts/windows_mt5_log_path_discovery.json",
+    "artifacts/windows_signal_watch_path_discovery.json",
+    "artifacts/windows_signal_id_correlation.json",
+    "artifacts/windows_ea_root_cause.json",
+    "artifacts/windows_ea_fix_applied.json",
+    "artifacts/windows_ea_polling_reverification.json",
+    "artifacts/windows_ea_validation_trade_request.json",
+    "artifacts/windows_ea_validation_trade_response.json",
+    "artifacts/windows_ea_validation_stage_chain.json",
+    "artifacts/FXG_WINDOWS_EA_LOG_DISCOVERY_AND_CONSUMER_REMEDIATION_V1.json"
+  ],
+  "known_paths_truth": {
+    "canonical_signal_file": "/home/aiquant/gcloud-system/logs/signals_ftmo_demo2.jsonl",
+    "stale_bridge_log": "/home/aiquant/gcloud-system/logs/ftmo_demo2_bridge_log.jsonl",
+    "remote_sidecar_base_url": "http://100.122.152.80:8877",
+    "ea_watched_file_semantic": "signals_ftmo_demo2.jsonl in active terminal MQL5/Files",
+    "ea_bridge_log_semantic": "ftmo_bridge_log.jsonl in same MQL5/Files folder"
+  },
+  "runtime_findings": {
+    "sidecar_reachable": true,
+    "sidecar_health_unauthenticated": "401",
+    "ea_poll_interval_ms_default": 1000,
+    "ea_silent_failure_modes": [
+      "FileOpen signal file fails → immediate return",
+      "bridge_account mismatch → continue without LogBridge",
+      "execution_allowed false with InpPaperOnly true → continue without LogBridge",
+      "symbol/side/units invalid → continue without LogBridge"
+    ],
+    "g_lastFilePos_note": "EA retains file offset; sync truncate/replace on Windows may desynchronize read pointer vs new content"
+  },
+  "root_cause": {
+    "best_fit_enum": "sync_not_reaching_windows_watch_path",
+    "confidence": "medium_low",
+    "requires_confirmation": [
+      "Windows MQL5/Files copy contains target signal_id lines",
+      "EA attached with AutoTrading and matching InpBridgeAccount",
+      "signal JSON fields satisfy EA filters"
+    ]
+  },
+  "fix_applied": {
+    "code_changes": false,
+    "operational_changes": false
+  },
+  "trade_result_if_any": null,
+  "final_verification_status": "incomplete — blocked at windows_watch_path and windows_ea_log stages without host access",
+  "stop_point": "windows_host_access_missing; live log mtime/size correlation not performed",
+  "safety_assertions": [
+    "manual_010 routing unchanged",
+    "bridge_account semantics unchanged",
+    "no sidecar execution routes added",
+    "no duplicate bridge writers in repo from this job",
+    "no trades placed",
+    "no unknowns hidden: Windows live state unread from Cursor agent environment"
+  ],
+  "open_risks": [
+    "Mis-tailing Linux ftmo_bridge_log.jsonl while EA writes Windows-local ftmo_bridge_log.jsonl",
+    "Silent EA skips without LogBridge for valid business reasons (paper filter)",
+    "File pointer desync after sync tool replaces file"
+  ],
+  "next_required_manual_steps": [
+    "On Windows: run bridges/windows_sidecar/scripts/fxg_win_wire_canonical_signals.ps1 or manually locate MQL5\\\\Files for the logged-in terminal",
+    "Select/String signal_ids in that signals_ftmo_demo2.jsonl",
+    "Tail ftmo_bridge_log.jsonl in same folder for EXECUTED/BROKER_REJECT or add temporary EA logging only after local confirmation",
+    "If lines missing on Windows: fix sync destination to that exact path",
+    "Optional: call sidecar GET /diagnostics with API key to confirm MT5 login — still not EA consume proof",
+    "Re-run phase 8 checks (log freshness) before considering one tiny validation trade"
+  ],
+  "ts_utc": "2026-03-24T19:30:00Z"
+}

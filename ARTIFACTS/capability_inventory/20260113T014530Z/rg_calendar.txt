@@ -1,0 +1,249 @@
+src/control_plane/schema.py:54:class RuntimeConfig:
+src/control_plane/schema.py:71:    scan_interval_seconds: int = 30
+src/control_plane/schema.py:100:        # Validate strategy key (use registry as source of truth to prevent drift)
+src/control_plane/schema.py:124:        if self.scan_interval_seconds < 1:
+src/control_plane/schema.py:125:            errors.append(f"scan_interval_seconds must be >= 1, got {self.scan_interval_seconds}")
+src/control_plane/schema.py:126:        if self.scan_interval_seconds > 3600:
+src/control_plane/schema.py:127:            errors.append(f"scan_interval_seconds must be <= 3600 (1 hour), got {self.scan_interval_seconds}")
+src/control_plane/schema.py:162:    def from_dict(cls, data: Dict[str, Any]) -> RuntimeConfig:
+src/control_plane/schema.py:188:    def load_from_yaml(cls, path: str) -> RuntimeConfig:
+src/control_plane/schema.py:200:def get_default_config() -> RuntimeConfig:
+src/control_plane/schema.py:202:    return RuntimeConfig()
+templates/forensic_command.html.save:78:            background: var(--bg-secondary);
+templates/forensic_command.html.save:121:            color: var(--text-secondary);
+templates/forensic_command.html.save:163:            color: var(--text-secondary);
+templates/forensic_command.html.save:205:            color: var(--text-secondary);
+templates/forensic_command.html.save:347:            color: var(--text-secondary);
+templates/forensic_command.html.save:401:            background: var(--bg-secondary);
+templates/forensic_command.html.save:423:            color: var(--text-secondary);
+templates/forensic_command.html.save:466:        .btn-secondary {
+templates/forensic_command.html.save:472:        .btn-secondary:hover {
+templates/forensic_command.html.save:480:            color: var(--text-secondary);
+templates/forensic_command.html.save:513:            color: var(--text-secondary);
+templates/forensic_command.html.save:520:            color: var(--text-secondary);
+templates/forensic_command.html.save:555:            background: var(--text-secondary);
+templates/forensic_command.html.save:566:            <span id="last-update" class="badge" style="background: var(--bg-tertiary); color: var(--text-secondary);">
+templates/forensic_command.html.save:648:                            <span style="font-size: 0.875rem; color: var(--text-secondary);">Conviction:</span>
+templates/forensic_command.html.save:654:                        <div id="signal-reasoning" style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.5rem;">
+templates/forensic_command.html.save:739:                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+templates/forensic_command.html.save:745:                <button class="btn btn-secondary" onclick="closeSettings()">Cancel</button>
+templates/forensic_command.html.save:852:            event.target.classList.add('active');
+templates/forensic_command.html.save:873:            const execBadge = document.getElementById('execution-badge');
+templates/forensic_command.html.save:875:                execBadge.textContent = 'EXECUTION ENABLED';
+templates/forensic_command.html.save:876:                execBadge.className = 'badge live';
+templates/forensic_command.html.save:878:                execBadge.textContent = 'SIGNALS-ONLY';
+templates/forensic_command.html.save:879:                execBadge.className = 'badge signals-only';
+templates/forensic_command.html.save:1051:            evtSource = new EventSource('/api/logs/stream');
+templates/forensic_command.html.save:1054:            evtSource.onmessage = (event) => {
+templates/forensic_command.html.save:1058:                const text = event.data;
+templates/forensic_command.html.save:1080:                line.textContent = 'Log stream disconnected. Reconnecting...';
+templates/forensic_command.html.save:1146:            document.addEventListener('DOMContentLoaded', init);
+scripts/stop_control_plane.sh:28:# Wait up to 5 seconds for graceful shutdown
+src/control_plane/market_data_provider.py:202:        timeout_s: Request timeout in seconds
+scripts/assign_5_strategies_to_5_accounts.sh:196:echo "Waiting 2 seconds for hot-reload..."
+templates/components/toast_notifications.html:142:     * Provides instant visual feedback for user actions and system events
+templates/components/toast_notifications.html:173:     * @param {number} duration - Display duration in milliseconds (default: 3000, 0 = no auto-dismiss)
+templates/components/toast_notifications.html:229:        toastElement.addEventListener('hide.bs.toast', function() {
+templates/components/toast_notifications.html:234:        toastElement.addEventListener('hidden.bs.toast', function() {
+templates/components/toast_notifications.html:285:     * Connects to backend and listens for toast_notification events
+scripts/system_probe.py:4:Identifies blockers preventing trade entry.
+templates/dashboard_advanced.html:20:            --secondary: #8338ec;
+templates/dashboard_advanced.html:32:            --text-secondary: #e0e0e0;
+templates/dashboard_advanced.html:74:            color: var(--text-secondary);
+templates/dashboard_advanced.html:420:        .news-countdown {
+templates/dashboard_advanced.html:764:            color: var(--text-secondary);
+templates/dashboard_advanced.html:1084:                    News & Events
+templates/dashboard_advanced.html:1397:                            <div class="news-countdown">
+templates/dashboard_advanced.html:1398:                                <span>Next Major News Event:</span>
+templates/dashboard_advanced.html:1695:                <h2>📰 News & Events</h2>
+templates/dashboard_advanced.html:1951:            <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
+templates/dashboard_advanced.html:1962:        document.addEventListener('DOMContentLoaded', function() {
+templates/dashboard_advanced.html:1968:                link.addEventListener('click', function(e) {
+templates/dashboard_advanced.html:1969:                    e.preventDefault();
+templates/dashboard_advanced.html:2011:                refreshBtn.addEventListener('click', function(e) {
+templates/dashboard_advanced.html:2012:                    e.preventDefault();
+templates/dashboard_advanced.html:2091:            btn.addEventListener('click', function() {
+templates/dashboard_advanced.html:2124:        // Update sidebar every 5 seconds
+templates/dashboard_advanced.html:2129:        document.getElementById('floatingCopilotBtn').addEventListener('click', function() {
+templates/dashboard_advanced.html:2134:        document.getElementById('closeCopilotBtn').addEventListener('click', function() {
+templates/dashboard_advanced.html:2138:        // Initialize Socket.IO connection with robust reconnection
+templates/dashboard_advanced.html:2139:        window.socketStats = { connects: 0, disconnects: 0, lastEvent: 'init' };
+templates/dashboard_advanced.html:2150:                reconnection: true,
+templates/dashboard_advanced.html:2151:                reconnectionAttempts: Infinity,
+templates/dashboard_advanced.html:2152:                reconnectionDelay: 1000,
+templates/dashboard_advanced.html:2153:                reconnectionDelayMax: 8000,
+templates/dashboard_advanced.html:2165:        document.addEventListener('DOMContentLoaded', () => {
+templates/dashboard_advanced.html:2187:            // Refresh data at different intervals to prevent flickering
+templates/dashboard_advanced.html:2188:            // Market data: Every 5 seconds (prices change fast)
+templates/dashboard_advanced.html:2194:            // System status and account details: Every 10 seconds
+templates/dashboard_advanced.html:2209:            // Insights and trade ideas: Every 30 seconds
+templates/dashboard_advanced.html:2446:                'fed', 'interest rate', 'cpi', 'inflation', 'gdp', 'employment', 'unemployment',
+templates/dashboard_advanced.html:2448:                'central bank', 'monetary policy', 'treasury', 'bonds', 'currency', 'economy',
+templates/dashboard_advanced.html:2449:                'recession', 'growth', 'nonfarm', 'payroll', 'trade', 'tariff', 'ecb', 'boe',
+templates/dashboard_advanced.html:2519:                                Federal Reserve Maintains Interest Rate Policy - Monitoring Inflation Data
+templates/dashboard_advanced.html:2543:                                EUR/USD Consolidates Near 1.1700 - Traders Await ECB Commentary
+templates/dashboard_advanced.html:2567:                                Monitoring: Fed, Economic data, Forex, Central banks
+templates/dashboard_advanced.html:2605:                if (lowerText.includes('fed') || lowerText.includes('interest rate') || lowerText.includes('cpi') || lowerText.includes('inflation') || lowerText.includes('gdp')) {
+templates/dashboard_advanced.html:2719:                // Add event listeners
+templates/dashboard_advanced.html:2778:                            // Add event listeners
+templates/dashboard_advanced.html:2782:                            confirmBtn.addEventListener('click', async () => {
+templates/dashboard_advanced.html:2811:                            cancelBtn.addEventListener('click', async () => {
+templates/dashboard_advanced.html:2855:                sendButton.addEventListener('click', sendMessage);
+templates/dashboard_advanced.html:2856:                input.addEventListener('keypress', (e) => {
+templates/dashboard_advanced.html:2858:                        e.preventDefault();
+templates/dashboard_advanced.html:2869:                "📰 News Impact: Recent economic data shows mixed signals. The Federal Reserve's stance on interest rates continues to influence market sentiment.",
+templates/dashboard_advanced.html:3096:        // Enhanced countdown timer with importance indicators
+templates/dashboard_advanced.html:3097:        let countdownInterval = null;
+templates/dashboard_advanced.html:3098:        let nextMajorEvent = null;
+templates/dashboard_advanced.html:3100:        async function fetchEconomicCalendar() {
+templates/dashboard_advanced.html:3105:                // Look for real upcoming events
+templates/dashboard_advanced.html:3107:                nextMajorEvent = null;
+templates/dashboard_advanced.html:3109:                // Find next event with timestamp
+templates/dashboard_advanced.html:3110:                for (const event of upcoming) {
+templates/dashboard_advanced.html:3111:                    if (event.timestamp) {
+templates/dashboard_advanced.html:3112:                        nextMajorEvent = event;
+templates/dashboard_advanced.html:3117:                // If no timestamped events, create synthetic next economic release
+templates/dashboard_advanced.html:3118:                if (!nextMajorEvent) {
+templates/dashboard_advanced.html:3124:                    nextMajorEvent = {
+templates/dashboard_advanced.html:3126:                        event: 'Next Major Economic Data Release (CPI/Fed)',
+templates/dashboard_advanced.html:3132:                updateCountdownDisplay();
+templates/dashboard_advanced.html:3134:                console.error('❌ Calendar fetch failed:', error);
+templates/dashboard_advanced.html:3135:                updateCountdownDisplay();
+templates/dashboard_advanced.html:3139:        function updateCountdownDisplay() {
+templates/dashboard_advanced.html:3145:            if (nextMajorEvent && nextMajorEvent.timestamp) {
+templates/dashboard_advanced.html:3146:                const eventTime = new Date(nextMajorEvent.timestamp);
+templates/dashboard_advanced.html:3148:                const timeUntil = eventTime - now;
+templates/dashboard_advanced.html:3154:                    const seconds = Math.floor((timeUntil % 60000) / 1000);
+templates/dashboard_advanced.html:3156:                    let countdownText = '';
+templates/dashboard_advanced.html:3160:                        countdownText = `${days}d ${hours}h ${minutes}m`;
+templates/dashboard_advanced.html:3161:                        urgencyClass = 'countdown-normal';
+templates/dashboard_advanced.html:3163:                        countdownText = `${hours}h ${minutes}m ${seconds}s`;
+templates/dashboard_advanced.html:3164:                        urgencyClass = 'countdown-normal';
+templates/dashboard_advanced.html:3166:                        countdownText = `${hours}h ${minutes}m ${seconds}s`;
+templates/dashboard_advanced.html:3167:                        urgencyClass = 'countdown-warning';
+templates/dashboard_advanced.html:3169:                        countdownText = `${minutes}m ${seconds}s`;
+templates/dashboard_advanced.html:3170:                        urgencyClass = 'countdown-warning';
+templates/dashboard_advanced.html:3172:                        countdownText = `${minutes}m ${seconds}s`;
+templates/dashboard_advanced.html:3173:                        urgencyClass = 'countdown-critical';
+templates/dashboard_advanced.html:3176:                    newsTimer.innerHTML = `<span class="${urgencyClass}">${countdownText}</span>`;
+templates/dashboard_advanced.html:3179:                        const impact = nextMajorEvent.impact || 'medium';
+templates/dashboard_advanced.html:3185:                                <div class="impact-time">${eventTime.toLocaleString()}</div>
+templates/dashboard_advanced.html:3187:                                    ${impactEmoji} ${impactText}: ${nextMajorEvent.event}
+templates/dashboard_advanced.html:3190:                                    Currency: ${nextMajorEvent.currency || 'USD'} | Countdown: ${countdownText}
+templates/dashboard_advanced.html:3196:                    if (!countdownInterval) {
+templates/dashboard_advanced.html:3197:                        countdownInterval = setInterval(updateCountdownDisplay, 1000);
+templates/dashboard_advanced.html:3200:                    newsTimer.innerHTML = '<span class="countdown-critical">⚡ EVENT NOW!</span>';
+templates/dashboard_advanced.html:3204:                                <div class="impact-high" style="font-weight: 600;">🚨 LIVE: ${nextMajorEvent.event}</div>
+templates/dashboard_advanced.html:3211:                    clearInterval(countdownInterval);
+templates/dashboard_advanced.html:3212:                    countdownInterval = null;
+templates/dashboard_advanced.html:3213:                    setTimeout(fetchEconomicCalendar, 60000);
+templates/dashboard_advanced.html:3216:                newsTimer.innerHTML = '<span style="color: #94a3b8;">📊 No scheduled events</span>';
+templates/dashboard_advanced.html:3223:                                Monitoring Fed, CPI, and GDP data
+templates/dashboard_advanced.html:3228:                setTimeout(fetchEconomicCalendar, 300000);
+templates/dashboard_advanced.html:3232:        function updateCountdownTimer(data) {
+templates/dashboard_advanced.html:3235:                nextMajorEvent = data.next_news;
+templates/dashboard_advanced.html:3236:                updateCountdownDisplay();
+templates/dashboard_advanced.html:3240:        // Start countdown
+templates/dashboard_advanced.html:3241:        fetchEconomicCalendar();
+templates/dashboard_advanced.html:3247:            window.socketStats.lastEvent = 'connect';
+templates/dashboard_advanced.html:3258:            window.socketStats.lastEvent = 'disconnect';
+templates/dashboard_advanced.html:3261:        // Debug: Log all socket events
+templates/dashboard_advanced.html:3262:        socket.onAny(function(eventName, ...args) {
+templates/dashboard_advanced.html:3263:            console.log('🔌 Socket event received:', eventName, args);
+templates/dashboard_advanced.html:3467:            // Update countdown with enhanced functionality
+templates/dashboard_advanced.html:3468:            updateCountdownTimer(data);
+templates/dashboard_advanced.html:3489:                        <div class="${impactClass}">${news.event || news.title || 'Market Update'}</div>
+templates/dashboard_advanced.html:3497:                upcomingNews.innerHTML = '<div class="impact-item"><div class="impact-time">Now</div><div class="impact-info">No scheduled high-impact events</div></div>';
+templates/dashboard_advanced.html:3648:        // Request updates every 30 seconds and update timestamp
+templates/dashboard_advanced.html:3682:                            <div class="impact-${impact.toLowerCase()}">${news.event || news.title || 'Market Update'}</div>
+templates/dashboard_advanced.html:3695:        // Load AI insights after 2 seconds (give time for page to fully load)
+templates/dashboard_advanced.html:3699:        async function updateContextualInsights() {
+templates/dashboard_advanced.html:3744:        // Update contextual insights every 30 seconds
+templates/dashboard_advanced.html:3745:        setInterval(updateContextualInsights, 30000);
+templates/dashboard_advanced.html:3746:        // Initial load after 3 seconds
+templates/dashboard_advanced.html:3747:        setTimeout(updateContextualInsights, 3000);
+templates/dashboard_advanced.html:4016:        // Load opportunities every 10 seconds
+templates/dashboard_advanced.html:4029:          // Prevent duplicate panels if one already exists
+templates/dashboard_advanced.html:4129:                  confirmBtn.addEventListener('click', async () => {
+templates/dashboard_advanced.html:4137:                  cancelBtn.addEventListener('click', async () => {
+templates/dashboard_advanced.html:4158:          sendBtn.addEventListener('click', handleSend);
+templates/dashboard_advanced.html:4159:          input.addEventListener('keydown', (ev) => {
+templates/dashboard_advanced.html:4161:              ev.preventDefault();
+templates/dashboard_advanced.html:4166:          // Optional: Socket namespace hookup for live chat events
+src/control_plane/status_snapshot.py:80:    def read(self, max_age_seconds: int = 120) -> Optional[Dict[str, Any]]:
+src/control_plane/status_snapshot.py:93:            if age > max_age_seconds:
+scripts/verify_m13_price_sanity.py:53:            mock_config.scan_interval_seconds = 30
+scripts/verify_truth_only_news.sh:12:FORBIDDEN_STRINGS="NFP Release|Jackson Hole|AI bias|hawkish pivot|vol spike|150-pip swing|2038 zone"
+scripts/verify_truth_only_news.sh:67:if find . -name "*.html" -o -name "*.js" -o -name "*.py" | xargs grep -l "NFP Release\|Jackson Hole minutes\|hawkish pivot" 2>/dev/null | grep -v "ARTIFACTS\|ROTATE_SECRETS\|verify_truth_only_news"; then
+scripts/verify_all_local.sh:156:echo "Waiting 65 seconds for scan to advance..."
+src/control_plane/snapshot_store.py:34:    def read(self, max_age_seconds: Optional[int] = None) -> Dict[str, Any]:
+src/control_plane/snapshot_store.py:42:            if max_age_seconds is not None:
+src/control_plane/snapshot_store.py:45:                if age > max_age_seconds:
+src/control_plane/snapshot_store.py:60:        # Lock file is the snapshot path itself. This prevents concurrent writers.
+scripts/verify_control_plane.sh:347:        echo "   Running Playwright trace (60 seconds)..."
+scripts/verify_control_plane.sh:407:echo "   4. Wait 60 seconds (polling window: pollStatus every 5s, pollSignals/pollPositions every 3s)"
+scripts/verify_control_plane.sh:422:echo "   - This captures 60 seconds of runtime behavior and fails if forbidden"
+scripts/telegram_health_check.py:40:        print('This prevents accidental token exposure during rotation.')
+templates/forensic_command.html:751:            btn.addEventListener("click", open);
+templates/forensic_command.html:752:            close.addEventListener("click", hide);
+templates/forensic_command.html:753:            modal.addEventListener("click", (e) => { if (e.target === modal) hide(); });
+templates/forensic_command.html:755:            save.addEventListener("click", () => {
+templates/forensic_command.html:763:            clear.addEventListener("click", () => {
+templates/forensic_command.html:1141:        // Auto-refresh active trades and pending orders every 10 seconds when tab is visible
+templates/forensic_command.html:1263:                // Handle unix timestamp (seconds or ms) or ISO string
+templates/forensic_command.html:1670:                    "calendar": true,
+scripts/verify_truth_only_dashboard.sh:67:echo "  Sleeping 65 seconds to verify scan loop..."
+templates/simple_dashboard.html:171:        // Request data every 30 seconds
+src/control_plane/log_stream.py:3:Tails a log file and streams to clients via Server-Sent Events
+src/control_plane/log_stream.py:73:            # Wait up to 10 seconds for log file to appear
+src/control_plane/config_store.py:20:from .schema import RuntimeConfig, get_default_config
+src/control_plane/config_store.py:43:    def _compute_hash(self, config: RuntimeConfig) -> str:
+src/control_plane/config_store.py:48:    def load(self) -> RuntimeConfig:
+src/control_plane/config_store.py:57:            config = RuntimeConfig.load_from_yaml(str(self.config_path))
+src/control_plane/config_store.py:69:                    config = RuntimeConfig.load_from_yaml(str(self.config_path))
+src/control_plane/config_store.py:79:    def save(self, partial_update: Optional[Dict[str, Any]] = None) -> RuntimeConfig:
+src/control_plane/config_store.py:106:            # Reconstruct config object
+src/control_plane/config_store.py:107:            new_config = RuntimeConfig.from_dict(current_dict)
+src/control_plane/config_store.py:122:    def _atomic_write(self, config: RuntimeConfig) -> None:
+src/control_plane/config_store.py:147:    def _save_without_backup(self, config: RuntimeConfig) -> None:
+src/control_plane/config_store.py:157:            current = RuntimeConfig.load_from_yaml(str(self.config_path))
+scripts/verify_ai_insights_no_leak.py:38:        print("OK: AI call returned (summary_len):", len(r.summary or ""), "seconds:", round(dt, 2))
+scripts/pw_trace_forbidden_requests.js:30:const DURATION_SECONDS = parseInt(process.env.PW_DURATION || '60', 10);
+scripts/pw_trace_forbidden_requests.js:63:    fs.writeFileSync(LOG_FILE, `Playwright Forbidden Request Trace\nStarted: ${new Date().toISOString()}\nURL: ${TEST_URL}\nDuration: ${DURATION_SECONDS}s\n\n`, 'utf8');
+scripts/pw_trace_forbidden_requests.js:67:    log(`Duration: ${DURATION_SECONDS} seconds`);
+scripts/pw_trace_forbidden_requests.js:172:        log(`Waiting ${DURATION_SECONDS} seconds to capture polling/interactions...`);
+scripts/pw_trace_forbidden_requests.js:175:        await page.waitForTimeout(DURATION_SECONDS * 1000);
+src/control_plane/macro_provider.py:23:def fetch_fred_series(api_key: str, series_id: str, base_url: str = "https://api.stlouisfed.org/fred") -> Dict[str, Any]:
+src/control_plane/api.py:81:    scan_interval_seconds: Optional[int] = Field(None, ge=1, le=3600)
+src/control_plane/api.py:436:    snapshot = status_snapshot.read(max_age_seconds=120)
+src/control_plane/api.py:765:    status_data = status_snapshot.read(max_age_seconds=120) or {}
+src/control_plane/api.py:847:        # Remove system fields from sanitized dict to prevent overwrites
+src/control_plane/api.py:1015:    async def event_generator():
+src/control_plane/api.py:1016:        """Generate SSE events from log stream"""
+src/control_plane/api.py:1023:        async for event_data in log_stream.stream():
+src/control_plane/api.py:1024:            yield event_data
+src/control_plane/api.py:1027:        event_generator(),
+src/control_plane/api.py:1028:        media_type="text/event-stream",
+src/control_plane/api.py:1723:                query="forex OR FX OR currency OR EURUSD OR GBPUSD OR USDJPY OR XAUUSD OR gold price OR central bank OR interest rate OR inflation OR GDP OR CPI OR monetary policy",
+src/control_plane/api.py:1753:                # Politics (general, not economic policy)
+src/control_plane/api.py:1768:            # Secondary keywords (must have PRIMARY + at least one secondary, OR multiple secondary)
+src/control_plane/api.py:1769:            secondary_forex_keywords = [
+src/control_plane/api.py:1774:                'central bank', 'federal reserve', 'fed rate', 'ecb', 'european central bank',
+src/control_plane/api.py:1775:                'bank of japan', 'boj', 'bank of england', 'boe', 'rba', 'reserve bank',
+src/control_plane/api.py:1776:                'interest rate', 'rate decision', 'monetary policy', 'fomc', 'federal open market',
+src/control_plane/api.py:1777:                # Economic indicators (with currency impact)
+src/control_plane/api.py:1778:                'inflation', 'consumer price index', 'cpi', 'producer price index', 'ppi',
+src/control_plane/api.py:1798:                # Check for secondary keywords
+src/control_plane/api.py:1799:                has_secondary = any(secondary_kw in text for secondary_kw in secondary_forex_keywords)
+src/control_plane/api.py:1800:                secondary_count = sum(1 for secondary_kw in secondary_forex_keywords if secondary_kw in text)
+src/control_plane/api.py:1812:                # 3. 2+ secondary keywords (multiple economic indicators = likely forex relevant)
+src/control_plane/api.py:1813:                # 4. 1 secondary + currency name mention (e.g., "Japan yen" = economic + currency context)
+src/control_plane/api.py:1816:                has_currency_with_economic = has_secondary and has_currency_name
+src/control_plane/api.py:1818:                if has_primary or has_fx_symbol or secondary_count >= 2 or has_currency_with_economic:
+src/control_plane/api.py:2238:@app.on_event("startup")
+src/control_plane/api.py:2239:async def startup_event():
+src/control_plane/news_provider.py:38:        "rate decision", "interest rate", "fed", "fomc", "boj", "ecb", "boe",
+src/control_plane/news_provider.py:39:        "cpi", "inflation", "jobs report", "nonfarm", "gdp", "recession",
+scripts/show_account_strategy_status.py:43:    print(f"   Scan Interval: {config.scan_interval_seconds}s")
+scripts/systemd/ai-quant-retention.timer:5:OnCalendar=*-*-* 03:00:00
+scripts/start_control_plane_clean.sh:60:    # Poll /api/status until healthy or timeout (30 seconds)

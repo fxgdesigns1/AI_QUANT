@@ -1,0 +1,39 @@
+{
+  "phase": "Phase 8U-BROWSER-OPEN-VERIFY",
+  "classification": "PASS_BROWSER_OPENED_REAL_PHASE8U_STITCH_PAYLOAD_PREVIEW",
+  "tests_passed": true,
+  "tests_count": 130,
+  "alpha_endpoint_ok": true,
+  "alpha_endpoint_remote_marker": "PHASE8U_ENDPOINT_PAYLOAD_OK",
+  "payload_pulled": true,
+  "contract_pulled": true,
+  "payload_valid": true,
+  "contract_valid": true,
+  "payload_local_path": "C:\\Users\\gavin\\fxg-phase8-dashboard\\latest_stitch_dashboard_payload.json",
+  "contract_local_path": "C:\\Users\\gavin\\fxg-phase8-dashboard\\latest_stitch_dashboard_contract.json",
+  "api_response_local_path": "C:\\Users\\gavin\\fxg-phase8-dashboard\\phase8u_api_response.json",
+  "preview_html_written": true,
+  "browser_open_attempted": true,
+  "browser_open_path": "C:\\Users\\gavin\\fxg-phase8-dashboard\\phase8u_stitch_dashboard_preview.html",
+  "not_fallback_static_html": true,
+  "required_sections_present": true,
+  "calendar_budget_visible": true,
+  "provider_status_visible": true,
+  "safety_flags_visible": true,
+  "ny_live_enabled": false,
+  "send_trade_unlock_changed": false,
+  "execution_paths_changed": false,
+  "structural_select_string_ok": {
+    "REAL_PHASE_8U_STITCH_PAYLOAD_PREVIEW": true,
+    "NOT_FALLBACK_STATIC_HTML": true,
+    "calendar_budget_remaining": true,
+    "promotion_candidates": true
+  },
+  "evidence": {
+    "test_command": "python -m unittest discover -s tests -p \"test_phase8*.py\" -v",
+    "test_result": "130 tests OK in ~2.7s",
+    "alpha_ssh_curl": "gcloud compute ssh ... curl http://127.0.0.1:8787/api/phase8/research-dashboard",
+    "preview_script": "scripts/phase8u_open_stitch_dashboard_preview.py"
+  },
+  "next_action": "CURSOR: none for this gate; operator may compare file preview to live /api/phase8/research-dashboard on ALPHA when needed."
+}

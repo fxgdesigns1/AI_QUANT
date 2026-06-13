@@ -1,0 +1,12 @@
+{
+  "plan": [
+    "python -m py_compile bridges/windows_sidecar/service/main.py",
+    "python -m py_compile bridges/windows_sidecar/service/diagnostics.py",
+    "pytest bridges/windows_sidecar/tests/test_contracts.py",
+    "rg -n canonical_mac_file_bridge_v1 parallel_windows_sidecar_bridge_v1",
+    "rg -n bridge_v2 new_bridge_final tmp_bridge mt5_bridge_fixed generic_mt5_bridge main_bridge_replacement",
+    "git diff -- src/core/manual_execution.py (must be empty - no changes)",
+    "git diff -- dashboard/src/app/api/bridge (N/A - uses control_plane)",
+    "npm run lint / pnpm lint"
+  ]
+}

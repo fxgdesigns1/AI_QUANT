@@ -1,0 +1,13 @@
+{
+  "phase": "7_verify_broker_result_and_pending_order_state",
+  "signal_id": "limitexpfix_20260325020336",
+  "ea_build_inferred_from_request_summary": "v1.02 (no type_time/expiration keys in REQUEST_SUMMARY line)",
+  "events_from_ftmo_bridge_log": {
+    "SIGNAL_ACCEPT": true,
+    "REQUEST_SUMMARY_contains_type_time_and_expiration": false,
+    "BROKER_REJECT_invalid_expiration": true,
+    "reject_msg": "invalid expiration"
+  },
+  "hard_pass_rule": "FAIL for this signal_id: invalid expiration still present until v1.03 is running on chart.",
+  "retest_after_reload": "Append new LIMIT line after EA_START v1.03; expect REQUEST_SUMMARY to include type_time=ORDER_TIME_* and expiration=...; BROKER_REJECT must not cite invalid expiration."
+}

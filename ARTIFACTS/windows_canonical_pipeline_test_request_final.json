@@ -1,0 +1,6 @@
+{
+  "emission_attempted_true_false": false,
+  "reason": "producer_entrypoint src/core/manual_execution.py absent; canonical emit not invoked per hard_rules (no hand-written signal, no inject).",
+  "producer_request_artifact": null,
+  "signal_id": null
+}

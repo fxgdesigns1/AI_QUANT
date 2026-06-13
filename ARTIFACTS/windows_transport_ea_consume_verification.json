@@ -1,0 +1,9 @@
+﻿{
+    "shared_repo_bridge_log_contains_e2e_signal":  true,
+    "ts_utc":  "2026-03-25T00:10:06.3112394Z",
+    "mt5_signal_file_has_id":  true,
+    "note":  "EA must be attached with InpPaperOnly=true; reaction types include EXECUTED, DUPLICATE_SKIP, BROKER_REJECT, EA_PARSE_FAIL, etc.",
+    "phase":  "ea_consume_e2e",
+    "mt5_bridge_log_tail":  "{\"type\":\"SIGNAL_ACCEPT\",\"msg\":\"BUY EUR_USD units=1000 symbol_norm=EURUSD\",\"signal_id\":\"transporte2e_20260325001002\",\"ts\":\"2026.03.25 03:10:05\"}\n{\"type\":\"REQUEST_SUMMARY\",\"msg\":\"symbol=EURUSD side=BUY vol=0.0100 price_mode=MARKET sl_set=false tp_set=false sl=0 tp=0 bid=1.1623 ask=1.16232\",\"signal_id\":\"transporte2e_20260325001002\",\"ts\":\"2026.03.25 03:10:05\"}\n{\"type\":\"EXECUTED\",\"msg\":\"EURUSD BUY 0.0100\",\"signal_id\":\"transporte2e_20260325001002\",\"ts\":\"2026.03.25 03:10:05\"}",
+    "e2e_signal_id":  "transporte2e_20260325001002"
+}

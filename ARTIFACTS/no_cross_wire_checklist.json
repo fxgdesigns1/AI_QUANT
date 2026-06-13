@@ -1,0 +1,9 @@
+{
+  "checklist": [
+    "No writes to canonical signal paths from new sidecar code",
+    "No duplicate canonical signal writer creation",
+    "Mock and real sidecar env names remain distinct and documented",
+    "Canonical bridge labels remain intact"
+  ],
+  "verified_at": null
+}

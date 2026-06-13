@@ -15,9 +15,8 @@ BASE_URL = 'https://api-fxpractice.oanda.com/v3'
 
 ALL_ACCOUNTS = {
     '101-004-30719775-001': {'name': 'Gold Trump Week', 'instrument': 'XAU_USD', 'units': 10},
-    '101-004-30719775-009': {'name': 'Account 009', 'instrument': 'XAU_USD', 'units': 10},
-    '101-004-30719775-010': {'name': 'Account 010', 'instrument': 'EUR_USD', 'units': 100},
-    '101-004-30719775-011': {'name': 'Momentum Trading', 'instrument': 'USD_JPY', 'units': 100},
+    # Do not invent 007-009. Lane 010 is manual_only and protected; do not target it from test scripts.
+    '101-004-30719775-011': {'name': 'Lane 011 (Automated Paper)', 'instrument': 'USD_JPY', 'units': 100},
 }
 
 def send_telegram(msg):

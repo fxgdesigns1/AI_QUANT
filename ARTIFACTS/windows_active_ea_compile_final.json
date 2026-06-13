@@ -1,0 +1,7 @@
+{
+  "compile_log_path": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Experts\\FTMO_Bridge_EA.log",
+  "result_summary": "0 errors, 1 warnings (possible loss of data ulong to long at FTMO_Bridge_EA.mq5 line 171)",
+  "evidence_tail_lines": [
+    "Result: 0 errors, 1 warnings, 650 msec elapsed, cpu='X64 Regular'"
+  ]
+}

@@ -1,0 +1,18 @@
+﻿{
+    "ts_utc":  "2026-04-16T10:00:51.7854595Z",
+    "alpha":  {
+                  "instance":  "fxg-quant-paper-e2-micro",
+                  "project":  "fxg-ai-trading",
+                  "zone":  "us-east1-b",
+                  "signals_path":  "/home/aiquant/gcloud-system/logs/signals_ftmo_demo2.jsonl"
+              },
+    "destination":  {
+                        "mt5_files_dir":  "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files",
+                        "active_signal_file":  "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\signals_ftmo_demo2.jsonl",
+                        "mode":  "append_only_dedup_by_signal_id"
+                    },
+    "temp_download":  {
+                          "path":  "C:\\Users\\gavin\\AppData\\Local\\Temp\\signals_ftmo_demo2_alpha_f37df8f74fbb4561a88afb9fd678394d.jsonl"
+                      },
+    "scheduler_recommendation":  "Run every 1 minute; Restart on failure."
+}

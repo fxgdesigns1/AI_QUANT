@@ -1,0 +1,13 @@
+{
+  "cursor_host_os": "Windows_NT",
+  "cursor_host_detail": "Microsoft Windows 11 Pro",
+  "powershell_version": "5.1",
+  "tailscale_installed": false,
+  "tailscale_path_checked": "C:\\Program Files\\Tailscale\\tailscale.exe",
+  "sidecar_bind_default": "127.0.0.1",
+  "sidecar_bind_for_lan": "0.0.0.0",
+  "sidecar_port": 8877,
+  "control_plane_config": "MT5_SIDECAR_BASE_URL from os.getenv, MT5_SIDECAR_API_KEY from os.getenv",
+  "dashboard_structure": "frontend/fxg-dashboard React SPA, /control for ControlPlaneDashboard",
+  "ts_utc": "2026-03-23T01:30:00Z"
+}

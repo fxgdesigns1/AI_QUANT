@@ -1,0 +1,6 @@
+{
+  "job_name": "FXG_WINDOWS_SIGNAL_76B6_CONSUMER_TRACE_AND_FIX_V1",
+  "phase": "8_if_same_signal_cannot_be_replayed_safely_run_one_fresh_tiny_verification_signal",
+  "executed": false,
+  "reason_skipped": "Phase-8 allowed only if outcome inconclusive after tracing. Root cause is conclusive: UUID never present in Windows signal file; consumer path already proven operational by prior EXECUTED line for winprove_reload_20260324225356 in ftmo_bridge_log.jsonl."
+}

@@ -1,0 +1,9 @@
+{
+  "job_name": "FXG_UNIFY_LANE_010_EXECUTION_CONTRACT_AND_LIMIT_SUPPORT_V1",
+  "phase": "6_verify_market_signals_still_work",
+  "ts_utc": "2026-03-25T00:45:00Z",
+  "status": "NOT_RUN",
+  "reason": "Fresh MARKET signal through Windows MT5 EA was not executed in this Cursor agent session (no attached MT5 terminal / no broker session under automation).",
+  "recommended_manual_verification": "Run: .\\bridges\\windows_sidecar\\scripts\\fxg_win_inject_test_signal.ps1 -EntryType MARKET (default); confirm ftmo_bridge_log.jsonl shows REQUEST_SUMMARY price_mode=MARKET and EXECUTED or BROKER_REJECT.",
+  "code_review_note": "MARKET path retained in ea/FTMO_Bridge_EA.mq5 with same stop validation and Buy/Sell calls as before LIMIT split."
+}

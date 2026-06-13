@@ -19,32 +19,24 @@ load_dotenv(env_path)
 from src.core.oanda_client import OandaClient
 
 # Account configurations
+# Do not invent lanes. Drive account set from explicit allowlist.
+# Lane 010 is manual_only/protected and must not be targeted unless explicitly overridden.
+ACCOUNT_ID_PREFIX = os.getenv("ACCOUNT_ID_PREFIX", "101-004-30719775-").strip()
+ACCOUNT_SUFFIX_ALLOWLIST = [s.strip() for s in os.getenv("ACCOUNT_SUFFIX_ALLOWLIST", "").split(",") if s.strip()]
+ALLOW_LANE_010_TESTS = os.getenv("ALLOW_LANE_010_TESTS", "false").lower() == "true"
+
+if not ACCOUNT_SUFFIX_ALLOWLIST:
+    raise RuntimeError("ACCOUNT_SUFFIX_ALLOWLIST is required for this script (e.g., '011').")
+if ("010" in ACCOUNT_SUFFIX_ALLOWLIST) and (not ALLOW_LANE_010_TESTS):
+    raise RuntimeError("Refusing to target protected lane 010. Set ALLOW_LANE_010_TESTS=true to override explicitly.")
+
 ACCOUNTS = {
-    '101-004-30719775-011': {
-        'name': 'Momentum Trading',
-        'instruments': ['EUR_USD', 'GBP_USD', 'USD_JPY', 'AUD_USD', 'USD_CAD', 'NZD_USD'],
-        'strategy': 'Momentum-based entries with EMA crossover'
-    },
-    '101-004-30719775-006': {
-        'name': 'High Win Rate',
-        'instruments': ['EUR_JPY', 'USD_CAD'],
-        'strategy': 'High probability setups with tight risk control'
-    },
-    '101-004-30719775-007': {
-        'name': 'Zero Drawdown',
-        'instruments': ['GBP_USD', 'XAU_USD'],
-        'strategy': 'Conservative trading with maximum protection'
-    },
-    '101-004-30719775-008': {
-        'name': 'High Frequency',
-        'instruments': ['GBP_USD', 'NZD_USD', 'XAU_USD'],
-        'strategy': 'Multiple small trades with quick profits'
-    },
-    '101-004-30719775-001': {
-        'name': 'Gold Trump Week',
-        'instruments': ['XAU_USD'],
-        'strategy': 'Gold specialist with fundamental analysis'
+    f"{ACCOUNT_ID_PREFIX}{suffix}": {
+        "name": f"Lane {suffix}",
+        "instruments": ["EUR_USD", "GBP_USD", "USD_JPY", "AUD_USD", "XAU_USD"],
+        "strategy": "Configured lane analysis (no inferred lane roles).",
     }
+    for suffix in ACCOUNT_SUFFIX_ALLOWLIST
 }
 
 def format_currency(value: float) -> str:

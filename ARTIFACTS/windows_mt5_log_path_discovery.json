@@ -1,0 +1,20 @@
+{
+  "job_name": "FXG_WINDOWS_EA_LOG_DISCOVERY_AND_CONSUMER_REMEDIATION_V1",
+  "phase": "3_find_real_experts_journal_and_ea_log_paths",
+  "status": "PARTIAL",
+  "live_paths_observed_on_windows": {
+    "experts_log": null,
+    "journal_log": null,
+    "ea_specific_log": null,
+    "mtime_size": null
+  },
+  "canonical_paths_from_docs_and_code": {
+    "ea_writes_bridge_log_via_filename": "InpBridgeLogFile default ftmo_bridge_log.jsonl in MQL5 Files folder (MetaTrader5 FILE path convention)",
+    "source": "ea/FTMO_Bridge_EA.mq5 function LogBridge() uses FileOpen(InpBridgeLogFile, ...)",
+    "experts_journal_typical": "<MT5_Data_Folder>\\MQL5\\Logs\\*.log (broker terminal specific; not hardcoded in repo)",
+    "how_to_open_data_folder": "docs/bridges/WINDOWS_CANONICAL_EA_CUTOVER.md — MT5 File -> Open Data Folder"
+  },
+  "freshest_log_candidate_theoretical": "ftmo_bridge_log.jsonl co-located with signals_ftmo_demo2.jsonl under MQL5\\\\Files for the active terminal instance",
+  "blocker_for_live_mtime": "windows_host_access_missing",
+  "ts_utc": "2026-03-24T19:30:00Z"
+}

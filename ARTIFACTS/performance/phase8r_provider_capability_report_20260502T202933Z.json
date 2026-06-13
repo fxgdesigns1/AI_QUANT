@@ -1,0 +1,147 @@
+{
+  "generated_at_utc": "2026-05-02T20:29:33.248577Z",
+  "phase": "Phase 8R",
+  "classification": "FAIL_CLOSED_PROVIDER_CAPABILITY",
+  "instrument": "EUR_USD",
+  "lookback_days": 90,
+  "date_window_start_day": "2026-02-01",
+  "date_window_end_day": "2026-05-02",
+  "env_file_lines_applied": 6,
+  "provider_env_presence": {
+    "NEWSAPI_API_KEYS": true,
+    "NEWSAPI_API_KEY": false,
+    "FINNHUB_API_KEYS": false,
+    "FINNHUB_API_KEY": false,
+    "TRADINGECONOMICS_API_KEYS": false,
+    "TRADINGECONOMICS_API_KEY": false,
+    "MARKETAUX_API_KEYS": true,
+    "MARKETAUX_API_KEY": false,
+    "POLYGON_API_KEYS": true,
+    "ALPHAVANTAGE_API_KEYS": true,
+    "FRED_API_KEYS": true,
+    "FMP_API_KEYS": true
+  },
+  "provider_key_counts": {
+    "NEWSAPI_API_KEYS": 1,
+    "NEWSAPI_API_KEY": 0,
+    "FINNHUB_API_KEYS": 0,
+    "FINNHUB_API_KEY": 0,
+    "TRADINGECONOMICS_API_KEYS": 0,
+    "TRADINGECONOMICS_API_KEY": 0,
+    "MARKETAUX_API_KEYS": 5,
+    "MARKETAUX_API_KEY": 0,
+    "POLYGON_API_KEYS": 3,
+    "ALPHAVANTAGE_API_KEYS": 4,
+    "FRED_API_KEYS": 2,
+    "FMP_API_KEYS": 2
+  },
+  "probe_news": [
+    {
+      "provider": "newsapi",
+      "rows_returned": 0,
+      "http_status": 429,
+      "selected_env_name": "NEWSAPI_API_KEYS",
+      "key_index_tried": 0,
+      "parser_ok": false,
+      "failure_reason": "http_429"
+    },
+    {
+      "provider": "marketaux",
+      "rows_returned": 0,
+      "http_status": 402,
+      "selected_env_name": "MARKETAUX_API_KEYS",
+      "key_index_tried": 4,
+      "parser_ok": false,
+      "failure_reason": "http_402"
+    },
+    {
+      "provider": "polygon",
+      "rows_returned": 50,
+      "http_status": 200,
+      "selected_env_name": "POLYGON_API_KEYS",
+      "key_index_tried": 0,
+      "parser_ok": true,
+      "failure_reason": "ok"
+    },
+    {
+      "provider": "alphavantage",
+      "rows_returned": 50,
+      "http_status": 200,
+      "selected_env_name": "ALPHAVANTAGE_API_KEYS",
+      "key_index_tried": 0,
+      "parser_ok": true,
+      "failure_reason": "ok"
+    },
+    {
+      "provider": "fmp_stock_news",
+      "rows_returned": 0,
+      "http_status": 403,
+      "selected_env_name": "FMP_API_KEYS",
+      "key_index_tried": 1,
+      "parser_ok": false,
+      "failure_reason": "http_403"
+    }
+  ],
+  "probe_calendar": [
+    {
+      "provider": "tradingeconomics_calendar",
+      "rows_returned": 0,
+      "http_status": null,
+      "selected_env_name": null,
+      "key_index_tried": null,
+      "parser_ok": false,
+      "failure_reason": "no_keys"
+    },
+    {
+      "provider": "finnhub_economic_calendar",
+      "rows_returned": 0,
+      "http_status": null,
+      "selected_env_name": null,
+      "key_index_tried": null,
+      "parser_ok": false,
+      "failure_reason": "no_keys"
+    },
+    {
+      "provider": "fmp_economic_calendar",
+      "rows_returned": 0,
+      "http_status": 403,
+      "selected_env_name": "FMP_API_KEYS",
+      "key_index_tried": 1,
+      "parser_ok": false,
+      "failure_reason": "http_403"
+    }
+  ],
+  "probe_macro": [
+    {
+      "provider": "fred_observations",
+      "rows_returned": 1,
+      "http_status": 200,
+      "selected_env_name": "FRED_API_KEYS",
+      "key_index_tried": 0,
+      "parser_ok": true,
+      "failure_reason": "ok",
+      "series_id": "GDP"
+    }
+  ],
+  "working_news_providers": [
+    "polygon",
+    "alphavantage"
+  ],
+  "working_calendar_providers": [],
+  "working_macro_providers": [
+    "fred_observations"
+  ],
+  "historical_news_supported": true,
+  "historical_calendar_supported": false,
+  "historical_macro_supported": true,
+  "news_rows_count": 100,
+  "calendar_rows_count": 0,
+  "fred_rows_count": 1,
+  "secrets_exposed": false,
+  "paper_review_only": true,
+  "live_permission": false,
+  "ny_live_enabled": false,
+  "send_trade_unlock_changed": false,
+  "execution_paths_changed": false,
+  "order_or_execution_apis_called": false
+}

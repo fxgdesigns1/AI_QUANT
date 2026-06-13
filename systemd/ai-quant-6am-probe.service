@@ -1,0 +1,32 @@
+# ai-quant-6am-probe.service — 6AM Market Open System Health Probe
+#
+# Runs comprehensive system health and market readiness audit at 06:00 UTC daily.
+# Checks: system health, market readiness, bias resolution, execution path, trade activity.
+#
+# INSTALLATION:
+#   1. Copy this file to /etc/systemd/system/ai-quant-6am-probe.service
+#   2. Ensure working directory and script path are correct for your VM setup
+#   3. Run: sudo systemctl daemon-reload
+#   4. Enable timer: sudo systemctl enable --now ai-quant-6am-probe.timer
+
+[Unit]
+Description=AI-QUANT 6AM Market Open System Health Probe
+After=network.target ai-quant-control-plane.service ai-quant-runner.service
+
+[Service]
+Type=oneshot
+# Use the actual user on the VM (adjust if different)
+User=fxgdesigns1_gmail_com
+Group=fxgdesigns1_gmail_com
+WorkingDirectory=/home/fxgdesigns1_gmail_com/gcloud-system
+
+# Load environment if available
+EnvironmentFile=-/etc/ai-quant/.env
+
+# Run probe script
+ExecStart=/usr/bin/python3 /home/fxgdesigns1_gmail_com/gcloud-system/scripts/probes/6am_market_open_probe.py
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ai-quant-6am-probe

@@ -1,0 +1,6 @@
+{
+  "windows_execution_consumer": "FTMO_Bridge_EA (intended canonical consumer on this host)",
+  "mac_mt5_execution_consumer": "not_verified_from_windows_host",
+  "evidence": "This Windows host cannot assert Mac EA is disabled without Mac-side inspection or shared ops log.",
+  "rollback_note": "Re-enable Mac consumer only after disabling Windows FTMO_Bridge_EA and confirming single-writer/single-consumer policy."
+}

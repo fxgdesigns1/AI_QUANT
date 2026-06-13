@@ -1,0 +1,14 @@
+{
+  "cache_path": "H:\\My Drive\\AI Trading\\Gcloud system\\ARTIFACTS\\_tmp_bt_cache",
+  "instruments": [
+    "EUR_USD"
+  ],
+  "variants": [
+    {
+      "variant_id": "v1",
+      "strategy": "sma_crossover_research",
+      "fast_period": 5,
+      "slow_period": 15
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "phase": "4_detect_or_install_python_and_sidecar_deps",
+  "status": "PASS",
+  "python_version": "3.13.5",
+  "venv_path": "bridges/windows_sidecar/.venv",
+  "meta_trader5_importable": true
+}

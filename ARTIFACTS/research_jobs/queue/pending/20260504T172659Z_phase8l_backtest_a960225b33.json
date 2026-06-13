@@ -1,0 +1,65 @@
+{
+  "job_id": "20260504T172659Z_phase8l_backtest_a960225b33",
+  "created_at_utc": "2026-05-04T17:26:59.249494Z",
+  "phase": "Phase 8M",
+  "job_type": "phase8l_backtest",
+  "status": "PENDING",
+  "params": {
+    "instrument": "EUR_USD",
+    "granularity": "H1",
+    "lookback_days": 365,
+    "session_bucket": "LONDON_OPEN",
+    "session_window_utc": "07:00-10:30",
+    "mode": "research_only",
+    "strategy_name": "exact_current_alpha_strategy",
+    "research_strategy_key": "exact_current_alpha_strategy",
+    "rr_multiple": 2.0,
+    "phase8x_batch": true
+  },
+  "safety": {
+    "research_only": true,
+    "paper_review_only": true,
+    "live_permission": false,
+    "ny_live_enabled": false,
+    "send_trade_unlock_changed": false,
+    "execution_paths_changed": false
+  },
+  "requested_by": "gavin@G-Machine",
+  "result_contract": {
+    "max_result_pack_size_mb": 25,
+    "required_files": [
+      "backtest_summary.json",
+      "checksums.sha256",
+      "daily_persistence.json",
+      "monthly_persistence.json",
+      "recommendation.json",
+      "replay_samples_compact.jsonl",
+      "research_job_result_manifest.json"
+    ],
+    "summary_required_fields": [
+      "generated_at_utc",
+      "job_id",
+      "phase",
+      "job_type",
+      "classification",
+      "machine_role",
+      "instrument",
+      "granularity",
+      "lookback_days",
+      "session_bucket",
+      "session_window_utc",
+      "replay_mode",
+      "candidate_count",
+      "expectancy_r",
+      "profit_factor_r",
+      "max_loss_streak",
+      "drawdown_proxy_r",
+      "recommendation_label",
+      "paper_review_only",
+      "live_permission",
+      "ny_live_enabled",
+      "send_trade_unlock_changed",
+      "execution_paths_changed"
+    ]
+  }
+}

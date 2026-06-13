@@ -1,0 +1,128 @@
+{
+  "generated_at_utc": "2026-04-29T22:01:25.709882+00:00",
+  "phase": "Phase 8J",
+  "classification": "FAIL_5950X_HANDOFF_INCOMPLETE",
+  "alpha_hostname": "G-Machine",
+  "repo_path": "H:\\My Drive\\AI Trading\\Gcloud system",
+  "pack_path": "H:\\My Drive\\AI Trading\\Gcloud system\\ARTIFACTS\\performance\\offloads\\phase8j_5950x_handoff_pack_20260429T220125Z",
+  "archive_path": "H:\\My Drive\\AI Trading\\Gcloud system\\ARTIFACTS\\performance\\offloads\\phase8j_5950x_handoff_pack_20260429T220125Z.tar.gz",
+  "pack_size_bytes": 1299,
+  "max_pack_size_mb": 25,
+  "source_artifacts": [
+    {
+      "path": "ARTIFACTS/performance/latest_phase8g_lightweight_reconstruction_audit.json",
+      "required": true,
+      "purpose": "Latest ALPHA-safe audit and offload decision",
+      "exists": false,
+      "size_bytes": null
+    },
+    {
+      "path": "ARTIFACTS/performance/latest_phase8g_reconstruction_accuracy_audit.json",
+      "required": false,
+      "purpose": "Detailed granularity/reconstruction audit if present",
+      "exists": false,
+      "size_bytes": null
+    },
+    {
+      "path": "ARTIFACTS/performance/latest_phase8h_archived_candidate_inventory.json",
+      "required": true,
+      "purpose": "Archived candidate inventory and exact replay feasibility",
+      "exists": false,
+      "size_bytes": null
+    },
+    {
+      "path": "ARTIFACTS/performance/latest_phase8i_forward_archive_completeness.json",
+      "required": true,
+      "purpose": "Forward archive completeness/readiness",
+      "exists": false,
+      "size_bytes": null
+    },
+    {
+      "path": "ARTIFACTS/performance/latest_daily_evidence_journal.json",
+      "required": true,
+      "purpose": "Latest Phase 8C/8E forward evidence state",
+      "exists": false,
+      "size_bytes": null
+    },
+    {
+      "path": "ARTIFACTS/performance/pair_session_scorecard.json",
+      "required": true,
+      "purpose": "Aggregate scorecard context (including old NY EUR_USD row)",
+      "exists": false,
+      "size_bytes": null
+    },
+    {
+      "path": "ARTIFACTS/performance/pair_session_paper_review_log.jsonl",
+      "required": true,
+      "purpose": "Forward paper-review candidate log",
+      "exists": false,
+      "size_bytes": null
+    },
+    {
+      "path": "ARTIFACTS/performance/pair_session_candidate_archive_index.json",
+      "required": false,
+      "purpose": "Optional compact candidate archive index if present",
+      "exists": false,
+      "size_bytes": null
+    }
+  ],
+  "missing_required_artifacts": [
+    "ARTIFACTS/performance/latest_daily_evidence_journal.json",
+    "ARTIFACTS/performance/latest_phase8g_lightweight_reconstruction_audit.json",
+    "ARTIFACTS/performance/latest_phase8h_archived_candidate_inventory.json",
+    "ARTIFACTS/performance/latest_phase8i_forward_archive_completeness.json",
+    "ARTIFACTS/performance/pair_session_paper_review_log.jsonl",
+    "ARTIFACTS/performance/pair_session_scorecard.json"
+  ],
+  "optional_artifacts_included": [],
+  "sha256_by_file": {
+    "README_5950X_HANDOFF.md": "aa4ff95af747d05b97150fc7b475b7cd78a9da03939656123583a88da007320c",
+    "checksums.sha256": "726d77f11721bbda11a4ecce02e9bd28fa1307c7744233cba9bd5321bb6eb06e"
+  },
+  "recommended_5950x_target_dir": "~/fxg-research/phase8j_replay",
+  "research_questions": [
+    "Run heavy NY EUR_USD exact replay (or best-available proxy) on 5950X only.",
+    "Determine whether exact replay is possible for archived NY EUR_USD candidates (33/41 row context) without large backfills on ALPHA.",
+    "Produce a compact result pack meeting the Phase8J contract."
+  ],
+  "strict_rules": [
+    "Do not place trades",
+    "Do not call broker execution APIs for order placement",
+    "Do not enable NY live execution",
+    "Do not change Send Trade unlock logic",
+    "Do not loosen fail-closed gates",
+    "Do not modify lane 010 manual_only policy",
+    "Do not degrade lane 011 automated paper behavior",
+    "Do not edit runtime/config.yaml",
+    "Do not restart ai-quant-runner",
+    "Do not run heavy backtests on ALPHA",
+    "Do not pull large OANDA historical datasets on ALPHA",
+    "Do not run Monte Carlo or parameter sweeps on ALPHA",
+    "Do not copy huge candle caches back to ALPHA",
+    "Do not copy the entire ARTIFACTS tree blindly"
+  ],
+  "copy_to_5950x_commands": [
+    "mkdir -p ~/fxg-research/phase8j_replay && cd ~/fxg-research/phase8j_replay",
+    "gcloud compute scp --zone <ACTIVE_ALPHA_ZONE> --project fxg-ai-trading <ACTIVE_ALPHA_VM>:/opt/ai-quant/ARTIFACTS/performance/offloads/<PACK>.tar.gz ./",
+    "tar -xzf <PACK>.tar.gz",
+    "python3 -m json.tool <PACK_DIR>/manifest.json"
+  ],
+  "expected_5950x_outputs": [
+    "phase8j_replay_summary.json",
+    "phase8j_replay_samples_compact.jsonl",
+    "phase8j_monthly_persistence.json",
+    "phase8j_recommendation.json",
+    "phase8j_run_manifest.json",
+    "checksums.sha256"
+  ],
+  "copy_back_to_alpha_rules": [
+    "Copy back only a compact result pack tar.gz (<= 25 MB).",
+    "Do not copy candle caches or raw datasets back to ALPHA.",
+    "Do not modify ALPHA runtime config or execution paths."
+  ],
+  "paper_review_only": true,
+  "live_permission": false,
+  "ny_live_enabled": false,
+  "send_trade_unlock_changed": false,
+  "execution_paths_changed": false
+}

@@ -1,0 +1,22 @@
+{
+  "generated_at_utc": "2026-05-04T10:20:53.828318Z",
+  "phase": "Phase 8S",
+  "classification": "CALENDAR_CACHE_MANIFEST",
+  "cache_dir": "H:\\My Drive\\AI Trading\\Gcloud system\\ARTIFACTS\\performance\\calendar_http_cache",
+  "entries": [
+    {
+      "file": "rapidapi_economic_calendar_7061cb6379d199db88d31945.json",
+      "size_bytes": 8530
+    },
+    {
+      "file": "rapidapi_economic_calendar_797d539922c382b277bd3ba5.json",
+      "size_bytes": 8670
+    },
+    {
+      "file": "rapidapi_economic_calendar_c68fb89936156da3bee9bdf0.json",
+      "size_bytes": 8619
+    }
+  ],
+  "cache_ttl_days_policy": 365,
+  "secrets_exposed": false
+}

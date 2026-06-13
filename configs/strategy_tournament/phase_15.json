@@ -1,0 +1,43 @@
+{
+  "schema": "fxg.strategy_tournament.phase.v1",
+  "note": "Added 2026-04-07 in-repo: canonical VM phase_15 was absent from this workspace. Instruments align with runtime/config.yaml default_instruments. Variants are sma_crossover_research and momentum_trading families only (no new families).",
+  "granularity": "M5",
+  "risk_per_trade": 0.01,
+  "stop_atr_mult": 1.5,
+  "risk_reward": 2.0,
+  "champions_top_n": 10,
+  "cache_path": "../../ARTIFACTS/candles/strict_research_current",
+  "instruments": [
+    "EUR_USD",
+    "GBP_USD",
+    "XAU_USD",
+    "USD_JPY",
+    "AUD_USD"
+  ],
+  "variants": [
+    {
+      "variant_id": "p15_sma_5_15",
+      "strategy": "sma_crossover_research",
+      "fast_period": 5,
+      "slow_period": 15
+    },
+    {
+      "variant_id": "p15_sma_5_20",
+      "strategy": "sma_crossover_research",
+      "fast_period": 5,
+      "slow_period": 20
+    },
+    {
+      "variant_id": "p15_sma_8_21",
+      "strategy": "sma_crossover_research",
+      "fast_period": 8,
+      "slow_period": 21
+    },
+    {
+      "variant_id": "p15_mom_5_20",
+      "strategy": "momentum_trading",
+      "fast_period": 5,
+      "slow_period": 20
+    }
+  ]
+}

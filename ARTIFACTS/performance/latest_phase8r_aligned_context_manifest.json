@@ -1,0 +1,18 @@
+{
+  "generated_at_utc": "2026-05-04T10:20:53.875625Z",
+  "phase": "Phase 8R",
+  "classification": "PHASE8R_ALIGNED_CONTEXT_MANIFEST",
+  "instrument": "EUR_USD",
+  "lookback_days": 90,
+  "aligned_window_start_day": "2026-02-03",
+  "aligned_window_end_day": "2026-05-04",
+  "news_providers_verified": [],
+  "calendar_providers_verified": [
+    "rapidapi_economic_calendar"
+  ],
+  "historical_news_supported": false,
+  "historical_calendar_supported": true,
+  "news_rows_count": 0,
+  "calendar_rows_count": 50,
+  "notes": "Aligned to Phase 8R probe window; used for replay context gates."
+}

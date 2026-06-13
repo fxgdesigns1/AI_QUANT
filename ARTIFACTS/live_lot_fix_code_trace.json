@@ -1,0 +1,35 @@
+{
+  "job": "FXG_FIX_MT5_0_01_LOT_FALLBACK_ON_LIVE_CONSUMER_V1",
+  "phase": "2_capture_current_lot_parsing_logic_and_runtime_inputs",
+  "active_ea_file": "ea/FTMO_Bridge_EA.mq5",
+  "pre_fix_behavior_summary": {
+    "volume_resolution": "lots = MathMin(InpMaxLotSize, MathMax(0.01, MathAbs(units)*0.0001)); clamp to 0.01 if lots < 0.001",
+    "json_field_lots": "ignored",
+    "default_InpMaxLotSize": 0.01,
+    "effect_with_units_1000": "units*0.0001=0.1 capped by InpMaxLotSize 0.01 => silent 0.01",
+    "effect_with_units_1000000": "implied 100 lots capped to 0.01"
+  },
+  "post_fix_behavior_summary": {
+    "volume_resolution": "Parse JSON 'lots' then alias 'volume'; validate >0; NormalizeVolumeForSymbol (SYMBOL_VOLUME_MIN/MAX/STEP); reject on absent/null/invalid",
+    "json_field_lots": "required_numeric_for_execution",
+    "InpMaxLotSize": "retained input only; not used for signal volume in v1.04"
+  },
+  "canonical_emit_shape_example_relative_path": "ARTIFACTS/windows_direct_pull_backup_20260326_071247/signals_ftmo_demo2.jsonl",
+  "canonical_emit_fields_relevant": [
+    "signal_id",
+    "bridge_account",
+    "execution_allowed",
+    "entry_type",
+    "symbol",
+    "side",
+    "units",
+    "stop_loss",
+    "take_profit",
+    "limit_price",
+    "lots"
+  ],
+  "consumer_parser_expectations_after_fix": {
+    "lots": "primary numeric field",
+    "volume": "fallback alias if lots not a JSON_NUM_VALUE"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "lan_ip": "192.168.0.190",
+  "port": 8877,
+  "base_url": "http://192.168.0.190:8877",
+  "interface_name": "Ethernet",
+  "interface_type": "Ethernet",
+  "private_network_only": true,
+  "note": "For Mac dashboard: set MT5_SIDECAR_BASE_URL=http://192.168.0.190:8877"
+}

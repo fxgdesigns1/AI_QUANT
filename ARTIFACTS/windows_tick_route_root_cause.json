@@ -1,0 +1,36 @@
+{
+  "classification": "symbol_name_mismatch_or_symbol_not_selected",
+  "root_cause_analysis": {
+    "observed_issue": "Mac curl to /symbols/EURUSD/tick returned bid=0, ask=0 and failure_bucket=symbol_not_selected. User screenshot shows EURUSD visible in Market Watch on Windows.",
+    "possible_causes": [
+      {
+        "cause": "symbol_name_mismatch",
+        "description": "Broker uses suffixed symbol (e.g. EURUSDm, EURUSD.a) while API was queried with exact 'EURUSD'. symbol_info('EURUSD') returns None, resulting in symbol_not_found. The route fallback then may surface symbol_not_selected when failure_bucket is generic.",
+        "evidence": "mt5_client symbol_info_tick_with_auto_select returns symbol_not_found when symbol_info(symbol) is None. Route uses failure_bucket or 'symbol_not_selected' as fallback when tick is None."
+      },
+      {
+        "cause": "different_terminal_instance",
+        "description": "Sidecar connected to different MT5 terminal path than the one operator sees. Market Watch state differs.",
+        "evidence": "Verify MT5_TERMINAL_PATH in sidecar .env matches the running terminal. Run fxg_win_probe_mt5_identity.ps1 to capture terminal_path."
+      },
+      {
+        "cause": "symbol_not_selected_in_api_instance",
+        "description": "Symbol visible in UI but not selected in the API instance (MT5 Python symbol_select state). symbol_info_tick returns None until symbol_select(symbol, True) is called.",
+        "evidence": "mt5_client already calls symbol_select when info.select is False. If info exists but selected=True and tick still None, falls through to no_tick_data."
+      },
+      {
+        "cause": "no_tick_data",
+        "description": "Market closed, symbol inactive, or tick stream not yet available. Tick returned with bid=0, ask=0.",
+        "evidence": "mt5_client returns no_tick_data when tick exists but bid and ask are both zero."
+      }
+    ],
+    "tick_route_code_path": {
+      "entry": "GET /symbols/{symbol}/tick -> symbol_tick() in routes_symbols.py",
+      "flow": "symbol_info_tick_with_auto_select(symbol) -> mt5.symbol_info_tick(symbol); if None/zero, symbol_info(symbol); if not info -> symbol_not_found; if not selected -> symbol_select(symbol, True), retry tick; if no tick -> no_tick_data; if tick.bid/ask zero -> no_tick_data",
+      "failure_bucket_sources": ["mt5_not_initialized", "symbol_not_found", "no_tick_data"],
+      "route_fallback": "When (not tick or failure_bucket), route returns failure_bucket or 'symbol_not_selected'. So symbol_not_selected appears when failure_bucket was None - which is a code path that should not occur in current mt5_client. Likely historical or user saw recommended_fix text 'Ensure symbol is visible in Market Watch' which implies symbol_not_selected."
+    }
+  },
+  "recommended_fix": "Add symbol_name_mismatch detection: when symbol_info(symbol) is None, search symbols_get() for {symbol}*-like names; if found, return symbol_name_mismatch with broker_symbol_actual. Add /symbols/probe endpoint for operator to discover actual broker symbol. Surface broker_symbol_actual in TickResponse when mismatch.",
+  "ts_utc": "2026-03-23T00:00:00Z"
+}

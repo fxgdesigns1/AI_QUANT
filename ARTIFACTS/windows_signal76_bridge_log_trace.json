@@ -1,0 +1,18 @@
+{
+  "job_name": "FXG_WINDOWS_SIGNAL_76B6_CONSUMER_TRACE_AND_FIX_V1",
+  "phase": "2_trace_exact_signal_id_in_signal_file_and_logs",
+  "signal_id": "76b6f9fc-6801-45ae-88b2-cc5181adc741",
+  "file_path": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\ftmo_bridge_log.jsonl",
+  "file_exists": true,
+  "select_string_match_count": 0,
+  "evidence_command": "Select-String -Path <ftmo_bridge_log.jsonl> -Pattern '76b6f9fc-6801-45ae-88b2-cc5181adc741' -SimpleMatch",
+  "conclusion": "EXACT_SIGNAL_ID_NEVER_LOGGED_BY_EA",
+  "context": "EA only logs lines after reading signal file; absence implies line never read for this UUID.",
+  "latest_ea_start_banner_in_file": "FTMO_Bridge_EA started v1.01 (null-safe stops, dedupe, tail-read)",
+  "recent_signal_ids_in_log": [
+    "test_20260323011859",
+    "winprove_20260324212015",
+    "winprove_matrix_20260324213656",
+    "winprove_reload_20260324225356"
+  ]
+}

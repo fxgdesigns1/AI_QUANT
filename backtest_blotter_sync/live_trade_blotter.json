@@ -1,0 +1,241 @@
+{
+  "generated_at": "2025-11-15T00:00:00+00:00",
+  "timezone": "Europe/London",
+  "source": "google-cloud-trading-system deployment mirror",
+  "notes": [
+    "Paper-trading only. All accounts isolated per user directive.",
+    "Stats captured from latest 24h performance snapshot dated 2025-11-14 07:49:20 London."
+  ],
+  "accounts": [
+    {
+      "account_id": "101-004-30719775-007",
+      "account_name": "Gold Scalping Account",
+      "strategy_id": "gold_scalping",
+      "strategy_file": "Strategies here/gold_scalping_optimized.py",
+      "instrument_focus": ["XAU_USD"],
+      "trade_mode": "demo",
+      "status": "flat",
+      "backtest_ready": true,
+      "risk_constraints": {
+        "max_total_exposure_pct": 10,
+        "max_positions": 5,
+        "max_daily_trades": 50,
+        "max_concurrent_trades": 10,
+        "stop_loss_pct": 0.2,
+        "take_profit_pct": 0.3
+      },
+      "performance_snapshot": {
+        "snapshot_time": "2025-11-14T07:49:20+00:00",
+        "balance": 100597.83,
+        "equity": 100597.83,
+        "realized_pnl_24h": 609.31,
+        "total_trades_24h": 6,
+        "wins": 3,
+        "losses": 3,
+        "win_rate": 0.5,
+        "profit_factor": 1.39,
+        "avg_win": 717.92,
+        "avg_loss": -514.82
+      },
+      "ready_for_backtest": {
+        "historical_data_days": 14,
+        "reference_configs": [
+          "Strategies here/xau_usd_strategy_01_fitness_2.28.json",
+          "Strategies here/xau_usd_strategy_02_fitness_2.24.json",
+          "Strategies here/xau_usd_strategy_03_fitness_2.10.json",
+          "Strategies here/xau_usd_strategy_04_fitness_2.07.json",
+          "Strategies here/xau_usd_strategy_05_fitness_2.07.json"
+        ]
+      }
+    },
+    {
+      "account_id": "101-004-30719775-009",
+      "account_name": "GBP Rank #2",
+      "strategy_id": "gbp_rank_2",
+      "strategy_file": "Strategies here/gbp_usd_optimized.py",
+      "instrument_focus": ["GBP_USD"],
+      "trade_mode": "demo",
+      "status": "flat",
+      "backtest_ready": true,
+      "risk_constraints": {
+        "max_total_exposure_pct": 10,
+        "max_positions": 5
+      },
+      "performance_snapshot": {
+        "snapshot_time": "2025-11-14T07:49:20+00:00",
+        "balance": 99902.49,
+        "equity": 99902.49,
+        "realized_pnl_24h": -19.5,
+        "total_trades_24h": 32,
+        "wins": 11,
+        "losses": 21,
+        "win_rate": 0.344,
+        "profit_factor": 0.84,
+        "avg_win": 9.32,
+        "avg_loss": -5.81
+      },
+      "ready_for_backtest": {
+        "historical_data_days": 14,
+        "reference_configs": []
+      }
+    },
+    {
+      "account_id": "101-004-30719775-010",
+      "account_name": "GBP Rank #3",
+      "strategy_id": "gbp_rank_3",
+      "strategy_file": "Strategies here/gbp_usd_optimized.py",
+      "instrument_focus": ["GBP_USD"],
+      "trade_mode": "demo",
+      "status": "flat",
+      "backtest_ready": true,
+      "risk_constraints": {
+        "max_total_exposure_pct": 10,
+        "max_positions": 5
+      },
+      "performance_snapshot": {
+        "snapshot_time": "2025-11-14T07:49:20+00:00",
+        "balance": 99734.25,
+        "equity": 99734.25,
+        "realized_pnl_24h": -23.1,
+        "total_trades_24h": 33,
+        "wins": 11,
+        "losses": 22,
+        "win_rate": 0.333,
+        "profit_factor": 0.82,
+        "avg_win": 9.39,
+        "avg_loss": -5.75
+      },
+      "ready_for_backtest": {
+        "historical_data_days": 14,
+        "reference_configs": []
+      }
+    },
+    {
+      "account_id": "101-004-30719775-006",
+      "account_name": "Strategy Alpha Account",
+      "strategy_id": "gbp_rank_1",
+      "strategy_file": "Strategies here/gbp_usd_optimized.py",
+      "instrument_focus": ["GBP_USD"],
+      "trade_mode": "demo",
+      "status": "flat",
+      "backtest_ready": true,
+      "risk_constraints": {
+        "max_total_exposure_pct": 10,
+        "max_positions": 5
+      },
+      "performance_snapshot": {
+        "snapshot_time": "2025-11-14T07:49:20+00:00",
+        "balance": 99015.59,
+        "equity": 99015.59,
+        "realized_pnl_24h": -39.3,
+        "total_trades_24h": 33,
+        "wins": 10,
+        "losses": 23,
+        "win_rate": 0.303,
+        "profit_factor": 0.7,
+        "avg_win": 9.34,
+        "avg_loss": -5.77
+      },
+      "ready_for_backtest": {
+        "historical_data_days": 14,
+        "reference_configs": []
+      }
+    },
+    {
+      "account_id": "101-004-30719775-011",
+      "account_name": "Dynamic Multi-Pair Unified Account",
+      "strategy_id": "dynamic_multi_pair_unified",
+      "strategy_file": "Strategies here/momentum_trading.py",
+      "instrument_focus": ["XAU_USD", "GBP_USD", "EUR_USD", "USD_JPY", "USD_CAD", "NZD_USD"],
+      "trade_mode": "demo",
+      "status": "flat",
+      "backtest_ready": true,
+      "risk_constraints": {
+        "max_total_exposure_pct": 10,
+        "max_positions": 5
+      },
+      "performance_snapshot": {
+        "snapshot_time": "2025-11-14T07:49:20+00:00",
+        "balance": 117064.71,
+        "equity": 117064.71,
+        "realized_pnl_24h": -97.83,
+        "total_trades_24h": 34,
+        "wins": 8,
+        "losses": 26,
+        "win_rate": 0.235,
+        "profit_factor": 0.4,
+        "avg_win": 8.13,
+        "avg_loss": -6.27
+      },
+      "ready_for_backtest": {
+        "historical_data_days": 14,
+        "reference_configs": [
+          "Strategies here/80_percent_win_rate_strategy.yaml"
+        ]
+      }
+    },
+    {
+      "account_id": "101-004-30719775-005",
+      "account_name": "All Weather 70WR Account",
+      "strategy_id": "all_weather_70wr",
+      "strategy_file": "Strategies here/all_weather_70wr.py",
+      "instrument_focus": ["XAU_USD", "GBP_USD", "EUR_USD"],
+      "trade_mode": "demo",
+      "status": "flat",
+      "backtest_ready": true,
+      "risk_constraints": {
+        "max_total_exposure_pct": 10,
+        "max_positions": 5
+      },
+      "performance_snapshot": {
+        "snapshot_time": "2025-11-14T07:49:20+00:00",
+        "balance": 99821.39,
+        "equity": 99821.39,
+        "realized_pnl_24h": -99.8,
+        "total_trades_24h": 38,
+        "wins": 6,
+        "losses": 32,
+        "win_rate": 0.158,
+        "profit_factor": 0.32,
+        "avg_win": 7.88,
+        "avg_loss": -4.6
+      },
+      "ready_for_backtest": {
+        "historical_data_days": 14,
+        "reference_configs": []
+      }
+    },
+    {
+      "account_id": "101-004-30719775-008",
+      "account_name": "Primary Trading Account",
+      "strategy_id": "momentum_trading",
+      "strategy_file": "Strategies here/momentum_trading.py",
+      "instrument_focus": ["XAU_USD", "GBP_USD", "EUR_USD", "USD_JPY"],
+      "trade_mode": "demo",
+      "status": "flat",
+      "backtest_ready": true,
+      "risk_constraints": {
+        "max_total_exposure_pct": 10,
+        "max_positions": 5
+      },
+      "performance_snapshot": {
+        "snapshot_time": "2025-11-14T07:49:20+00:00",
+        "balance": 109876.83,
+        "equity": 109876.83,
+        "realized_pnl_24h": -110.12,
+        "total_trades_24h": 38,
+        "wins": 7,
+        "losses": 31,
+        "win_rate": 0.184,
+        "profit_factor": 0.31,
+        "avg_win": 7.11,
+        "avg_loss": -5.16
+      },
+      "ready_for_backtest": {
+        "historical_data_days": 14,
+        "reference_configs": []
+      }
+    }
+  ]
+}
+

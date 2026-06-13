@@ -1,0 +1,118 @@
+{
+  "schema": "fxg.tournament.champions.v1",
+  "run_id": "tournament_20260407T022028Z",
+  "generated_at": "2026-04-07T02:20:29.785099+00:00",
+  "top_n": 10,
+  "champions": [
+    {
+      "variant_id": "p15_sma_5_20",
+      "strategy": "sma_crossover_research",
+      "instrument": "GBP_USD",
+      "score": 0.0622886759962833,
+      "total_trades": 367,
+      "win_rate": 0.4032697547683924,
+      "expectancy_r": 0.0622886759962833,
+      "max_drawdown": 0.34048364387,
+      "total_pnl": 2232.4293665068853
+    },
+    {
+      "variant_id": "p15_mom_5_20",
+      "strategy": "momentum_trading",
+      "instrument": "GBP_USD",
+      "score": 0.0622886759962833,
+      "total_trades": 367,
+      "win_rate": 0.4032697547683924,
+      "expectancy_r": 0.0622886759962833,
+      "max_drawdown": 0.34048364387,
+      "total_pnl": 2232.4293665068853
+    },
+    {
+      "variant_id": "p15_sma_5_15",
+      "strategy": "sma_crossover_research",
+      "instrument": "GBP_USD",
+      "score": 0.059906044726574056,
+      "total_trades": 438,
+      "win_rate": 0.4132420091324201,
+      "expectancy_r": 0.059906044726574056,
+      "max_drawdown": 0.31937308494352146,
+      "total_pnl": 2608.6226456797663
+    },
+    {
+      "variant_id": "p15_sma_8_21",
+      "strategy": "sma_crossover_research",
+      "instrument": "XAU_USD",
+      "score": 0.04272306245610312,
+      "total_trades": 341,
+      "win_rate": 0.4046920821114369,
+      "expectancy_r": 0.04272306245610312,
+      "max_drawdown": 0.18582163165442162,
+      "total_pnl": 1263.0215767573443
+    },
+    {
+      "variant_id": "p15_sma_8_21",
+      "strategy": "sma_crossover_research",
+      "instrument": "GBP_USD",
+      "score": 0.03460650278207835,
+      "total_trades": 340,
+      "win_rate": 0.3735294117647059,
+      "expectancy_r": 0.03460650278207835,
+      "max_drawdown": 0.24558314422321864,
+      "total_pnl": 957.7266036286928
+    },
+    {
+      "variant_id": "p15_sma_5_20",
+      "strategy": "sma_crossover_research",
+      "instrument": "EUR_USD",
+      "score": 0.024830930795132645,
+      "total_trades": 360,
+      "win_rate": 0.3611111111111111,
+      "expectancy_r": 0.024830930795132645,
+      "max_drawdown": 0.2144095240302733,
+      "total_pnl": 640.2889373639008
+    },
+    {
+      "variant_id": "p15_mom_5_20",
+      "strategy": "momentum_trading",
+      "instrument": "EUR_USD",
+      "score": 0.024830930795132645,
+      "total_trades": 360,
+      "win_rate": 0.3611111111111111,
+      "expectancy_r": 0.024830930795132645,
+      "max_drawdown": 0.2144095240302733,
+      "total_pnl": 640.2889373639008
+    },
+    {
+      "variant_id": "p15_sma_5_15",
+      "strategy": "sma_crossover_research",
+      "instrument": "EUR_USD",
+      "score": 0.023663542471020763,
+      "total_trades": 440,
+      "win_rate": 0.3840909090909091,
+      "expectancy_r": 0.023663542471020763,
+      "max_drawdown": 0.20729040733339466,
+      "total_pnl": 761.5357213841107
+    },
+    {
+      "variant_id": "p15_sma_5_20",
+      "strategy": "sma_crossover_research",
+      "instrument": "USD_JPY",
+      "score": 0.016137162138340412,
+      "total_trades": 390,
+      "win_rate": 0.36923076923076925,
+      "expectancy_r": 0.016137162138340412,
+      "max_drawdown": 0.21485826638923938,
+      "total_pnl": 344.088817188057
+    },
+    {
+      "variant_id": "p15_mom_5_20",
+      "strategy": "momentum_trading",
+      "instrument": "USD_JPY",
+      "score": 0.016137162138340412,
+      "total_trades": 390,
+      "win_rate": 0.36923076923076925,
+      "expectancy_r": 0.016137162138340412,
+      "max_drawdown": 0.21485826638923938,
+      "total_pnl": 344.088817188057
+    }
+  ]
+}

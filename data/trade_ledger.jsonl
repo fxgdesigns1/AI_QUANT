@@ -1,0 +1,2 @@
+{"id": "TRD-2024-001", "instrument": "EUR_USD", "realizedPL": 1250.5, "units": 100000, "state": "CLOSED", "openTime": "2026-01-15T08:06:48.773727+00:00", "closeTime": "2026-01-15T12:06:48.773737+00:00", "account_id": "001-001-MOCK", "strategy_key": "MOMENTUM_V2"}
+{"id": "TRD-2024-002", "instrument": "XAU_USD", "realizedPL": -450.0, "units": 50, "state": "CLOSED", "openTime": "2026-01-15T09:06:48.773741+00:00", "closeTime": "2026-01-15T11:06:48.773742+00:00", "account_id": "001-001-MOCK", "strategy_key": "GOLD_SCALPER"}

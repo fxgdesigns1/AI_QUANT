@@ -1,0 +1,16 @@
+{
+  "timestamp_utc": "2026-01-05T17:27:45Z",
+  "git_branch": "safety/savepoint-pre-lockin",
+  "git_head": "2802f83ad56846c7c3e12359e758679c064ea315",
+  "t0": {
+    "last_scan_at": "2026-01-05T17:26:35.636352Z",
+    "execution_enabled": False
+  },
+  "t1": {
+    "last_scan_at": "2026-01-05T17:27:35.697005Z"
+  },
+  "scan_advanced": true,
+  "execution_enabled": False,
+  "control_plane_pid": 61912,
+  "runner_pid": 61922
+}

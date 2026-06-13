@@ -1,0 +1,45 @@
+{
+  "job_name": "FXG_UNIFY_LANE_010_EXECUTION_CONTRACT_AND_LIMIT_SUPPORT_V1",
+  "phase": "1_trace_all_lane_010_signal_outputs",
+  "ts_utc": "2026-03-25T00:45:00Z",
+  "status": "COMPLETE",
+  "evidence_method": "repo_static_analysis_and_grep",
+  "findings": [
+    {
+      "component": "Windows_FTMO_Bridge_EA",
+      "path": "ea/FTMO_Bridge_EA.mq5",
+      "behavior": "Tail-reads JSONL from InpSignalFilePath default signals_ftmo_demo2.jsonl; filters bridge_account == InpBridgeAccount (ftmo_demo2); executes MARKET (v1.01) extended to LIMIT in v1.02."
+    },
+    {
+      "component": "windows_transport_forward",
+      "path": "bridges/windows_sidecar/scripts/fxg_win_sync_canonical_signals.ps1",
+      "behavior": "Reads repo logs/signals_ftmo_demo2.jsonl; appends to MT5 MQL5/Files/signals_ftmo_demo2.jsonl; filters bridge_account=ftmo_demo2; dedupes by signal_id."
+    },
+    {
+      "component": "windows_transport_loop",
+      "path": "bridges/windows_sidecar/scripts/fxg_win_start_canonical_transport_loop.ps1",
+      "behavior": "Polls derive (aggregate->canonical) then forward sync then reverse bridge log."
+    },
+    {
+      "component": "control_plane_api_signals_aggregate",
+      "path": "src/control_plane/api.py",
+      "behavior": "Reads logs/signals.jsonl for instrument status aggregation (lines ~125-144); SIGNALS_LOG_PATH points to project-root signals.jsonl for /api/logs/alpha; separate from logs/ subtree in some code paths."
+    },
+    {
+      "component": "MANUAL_010_documented",
+      "path": "docs/bridges/CANONICAL_MAC_FILE_BRIDGE.md",
+      "behavior": "Documents manual lane 010 emit with bridge_account ftmo_demo2 after OANDA; references manual_execution on Mac (not present as .py in this repo)."
+    },
+    {
+      "component": "TOP3_SNIPER_300",
+      "path": "not_found_as_dedicated_module",
+      "behavior": "No dedicated TOP3_SNIPER_300 Python emitter located in this repository; strategy label appears in operator/inject tooling and test payloads only. Executable contract is bridge_account + entry_type + fields consumed by EA."
+    }
+  ],
+  "canonical_files": {
+    "repo_execution_stream": "logs/signals_ftmo_demo2.jsonl",
+    "aggregate_upstream_log": "logs/signals.jsonl",
+    "mt5_files_relative": "MQL5/Files/signals_ftmo_demo2.jsonl"
+  },
+  "PASS_criteria": "Trace documents all in-repo writers/consumers; external Mac producers noted where applicable."
+}

@@ -1,0 +1,399 @@
+{
+  "cache_dir": "H:\\My Drive\\AI Trading\\Gcloud system\\ARTIFACTS\\performance\\phase8y_context_cache\\news",
+  "classification": "PHASE8Y_NEWS_CACHE_MANIFEST",
+  "entries": [
+    {
+      "complete_for_required_window": true,
+      "compressed_size_bytes": 4268094,
+      "coverage_end_day": "2026-05-04",
+      "coverage_start_day": "2026-02-03",
+      "fetch_meta": {
+        "provider_meta": {
+          "chunked": true,
+          "chunks": [
+            {
+              "chunk_end_day": "2026-02-09",
+              "chunk_start_day": "2026-02-03",
+              "meta": {
+                "pages": [
+                  {
+                    "body_preview": "{\"status\":\"ERROR\",\"request_id\":\"3373cb0e20792ba0ee5b8cf99704b424\",\"error\":\"You've exceeded the maximum requests per minute, please wait or upgrade your subscrip",
+                    "failure_reason": "http_429",
+                    "http_status": 429
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 500
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 500
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 483
+                  }
+                ],
+                "pages_attempted": 4,
+                "provider": "polygon"
+              }
+            },
+            {
+              "chunk_end_day": "2026-02-16",
+              "chunk_start_day": "2026-02-10",
+              "meta": {
+                "pages": [
+                  {
+                    "body_preview": "{\"status\":\"ERROR\",\"request_id\":\"2123633a95890a875f809c068f092751\",\"error\":\"You've exceeded the maximum requests per minute, please wait or upgrade your subscrip",
+                    "failure_reason": "http_429",
+                    "http_status": 429
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 500
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 500
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 373
+                  }
+                ],
+                "pages_attempted": 4,
+                "provider": "polygon"
+              }
+            },
+            {
+              "chunk_end_day": "2026-02-23",
+              "chunk_start_day": "2026-02-17",
+              "meta": {
+                "pages": [
+                  {
+                    "http_status": 200,
+                    "rows": 500
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 500
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 398
+                  }
+                ],
+                "pages_attempted": 3,
+                "provider": "polygon"
+              }
+            },
+            {
+              "chunk_end_day": "2026-03-02",
+              "chunk_start_day": "2026-02-24",
+              "meta": {
+                "pages": [
+                  {
+                    "http_status": 200,
+                    "rows": 500
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 500
+                  },
+                  {
+                    "body_preview": "{\"status\":\"ERROR\",\"request_id\":\"92231d8a49dc70bd5b9ac199baa9c3ba\",\"error\":\"You've exceeded the maximum requests per minute, please wait or upgrade your subscrip",
+                    "failure_reason": "http_429",
+                    "http_status": 429
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 439
+                  }
+                ],
+                "pages_attempted": 4,
+                "provider": "polygon"
+              }
+            },
+            {
+              "chunk_end_day": "2026-03-09",
+              "chunk_start_day": "2026-03-03",
+              "meta": {
+                "pages": [
+                  {
+                    "http_status": 200,
+                    "rows": 500
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 500
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 407
+                  }
+                ],
+                "pages_attempted": 3,
+                "provider": "polygon"
+              }
+            },
+            {
+              "chunk_end_day": "2026-03-16",
+              "chunk_start_day": "2026-03-10",
+              "meta": {
+                "pages": [
+                  {
+                    "http_status": 200,
+                    "rows": 500
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 500
+                  },
+                  {
+                    "body_preview": "{\"status\":\"ERROR\",\"request_id\":\"44527ad5a47a32c1bcfe8cad7bef66e9\",\"error\":\"You've exceeded the maximum requests per minute, please wait or upgrade your subscrip",
+                    "failure_reason": "http_429",
+                    "http_status": 429
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 437
+                  }
+                ],
+                "pages_attempted": 4,
+                "provider": "polygon"
+              }
+            },
+            {
+              "chunk_end_day": "2026-03-23",
+              "chunk_start_day": "2026-03-17",
+              "meta": {
+                "pages": [
+                  {
+                    "http_status": 200,
+                    "rows": 500
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 500
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 500
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 10
+                  }
+                ],
+                "pages_attempted": 4,
+                "provider": "polygon"
+              }
+            },
+            {
+              "chunk_end_day": "2026-03-30",
+              "chunk_start_day": "2026-03-24",
+              "meta": {
+                "pages": [
+                  {
+                    "http_status": 200,
+                    "rows": 500
+                  },
+                  {
+                    "body_preview": "{\"status\":\"ERROR\",\"request_id\":\"b2117fbcf505d0524a9d913fedaac51c\",\"error\":\"You've exceeded the maximum requests per minute, please wait or upgrade your subscrip",
+                    "failure_reason": "http_429",
+                    "http_status": 429
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 500
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 415
+                  }
+                ],
+                "pages_attempted": 4,
+                "provider": "polygon"
+              }
+            },
+            {
+              "chunk_end_day": "2026-04-06",
+              "chunk_start_day": "2026-03-31",
+              "meta": {
+                "pages": [
+                  {
+                    "body_preview": "{\"status\":\"ERROR\",\"request_id\":\"5e553688cba8dd05cfd6f8aaa1167d3e\",\"error\":\"You've exceeded the maximum requests per minute, please wait or upgrade your subscrip",
+                    "failure_reason": "http_429",
+                    "http_status": 429
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 500
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 500
+                  },
+                  {
+                    "body_preview": "{\"status\":\"ERROR\",\"request_id\":\"d5f3fbd15e7bb3fb13302a7a13b20216\",\"error\":\"You've exceeded the maximum requests per minute, please wait or upgrade your subscrip",
+                    "failure_reason": "http_429",
+                    "http_status": 429
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 359
+                  }
+                ],
+                "pages_attempted": 5,
+                "provider": "polygon"
+              }
+            },
+            {
+              "chunk_end_day": "2026-04-13",
+              "chunk_start_day": "2026-04-07",
+              "meta": {
+                "pages": [
+                  {
+                    "http_status": 200,
+                    "rows": 500
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 500
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 326
+                  }
+                ],
+                "pages_attempted": 3,
+                "provider": "polygon"
+              }
+            },
+            {
+              "chunk_end_day": "2026-04-20",
+              "chunk_start_day": "2026-04-14",
+              "meta": {
+                "pages": [
+                  {
+                    "http_status": 200,
+                    "rows": 500
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 500
+                  },
+                  {
+                    "body_preview": "{\"status\":\"ERROR\",\"request_id\":\"18bef89c87c9bfb220e1b23d0854acf3\",\"error\":\"You've exceeded the maximum requests per minute, please wait or upgrade your subscrip",
+                    "failure_reason": "http_429",
+                    "http_status": 429
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 378
+                  }
+                ],
+                "pages_attempted": 4,
+                "provider": "polygon"
+              }
+            },
+            {
+              "chunk_end_day": "2026-04-27",
+              "chunk_start_day": "2026-04-21",
+              "meta": {
+                "pages": [
+                  {
+                    "http_status": 200,
+                    "rows": 500
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 500
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 450
+                  }
+                ],
+                "pages_attempted": 3,
+                "provider": "polygon"
+              }
+            },
+            {
+              "chunk_end_day": "2026-05-04",
+              "chunk_start_day": "2026-04-28",
+              "meta": {
+                "pages": [
+                  {
+                    "http_status": 200,
+                    "rows": 500
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 500
+                  },
+                  {
+                    "http_status": 200,
+                    "rows": 290
+                  }
+                ],
+                "pages_attempted": 3,
+                "provider": "polygon"
+              }
+            }
+          ]
+        }
+      },
+      "kind": "news",
+      "path": "H:\\My Drive\\AI Trading\\Gcloud system\\ARTIFACTS\\performance\\phase8y_context_cache\\news\\phase8y_news_polygon_20260203_20260504.jsonl.gz",
+      "provider": "polygon",
+      "required_end_day": "2026-05-04",
+      "required_start_day": "2026-02-03",
+      "row_count": 18265,
+      "saved_at_utc": "2026-05-04T18:51:06.075182Z",
+      "sha256": "da171d935d001e56546236315726ca49c0b4a21cd58e746873d8007d39f77c57"
+    },
+    {
+      "complete_for_required_window": true,
+      "compressed_size_bytes": 4552541,
+      "coverage_end_day": "2026-05-10",
+      "coverage_start_day": "2026-02-03",
+      "fetch_meta": {
+        "gap_fetch_end_day": "2026-05-10",
+        "gap_fetch_start_day": "2026-05-05",
+        "provider_meta": {
+          "pages": [
+            {
+              "http_status": 200,
+              "rows": 500
+            },
+            {
+              "http_status": 200,
+              "rows": 500
+            },
+            {
+              "http_status": 200,
+              "rows": 232
+            }
+          ],
+          "pages_attempted": 3,
+          "provider": "polygon"
+        }
+      },
+      "kind": "news",
+      "path": "H:\\My Drive\\AI Trading\\Gcloud system\\ARTIFACTS\\performance\\phase8y_context_cache\\news\\phase8y_news_polygon_20260203_20260510.jsonl.gz",
+      "provider": "polygon",
+      "required_end_day": "2026-05-10",
+      "required_start_day": "2026-02-03",
+      "row_count": 19497,
+      "saved_at_utc": "2026-05-10T22:07:38.181341Z",
+      "sha256": "bf0ccda98a4ad74f29d75fb67410e928acd3a038e2f62689d5e4909413df3912"
+    }
+  ],
+  "execution_paths_changed": false,
+  "generated_at_utc": "2026-05-10T22:07:38.181366Z",
+  "ny_live_enabled": false,
+  "paper_review_only": true,
+  "phase": "Phase 8Y",
+  "secrets_exposed": false
+}

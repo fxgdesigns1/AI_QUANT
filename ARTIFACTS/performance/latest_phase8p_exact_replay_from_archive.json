@@ -1,0 +1,15 @@
+{
+  "classification": "REPLAY_BLOCKED_ARCHIVE_INPUT_MISSING",
+  "execution_paths_changed": false,
+  "generated_at_utc": "2026-05-02T20:20:05.024423Z",
+  "input": "H:\\My Drive\\AI Trading\\Gcloud system\\ARTIFACTS\\performance\\pair_session_paper_review_log.jsonl",
+  "live_permission": false,
+  "ny_live_enabled": false,
+  "ok": false,
+  "paper_review_only": true,
+  "phase": "Phase 8P",
+  "rows_considered": 0,
+  "rows_replayed": 0,
+  "send_trade_unlock_changed": false,
+  "status": "REPLAY_BLOCKED_ARCHIVE_INPUT_MISSING"
+}

@@ -1,0 +1,94 @@
+{
+  "job_name": "FXG_WINDOWS_SIDECAR_BIND_FIX_AND_REMOTE_VERIFICATION_V1",
+  "status": "PARTIAL",
+  "phase_results": {
+    "1_discover_actual_sidecar_runtime_config": "PASS",
+    "2_find_why_bind_host_is_ignored": "PASS",
+    "3_patch_binding_logic_if_needed": "PASS",
+    "4_restart_sidecar_cleanly": "PASS",
+    "5_verify_windows_local_and_lan_binding": "PASS",
+    "6_verify_mac_to_windows_connectivity": "NOT_RUN",
+    "7_verify_mac_dashboard_real_sidecar_proxy": "NOT_RUN",
+    "8_run_safety_checks": "PASS"
+  },
+  "files_created": [],
+  "files_modified": [
+    "bridges/windows_sidecar/run.py",
+    "bridges/windows_sidecar/scripts/start_windows_sidecar.ps1"
+  ],
+  "files_verified": [
+    "bridges/windows_sidecar/run.py",
+    "bridges/windows_sidecar/service/config.py",
+    "bridges/windows_sidecar/scripts/start_windows_sidecar.ps1",
+    "bridges/windows_sidecar/.env"
+  ],
+  "files_unverified": [],
+  "verification_commands_run": [
+    "netstat -ano | findstr :8877 → TCP 0.0.0.0:8877 LISTENING",
+    "Invoke-RestMethod http://127.0.0.1:8877/health -Headers x-api-key",
+    "Invoke-RestMethod http://192.168.0.190:8877/health -Headers x-api-key",
+    "Invoke-RestMethod http://127.0.0.1:8877/account -Headers x-api-key",
+    "Invoke-RestMethod http://192.168.0.190:8877/account -Headers x-api-key",
+    "Invoke-RestMethod http://127.0.0.1:8877/symbols/EURUSD/tick -Headers x-api-key",
+    "Invoke-RestMethod http://192.168.0.190:8877/symbols/EURUSD/tick -Headers x-api-key",
+    "git diff (manual_execution, bridge routes, bridge_accounts)",
+    "rg orders/send|positions/close bridges/windows_sidecar",
+    "rg canonical_mac_file_bridge_v1|parallel_windows_sidecar_bridge_v1"
+  ],
+  "verification_commands_not_run": [
+    "Mac: curl http://192.168.0.190:8877/health -H x-api-key:<key>",
+    "Mac: curl http://192.168.0.190:8877/account -H x-api-key:<key>",
+    "Mac: curl http://192.168.0.190:8877/symbols/EURUSD/tick -H x-api-key:<key>",
+    "Mac: MT5_SIDECAR_BASE_URL=http://192.168.0.190:8877 in Control Plane .env",
+    "Mac: Dashboard /api/mt5 aggregate route verification"
+  ],
+  "artifacts": [
+    "artifacts/bind_config_discovery.json",
+    "artifacts/sidecar_launch_path_discovery.txt",
+    "artifacts/bind_root_cause.json",
+    "artifacts/sidecar_restart_result.json",
+    "artifacts/netstat_after_bind_fix.txt",
+    "artifacts/windows_local_health_after_bind_fix.json",
+    "artifacts/windows_local_account_after_bind_fix.json",
+    "artifacts/windows_local_tick_after_bind_fix.json",
+    "artifacts/windows_lan_health_after_bind_fix.json",
+    "artifacts/windows_lan_account_after_bind_fix.json",
+    "artifacts/windows_lan_tick_after_bind_fix.json",
+    "artifacts/windows_runtime_safety_check_final.txt",
+    "artifacts/FXG_WINDOWS_SIDECAR_BIND_FIX_AND_REMOTE_VERIFICATION_V1.json"
+  ],
+  "runtime_findings": {
+    "netstat_before": "TCP 127.0.0.1:8877 LISTENING",
+    "netstat_after": "TCP 0.0.0.0:8877 LISTENING",
+    "root_cause": "load_dotenv() in run.py loaded from cwd (or did not override); config module read BIND_HOST before sidecar .env was applied. Fix: load_dotenv(sidecar_dir/.env, override=True) before importing app; read BIND_HOST/BIND_PORT from os.environ in run.py.",
+    "bind_host_source": "BIND_HOST from bridges/windows_sidecar/.env (0.0.0.0)",
+    "windows_local_health": "PASS",
+    "windows_lan_health": "PASS",
+    "windows_local_account": "PASS (login 1512827972, FTMO-Demo, balance 97275.63)",
+    "windows_lan_account": "PASS (same real data)",
+    "windows_local_tick": "PASS (EURUSD bid/ask real)",
+    "windows_lan_tick": "PASS (same real data)"
+  },
+  "safety_assertions": {
+    "canonical_mac_file_bridge_v1_remains_canonical_execution_bridge": true,
+    "parallel_windows_sidecar_bridge_v1_is_additive_and_separate": true,
+    "lane_010_canonical_emit_semantics_unchanged": true,
+    "no_duplicate_canonical_writers_created": true,
+    "no_live_trading_enablement_introduced": true,
+    "windows_sidecar_remains_read_only_first": true,
+    "mock_sidecar_is_not_counted_as_runtime_truth": true
+  },
+  "open_risks": [
+    "Mac-to-Windows connectivity not yet verified from Mac host; firewall may block if Private profile scope is wrong.",
+    "Dashboard MT5_SIDECAR_BASE_URL and MT5_SIDECAR_API_KEY must be set on Mac to proxy to real sidecar."
+  ],
+  "next_required_manual_steps": [
+    "From MacBook Air: curl -H 'x-api-key:<SIDECAR_API_KEY>' http://192.168.0.190:8877/health",
+    "From Mac: curl -H 'x-api-key:<key>' http://192.168.0.190:8877/account",
+    "From Mac: curl -H 'x-api-key:<key>' http://192.168.0.190:8877/symbols/EURUSD/tick",
+    "On Mac Control Plane: set MT5_SIDECAR_BASE_URL=http://192.168.0.190:8877 and MT5_SIDECAR_API_KEY to match Windows .env",
+    "Restart Mac dashboard/control plane after env change",
+    "Verify dashboard /api/mt5 returns bridge_id=parallel_windows_sidecar_bridge_v1 and real account/tick data",
+    "Verify estate separation (Canonical Bridge vs Windows Sidecar) in dashboard UI"
+  ]
+}

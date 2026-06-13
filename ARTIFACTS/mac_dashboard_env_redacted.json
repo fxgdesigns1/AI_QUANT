@@ -1,0 +1,5 @@
+{
+  "MT5_SIDECAR_BASE_URL": "http://192.168.0.190:8877",
+  "MT5_SIDECAR_API_KEY": "[REDACTED - use value from bridges/windows_sidecar/.env SIDECAR_API_KEY]",
+  "note": "Add to .env at repo root or Control Plane process env. Ensure Mac and Windows are on same LAN/VPN."
+}

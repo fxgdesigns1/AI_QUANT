@@ -1,0 +1,1650 @@
+{
+  "timestamp": "2026-01-13T01:18:57.892126Z",
+  "run_id": "20260113T011857Z",
+  "base_url": "http://127.0.0.1:8787",
+  "endpoints": {
+    "/api/status": {
+      "ok": true,
+      "status": 200,
+      "content_type": "application/json",
+      "data": {
+        "mode": "paper",
+        "execution_enabled": true,
+        "accounts_loaded": 5,
+        "accounts_execution_capable": 5,
+        "active_strategy_key": "momentum",
+        "active_strategy_assignments_count": 5,
+        "assigned_accounts_count": 5,
+        "last_scan_at": "2026-01-13T01:18:46.689510Z",
+        "last_status_write_at": "2026-01-13T01:18:46.689574Z",
+        "last_signals_generated": 5,
+        "last_executed_count": 0,
+        "weekend_indicator": false,
+        "status_write_ok": true,
+        "last_status_write_error_reason": null,
+        "config_mtime": 1768266777.102356,
+        "execution_guard": {
+          "allowed": true,
+          "reason_code": "PAPER_MODE",
+          "mode": "paper"
+        },
+        "system_label": "ALPHA",
+        "accounts_with_strategy": 5,
+        "accounts_execution_enabled": 5,
+        "daily_limit_current": {
+          "101-004-30719775-001": 3,
+          "101-004-30719775-002": 3,
+          "101-004-30719775-003": 3,
+          "101-004-30719775-004": 3,
+          "101-004-30719775-005": 3
+        },
+        "daily_trades_today": null,
+        "price_sanity_blocks_per_account": {
+          "101-004-30719775-001": 186,
+          "101-004-30719775-002": 186,
+          "101-004-30719775-003": 186,
+          "101-004-30719775-004": 186,
+          "101-004-30719775-005": 186
+        },
+        "tp_omitted_per_account": null,
+        "throttle_skips_per_account": null,
+        "oanda_cancel_reasons_per_account": null
+      }
+    },
+    "/api/market/prices": {
+      "ok": true,
+      "status": 200,
+      "content_type": "application/json",
+      "data": {
+        "ok": true,
+        "prices": [
+          {
+            "instrument": "XAU_USD",
+            "bid": 4585.13,
+            "ask": 4586.08,
+            "mid": 4585.605,
+            "time": "2026-01-13T01:19:00.968293+00:00Z",
+            "source": "oanda",
+            "integrity": {
+              "ok": true,
+              "violation_code": null,
+              "reason": null
+            }
+          }
+        ],
+        "errors": null
+      }
+    },
+    "/api/news/status": {
+      "ok": true,
+      "status": 200,
+      "content_type": "application/json",
+      "data": {
+        "ok": true,
+        "providers": {
+          "newsapi": {
+            "ok": true,
+            "config_present": true,
+            "last_fetch_at": null,
+            "last_error": null
+          },
+          "alphavantage": {
+            "ok": true,
+            "config_present": true,
+            "last_fetch_at": null,
+            "last_error": null
+          },
+          "marketaux": {
+            "ok": true,
+            "config_present": true,
+            "last_fetch_at": null,
+            "last_error": null
+          },
+          "finnhub": {
+            "ok": false,
+            "config_present": false,
+            "last_fetch_at": null,
+            "last_error": null
+          },
+          "polygon": {
+            "ok": true,
+            "config_present": true,
+            "last_fetch_at": null,
+            "last_error": null
+          },
+          "fmp": {
+            "ok": true,
+            "config_present": true,
+            "last_fetch_at": null,
+            "last_error": null
+          }
+        },
+        "ts_utc": 1768267141.192379
+      }
+    },
+    "/api/news": {
+      "ok": true,
+      "status": 200,
+      "content_type": "application/json",
+      "data": {
+        "ok": true,
+        "enabled": true,
+        "items": [
+          {
+            "id": "375686be20181e69",
+            "ts_utc": 1768267142.2174337,
+            "source": "The Denver Post",
+            "title": "Federal Reserve Chair Powell says DOJ has subpoenaed central bank, threatens criminal indictment",
+            "url": "https://www.denverpost.com/2026/01/11/federal-reserve-powell-subpoena/",
+            "summary": "The move represents a major escalation in President Donald Trump\u2019s battle with the Fed.",
+            "symbols": [],
+            "impact": "high"
+          },
+          {
+            "id": "d7e77d3af926b8c4",
+            "ts_utc": 1768267142.2174337,
+            "source": "Boston Herald",
+            "title": "Federal Reserve Chair Powell says DOJ has subpoenaed central bank, threatens criminal indictment",
+            "url": "https://www.bostonherald.com/2026/01/11/federal-reserve-powell-subpoena/",
+            "summary": "The move represents a major escalation in President Donald Trump\u2019s battle with the Fed.",
+            "symbols": [],
+            "impact": "high"
+          },
+          {
+            "id": "7df49b609edd4279",
+            "ts_utc": 1768267142.2174337,
+            "source": "WLKY Louisville",
+            "title": "Federal Reserve Chair Powell says DOJ has subpoenaed central bank",
+            "url": "https://www.wlky.com/article/federal-reserve-chair-doj-subpoenaed-central-bank/69969476",
+            "summary": "The move represents a major escalation in President Donald Trump's battle with the Fed, an independent agency he has repeatedly attacked for not cutting its key interest rate as quickly as Trump prefers.",
+            "symbols": [],
+            "impact": "high"
+          },
+          {
+            "id": "4d2452aa250881c4",
+            "ts_utc": 1768267142.2174337,
+            "source": "WDIV ClickOnDetroit",
+            "title": "Federal Reserve Chair Powell says DOJ has subpoenaed central bank, threatens criminal indictment",
+            "url": "https://www.clickondetroit.com/business/2026/01/12/federal-reserve-chair-powell-says-doj-has-subpoenaed-central-bank-threatens-criminal-indictment/",
+            "summary": "Federal Reserve Chair Jerome Powell says the Department of Justice has served the central bank with subpoenas and threatened it with a criminal indictment over his testimony about the Fed\u2019s building renovations.",
+            "symbols": [],
+            "impact": "high"
+          },
+          {
+            "id": "a1bf2e7acd59469f",
+            "ts_utc": 1768267142.2174337,
+            "source": "WPXI Pittsburgh",
+            "title": "Federal Reserve Chair Powell says DOJ has subpoenaed central bank, threatens criminal indictment",
+            "url": "https://www.wpxi.com/news/national/federal-reserve-chair-powell-says-doj-has-subpoenaed-central-bank-threatens-criminal-indictment/X75PK54GYVBCJPBW4BBQ5DW22Q/",
+            "summary": "Federal Reserve Chair\u00a0Jerome Powell\u00a0said Sunday the Department of Justice has served the central bank with subpoenas and threatened it with a criminal indictment over his testimony about the Fed\u2019s building renovations.",
+            "symbols": [],
+            "impact": "high"
+          },
+          {
+            "id": "9d67730c60ce8828",
+            "ts_utc": 1768267142.2174337,
+            "source": "Associated Press",
+            "title": "Powell says DOJ has subpoenaed central bank, threatens indictment",
+            "url": "https://apnews.com/article/federal-reserve-trump-subpoena-bf4fc6c690fa248fbc531bc9bc7f1758",
+            "summary": "Federal Reserve Chair Jerome Powell says the Department of Justice has served the central bank with subpoenas and threatened it with a criminal indictment over his testimony about the Fed\u2019s building renovations. The move represents a major escalation in Presi\u2026",
+            "symbols": [],
+            "impact": "high"
+          },
+          {
+            "id": "58b8aa5d10068621",
+            "ts_utc": 1768267142.2174337,
+            "source": "HuffPost",
+            "title": "Federal Reserve Chair Powell Says DOJ Has Subpoenaed Central Bank, Threatens Criminal Indictment",
+            "url": "https://www.huffpost.com/entry/federal-reserve-powell-subpoena_n_69644753e4b0db619f4abc5a",
+            "summary": "The move represents a major escalation in President Donald Trump's battle with the Fed.",
+            "symbols": [],
+            "impact": "high"
+          },
+          {
+            "id": "4bea3c72030d77fd",
+            "ts_utc": 1768267142.2174337,
+            "source": "Lawyersgunsmoneyblog.com",
+            "title": "Polycrisis Hits the Fed",
+            "url": "https://www.lawyersgunsmoneyblog.com/2026/01/polycrisis-hits-the-fed",
+            "summary": "Shit hitting the fan. The Federal Reserve received grand jury subpoenas from the Justice Department on Friday that threaten a criminal indictment relating to Chair\u00a0Jerome Powell\u2019s\u00a0testimony last summer about the central bank\u2019s building renovation project, the\u2026",
+            "symbols": [],
+            "impact": "high"
+          },
+          {
+            "id": "f39050e4ad91748e",
+            "ts_utc": 1768267142.2174337,
+            "source": "Hbs.edu",
+            "title": "Eight Trends for 2026: Pricing, Passion, and the Risks Ahead",
+            "url": "https://www.library.hbs.edu/working-knowledge/eight-trends-for-2026-pricing-passion-and-the-risks-ahead",
+            "summary": "From inflation to innovation, happiness to productivity, Harvard Business School faculty highlight the forces likely to shape business during the coming year.",
+            "symbols": [],
+            "impact": "medium"
+          }
+        ],
+        "ts_utc": 1768267142.3482378
+      }
+    },
+    "/api/trades/active": {
+      "ok": true,
+      "status": 200,
+      "content_type": "application/json",
+      "data": {
+        "ok": true,
+        "system_label": "ALPHA",
+        "refreshed_at": "2026-01-13T01:19:04.193645Z",
+        "accounts": [
+          {
+            "account_suffix": "001",
+            "account_id_masked": "101***001",
+            "open_trades_count": 0,
+            "open_positions_count": 0,
+            "lastTransactionID": "12300",
+            "trades": [],
+            "error": null
+          },
+          {
+            "account_suffix": "002",
+            "account_id_masked": "101***002",
+            "open_trades_count": 0,
+            "open_positions_count": 0,
+            "lastTransactionID": "1910",
+            "trades": [],
+            "error": null
+          },
+          {
+            "account_suffix": "003",
+            "account_id_masked": "101***003",
+            "open_trades_count": 0,
+            "open_positions_count": 0,
+            "lastTransactionID": "2431",
+            "trades": [],
+            "error": null
+          },
+          {
+            "account_suffix": "004",
+            "account_id_masked": "101***004",
+            "open_trades_count": 0,
+            "open_positions_count": 0,
+            "lastTransactionID": "763",
+            "trades": [],
+            "error": null
+          },
+          {
+            "account_suffix": "005",
+            "account_id_masked": "101***005",
+            "open_trades_count": 0,
+            "open_positions_count": 0,
+            "lastTransactionID": "2115",
+            "trades": [],
+            "error": null
+          }
+        ]
+      }
+    },
+    "/api/trades/pending": {
+      "ok": true,
+      "status": 200,
+      "content_type": "application/json",
+      "data": {
+        "ok": true,
+        "system_label": "ALPHA",
+        "refreshed_at": "2026-01-13T01:19:05.002930Z",
+        "accounts": [
+          {
+            "account_suffix": "001",
+            "account_id_masked": "101***001",
+            "pending_orders_count": 0,
+            "orders": [],
+            "error": null
+          },
+          {
+            "account_suffix": "002",
+            "account_id_masked": "101***002",
+            "pending_orders_count": 0,
+            "orders": [],
+            "error": null
+          },
+          {
+            "account_suffix": "003",
+            "account_id_masked": "101***003",
+            "pending_orders_count": 0,
+            "orders": [],
+            "error": null
+          },
+          {
+            "account_suffix": "004",
+            "account_id_masked": "101***004",
+            "pending_orders_count": 0,
+            "orders": [],
+            "error": null
+          },
+          {
+            "account_suffix": "005",
+            "account_id_masked": "101***005",
+            "pending_orders_count": 0,
+            "orders": [],
+            "error": null
+          }
+        ]
+      }
+    },
+    "/api/signals/pending": {
+      "ok": true,
+      "status": 200,
+      "content_type": "application/json",
+      "data": {
+        "ok": true,
+        "signals": [],
+        "active_strategy": "momentum",
+        "last_scan_utc": "2026-01-13T01:18:46.689510Z",
+        "execution_enabled": true,
+        "note": "Signals will be executed",
+        "ts_utc": 1768267145.2334876
+      }
+    },
+    "/api/strategies/overview": {
+      "ok": true,
+      "status": 200,
+      "content_type": "application/json",
+      "data": {
+        "ok": true,
+        "active_strategy": "momentum",
+        "strategies": [
+          {
+            "key": "momentum",
+            "name": "Momentum Trading",
+            "description": "Trend-following strategy using momentum indicators (RSI, MACD, moving averages)",
+            "instruments": [
+              "EUR_USD",
+              "GBP_USD",
+              "USD_JPY",
+              "AUD_USD"
+            ],
+            "risk_level": "medium",
+            "session_preference": "any",
+            "active": true
+          },
+          {
+            "key": "gold",
+            "name": "Gold Scalping",
+            "description": "Scalping strategy optimized for XAU_USD with tight stops and quick exits",
+            "instruments": [
+              "XAU_USD"
+            ],
+            "risk_level": "high",
+            "session_preference": "london",
+            "active": false
+          },
+          {
+            "key": "range",
+            "name": "Range Trading",
+            "description": "Mean-reversion strategy for sideways markets",
+            "instruments": [
+              "EUR_USD",
+              "GBP_USD",
+              "USD_JPY"
+            ],
+            "risk_level": "low",
+            "session_preference": "asia",
+            "active": false
+          },
+          {
+            "key": "eur_usd_5m_safe",
+            "name": "EUR/USD 5M Safe",
+            "description": "Conservative EUR/USD strategy on 5-minute timeframe with strict risk controls",
+            "instruments": [
+              "EUR_USD"
+            ],
+            "risk_level": "low",
+            "session_preference": "london",
+            "active": false
+          },
+          {
+            "key": "momentum_v2",
+            "name": "Momentum V2 (Enhanced)",
+            "description": "Enhanced momentum strategy with adaptive filters and volatility adjustment",
+            "instruments": [
+              "EUR_USD",
+              "GBP_USD",
+              "USD_JPY",
+              "AUD_USD",
+              "XAU_USD"
+            ],
+            "risk_level": "medium",
+            "session_preference": "any",
+            "active": false
+          },
+          {
+            "key": "mean_rev_v2",
+            "name": "Mean Reversion V2",
+            "description": "Enhanced mean reversion strategy with adaptive Bollinger Bands and volatility filters",
+            "instruments": [
+              "EUR_USD",
+              "GBP_USD",
+              "USD_JPY"
+            ],
+            "risk_level": "low",
+            "session_preference": "asia",
+            "active": false
+          },
+          {
+            "key": "xau_usd_session_bias_1",
+            "name": "Gold Scalping - Session Bias #1",
+            "description": "XAU_USD scalping strategy optimized for session bias (fitness: 2.28, win rate: 46.7%)",
+            "instruments": [
+              "XAU_USD"
+            ],
+            "risk_level": "high",
+            "session_preference": "london",
+            "active": false
+          },
+          {
+            "key": "xau_usd_session_bias_2",
+            "name": "Gold Scalping - Session Bias #2",
+            "description": "XAU_USD scalping strategy with trend filter (fitness: 2.24, win rate: 50%)",
+            "instruments": [
+              "XAU_USD"
+            ],
+            "risk_level": "high",
+            "session_preference": "london",
+            "active": false
+          },
+          {
+            "key": "xau_usd_session_bias_3",
+            "name": "Gold Scalping - Session Bias #3",
+            "description": "XAU_USD scalping strategy - both directions (fitness: 2.10, win rate: 46.7%)",
+            "instruments": [
+              "XAU_USD"
+            ],
+            "risk_level": "high",
+            "session_preference": "london",
+            "active": false
+          },
+          {
+            "key": "ultra_strict_forex",
+            "name": "Ultra Strict Forex Optimized",
+            "description": "Ultra strict forex strategy with maximum 10 trades per day, high quality filters",
+            "instruments": [
+              "EUR_USD",
+              "GBP_USD",
+              "USD_JPY",
+              "AUD_USD"
+            ],
+            "risk_level": "medium",
+            "session_preference": "any",
+            "active": false
+          },
+          {
+            "key": "pat_orb_dual_session",
+            "name": "PAT ORB Dual Session",
+            "description": "Opening Range Breakout strategy for London and NY sessions",
+            "instruments": [
+              "EUR_USD",
+              "GBP_USD",
+              "USD_JPY"
+            ],
+            "risk_level": "medium",
+            "session_preference": "london",
+            "active": false
+          },
+          {
+            "key": "trump_dna",
+            "name": "Trump DNA Strategy",
+            "description": "Trump DNA framework: Weekly planning, sniper entry zones, fixed tight stops, quick exits, selective trading (5-15 trades/day). Optimized for XAU_USD, EUR_USD, GBP_USD with 2-hour max hold and news awareness.",
+            "instruments": [
+              "XAU_USD",
+              "EUR_USD",
+              "GBP_USD",
+              "USD_JPY"
+            ],
+            "risk_level": "medium",
+            "session_preference": "london",
+            "active": false
+          }
+        ],
+        "ts_utc": 1768267145.4496357
+      }
+    },
+    "/api/performance/summary": {
+      "ok": true,
+      "status": 200,
+      "content_type": "application/json",
+      "data": {
+        "ok": true,
+        "period_days": 30,
+        "total_trades": 0,
+        "win_count": 0,
+        "loss_count": 0,
+        "win_rate": 0,
+        "total_pnl": 0,
+        "gross_profit": 0,
+        "gross_loss": 0,
+        "profit_factor": 0,
+        "max_drawdown": 0,
+        "sample_size": 0,
+        "note": "Metrics computed from trade ledger",
+        "ts_utc": 1768267145.7262576
+      }
+    },
+    "/api/v1/outlook/daily": {
+      "ok": true,
+      "status": 200,
+      "content_type": "application/json",
+      "data": {
+        "ok": true,
+        "horizon": "daily",
+        "outlook": {
+          "horizon": "daily",
+          "as_of": "2026-01-06T02:30:23.455691+00:00",
+          "generated_at": 1767666623.4557178,
+          "engine_version": "1.0.0",
+          "inputs_hash": "d1e6de2ac3d5159f",
+          "data_source": "oanda_practice",
+          "outlooks": [
+            {
+              "instrument": "EUR_USD",
+              "bias": "NEUTRAL",
+              "confidence": "LOW",
+              "key_levels": {
+                "support": [
+                  1.17132,
+                  1.16722,
+                  1.16592
+                ],
+                "resistance": [
+                  1.17288,
+                  1.1695,
+                  1.17545
+                ]
+              },
+              "scenarios": [
+                {
+                  "name": "Range Bound",
+                  "probability": "60%",
+                  "description": "Price likely to consolidate between 1.17132 and 1.17288"
+                },
+                {
+                  "name": "Breakout",
+                  "probability": "40%",
+                  "description": "Potential breakout from current range."
+                }
+              ],
+              "warnings": []
+            },
+            {
+              "instrument": "GBP_USD",
+              "bias": "NEUTRAL",
+              "confidence": "LOW",
+              "key_levels": {
+                "support": [
+                  1.34342,
+                  1.3414
+                ],
+                "resistance": [
+                  1.3502
+                ]
+              },
+              "scenarios": [
+                {
+                  "name": "Range Bound",
+                  "probability": "60%",
+                  "description": "Price likely to consolidate between 1.34342 and 1.35020"
+                },
+                {
+                  "name": "Breakout",
+                  "probability": "40%",
+                  "description": "Potential breakout from current range."
+                }
+              ],
+              "warnings": []
+            },
+            {
+              "instrument": "USD_JPY",
+              "bias": "NEUTRAL",
+              "confidence": "LOW",
+              "key_levels": {
+                "support": [
+                  156.563,
+                  156.711,
+                  156.116
+                ],
+                "resistance": [
+                  157.004,
+                  157.3
+                ]
+              },
+              "scenarios": [
+                {
+                  "name": "Range Bound",
+                  "probability": "60%",
+                  "description": "Price likely to consolidate between 156.56300 and 157.00400"
+                },
+                {
+                  "name": "Breakout",
+                  "probability": "40%",
+                  "description": "Potential breakout from current range."
+                }
+              ],
+              "warnings": []
+            },
+            {
+              "instrument": "XAU_USD",
+              "bias": "NEUTRAL",
+              "confidence": "LOW",
+              "key_levels": {
+                "support": [
+                  4396.485,
+                  4309.915
+                ],
+                "resistance": [
+                  4455.77,
+                  4421.605,
+                  4402.295
+                ]
+              },
+              "scenarios": [
+                {
+                  "name": "Range Bound",
+                  "probability": "60%",
+                  "description": "Price likely to consolidate between 4396.48500 and 4455.77000"
+                },
+                {
+                  "name": "Breakout",
+                  "probability": "40%",
+                  "description": "Potential breakout from current range."
+                }
+              ],
+              "warnings": []
+            },
+            {
+              "instrument": "AUD_USD",
+              "bias": "NEUTRAL",
+              "confidence": "LOW",
+              "key_levels": {
+                "support": [
+                  0.66776,
+                  0.66652,
+                  0.6663
+                ],
+                "resistance": [
+                  0.67192,
+                  0.67072,
+                  0.6698
+                ]
+              },
+              "scenarios": [
+                {
+                  "name": "Range Bound",
+                  "probability": "60%",
+                  "description": "Price likely to consolidate between 0.66776 and 0.67192"
+                },
+                {
+                  "name": "Breakout",
+                  "probability": "40%",
+                  "description": "Potential breakout from current range."
+                }
+              ],
+              "warnings": []
+            }
+          ]
+        },
+        "ts_utc": 1768267145.9507048
+      }
+    },
+    "/api/v1/scanner/structural": {
+      "ok": true,
+      "status": 200,
+      "content_type": "application/json",
+      "data": {
+        "ok": true,
+        "data": {
+          "timestamp": 1768267146.1791658,
+          "scanner_version": "1.0.0",
+          "count": 4,
+          "results": [
+            {
+              "instrument": "EUR_USD",
+              "score": 50,
+              "regime": "UNDEFINED",
+              "volatility": "NORMAL",
+              "key_levels": [],
+              "rationale": [
+                "Insufficient history for structure analysis"
+              ],
+              "warnings": []
+            },
+            {
+              "instrument": "GBP_USD",
+              "score": 50,
+              "regime": "UNDEFINED",
+              "volatility": "NORMAL",
+              "key_levels": [],
+              "rationale": [
+                "Insufficient history for structure analysis"
+              ],
+              "warnings": []
+            },
+            {
+              "instrument": "USD_JPY",
+              "score": 50,
+              "regime": "UNDEFINED",
+              "volatility": "NORMAL",
+              "key_levels": [],
+              "rationale": [
+                "Insufficient history for structure analysis"
+              ],
+              "warnings": []
+            },
+            {
+              "instrument": "XAU_USD",
+              "score": 50,
+              "regime": "UNDEFINED",
+              "volatility": "NORMAL",
+              "key_levels": [],
+              "rationale": [
+                "Insufficient history for structure analysis"
+              ],
+              "warnings": []
+            }
+          ]
+        },
+        "results": [
+          {
+            "instrument": "EUR_USD",
+            "score": 50,
+            "regime": "UNDEFINED",
+            "volatility": "NORMAL",
+            "key_levels": [],
+            "rationale": [
+              "Insufficient history for structure analysis"
+            ],
+            "warnings": []
+          },
+          {
+            "instrument": "GBP_USD",
+            "score": 50,
+            "regime": "UNDEFINED",
+            "volatility": "NORMAL",
+            "key_levels": [],
+            "rationale": [
+              "Insufficient history for structure analysis"
+            ],
+            "warnings": []
+          },
+          {
+            "instrument": "USD_JPY",
+            "score": 50,
+            "regime": "UNDEFINED",
+            "volatility": "NORMAL",
+            "key_levels": [],
+            "rationale": [
+              "Insufficient history for structure analysis"
+            ],
+            "warnings": []
+          },
+          {
+            "instrument": "XAU_USD",
+            "score": 50,
+            "regime": "UNDEFINED",
+            "volatility": "NORMAL",
+            "key_levels": [],
+            "rationale": [
+              "Insufficient history for structure analysis"
+            ],
+            "warnings": []
+          }
+        ],
+        "ts_utc": 1768267146.1791751
+      }
+    },
+    "/api/v1/audit": {
+      "ok": true,
+      "status": 200,
+      "content_type": "application/json",
+      "data": {
+        "ok": true,
+        "entries": [
+          {
+            "ts_iso": "2026-01-05T19:05:39.914025+00:00",
+            "ts_unix": 1767639939.914037,
+            "correlation_id": "req_f33f8412",
+            "actor": "admin",
+            "action": "recompute_outlook",
+            "status": "success",
+            "details": {
+              "path": "/api/v1/outlook/recompute",
+              "method": "POST",
+              "note": "Recomputed all outlook horizons"
+            },
+            "payload_hash": "5949bafb"
+          },
+          {
+            "ts_iso": "2026-01-05T19:06:03.592926+00:00",
+            "ts_unix": 1767639963.592936,
+            "correlation_id": "req_7e2496dc",
+            "actor": "admin",
+            "action": "recompute_outlook",
+            "status": "success",
+            "details": {
+              "path": "/api/v1/outlook/recompute",
+              "method": "POST",
+              "note": "Recomputed all outlook horizons"
+            },
+            "payload_hash": "5949bafb"
+          },
+          {
+            "ts_iso": "2026-01-05T21:29:59.409462+00:00",
+            "ts_unix": 1767648599.409466,
+            "correlation_id": "req_84191bb6",
+            "actor": "admin",
+            "action": "recompute_outlook",
+            "status": "success",
+            "details": {
+              "path": "/api/v1/outlook/recompute",
+              "method": "POST",
+              "note": "Recomputed all outlook horizons"
+            },
+            "payload_hash": "5949bafb"
+          },
+          {
+            "ts_iso": "2026-01-05T21:30:14.650620+00:00",
+            "ts_unix": 1767648614.650629,
+            "correlation_id": "req_b43b0fe7",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "success",
+            "details": {
+              "path": "/api/config",
+              "method": "POST"
+            },
+            "payload_hash": "1752667e"
+          },
+          {
+            "ts_iso": "2026-01-05T21:30:14.840223+00:00",
+            "ts_unix": 1767648614.840232,
+            "correlation_id": "req_a74f93f1",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "success",
+            "details": {
+              "path": "/api/config",
+              "method": "POST"
+            },
+            "payload_hash": "1752667e"
+          },
+          {
+            "ts_iso": "2026-01-05T21:32:28.206951+00:00",
+            "ts_unix": 1767648748.206975,
+            "correlation_id": "req_d6524dc9",
+            "actor": "admin",
+            "action": "recompute_outlook",
+            "status": "success",
+            "details": {
+              "path": "/api/v1/outlook/recompute",
+              "method": "POST",
+              "note": "Recomputed all outlook horizons"
+            },
+            "payload_hash": "5949bafb"
+          },
+          {
+            "ts_iso": "2026-01-05T21:32:36.001849+00:00",
+            "ts_unix": 1767648756.0018592,
+            "correlation_id": "req_20a9c602",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "success",
+            "details": {
+              "path": "/api/config",
+              "method": "POST"
+            },
+            "payload_hash": "1752667e"
+          },
+          {
+            "ts_iso": "2026-01-05T21:32:36.188257+00:00",
+            "ts_unix": 1767648756.188266,
+            "correlation_id": "req_e2551eff",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "success",
+            "details": {
+              "path": "/api/config",
+              "method": "POST"
+            },
+            "payload_hash": "1752667e"
+          },
+          {
+            "ts_iso": "2026-01-05T21:44:15.686902+00:00",
+            "ts_unix": 1767649455.6869068,
+            "correlation_id": "req_3500525b",
+            "actor": "admin",
+            "action": "recompute_outlook",
+            "status": "success",
+            "details": {
+              "path": "/api/v1/outlook/recompute",
+              "method": "POST",
+              "note": "Recomputed all outlook horizons"
+            },
+            "payload_hash": "5949bafb"
+          },
+          {
+            "ts_iso": "2026-01-05T21:50:58.007549+00:00",
+            "ts_unix": 1767649858.007552,
+            "correlation_id": "req_05a2c9ed",
+            "actor": "admin",
+            "action": "recompute_outlook",
+            "status": "success",
+            "details": {
+              "path": "/api/v1/outlook/recompute",
+              "method": "POST",
+              "note": "Recomputed all outlook horizons"
+            },
+            "payload_hash": "5949bafb"
+          },
+          {
+            "ts_iso": "2026-01-05T21:50:59.502072+00:00",
+            "ts_unix": 1767649859.502082,
+            "correlation_id": "req_b963de6c",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "success",
+            "details": {
+              "path": "/api/config",
+              "method": "POST"
+            },
+            "payload_hash": "1752667e"
+          },
+          {
+            "ts_iso": "2026-01-05T21:50:59.681944+00:00",
+            "ts_unix": 1767649859.681952,
+            "correlation_id": "req_40fe6aae",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "success",
+            "details": {
+              "path": "/api/config",
+              "method": "POST"
+            },
+            "payload_hash": "1752667e"
+          },
+          {
+            "ts_iso": "2026-01-05T22:11:52.163541+00:00",
+            "ts_unix": 1767651112.163553,
+            "correlation_id": "req_34b7602a",
+            "actor": "admin",
+            "action": "recompute_outlook",
+            "status": "success",
+            "details": {
+              "path": "/api/v1/outlook/recompute",
+              "method": "POST",
+              "note": "Recomputed all outlook horizons"
+            },
+            "payload_hash": "5949bafb"
+          },
+          {
+            "ts_iso": "2026-01-05T22:11:58.843457+00:00",
+            "ts_unix": 1767651118.843468,
+            "correlation_id": "req_4eb2a2b1",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "success",
+            "details": {
+              "path": "/api/config",
+              "method": "POST"
+            },
+            "payload_hash": "1752667e"
+          },
+          {
+            "ts_iso": "2026-01-05T22:11:59.020582+00:00",
+            "ts_unix": 1767651119.02059,
+            "correlation_id": "req_6db7b283",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "success",
+            "details": {
+              "path": "/api/config",
+              "method": "POST"
+            },
+            "payload_hash": "1752667e"
+          },
+          {
+            "ts_iso": "2026-01-05T22:23:44.674439+00:00",
+            "ts_unix": 1767651824.67445,
+            "correlation_id": "req_b7df4369",
+            "actor": "admin",
+            "action": "recompute_outlook",
+            "status": "success",
+            "details": {
+              "path": "/api/v1/outlook/recompute",
+              "method": "POST",
+              "note": "Recomputed all outlook horizons"
+            },
+            "payload_hash": "5949bafb"
+          },
+          {
+            "ts_iso": "2026-01-05T22:23:49.411495+00:00",
+            "ts_unix": 1767651829.411513,
+            "correlation_id": "req_9b9b2bf6",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "success",
+            "details": {
+              "path": "/api/config",
+              "method": "POST"
+            },
+            "payload_hash": "1752667e"
+          },
+          {
+            "ts_iso": "2026-01-05T22:23:49.670101+00:00",
+            "ts_unix": 1767651829.670112,
+            "correlation_id": "req_39067d79",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "success",
+            "details": {
+              "path": "/api/config",
+              "method": "POST"
+            },
+            "payload_hash": "1752667e"
+          },
+          {
+            "ts_iso": "2026-01-05T22:24:58.552271+00:00",
+            "ts_unix": 1767651898.5522811,
+            "correlation_id": "req_a355487b",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "success",
+            "details": {
+              "path": "/api/config",
+              "method": "POST"
+            },
+            "payload_hash": "1752667e"
+          },
+          {
+            "ts_iso": "2026-01-05T22:24:58.730491+00:00",
+            "ts_unix": 1767651898.730498,
+            "correlation_id": "req_1225cb66",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "success",
+            "details": {
+              "path": "/api/config",
+              "method": "POST"
+            },
+            "payload_hash": "1752667e"
+          },
+          {
+            "ts_iso": "2026-01-05T22:34:53.157936+00:00",
+            "ts_unix": 1767652493.1579509,
+            "correlation_id": "req_5cdcb4eb",
+            "actor": "admin",
+            "action": "recompute_outlook",
+            "status": "success",
+            "details": {
+              "path": "/api/v1/outlook/recompute",
+              "method": "POST",
+              "note": "Recomputed all outlook horizons"
+            },
+            "payload_hash": "5949bafb"
+          },
+          {
+            "ts_iso": "2026-01-05T22:35:02.463654+00:00",
+            "ts_unix": 1767652502.463666,
+            "correlation_id": "req_7202fe2c",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "success",
+            "details": {
+              "path": "/api/config",
+              "method": "POST"
+            },
+            "payload_hash": "1752667e"
+          },
+          {
+            "ts_iso": "2026-01-05T22:35:02.655382+00:00",
+            "ts_unix": 1767652502.65539,
+            "correlation_id": "req_81d29553",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "success",
+            "details": {
+              "path": "/api/config",
+              "method": "POST"
+            },
+            "payload_hash": "1752667e"
+          },
+          {
+            "ts_iso": "2026-01-05T22:49:14.050776+00:00",
+            "ts_unix": 1767653354.050789,
+            "correlation_id": "req_9c6a6f47",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "success",
+            "details": {
+              "path": "/api/config",
+              "method": "POST"
+            },
+            "payload_hash": "ce4d3fd0"
+          },
+          {
+            "ts_iso": "2026-01-05T22:59:11.973663+00:00",
+            "ts_unix": 1767653951.973675,
+            "correlation_id": "req_86766ea6",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "success",
+            "details": {
+              "path": "/api/config",
+              "method": "POST"
+            },
+            "payload_hash": "ce4d3fd0"
+          },
+          {
+            "ts_iso": "2026-01-05T22:59:18.528533+00:00",
+            "ts_unix": 1767653958.528543,
+            "correlation_id": "req_56aec75b",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "success",
+            "details": {
+              "path": "/api/config",
+              "method": "POST"
+            },
+            "payload_hash": "1752667e"
+          },
+          {
+            "ts_iso": "2026-01-05T22:59:18.710818+00:00",
+            "ts_unix": 1767653958.710826,
+            "correlation_id": "req_817bd66a",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "success",
+            "details": {
+              "path": "/api/config",
+              "method": "POST"
+            },
+            "payload_hash": "1752667e"
+          },
+          {
+            "ts_iso": "2026-01-05T23:13:34.219757+00:00",
+            "ts_unix": 1767654814.219769,
+            "correlation_id": "req_952ac41d",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "success",
+            "details": {
+              "path": "/api/config",
+              "method": "POST"
+            },
+            "payload_hash": "1752667e"
+          },
+          {
+            "ts_iso": "2026-01-05T23:13:34.425087+00:00",
+            "ts_unix": 1767654814.425096,
+            "correlation_id": "req_bd3d4a4b",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "success",
+            "details": {
+              "path": "/api/config",
+              "method": "POST"
+            },
+            "payload_hash": "1752667e"
+          },
+          {
+            "ts_iso": "2026-01-06T02:25:17.019858+00:00",
+            "ts_unix": 1767666317.019872,
+            "correlation_id": "req_dd8a016a",
+            "actor": "admin",
+            "action": "recompute_outlook",
+            "status": "success",
+            "details": {
+              "path": "/api/v1/outlook/recompute",
+              "method": "POST",
+              "note": "Recomputed all outlook horizons"
+            },
+            "payload_hash": "5949bafb"
+          },
+          {
+            "ts_iso": "2026-01-06T02:25:49.477462+00:00",
+            "ts_unix": 1767666349.477474,
+            "correlation_id": "req_b40f7407",
+            "actor": "admin",
+            "action": "recompute_outlook",
+            "status": "success",
+            "details": {
+              "path": "/api/v1/outlook/recompute",
+              "method": "POST",
+              "note": "Recomputed all outlook horizons"
+            },
+            "payload_hash": "5949bafb"
+          },
+          {
+            "ts_iso": "2026-01-06T02:30:28.831769+00:00",
+            "ts_unix": 1767666628.831785,
+            "correlation_id": "req_36f35fc8",
+            "actor": "admin",
+            "action": "recompute_outlook",
+            "status": "success",
+            "details": {
+              "path": "/api/v1/outlook/recompute",
+              "method": "POST",
+              "note": "Recomputed all outlook horizons"
+            },
+            "payload_hash": "5949bafb"
+          },
+          {
+            "ts_iso": "2026-01-06T02:47:02.857211+00:00",
+            "ts_unix": 1767667622.8572218,
+            "correlation_id": "req_9130d5e2",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "success",
+            "details": {
+              "path": "/api/config",
+              "method": "POST"
+            },
+            "payload_hash": "1752667e"
+          },
+          {
+            "ts_iso": "2026-01-06T02:47:03.065589+00:00",
+            "ts_unix": 1767667623.0656,
+            "correlation_id": "req_c1041c22",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "success",
+            "details": {
+              "path": "/api/config",
+              "method": "POST"
+            },
+            "payload_hash": "1752667e"
+          },
+          {
+            "ts_iso": "2026-01-11T15:52:19.294447+00:00",
+            "ts_unix": 1768146739.2944717,
+            "correlation_id": "req_ab505700",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "success",
+            "details": {
+              "path": "/api/config",
+              "method": "POST"
+            },
+            "payload_hash": "fb6bad81"
+          },
+          {
+            "ts_iso": "2026-01-12T16:20:28.247358+00:00",
+            "ts_unix": 1768234828.247382,
+            "correlation_id": "req_a8382f83",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "success",
+            "details": {
+              "path": "/api/config",
+              "method": "POST"
+            },
+            "payload_hash": "a8fd24db"
+          },
+          {
+            "ts_iso": "2026-01-12T16:22:49.181114+00:00",
+            "ts_unix": 1768234969.1811385,
+            "correlation_id": "req_4eac0204",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "failure",
+            "details": {
+              "path": "/api/config",
+              "method": "POST",
+              "error": "Config validation failed: Invalid strategy_key in assignment: alpha. Must be one of {'momentum_v2', 'mean_rev_v2', 'xau_usd_session_bias_2', 'momentum', 'xau_usd_session_bias_3', 'eur_usd_5m_safe', 'ultra_strict_forex', 'xau_usd_session_bias_1', 'range', 'gold', 'trump_dna', 'pat_orb_dual_session'}"
+            },
+            "payload_hash": "3356b179"
+          },
+          {
+            "ts_iso": "2026-01-12T16:23:10.044499+00:00",
+            "ts_unix": 1768234990.0445287,
+            "correlation_id": "req_086f4fa0",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "failure",
+            "details": {
+              "path": "/api/config",
+              "method": "POST",
+              "error": "Config validation failed: Invalid strategy_key in assignment: alpha. Must be one of {'momentum', 'momentum_v2', 'eur_usd_5m_safe', 'xau_usd_session_bias_3', 'gold', 'mean_rev_v2', 'xau_usd_session_bias_1', 'ultra_strict_forex', 'range', 'pat_orb_dual_session', 'xau_usd_session_bias_2', 'trump_dna'}"
+            },
+            "payload_hash": "4238d81b"
+          },
+          {
+            "ts_iso": "2026-01-12T16:23:31.904406+00:00",
+            "ts_unix": 1768235011.9044309,
+            "correlation_id": "req_8587aa6d",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "success",
+            "details": {
+              "path": "/api/config",
+              "method": "POST"
+            },
+            "payload_hash": "a8fd24db"
+          },
+          {
+            "ts_iso": "2026-01-12T16:28:05.898332+00:00",
+            "ts_unix": 1768235285.89837,
+            "correlation_id": "req_1a6cf15a",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "failure",
+            "details": {
+              "path": "/api/config",
+              "method": "POST",
+              "error": "Config validation failed: Invalid strategy_key in assignment: alpha. Must be one of {'momentum', 'momentum_v2', 'eur_usd_5m_safe', 'xau_usd_session_bias_3', 'gold', 'mean_rev_v2', 'xau_usd_session_bias_1', 'ultra_strict_forex', 'range', 'pat_orb_dual_session', 'xau_usd_session_bias_2', 'trump_dna'}"
+            },
+            "payload_hash": "4238d81b"
+          },
+          {
+            "ts_iso": "2026-01-12T16:28:27.343901+00:00",
+            "ts_unix": 1768235307.3439271,
+            "correlation_id": "req_3619ee81",
+            "actor": "admin",
+            "action": "update_config",
+            "status": "success",
+            "details": {
+              "path": "/api/config",
+              "method": "POST"
+            },
+            "payload_hash": "a8fd24db"
+          }
+        ],
+        "count": 41,
+        "limit": 100,
+        "ts_utc": 1768267146.4267678
+      }
+    },
+    "/api/journal/trades": {
+      "ok": true,
+      "status": 200,
+      "content_type": "application/json",
+      "data": {
+        "ok": true,
+        "trades": [],
+        "total": 0,
+        "limit": 50,
+        "offset": 0,
+        "has_more": false,
+        "last_executed_count": 0,
+        "note": "No trades executed yet",
+        "ts_utc": 1768267146.6706598
+      }
+    }
+  },
+  "dashboard_sections": {
+    "terminal": {
+      "ok": true,
+      "loaded": false,
+      "errors": [
+        "NEWS ITEMS\n\n9",
+        "ERROR",
+        "ERROR",
+        "\u26a0\ufe0f Price Integrity Blocked",
+        "\u26a0\ufe0f Price Integrity Blocked",
+        "Logic Heartbeat Audit\n                        \n                        \n                            \n                                \u26a0\ufe0f\n                                Break Detection: 'XAU_SCALP_PY'\n                            \n                            LINE_142_ERR\n                        \n                        \n                            \n                                Memory Usage (e2-micro) \n                                42%",
+        "\u26a0\ufe0f\n                                Break Detection: 'XAU_SCALP_PY'",
+        "\u26a0\ufe0f"
+      ],
+      "content_preview": "ACTIVE STRATEGY GOLD_SCALPER_V4.2 MEAN_REV_CORE BREAKOUT_HUNTER CHART INSTRUMENT XAUUSD (Gold) EURUSD GBPUSD USDJPY AUDUSD USDCAD NZDUSD EURJPY  XAU_USD BID  4584.50  XAU_USD ASK  4585.72  PRICE TIME  01:19:05  NEWS ITEMS  9  CURRENT ACTIVE SIGNAL PRIMARY SIGNAL  SCANNING...  Conviction - ATR Stability - Market Bias -  System scanning for opportunities...  MANUAL OVERRIDE ENTRY UPCOMING SIGNALS QUEUE Queue empty"
+    },
+    "outlook": {
+      "ok": true,
+      "loaded": false,
+      "errors": [
+        "News Items\n                                9",
+        "ERROR",
+        "ERROR",
+        "\u26a0\ufe0f Price Integrity Blocked",
+        "\u26a0\ufe0f Price Integrity Blocked",
+        "1.17288, 1.1695, 1.17545",
+        "1.3502",
+        "157.004, 157.3"
+      ],
+      "content_preview": "MARKET OUTLOOK DAILY WEEKLY MONTHLY RECOMPUTE EUR_USD NEUTRAL SCENARIO  Range Bound (60%)  Price likely to consolidate between 1.17132 and 1.17288  Resistance 1.17288, 1.1695, 1.17545 Support 1.17132, 1.16722, 1.16592 GBP_USD NEUTRAL SCENARIO  Range Bound (60%)  Price likely to consolidate between 1.34342 and 1.35020  Resistance 1.3502 Support 1.34342, 1.3414 USD_JPY NEUTRAL SCENARIO  Range Bound (60%)  Price likely to consolidate between 156.56300 and 157.00400  Resistance 157.004, 157.3 Support 156.563, 156.711, 156.116 XAU_USD NEUTRAL SCENARIO  Range Bound (60%)  Price likely to consolidate"
+    },
+    "scanner": {
+      "ok": true,
+      "loaded": false,
+      "errors": [
+        "News Items\n                                9",
+        "ERROR",
+        "ERROR",
+        "\u26a0\ufe0f Price Integrity Blocked",
+        "\u26a0\ufe0f Price Integrity Blocked",
+        "1.17288, 1.1695, 1.17545",
+        "1.3502",
+        "157.004, 157.3"
+      ],
+      "content_preview": "STRUCTURAL SCANNER (READ-ONLY) EUR EUR_USD UNDEFINED / NORMAL INSUFFICIENT HISTORY FOR STRUCTURE ANALYSIS SCORE 50 GBP GBP_USD UNDEFINED / NORMAL INSUFFICIENT HISTORY FOR STRUCTURE ANALYSIS SCORE 50 USD USD_JPY UNDEFINED / NORMAL INSUFFICIENT HISTORY FOR STRUCTURE ANALYSIS SCORE 50 XAU XAU_USD UNDEFINED / NORMAL INSUFFICIENT HISTORY FOR STRUCTURE ANALYSIS SCORE 50"
+    },
+    "mesh": {
+      "ok": true,
+      "loaded": false,
+      "errors": [
+        "News Items\n                                9",
+        "ERROR",
+        "ERROR",
+        "\u26a0\ufe0f Price Integrity Blocked",
+        "\u26a0\ufe0f Price Integrity Blocked",
+        "1.17288, 1.1695, 1.17545",
+        "1.3502",
+        "157.004, 157.3"
+      ],
+      "content_preview": "SYSTEM INTEGRITY MESH SYSTEM_NOMINAL GCP EXECUTION NODES Node_01 (OANDA_BRIDGE) ONLINE Node_02 (LOGIC_ENGINE) ONLINE Node_03 (AUTH_SYNC) ONLINE LOGIC HEARTBEAT AUDIT  \u26a0\ufe0f Break Detection: 'XAU_SCALP_PY'  LINE_142_ERR  Memory Usage (e2-micro) 42%"
+    },
+    "journal": {
+      "ok": true,
+      "loaded": false,
+      "errors": [
+        "News Items\n                                9",
+        "ERROR",
+        "ERROR",
+        "\u26a0\ufe0f Price Integrity Blocked",
+        "\u26a0\ufe0f Price Integrity Blocked",
+        "1.17288, 1.1695, 1.17545",
+        "1.3502",
+        "157.004, 157.3"
+      ],
+      "content_preview": "FORENSIC JOURNAL EXPORT CSV SETTINGS FILTER TRADES \ud83d\udcd3 Loading Trades...  Fetching trades from ledger..."
+    },
+    "audit": {
+      "ok": true,
+      "loaded": false,
+      "errors": [
+        "News Items\n                                9",
+        "ERROR",
+        "ERROR",
+        "\u26a0\ufe0f Price Integrity Blocked",
+        "\u26a0\ufe0f Price Integrity Blocked",
+        "1.17288, 1.1695, 1.17545",
+        "1.3502",
+        "157.004, 157.3"
+      ],
+      "content_preview": "AUDIT LOG REFRESH TIMESTAMP\tACTOR\tACTION\tRESULT\tDETAIL 2026-01-12 16:28:27\tadmin\tupdate_config\tSUCCESS\t{\"path\":\"/api/config\",\"method\":\"POST\"} 2026-01-12 16:28:05\tadmin\tupdate_config\tFAILURE\t{\"path\":\"/api/config\",\"method\":\"POST\",\"error\":\"Config validation failed: Invalid... 2026-01-12 16:23:31\tadmin\tupdate_config\tSUCCESS\t{\"path\":\"/api/config\",\"method\":\"POST\"} 2026-01-12 16:23:10\tadmin\tupdate_config\tFAILURE\t{\"path\":\"/api/config\",\"method\":\"POST\",\"error\":\"Config validation failed: Invalid... 2026-01-12 16:22:49\tadmin\tupdate_config\tFAILURE\t{\"path\":\"/api/config\",\"method\":\"POST\",\"error\":\"Config valid"
+    },
+    "news": {
+      "ok": true,
+      "loaded": false,
+      "errors": [
+        "News Items\n                                9",
+        "ERROR",
+        "ERROR",
+        "\u26a0\ufe0f Price Integrity Blocked",
+        "\u26a0\ufe0f Price Integrity Blocked",
+        "1.17288, 1.1695, 1.17545",
+        "1.3502",
+        "157.004, 157.3"
+      ],
+      "content_preview": "NEWS & MARKET INTELLIGENCE THE DENVER POST \u2022 Just now HIGH Federal Reserve Chair Powell says DOJ has subpoenaed central bank, threatens criminal indictment  The move represents a major escalation in President Donald Trump\u2019s battle with the Fed.  BOSTON HERALD \u2022 Just now HIGH Federal Reserve Chair Powell says DOJ has subpoenaed central bank, threatens criminal indictment  The move represents a major escalation in President Donald Trump\u2019s battle with the Fed.  WLKY LOUISVILLE \u2022 Just now HIGH Federal Reserve Chair Powell says DOJ has subpoenaed central bank  The move represents a major escalation"
+    },
+    "reports": {
+      "ok": true,
+      "loaded": false,
+      "errors": [
+        "News Items\n                                9",
+        "ERROR",
+        "ERROR",
+        "\u26a0\ufe0f Price Integrity Blocked",
+        "\u26a0\ufe0f Price Integrity Blocked",
+        "1.17288, 1.1695, 1.17545",
+        "1.3502",
+        "157.004, 157.3"
+      ],
+      "content_preview": "INCUBATOR PERFORMANCE MATRIX AGGREGATE PERFORMANCE PF: 0  DRAWDOWN  0%  WIN RATE  0.0%  TOTAL P/L  +0  0 Trades Analyzed"
+    },
+    "strategies": {
+      "ok": true,
+      "loaded": false,
+      "errors": [
+        "News Items\n                                9",
+        "ERROR",
+        "ERROR",
+        "\u26a0\ufe0f Price Integrity Blocked",
+        "\u26a0\ufe0f Price Integrity Blocked",
+        "1.17288, 1.1695, 1.17545",
+        "1.3502",
+        "157.004, 157.3"
+      ],
+      "content_preview": "LOGIC STARTERS & SECRETS RELOAD CLOUD SYNC DEPLOY ALL NODES OANDA API SECRET MESH PRIMARY ACCOUNT ID GCP VAULT ENDPOINT /projects/quant/secrets/API_KEY CONNECTION STATUS AUTHENTICATED SNIPER LOGIC PARAMS LOT CALCULATION ATR FACTOR RISK PER TRADE \u2699\ufe0f ACTIVE STRATEGY MATRIX Momentum Trading ACTIVE Instruments EUR_USD, GBP_USD, USD_JPY, AUD_USD Risk Level medium Description Trend-following strategy using momentum indicators (RSI, MACD, moving averages) Gold Scalping STANDBY Instruments XAU_USD Risk Level high Description Scalping strategy optimized for XAU_USD with tight stops and quick exits Rang"
+    },
+    "trades": {
+      "ok": true,
+      "loaded": false,
+      "errors": [
+        "News Items\n                                9",
+        "ERROR",
+        "ERROR",
+        "\u26a0\ufe0f Price Integrity Blocked",
+        "\u26a0\ufe0f Price Integrity Blocked",
+        "1.17288, 1.1695, 1.17545",
+        "1.3502",
+        "157.004, 157.3"
+      ],
+      "content_preview": "ACTIVE TRADES & PENDING ORDERS \ud83d\udd04 REFRESH ALL \ud83d\udcca ACTIVE TRADES  Loading active trades...  \ud83d\udccb PENDING ORDERS System: ALPHA Refreshed: 1/13/2026, 1:19:22 AM Account 101***001  Pending Orders: 0  No pending orders for this account.  Account 101***002  Pending Orders: 0  No pending orders for this account.  Account 101***003  Pending Orders: 0  No pending orders for this account.  Account 101***004  Pending Orders: 0  No pending orders for this account.  Account 101***005  Pending Orders: 0  No pending orders for this account."
+    }
+  },
+  "console": {
+    "errors": [],
+    "warnings": [
+      {
+        "type": "warning",
+        "text": "cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation",
+        "location": {
+          "url": "https://cdn.tailwindcss.com/",
+          "lineNumber": 63,
+          "columnNumber": 1710
+        }
+      },
+      {
+        "type": "warning",
+        "text": "Deprecation warning: use moment.updateLocale(localeName, config) to change an existing locale. moment.defineLocale(localeName, config) should only be used for creating a new locale See http://momentjs.com/guides/#/warnings/define-locale/ for more info.",
+        "location": {
+          "url": "https://www.tradingview-widget.com/static/bundles/embed/98777.b0d6b6f1842467663bf5.js",
+          "lineNumber": 9,
+          "columnNumber": 700
+        }
+      }
+    ],
+    "page_errors": []
+  },
+  "network": {
+    "request_failures": [
+      {
+        "url": "https://widget-sheriff.tradingview-widget.com/sheriff/api/v1/rules/search?origin=http%3A%2F%2F127.0.0.1%3A8787",
+        "method": "GET",
+        "failure": "net::ERR_ABORTED"
+      }
+    ],
+    "api_responses": {
+      "http://127.0.0.1:8787/api/strategies": {
+        "status": 200
+      },
+      "http://127.0.0.1:8787/api/market/prices?instruments=XAU_USD": {
+        "status": 200
+      },
+      "http://127.0.0.1:8787/api/signals/pending": {
+        "status": 200
+      },
+      "https://widget-sheriff.tradingview-widget.com/sheriff/api/v1/rules/search?origin=http%3A%2F%2F127.0.0.1%3A8787": {
+        "status": 204
+      },
+      "http://127.0.0.1:8787/api/news": {
+        "status": 200
+      },
+      "http://127.0.0.1:8787/api/status": {
+        "status": 200
+      },
+      "http://127.0.0.1:8787/api/market/prices": {
+        "status": 200
+      },
+      "http://127.0.0.1:8787/api/news/status": {
+        "status": 200
+      },
+      "http://127.0.0.1:8787/api/trades/active": {
+        "status": 200
+      },
+      "http://127.0.0.1:8787/api/trades/pending": {
+        "status": 200
+      },
+      "http://127.0.0.1:8787/api/strategies/overview": {
+        "status": 200
+      },
+      "http://127.0.0.1:8787/api/performance/summary": {
+        "status": 200
+      },
+      "http://127.0.0.1:8787/api/v1/outlook/daily": {
+        "status": 200
+      },
+      "http://127.0.0.1:8787/api/v1/scanner/structural": {
+        "status": 200
+      },
+      "http://127.0.0.1:8787/api/v1/audit": {
+        "status": 200
+      },
+      "http://127.0.0.1:8787/api/journal/trades": {
+        "status": 200
+      },
+      "http://127.0.0.1:8787/api/v1/audit?limit=50": {
+        "status": 200
+      }
+    }
+  },
+  "screenshots": {
+    "after_login": "artifacts/dashboard_probe/20260113T011857Z/dashboard_after_login.png",
+    "terminal": "artifacts/dashboard_probe/20260113T011857Z/tab_terminal.png",
+    "outlook": "artifacts/dashboard_probe/20260113T011857Z/tab_outlook.png",
+    "scanner": "artifacts/dashboard_probe/20260113T011857Z/tab_scanner.png",
+    "mesh": "artifacts/dashboard_probe/20260113T011857Z/tab_mesh.png",
+    "journal": "artifacts/dashboard_probe/20260113T011857Z/tab_journal.png",
+    "audit": "artifacts/dashboard_probe/20260113T011857Z/tab_audit.png",
+    "news": "artifacts/dashboard_probe/20260113T011857Z/tab_news.png",
+    "reports": "artifacts/dashboard_probe/20260113T011857Z/tab_reports.png",
+    "strategies": "artifacts/dashboard_probe/20260113T011857Z/tab_strategies.png",
+    "trades": "artifacts/dashboard_probe/20260113T011857Z/tab_trades.png"
+  },
+  "issues": [
+    {
+      "severity": "warning",
+      "area": "structural_scanner",
+      "id": "scanner:insufficient_history",
+      "symptom": "Structural scanner reports insufficient history",
+      "detail": "Likely candle history fetch/requirements mismatch."
+    }
+  ],
+  "summary": {
+    "endpoints_ok": 13,
+    "endpoints_total": 13,
+    "endpoints_pct": 100.0,
+    "sections_ok": 10,
+    "sections_total": 10,
+    "sections_pct": 100.0,
+    "console_errors_count": 0,
+    "page_errors_count": 0,
+    "request_failures_count": 1,
+    "api_non2xx_count": 0
+  }
+}

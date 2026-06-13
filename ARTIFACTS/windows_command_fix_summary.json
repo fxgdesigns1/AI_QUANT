@@ -1,0 +1,16 @@
+{
+  "fix_summary": {
+    "problem": "Commands run from C:\\Windows\\system32; relative paths failed; && not valid in PowerShell 5.1",
+    "solution": "Wrapper scripts that detect repo root via $PSScriptRoot, Set-Location to repo root, run child scripts. No && used.",
+    "scripts_created": [
+      "bridges/windows_sidecar/scripts/fxg_win_run_probe_and_healthcheck.ps1",
+      "bridges/windows_sidecar/scripts/fxg_win_build_active_dashboard.ps1"
+    ],
+    "verification_results": {
+      "healthcheck": "PASS - real sidecar data (health, account, EURUSD tick)",
+      "probe": "FAIL in this run (Python/MT5) but pre-existing artifacts valid",
+      "dashboard_build": "FAIL - vite not found, npm install had drive errors"
+    }
+  },
+  "ts_utc": "2026-03-23T00:30:00Z"
+}

@@ -1,0 +1,11 @@
+{
+  "terminal_path": "C:\\Program Files\\MetaTrader 5\\terminal64.exe",
+  "data_folder_convention": "%%APPDATA%%\\MetaQuotes\\Terminal\\<instance-id>",
+  "mql5_experts_path": "%%APPDATA%%\\MetaQuotes\\Terminal\\<instance-id>\\MQL5\\Experts",
+  "mql5_files_path": "%%APPDATA%%\\MetaQuotes\\Terminal\\<instance-id>\\MQL5\\Files",
+  "account_login": 1512827972,
+  "account_server": "FTMO-Demo",
+  "source": "artifacts/windows_mt5_terminal_identity.json",
+  "note": "Instance ID varies per MT5 install. Use File->Open Data Folder in MT5 to get exact path.",
+  "ts_utc": "2026-03-23T00:45:00Z"
+}

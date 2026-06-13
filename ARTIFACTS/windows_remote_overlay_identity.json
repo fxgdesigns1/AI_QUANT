@@ -1,0 +1,7 @@
+﻿{
+    "ts_utc":  "2026-03-25T14:08:08.3241389Z",
+    "sidecar_base_url":  "http://100.122.152.80:8877",
+    "tailscale_ip":  "100.122.152.80",
+    "sidecar_port":  8877,
+    "tailscale_hostname":  "G-MACHINE"
+}

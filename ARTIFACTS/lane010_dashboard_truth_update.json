@@ -1,0 +1,24 @@
+{
+  "job_name": "FXG_UNIFY_LANE_010_EXECUTION_CONTRACT_AND_LIMIT_SUPPORT_V1",
+  "phase": "8_update_dashboard_and_operator_truth",
+  "ts_utc": "2026-03-25T00:45:00Z",
+  "status": "COMPLETE",
+  "backend_endpoint": {
+    "method": "GET",
+    "path": "/api/execution/lane_010_contract",
+    "implementation": "src/control_plane/api.py",
+    "fields": [
+      "canonical_repo_signal_file",
+      "upstream_aggregate_signal_log",
+      "transport_derives_canonical_from_aggregate",
+      "entry_types_supported",
+      "manual_append_to_canonical_required"
+    ]
+  },
+  "operator_truth": {
+    "single_execution_contract": "logs/signals_ftmo_demo2.jsonl is the canonical repo stream consumed by Windows transport for FTMO_Bridge_EA",
+    "aggregate_log": "logs/signals.jsonl is merged automatically into the canonical stream when bridge_account=ftmo_demo2",
+    "market_and_limit": "EA v1.02 supports MARKET and LIMIT; LIMIT uses entry_price or limit_price JSON fields",
+    "no_manual_append": "Derive script runs inside fxg_win_start_canonical_transport_loop.ps1"
+  }
+}

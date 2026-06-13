@@ -1,0 +1,13 @@
+{
+  "job_name": "FXG_WINDOWS_SIGNAL_76B6_CONSUMER_TRACE_AND_FIX_V1",
+  "phase": "6_apply_minimal_fix_if_consumer_bug_or_runtime_bug_is_found",
+  "consumer_bug_found": false,
+  "runtime_bug_blocking_76b6": false,
+  "delivery_gap_found": true,
+  "fix_applied": true,
+  "fix_description": "Hardened bridges/windows_sidecar/scripts/fxg_win_wire_canonical_signals.ps1 to resolve MQL5/Files using the running terminal64.exe install directory matched against each data folder's origin.txt, then fall back to previous first-MQL5 behavior. Prevents WRONG_FILES_PATH when multiple Terminal\\\\<id> instances exist. Does not duplicate canonical writes; does not add sidecar execution.",
+  "fix_evidence_command": "powershell -File .\\\\bridges\\\\windows_sidecar\\\\scripts\\\\fxg_win_wire_canonical_signals.ps1",
+  "fix_evidence_result": "Resolved same path D0E8209F77C8CF37AD8BF550E51FF075\\\\MQL5\\\\Files on this host",
+  "cannot_retroactively_inject_76b6_without_mac_line": true,
+  "operator_action_to_prevent_recurrence": "Ensure Mac canonical_mac_file_bridge_v1 emitted line is copied/synced to this Windows path after OANDA step per docs/bridges/CANONICAL_MAC_FILE_BRIDGE.md (steps 5-6)."
+}

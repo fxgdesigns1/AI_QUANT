@@ -1,0 +1,25 @@
+{
+  "ts_utc": "2026-03-26T07:16:25Z",
+  "old_execution_delivery_path": {
+    "description": "Shared repo canonical stream -> MT5 watchfile (fragile when Drive relay breaks)",
+    "source": "H:\\My Drive\\AI Trading\\Gcloud system\\logs\\signals_ftmo_demo2.jsonl",
+    "script": "bridges/windows_sidecar/scripts/fxg_win_sync_canonical_signals.ps1",
+    "drive_dependency": "Google Drive / H: mapped path"
+  },
+  "new_execution_delivery_path": {
+    "description": "Direct Windows pull from ALPHA -> MT5 watchfile (no Mac/Drive hop)",
+    "alpha_source": "/home/aiquant/gcloud-system/logs/signals_ftmo_demo2.jsonl",
+    "transport": "gcloud compute scp",
+    "script": "bridges/windows_sidecar/scripts/fxg_win_pull_alpha_signals_to_mt5.ps1",
+    "scheduler": "FXG Windows Direct Pull ALPHA MT5 ftmo_demo2"
+  },
+  "assertions": {
+    "google_drive_required_for_execution": false,
+    "mac_shared_file_required_for_execution": false,
+    "sidecar_role_unchanged": "telemetry_and_diagnostics_only"
+  },
+  "what_remains_optional": [
+    "Reverse syncing MT5 ftmo_bridge_log.jsonl back to repo logs/ftmo_bridge_log.jsonl is optional for dashboard/log review.",
+    "Mac-side dashboard/telemetry can continue using sidecar; it is not part of execution delivery."
+  ]
+}

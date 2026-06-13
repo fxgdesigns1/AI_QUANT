@@ -1,0 +1,67 @@
+src/control_plane/schema.py:89:    news_integration_enabled: bool = False
+src/control_plane/news_provider.py:61:def fetch_news_newsapi(
+src/control_plane/news_provider.py:68:    api_key = _env("NEWSAPI_API_KEY")
+src/control_plane/news_provider.py:70:        raise NewsError("Missing required env var: NEWSAPI_API_KEY")
+src/control_plane/news_provider.py:72:    # NewsAPI: /v2/everything is more reliable than top-headlines for FX keywords
+src/control_plane/news_provider.py:73:    url = "https://newsapi.org/v2/everything"
+src/control_plane/news_provider.py:83:        raise NewsError(f"NewsAPI error {r.status_code}: {r.text[:200]}")
+src/control_plane/news_provider.py:95:        source = ((a.get("source") or {}).get("name") or "newsapi").strip()
+src/control_plane/news_provider.py:112:def fetch_news_alphavantage(
+src/control_plane/news_provider.py:118:    api_key = _env("ALPHAVANTAGE_API_KEY")
+src/control_plane/news_provider.py:120:        raise NewsError("Missing required env var: ALPHAVANTAGE_API_KEY")
+src/control_plane/news_provider.py:122:    # AlphaVantage NEWS_SENTIMENT endpoint
+src/control_plane/news_provider.py:123:    url = "https://www.alphavantage.co/query"
+src/control_plane/news_provider.py:125:        "function": "NEWS_SENTIMENT",
+src/control_plane/news_provider.py:132:        raise NewsError(f"AlphaVantage error {r.status_code}: {r.text[:200]}")
+src/control_plane/news_provider.py:144:        source = (f.get("source") or "alphavantage").strip()
+src/control_plane/news_provider.py:145:        tickers = [t.get("ticker") for t in (f.get("ticker_sentiment") or []) if t.get("ticker")]
+src/control_plane/news_provider.py:237:        title = (a.get("headline") or "").strip()
+src/control_plane/news_provider.py:368:    # Priority order: MarketAux -> Finnhub -> Polygon -> FMP -> NewsAPI -> AlphaVantage
+src/control_plane/news_provider.py:380:    if settings.newsapi_api_key:
+src/control_plane/news_provider.py:381:        provider_fns.append(("newsapi", lambda: fetch_news_newsapi(query=query, threshold=threshold, max_items=max_items)))
+src/control_plane/news_provider.py:382:    if settings.alphavantage_api_key:
+src/control_plane/news_provider.py:383:        provider_fns.append(("alphavantage", lambda: fetch_news_alphavantage(threshold=threshold, max_items=max_items)))
+templates/dashboard_advanced.html:2633:                const title = item.title || item.summary || item.headline || 'Market update';
+templates/dashboard_advanced.html:2667:                        <div><b>Sentiment:</b> ${(s.overall_sentiment ?? 0).toFixed(2)}</div>
+templates/dashboard_advanced.html:2869:                "📰 News Impact: Recent economic data shows mixed signals. The Federal Reserve's stance on interest rates continues to influence market sentiment.",
+scripts/verify_alpha_strategy_inputs.sh:54:NEWS_ASSESS_JSON=$(curl -fsS http://127.0.0.1:8787/api/news/assess)
+scripts/verify_alpha_strategy_inputs.sh:57:NEWS_COUNT=$(echo "$NEWS_ASSESS_JSON" | jq -r '
+scripts/verify_alpha_strategy_inputs.sh:200:- **/api/news/assess:**
+scripts/verify_alpha_strategy_inputs.sh:202:$(echo "$NEWS_ASSESS_JSON" | jq -c '{ok,news_count,providers_used,timestamp}')
+src/control_plane/api.py:85:    news_integration_enabled: Optional[bool] = None
+src/control_plane/api.py:1700:    news_enabled = config.news_integration_enabled
+src/control_plane/api.py:1857:    """Get news provider health status (per-provider health and last fetch timestamps)
+src/control_plane/api.py:1867:        ("newsapi", lambda: settings.newsapi_api_key is not None),
+src/control_plane/api.py:1868:        ("alphavantage", lambda: settings.alphavantage_api_key is not None),
+src/control_plane/api.py:1915:@app.get("/api/news/assess")
+src/control_plane/api.py:1916:async def assess_news():
+src/control_plane/api.py:1917:    """AI assessment of latest news (summary/sentiment/impact)
+src/control_plane/api.py:1941:            "sentiment": None,
+src/control_plane/api.py:1966:    # Calculate aggregate sentiment/impact from news items
+src/control_plane/api.py:1971:    # Extract sentiment hints from AI text (simple heuristic)
+src/control_plane/api.py:1972:    sentiment = None
+src/control_plane/api.py:1976:            sentiment = "positive"
+src/control_plane/api.py:1978:            sentiment = "negative"
+src/control_plane/api.py:1980:            sentiment = "neutral"
+src/control_plane/api.py:1998:        "sentiment": sentiment,
+scripts/local_run_and_verify.sh:43:      -d '{"news_integration_enabled": true, "news_impact_threshold": "medium", "macro_integration_enabled": true}' >/dev/null
+scripts/verify_env_no_leak.py:12:print("NEWSAPI_API_KEY:", mark(settings.newsapi_api_key))
+scripts/verify_env_no_leak.py:14:print("ALPHAVANTAGE_API_KEY:", mark(settings.alphavantage_api_key))
+templates/forensic_command.html.save:1037:                        <div class="news-item-title">${item.title || item.headline}</div>
+scripts/update_md_probe_results.py:22:news_assess = grab_block('/api/news/assess')
+scripts/update_md_probe_results.py:25:# Summarize news_assess: count occurrences of common item fields
+scripts/update_md_probe_results.py:26:# The probe output for news/assess is JSON, so we can check for "news_count"
+scripts/update_md_probe_results.py:27:news_count_match = re.search(r'"news_count":\s*(\d+)', news_assess)
+scripts/update_md_probe_results.py:31:has_news_in_logs = bool(re.search(r'news_used|NEWS_UNAVAILABLE|sentiment|provider', logs))
+scripts/update_md_probe_results.py:39:if '(missing)' in news_assess:
+scripts/update_md_probe_results.py:40:    reason.append('news_assess_missing')
+scripts/update_md_probe_results.py:73:- **/api/news/assess (summary heuristic):** items_detected={items_count}
+src/core/settings.py:31:    newsapi_api_key: Optional[str]
+src/core/settings.py:33:    alphavantage_api_key: Optional[str]
+src/core/settings.py:90:    newsapi_api_key = _get_env("NEWSAPI_API_KEY")
+src/core/settings.py:97:    alphavantage_api_key = _get_env("ALPHAVANTAGE_API_KEY")
+src/core/settings.py:145:        newsapi_api_key=newsapi_api_key,
+src/core/settings.py:147:        alphavantage_api_key=alphavantage_api_key,
+scripts/local_preflight.sh:77:  "NEWSAPI_API_KEY","ALPHAVANTAGE_API_KEY","ALPHAVANTAGE_API_KEYS",
+src/strategies/momentum_trading.py:78:            news_data: Optional dictionary containing news items and sentiment (count, items, sentiment_score)
+src/strategies/momentum_trading.py:91:        # News Sentiment Impact (Simple Heuristic)

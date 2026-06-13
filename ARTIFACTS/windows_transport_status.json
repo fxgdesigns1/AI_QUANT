@@ -1,0 +1,10 @@
+﻿{
+    "phase":  "forward_signals",
+    "ts_utc":  "2026-03-26T17:04:07.7559581Z",
+    "appended":  0,
+    "skipped_duplicate":  3,
+    "skipped_wrong_account":  0,
+    "skipped_bad_json":  0,
+    "src":  "H:\\My Drive\\AI Trading\\Gcloud system\\logs\\signals_ftmo_demo2.jsonl",
+    "dst":  "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\signals_ftmo_demo2.jsonl"
+}

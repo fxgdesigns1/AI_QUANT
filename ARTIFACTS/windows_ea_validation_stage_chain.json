@@ -1,0 +1,14 @@
+{
+  "job_name": "FXG_WINDOWS_EA_LOG_DISCOVERY_AND_CONSUMER_REMEDIATION_V1",
+  "phase": "10_stage_chain",
+  "validation_trade_used": false,
+  "final_status": "stopped_at_windows_ea_log",
+  "stages": {
+    "oanda_stage": "not_exercised",
+    "bridge_emit_stage": "not_exercised",
+    "canonical_signal_file_stage": "operator_reported_pass_only",
+    "windows_watch_path_stage": "blocked_no_windows_read_access",
+    "windows_ea_log_stage": "blocked_no_windows_read_access"
+  },
+  "ts_utc": "2026-03-24T19:30:00Z"
+}

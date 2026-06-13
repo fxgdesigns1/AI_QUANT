@@ -1,0 +1,125 @@
+{
+  "generated_at_utc": "2026-05-02T10:33:38.965492Z",
+  "phase": "Phase 8O-NEWS-PROVIDER-FIX",
+  "classification": "PROVIDER_CURRENT_NEWS_AVAILABLE_HISTORICAL_RECONSTRUCTION_UNAVAILABLE",
+  "host": "fxg-paper-e2-small-main-2026",
+  "repo_path": "/opt/ai-quant",
+  "env_file_checked": "/etc/ai-quant/.env",
+  "documented_provider_env_presence_without_values": {
+    "FINNHUB_API_KEYS": false,
+    "FINNHUB_API_KEY": false,
+    "POLYGON_API_KEYS": true,
+    "MARKETAUX_API_KEYS": true,
+    "NEWSAPI_API_KEYS": true,
+    "NEWSAPI_API_KEY": false,
+    "ALPHAVANTAGE_API_KEYS": true,
+    "FRED_API_KEYS": true,
+    "FMP_API_KEYS": false,
+    "TRADINGECONOMICS_API_KEYS": false
+  },
+  "phase8o_env_aliases_after": {
+    "NewsAPI": [
+      "NEWSAPI_API_KEYS",
+      "NEWSAPI_API_KEY",
+      "NEWSAPI_KEY",
+      "NEWS_API_KEY"
+    ],
+    "TradingEconomics": [
+      "TRADINGECONOMICS_API_KEYS",
+      "TRADINGECONOMICS_KEY",
+      "TRADING_ECONOMICS_KEY",
+      "TE_API_KEY"
+    ],
+    "Finnhub": [
+      "FINNHUB_API_KEYS",
+      "FINNHUB_API_KEY",
+      "FINNHUB_KEY"
+    ]
+  },
+  "direct_historical_provider_results": {
+    "NewsAPI": {
+      "env_present": true,
+      "selected_env_name": "NEWSAPI_API_KEYS",
+      "http_status": 429,
+      "rows_returned": 0,
+      "failure_reason": "http_429"
+    },
+    "TradingEconomics": {
+      "env_present": false,
+      "selected_env_name": null,
+      "http_status": null,
+      "rows_returned": 0,
+      "failure_reason": "no_env_key_in_expected_names"
+    },
+    "Finnhub": {
+      "env_present": false,
+      "selected_env_name": null,
+      "http_status": null,
+      "rows_returned": 0,
+      "failure_reason": "no_env_key_in_expected_names"
+    }
+  },
+  "control_plane_news_probe": {
+    "status_endpoint_ok": true,
+    "status_http_status": 200,
+    "status_providers": {
+      "marketaux": "configured",
+      "polygon": "configured",
+      "newsapi": "configured"
+    },
+    "provider_status_endpoint_ok": true,
+    "provider_status_http_status": 200,
+    "provider_status": {
+      "marketaux": {
+        "configured": true,
+        "status": "configured"
+      },
+      "finnhub": {
+        "configured": false,
+        "status": "missing"
+      },
+      "polygon": {
+        "configured": true,
+        "status": "configured"
+      },
+      "fmp": {
+        "configured": false,
+        "status": "missing"
+      },
+      "newsapi": {
+        "configured": true,
+        "status": "configured"
+      },
+      "alphavantage": {
+        "configured": true,
+        "status": "configured"
+      }
+    },
+    "providers_used": [
+      "marketaux",
+      "polygon",
+      "newsapi",
+      "alphavantage"
+    ],
+    "configured_count": 4,
+    "provider_status_source_mode": "external_headlines_registry",
+    "assess_endpoint_ok": true,
+    "assess_http_status": 200,
+    "assess_news_count": 10,
+    "query_endpoint_ok": true,
+    "query_http_status": 200,
+    "source_mode": "snapshot",
+    "news_count": 10
+  },
+  "historical_news_reconstruction_supported": false,
+  "calendar_reconstruction_available": false,
+  "news_current_available_via_control_plane": true,
+  "secret_values_printed": false,
+  "order_or_execution_apis_called": false,
+  "paper_review_only": true,
+  "live_permission": false,
+  "ny_live_enabled": false,
+  "send_trade_unlock_changed": false,
+  "execution_paths_changed": false,
+  "alpha_artifact_path": "/opt/ai-quant/ARTIFACTS/performance/latest_phase8o_news_provider_diagnostics.json"
+}

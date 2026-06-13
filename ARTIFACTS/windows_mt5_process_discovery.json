@@ -1,0 +1,19 @@
+{
+  "job_name": "FXG_WINDOWS_EA_LOG_DISCOVERY_AND_CONSUMER_REMEDIATION_V1",
+  "phase": "2_find_live_mt5_ea_process_and_terminal_instance",
+  "status": "BLOCKED",
+  "must_collect": {
+    "terminal_install_path": null,
+    "data_folder_path": null,
+    "terminal_executable_path": null,
+    "mt5_running": null,
+    "ea_chart_attached": null,
+    "last_activity_timestamp": null
+  },
+  "evidence_from_repo_only": {
+    "mt5_terminal_path_env": "bridges/windows_sidecar/service/config.py sets MT5_TERMINAL_PATH from env for MetaTrader5.initialize()",
+    "discovery_script": "bridges/windows_sidecar/scripts/fxg_win_probe_mt5_identity.ps1 walks %AppData%\\Roaming\\MetaQuotes\\Terminal for terminals"
+  },
+  "blocker": "windows_host_access_missing_for_live_process_query",
+  "ts_utc": "2026-03-24T19:30:00Z"
+}

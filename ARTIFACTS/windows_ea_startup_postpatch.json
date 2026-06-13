@@ -1,0 +1,10 @@
+{
+  "artifact": "windows_ea_startup_postpatch",
+  "bridge_log_path": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\ftmo_bridge_log.jsonl",
+  "last_observed_ea_start_lines": [
+    "{\"type\":\"EA_START\",\"msg\":\"FTMO_Bridge_EA started\",\"signal_id\":\"\",\"ts\":\"2026.03.23 10:09:34\"}",
+    "{\"type\":\"EA_START\",\"msg\":\"FTMO_Bridge_EA started\",\"signal_id\":\"\",\"ts\":\"2026.03.24 23:54:59\"}"
+  ],
+  "expected_post_reload_marker": "EA_START msg contains \"v1.01\" and \"null-safe stops\"",
+  "status": "BLOCKED_ON_CHART_RELOAD — patched ex5 compiled on disk but no new EA_START with v1.01 observed in bridge log at artifact write time"
+}

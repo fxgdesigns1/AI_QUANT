@@ -1,0 +1,58 @@
+{
+  "verification_date_utc": "2026-01-04T22:20:00Z",
+  "status": "PASS",
+  
+  "src_core_settings": {
+    "file": "src/core/settings.py",
+    "assessment": "SAFE - No hardcoded credential defaults",
+    "evidence": [
+      "Uses _get_env() which returns None if env var not set",
+      "oanda_api_key loaded via os.getenv without default",
+      "oanda_account_id loaded via os.getenv without default",
+      "telegram_bot_token loaded via os.getenv without default",
+      "openai_api_key loaded via os.getenv without default",
+      "google_api_key loaded via os.getenv without default",
+      "Only non-secret defaults: oanda_env='practice', openai_model='gpt-4o-mini', gemini_model='gemini-1.5-flash'"
+    ]
+  },
+  
+  "runner_src_execution_gate": {
+    "file": "runner_src/core/execution_gate.py",
+    "assessment": "SAFE - Proper dual-confirm gates for live trading",
+    "evidence": [
+      "KILL_SWITCH=true hard-blocks all execution",
+      "TRADING_MODE defaults to 'paper'",
+      "Live mode requires BOTH LIVE_TRADING=true AND LIVE_TRADING_CONFIRM=true",
+      "Paper mode simulates orders without broker calls",
+      "No hardcoded API keys or tokens"
+    ]
+  },
+  
+  "src_control_plane_api": {
+    "file": "src/control_plane/api.py",
+    "assessment": "SAFE - No credential defaults, proper safety gates",
+    "evidence": [
+      "CONTROL_PLANE_TOKEN loaded via os.getenv without hardcoded default",
+      "BIND_HOST defaults to 127.0.0.1 (localhost only)",
+      "TRADING_MODE defaults to 'paper'",
+      "execution_enabled defaults to False",
+      "/api/execution/arm is advisory-only and cannot enable live trading",
+      "All responses sanitized to remove secret-like keys"
+    ]
+  },
+  
+  "live_url_block": {
+    "assessment": "PASS - No live OANDA URLs in runtime src/",
+    "search_pattern": "api-fxtrade.oanda.com",
+    "matches_in_src": 0,
+    "note": "Live broker URL not present in runtime code"
+  },
+  
+  "summary": {
+    "hardcoded_secrets_in_src": false,
+    "live_trading_hard_blocked": true,
+    "paper_mode_default": true,
+    "localhost_binding_default": true,
+    "dual_confirm_gate_implemented": true
+  }
+}

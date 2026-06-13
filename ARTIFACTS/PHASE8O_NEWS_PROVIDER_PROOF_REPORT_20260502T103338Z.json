@@ -1,0 +1,147 @@
+{
+  "phase": "Phase 8O-NEWS-PROVIDER-FIX",
+  "status": "PROVEN_PROVIDER_LIMITATION_AFTER_DIAGNOSTIC_FIX",
+  "generated_at_utc": "2026-05-02T10:33:38Z",
+  "env_file_checked": "/etc/ai-quant/.env",
+  "documented_env_names_present_without_values": {
+    "FINNHUB_API_KEYS": false,
+    "FINNHUB_API_KEY": false,
+    "POLYGON_API_KEYS": true,
+    "MARKETAUX_API_KEYS": true,
+    "NEWSAPI_API_KEYS": true,
+    "NEWSAPI_API_KEY": false,
+    "ALPHAVANTAGE_API_KEYS": true,
+    "FRED_API_KEYS": true,
+    "FMP_API_KEYS": false,
+    "TRADINGECONOMICS_API_KEYS": false
+  },
+  "phase8o_env_aliases_before": {
+    "NewsAPI": [
+      "NEWSAPI_API_KEY",
+      "NEWSAPI_KEY",
+      "NEWS_API_KEY"
+    ],
+    "TradingEconomics": [
+      "TRADINGECONOMICS_KEY",
+      "TRADING_ECONOMICS_KEY",
+      "TE_API_KEY"
+    ],
+    "Finnhub": [
+      "FINNHUB_API_KEYS",
+      "FINNHUB_API_KEY",
+      "FINNHUB_KEY"
+    ]
+  },
+  "phase8o_env_aliases_after": {
+    "NewsAPI": [
+      "NEWSAPI_API_KEYS",
+      "NEWSAPI_API_KEY",
+      "NEWSAPI_KEY",
+      "NEWS_API_KEY"
+    ],
+    "TradingEconomics": [
+      "TRADINGECONOMICS_API_KEYS",
+      "TRADINGECONOMICS_KEY",
+      "TRADING_ECONOMICS_KEY",
+      "TE_API_KEY"
+    ],
+    "Finnhub": [
+      "FINNHUB_API_KEYS",
+      "FINNHUB_API_KEY",
+      "FINNHUB_KEY"
+    ],
+    "DocumentedPresenceOnly": [
+      "FINNHUB_API_KEYS",
+      "FINNHUB_API_KEY",
+      "POLYGON_API_KEYS",
+      "MARKETAUX_API_KEYS",
+      "NEWSAPI_API_KEYS",
+      "NEWSAPI_API_KEY",
+      "ALPHAVANTAGE_API_KEYS",
+      "FRED_API_KEYS",
+      "FMP_API_KEYS",
+      "TRADINGECONOMICS_API_KEYS"
+    ]
+  },
+  "news_status_endpoint_ok": true,
+  "provider_status_endpoint_ok": true,
+  "providers_used": [
+    "marketaux",
+    "polygon",
+    "newsapi",
+    "alphavantage"
+  ],
+  "news_count": 10,
+  "provider_http_statuses": {
+    "control_plane_status": 200,
+    "control_plane_provider_status": 200,
+    "control_plane_assess": 200,
+    "control_plane_news_query": 200,
+    "direct_historical_newsapi": 429,
+    "direct_historical_tradingeconomics": null,
+    "direct_historical_finnhub": null
+  },
+  "control_plane_probe": {
+    "status_providers": {
+      "marketaux": "configured",
+      "polygon": "configured",
+      "newsapi": "configured"
+    },
+    "provider_status": {
+      "marketaux": {
+        "configured": true,
+        "status": "configured"
+      },
+      "finnhub": {
+        "configured": false,
+        "status": "missing"
+      },
+      "polygon": {
+        "configured": true,
+        "status": "configured"
+      },
+      "fmp": {
+        "configured": false,
+        "status": "missing"
+      },
+      "newsapi": {
+        "configured": true,
+        "status": "configured"
+      },
+      "alphavantage": {
+        "configured": true,
+        "status": "configured"
+      }
+    },
+    "assess_news_count": 10,
+    "news_query_source_mode": "snapshot"
+  },
+  "historical_reconstruction_supported": false,
+  "exact_root_cause": "Phase 8O previously missed documented CSV aliases NEWSAPI_API_KEYS and TRADINGECONOMICS_API_KEYS and did not record ALPHA control-plane news endpoint proof. After the alias/control-plane patch, ALPHA proves current news is configured and returning 10 rows via local endpoints, but exact historical reconstruction remains unavailable: direct NewsAPI historical fetch selected NEWSAPI_API_KEYS and returned HTTP 429 with zero rows, while TradingEconomics and Finnhub calendar credentials are absent in /etc/ai-quant/.env.",
+  "fix_applied": [
+    "Added documented provider env names and CSV *_API_KEYS parsing to scripts/local_research/phase8l_news_calendar_fetch.py.",
+    "Added sanitized ALPHA control-plane news probes to scripts/phase8o_alpha_export_exact_replay_data.py.",
+    "Added latest_phase8o_news_provider_diagnostics artifact writing to scripts/phase8l_news_calendar_diagnostics.py.",
+    "Changed Phase 8O export to write empty news/calendar jsonl.gz files when rows are unavailable instead of placeholder records.",
+    "Added tests for NEWSAPI_API_KEYS, FINNHUB_API_KEYS, MARKETAUX_API_KEYS, TRADINGECONOMICS_API_KEYS coverage and secret redaction."
+  ],
+  "news_reconstruction_available_after": false,
+  "calendar_reconstruction_available_after": false,
+  "news_reconstruction_status_after": "PROVIDER_CURRENT_NEWS_AVAILABLE_HISTORICAL_RECONSTRUCTION_UNAVAILABLE",
+  "calendar_reconstruction_status_after": "PROVIDER_KEYS_MISSING",
+  "reran_phase8o": false,
+  "rerun_block_reason": "Diagnostics did not prove historical news/calendar rows are available and alignable; exact replay remains fail-closed.",
+  "ny_live_enabled": false,
+  "send_trade_unlock_changed": false,
+  "execution_paths_changed": false,
+  "runtime_config_changed": false,
+  "ai_quant_runner_restarted": false,
+  "secrets_exposed": false,
+  "verification": {
+    "local_tests": "python -m unittest tests.test_phase8l_news_calendar_diagnostics tests.test_phase8o_news_calendar_alignment -v",
+    "local_tests_result": "PASS: 14 tests",
+    "alpha_env_probe": "PASS: printed only documented env name presence from /etc/ai-quant/.env",
+    "alpha_endpoint_probe": "PASS: /api/news/status, /api/news/provider_status, /api/news/assess, and /api/news returned HTTP 200",
+    "alpha_diagnostics": "PASS: /opt/ai-quant/ARTIFACTS/performance/latest_phase8o_news_provider_diagnostics.json written"
+  }
+}

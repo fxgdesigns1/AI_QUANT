@@ -1,0 +1,30 @@
+{
+  "ts_utc": "2026-03-25T14:10:20Z",
+  "listener_check": {
+    "port": 8877,
+    "pre_change_status_output": {
+      "mt5": "RUNNING",
+      "sidecar": "RUNNING",
+      "bind": "0.0.0.0:8877",
+      "local_url": "http://127.0.0.1:8877",
+      "tailscale_url": "http://100.122.152.80:8877"
+    },
+    "listener_pid_observed_before_task_hardening": 53368,
+    "listener_cmdline_observed_before_task_hardening": "\"H:\\My Drive\\AI Trading\\Gcloud system\\bridges\\windows_sidecar\\.venv\\Scripts\\python.exe\" \"H:\\My Drive\\AI Trading\\Gcloud system\\bridges\\windows_sidecar\\run.py\""
+  },
+  "scheduled_task_observed": {
+    "task_name": "FXG Windows Sidecar 8877",
+    "state": "Ready",
+    "trigger": "AtLogOn (enabled)",
+    "principal": {
+      "user_id": "gavin",
+      "logon_type": "Interactive",
+      "run_level": "Limited"
+    },
+    "action": {
+      "execute": "h:\\My Drive\\AI Trading\\Gcloud system\\bridges\\windows_sidecar\\.venv\\Scripts\\python.exe",
+      "arguments": "bridges/windows_sidecar/run.py",
+      "working_directory": "h:\\My Drive\\AI Trading\\Gcloud system"
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "schema": "fxg.research.cache_manifest.v1",
+  "dataset_id": "1930de9d-e516-4aa2-bc96-cffa9de0d795",
+  "generated_at_utc": "2026-04-07T02:19:31.516360+00:00",
+  "source": "oanda_practice",
+  "granularity": "M5",
+  "instruments": [
+    "EUR_USD",
+    "GBP_USD",
+    "XAU_USD",
+    "USD_JPY",
+    "AUD_USD"
+  ],
+  "max_bars_requested": 8000,
+  "rows_complete_only": true,
+  "instruments_detail": {
+    "EUR_USD": {
+      "file": "EUR_USD_M5.json",
+      "rows": 7999,
+      "coverage_start": "2026-02-26T08:40:00.000000000Z",
+      "coverage_end": "2026-04-07T02:10:00.000000000Z",
+      "monotonic_timestamp_errors": 0
+    },
+    "GBP_USD": {
+      "file": "GBP_USD_M5.json",
+      "rows": 7999,
+      "coverage_start": "2026-02-26T08:30:00.000000000Z",
+      "coverage_end": "2026-04-07T02:10:00.000000000Z",
+      "monotonic_timestamp_errors": 0
+    },
+    "XAU_USD": {
+      "file": "XAU_USD_M5.json",
+      "rows": 7999,
+      "coverage_start": "2026-02-24T03:25:00.000000000Z",
+      "coverage_end": "2026-04-07T02:10:00.000000000Z",
+      "monotonic_timestamp_errors": 0
+    },
+    "USD_JPY": {
+      "file": "USD_JPY_M5.json",
+      "rows": 7999,
+      "coverage_start": "2026-02-26T08:40:00.000000000Z",
+      "coverage_end": "2026-04-07T02:15:00.000000000Z",
+      "monotonic_timestamp_errors": 0
+    },
+    "AUD_USD": {
+      "file": "AUD_USD_M5.json",
+      "rows": 7999,
+      "coverage_start": "2026-02-26T08:40:00.000000000Z",
+      "coverage_end": "2026-04-07T02:15:00.000000000Z",
+      "monotonic_timestamp_errors": 0
+    }
+  },
+  "parse_errors": 0,
+  "monotonic_errors_total": 0,
+  "total_candle_rows": 39995,
+  "candle_file_count": 5,
+  "ready_for_backtest": true
+}

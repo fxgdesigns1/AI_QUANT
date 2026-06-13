@@ -1,0 +1,115 @@
+{
+  "classification": "PHASE8U_STITCH_PROJECT_INVENTORY",
+  "generated_at_utc": "2026-05-03T13:40:15.894362Z",
+  "notes": "Redacted inventory generated from Stitch MCP metadata. Secrets and auth values are excluded.",
+  "ok": true,
+  "phase": "Phase 8U",
+  "projects": [
+    {
+      "device_type": "DESKTOP",
+      "origin": "STITCH",
+      "project_id": "2751957610566494145",
+      "project_name": "projects/2751957610566494145",
+      "project_type": "TEXT_TO_UI_PRO",
+      "screen_instances_count": 0,
+      "title": "Backtest Environment Automation",
+      "update_time": "2026-05-03T12:19:11.176638Z",
+      "visibility": "PRIVATE"
+    },
+    {
+      "device_type": "DESKTOP",
+      "origin": "STITCH",
+      "project_id": "5642431141787768942",
+      "project_name": "projects/5642431141787768942",
+      "project_type": "TEXT_TO_UI_PRO",
+      "screen_instances_count": 0,
+      "title": "FXG Alpha Truth Dashboard",
+      "update_time": "2026-04-30T22:30:26.901400Z",
+      "visibility": "PRIVATE"
+    }
+  ],
+  "screens": [
+    {
+      "device_type": "DESKTOP",
+      "has_html_download_url": true,
+      "height": "2048",
+      "html_mime_type": "text/html",
+      "screen_id": "440e73de530440f9b812db9e83e07daa",
+      "screen_name": "projects/2751957610566494145/screens/440e73de530440f9b812db9e83e07daa",
+      "title": "Intelligence Dashboard",
+      "width": "2560"
+    },
+    {
+      "device_type": "DESKTOP",
+      "has_html_download_url": true,
+      "height": "2048",
+      "html_mime_type": "text/html",
+      "screen_id": "79f10c15d47f4117902dd7e80e7dc441",
+      "screen_name": "projects/2751957610566494145/screens/79f10c15d47f4117902dd7e80e7dc441",
+      "title": "Alpha Export Pack",
+      "width": "2560"
+    },
+    {
+      "device_type": "DESKTOP",
+      "has_html_download_url": true,
+      "height": "2048",
+      "html_mime_type": "text/html",
+      "screen_id": "0ee9cb4d16e443ed8526c16a5ff39a92",
+      "screen_name": "projects/2751957610566494145/screens/0ee9cb4d16e443ed8526c16a5ff39a92",
+      "title": "Deep Analysis & Results",
+      "width": "2560"
+    },
+    {
+      "device_type": "DESKTOP",
+      "has_html_download_url": true,
+      "height": "2048",
+      "html_mime_type": "text/html",
+      "screen_id": "4201df72c4554ad48379ef8e2599a5f9",
+      "screen_name": "projects/2751957610566494145/screens/4201df72c4554ad48379ef8e2599a5f9",
+      "title": "Environment Config",
+      "width": "2560"
+    },
+    {
+      "device_type": "DESKTOP",
+      "has_html_download_url": true,
+      "height": "2048",
+      "html_mime_type": "text/html",
+      "screen_id": "16b1100e4f7c46209f2aff4c9d88726e",
+      "screen_name": "projects/2751957610566494145/screens/16b1100e4f7c46209f2aff4c9d88726e",
+      "title": "Automation Dashboard",
+      "width": "2560"
+    },
+    {
+      "device_type": "DESKTOP",
+      "has_html_download_url": true,
+      "height": "2422",
+      "html_mime_type": "text/html",
+      "screen_id": "abf97c7e9568456cbaa9d29017d2d008",
+      "screen_name": "projects/2751957610566494145/screens/abf97c7e9568456cbaa9d29017d2d008",
+      "title": "Tournament Results",
+      "width": "2560"
+    },
+    {
+      "device_type": "DESKTOP",
+      "has_html_download_url": true,
+      "height": "2048",
+      "html_mime_type": "text/html",
+      "screen_id": "52b967ed9ea049658dd61e0b906d2924",
+      "screen_name": "projects/2751957610566494145/screens/52b967ed9ea049658dd61e0b906d2924",
+      "title": "Data-Wired Phase 8 Research Dashboard",
+      "width": "2560"
+    },
+    {
+      "device_type": "DESKTOP",
+      "has_html_download_url": true,
+      "height": "2048",
+      "html_mime_type": "text/html",
+      "screen_id": "e5bf1a4bddb04c619b4fe4d67629386a",
+      "screen_name": "projects/2751957610566494145/screens/e5bf1a4bddb04c619b4fe4d67629386a",
+      "title": "Promotion & Performance Details",
+      "width": "2560"
+    }
+  ],
+  "target_project_found": true,
+  "target_project_id": "2751957610566494145"
+}

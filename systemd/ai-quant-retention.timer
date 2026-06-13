@@ -1,0 +1,21 @@
+# ai-quant-retention.timer — Daily retention cleanup timer
+#
+# Runs daily at 03:00 UTC (low-traffic time)
+#
+# INSTALLATION:
+#   1. Copy this file to /etc/systemd/system/ai-quant-retention.timer
+#   2. Run: sudo systemctl daemon-reload
+#   3. Run: sudo systemctl enable --now ai-quant-retention.timer
+
+[Unit]
+Description=AI-QUANT Daily Retention Cleanup Timer
+Requires=ai-quant-retention.service
+
+[Timer]
+# Run daily at 03:00 UTC (low-traffic time)
+OnCalendar=daily
+OnCalendar=*-*-* 03:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

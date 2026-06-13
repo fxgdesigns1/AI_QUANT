@@ -1,0 +1,36 @@
+{
+  "job_name": "FXG_WINDOWS_EA_LOG_DISCOVERY_AND_CONSUMER_REMEDIATION_V1",
+  "phase": "6_determine_exact_root_cause",
+  "confidence": "medium_low",
+  "primary_hypothesis": "sync_not_reaching_windows_watch_path",
+  "hypothesis_evidence": [
+    "Linux canonical path /home/aiquant/gcloud-system/logs/signals_ftmo_demo2.jsonl is not the Windows MQL5/Files path unless a proven sync layer copies appends",
+    "EA only reads the Windows-local MQL5/Files file (filename relative path)",
+    "Stale EA-facing bridge log on Linux does not prove Windows EA wrote to it; EA writes ftmo_bridge_log.jsonl beside signals in Windows Files"
+  ],
+  "secondary_hypotheses_ranked": [
+    {
+      "cause": "wrong_log_source_previously_checked",
+      "detail": "Control plane or operator may have tailed ~/gcloud-system/logs/ftmo_bridge_log.jsonl (producer/VM) while EA logs to terminal-local MQL5/Files ftmo_bridge_log.jsonl on Windows"
+    },
+    {
+      "cause": "ea_filter_reject",
+      "detail": "signal_id lines may omit execution_allowed=true or bridge_account ftmo_demo2; EA skips without LogBridge"
+    },
+    {
+      "cause": "ea_not_polling",
+      "detail": "EA detached, AutoTrading off, or terminal idle — not proven without Windows state"
+    },
+    {
+      "cause": "wrong_watch_path",
+      "detail": "InpSignalFilePath overridden to different filename or wrong terminal instance Files folder"
+    },
+    {
+      "cause": "ea_parse_failure",
+      "detail": "ExtractJsonString/line format mismatch → side/units empty → continue without log"
+    }
+  ],
+  "allowed_root_cause_enum_best_fit": "sync_not_reaching_windows_watch_path",
+  "disclaimer": "Exact single root cause not proven without Windows-side file contents and EA attachment state; enumeration constrained by windows_host_access_missing.",
+  "ts_utc": "2026-03-24T19:30:00Z"
+}

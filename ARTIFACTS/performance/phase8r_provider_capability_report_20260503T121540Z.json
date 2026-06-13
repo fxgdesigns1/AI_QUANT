@@ -1,0 +1,77 @@
+{
+  "generated_at_utc": "2026-05-03T12:15:40.779917Z",
+  "phase": "Phase 8R",
+  "classification": "PASS_PROVIDER_CAPABILITY",
+  "instrument": "EUR_USD",
+  "lookback_days": 90,
+  "date_window_start_day": "2026-02-02",
+  "date_window_end_day": "2026-05-03",
+  "provider_filter": "rapidapi_calendar",
+  "max_calendar_paid_calls_budget": 1,
+  "calendar_paid_calls_remaining_after_run": 0,
+  "rapidapi_default_countries": "US,GB,EU",
+  "calendar_budget_bypass_paths_live": [
+    "news_manager.py:NewsManager.refresh_calendar (direct TE/FH URLs \u2014 not wrapped this phase)",
+    "src/control_plane/api.py:get_economic_calendar (uses NewsManager)"
+  ],
+  "env_file_lines_applied": 8,
+  "provider_env_presence": {
+    "NEWSAPI_API_KEYS": true,
+    "NEWSAPI_API_KEY": false,
+    "FINNHUB_API_KEYS": false,
+    "FINNHUB_API_KEY": false,
+    "TRADINGECONOMICS_API_KEYS": false,
+    "TRADINGECONOMICS_API_KEY": false,
+    "MARKETAUX_API_KEYS": true,
+    "MARKETAUX_API_KEY": false,
+    "POLYGON_API_KEYS": true,
+    "ALPHAVANTAGE_API_KEYS": true,
+    "FRED_API_KEYS": true,
+    "FMP_API_KEYS": true
+  },
+  "provider_key_counts": {
+    "NEWSAPI_API_KEYS": 1,
+    "NEWSAPI_API_KEY": 0,
+    "FINNHUB_API_KEYS": 0,
+    "FINNHUB_API_KEY": 0,
+    "TRADINGECONOMICS_API_KEYS": 0,
+    "TRADINGECONOMICS_API_KEY": 0,
+    "MARKETAUX_API_KEYS": 5,
+    "MARKETAUX_API_KEY": 0,
+    "POLYGON_API_KEYS": 3,
+    "ALPHAVANTAGE_API_KEYS": 4,
+    "FRED_API_KEYS": 2,
+    "FMP_API_KEYS": 2
+  },
+  "probe_news": [],
+  "probe_calendar": [
+    {
+      "provider": "rapidapi_economic_calendar",
+      "rows_returned": 50,
+      "http_status": 200,
+      "parser_ok": true,
+      "failure_reason": "ok",
+      "budget_cache_hit": false,
+      "budget_blocked": false
+    }
+  ],
+  "probe_macro": [],
+  "working_news_providers": [],
+  "working_calendar_providers": [
+    "rapidapi_economic_calendar"
+  ],
+  "working_macro_providers": [],
+  "historical_news_supported": false,
+  "historical_calendar_supported": true,
+  "historical_macro_supported": false,
+  "news_rows_count": 0,
+  "calendar_rows_count": 50,
+  "fred_rows_count": 0,
+  "secrets_exposed": false,
+  "paper_review_only": true,
+  "live_permission": false,
+  "ny_live_enabled": false,
+  "send_trade_unlock_changed": false,
+  "execution_paths_changed": false,
+  "order_or_execution_apis_called": false
+}

@@ -1,0 +1,108 @@
+{
+  "status": "PASS",
+  "phase_results": {
+    "phase_0_repo_root_and_inventory": "PASS",
+    "phase_1_structure_and_contracts": "PASS",
+    "phase_2_windows_sidecar_service": "PASS",
+    "phase_3_dashboard_integration": "PASS",
+    "phase_4_windows_install_assets": "PASS",
+    "phase_5_desktop_verification_assets": "PASS"
+  },
+  "files_created": [
+    "artifacts/repo_root_discovery_desktop.json",
+    "artifacts/bridge_inventory_current.json",
+    "artifacts/bridge_state_contracts.json",
+    "artifacts/current_dashboard_bridge_inventory.json",
+    "artifacts/no_cross_wire_checklist.json",
+    "artifacts/windows_sidecar_install_plan.json",
+    "artifacts/parallel_bridge_verification_plan.json",
+    "artifacts/dashboard_bridge_matrix.json",
+    "docs/bridges/CANONICAL_MAC_FILE_BRIDGE.md",
+    "docs/bridges/WINDOWS_SIDECAR_BRIDGE.md",
+    "docs/bridges/BRIDGE_COMPARISON_AND_SWITCHING.md",
+    "docs/bridges/BRIDGE_FAILURE_BUCKETS.md",
+    "docs/bridges/BRIDGE_OPERATOR_RUNBOOK.md",
+    "bridges/__init__.py",
+    "bridges/windows_sidecar/__init__.py",
+    "bridges/windows_sidecar/README.md",
+    "bridges/windows_sidecar/.env.example",
+    "bridges/windows_sidecar/requirements.txt",
+    "bridges/windows_sidecar/run.py",
+    "bridges/windows_sidecar/service/__init__.py",
+    "bridges/windows_sidecar/service/main.py",
+    "bridges/windows_sidecar/service/config.py",
+    "bridges/windows_sidecar/service/auth.py",
+    "bridges/windows_sidecar/service/models.py",
+    "bridges/windows_sidecar/service/diagnostics.py",
+    "bridges/windows_sidecar/service/mt5_client.py",
+    "bridges/windows_sidecar/service/routes_health.py",
+    "bridges/windows_sidecar/service/routes_account.py",
+    "bridges/windows_sidecar/service/routes_positions.py",
+    "bridges/windows_sidecar/service/routes_orders.py",
+    "bridges/windows_sidecar/service/routes_symbols.py",
+    "bridges/windows_sidecar/service/routes_history.py",
+    "bridges/windows_sidecar/scripts/install_windows_sidecar.ps1",
+    "bridges/windows_sidecar/scripts/start_windows_sidecar.ps1",
+    "bridges/windows_sidecar/scripts/verify_windows_sidecar.ps1",
+    "bridges/windows_sidecar/tests/__init__.py",
+    "bridges/windows_sidecar/tests/test_contracts.py",
+    "frontend/fxg-dashboard/src/modules/bridges/shared/models.js",
+    "frontend/fxg-dashboard/src/modules/bridges/shared/BridgeStatusCard.jsx",
+    "frontend/fxg-dashboard/src/modules/bridges/shared/BridgeComparisonTable.jsx",
+    "frontend/fxg-dashboard/src/modules/bridges/shared/BridgeSwitchStatePanel.jsx",
+    "frontend/fxg-dashboard/src/modules/bridges/shared/BridgeFailureBucketPanel.jsx",
+    "frontend/fxg-dashboard/src/modules/bridges/canonical/CriticalCanonicalBridgePanel.jsx",
+    "frontend/fxg-dashboard/src/modules/bridges/windows_sidecar/WindowsSidecarPanel.jsx",
+    "frontend/fxg-dashboard/src/modules/bridges/windows_sidecar/WindowsSidecarDiagnosticsDrawer.jsx",
+    "frontend/fxg-dashboard/src/modules/bridges/index.js"
+  ],
+  "files_modified": [
+    "src/control_plane/api.py",
+    "frontend/fxg-dashboard/src/components/ControlPlaneDashboard.jsx"
+  ],
+  "files_verified": [
+    "bridges/windows_sidecar/service/main.py",
+    "bridges/windows_sidecar/service/diagnostics.py",
+    "src/control_plane/api.py"
+  ],
+  "verification_commands_run": [
+    "python -m py_compile bridges/windows_sidecar/service/main.py",
+    "python -m py_compile bridges/windows_sidecar/service/diagnostics.py",
+    "python -c (contract test logic)",
+    "grep canonical_mac_file_bridge_v1 parallel_windows_sidecar_bridge_v1",
+    "grep forbidden bridge names (none found)"
+  ],
+  "verification_commands_not_run": [
+    "pytest bridges/windows_sidecar/tests/test_contracts.py (pytest not installed; manual contract test passed)",
+    "npm run lint / pnpm lint"
+  ],
+  "artifacts": [
+    "artifacts/repo_root_discovery_desktop.json",
+    "artifacts/bridge_inventory_current.json",
+    "artifacts/bridge_state_contracts.json",
+    "artifacts/current_dashboard_bridge_inventory.json",
+    "artifacts/no_cross_wire_checklist.json",
+    "artifacts/windows_sidecar_install_plan.json",
+    "artifacts/parallel_bridge_verification_plan.json",
+    "artifacts/dashboard_bridge_matrix.json"
+  ],
+  "safety_assertions": [
+    "canonical_mac_file_bridge_v1 remains canonical execution bridge",
+    "parallel_windows_sidecar_bridge_v1 is additive and separate",
+    "lane 010 canonical emit semantics unchanged (working_trading_system.py not modified)",
+    "no duplicate canonical writers created",
+    "no live trading enablement introduced",
+    "windows sidecar initial mode is read_only_first",
+    "mt5_sidecar_mock remains ui-dev-only (documented; mock not implemented in this job)"
+  ],
+  "open_risks": [],
+  "next_required_manual_steps": [
+    "Review artifacts/bridge_inventory_current.json for correctness",
+    "Review docs/bridges/BRIDGE_COMPARISON_AND_SWITCHING.md for clarity",
+    "Stand up a Windows machine or VM with MT5 for sidecar runtime validation",
+    "Populate bridges/windows_sidecar/.env from .env.example on Windows host",
+    "Run verify_windows_sidecar.ps1 on Windows after MT5 install and login",
+    "Set MT5_SIDECAR_BASE_URL and MT5_SIDECAR_API_KEY on Control Plane server for dashboard proxy",
+    "Only after local verification, prepare a separate explicit ALPHA/dashboard integration deploy"
+  ]
+}

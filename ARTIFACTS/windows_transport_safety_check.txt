@@ -1,0 +1,10 @@
+FXG_WINDOWS_CANONICAL_SIGNAL_TRANSPORT_REPAIR_AND_VERIFY_V1 — safety check (2026-03-25)
+
+PASS assertions (evidence-based):
+1) No execution routes added to Windows sidecar service: bridges/windows_sidecar/service/main.py includes only read routers (health, account, positions, orders, symbols, history); no new trade execution routes.
+2) manual_execution.py: not present in repository (glob **/manual_execution.py returned 0 files) — not modified.
+3) No circular sync: forward script only reads repo signal file and appends to MT5 signals file; reverse script only reads MT5 bridge log and appends to repo bridge log. Neither writes MT5 bridge from repo nor repo signals from MT5.
+4) Transport is one-way per direction as designed (see docs/bridges/WINDOWS_CANONICAL_SIGNAL_TRANSPORT.md).
+5) Verification used paper-oriented EA path (InpPaperOnly default true in EA); test signals were transport verification only.
+
+Commands used for this file: grep/glob manual_execution.py (0 files); read bridges/windows_sidecar/service/main.py; manual review of fxg_win_sync_*.ps1 data flow.

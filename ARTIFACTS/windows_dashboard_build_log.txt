@@ -1,0 +1,6 @@
+Building dashboard at: H:\My Drive\AI Trading\Gcloud system\frontend\fxg-dashboard
+> fxg-dashboard@0.0.0 build
+> vite build
+'vite' is not recognized as an internal or external command,
+operable program or batch file.
+FAIL: npm run build exited with 1

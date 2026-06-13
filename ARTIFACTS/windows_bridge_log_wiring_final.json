@@ -1,0 +1,10 @@
+{
+  "path": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\ftmo_bridge_log.jsonl",
+  "exists": true,
+  "writable": true,
+  "last_write_time_local": "2026-03-23T07:09:35",
+  "lines_observed": [
+    "{\"type\":\"EA_START\",\"msg\":\"FTMO_Bridge_EA started\",\"signal_id\":\"\",\"ts\":\"2026.03.23 10:09:34\"}",
+    "{\"type\":\"BROKER_REJECT\",\"msg\":\"auto trading disabled by client\",\"signal_id\":\"test_20260323011859\",\"ts\":\"2026.03.23 10:09:35\"}"
+  ]
+}

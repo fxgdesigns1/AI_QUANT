@@ -1,0 +1,9 @@
+{
+  "experts_path_template": "<MT5_Data_Folder>\\MQL5\\Experts",
+  "files_path_template": "<MT5_Data_Folder>\\MQL5\\Files",
+  "ea_subfolder": "Experts",
+  "signal_file_name": "signals_ftmo_demo2.jsonl",
+  "bridge_log_name": "ftmo_bridge_log.jsonl",
+  "how_to_discover": "In MT5: File -> Open Data Folder. Path shown is MT5_Data_Folder.",
+  "ts_utc": "2026-03-23T00:45:00Z"
+}

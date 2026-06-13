@@ -1,0 +1,13 @@
+# Minimal test accounts for paper-mode verification
+# 
+# IMPORTANT: Replace "REPLACE_WITH_OANDA_ACCOUNT_ID" with your real OANDA PRACTICE account ID
+# To find your account ID: Log into OANDA portal → Account → Account Details
+# Real OANDA account IDs look like: "101-004-30719775-009"
+#
+accounts:
+  - id: "101-004-30719775-001"
+    name: "Paper Test Account"
+    display_name: "Paper Test Account"
+    active: true
+    strategy: "momentum"
+    instruments: ["EUR_USD"]

@@ -1,0 +1,86 @@
+{
+  "job_name": "FXG_WINDOWS_MAC_TICK_VERIFICATION_DASHBOARD_REFLECTION_AND_CANONICAL_TEST_TRADE_GUARD_V1",
+  "status": "PARTIAL",
+  "phase_results": {
+    "1_verify_active_mt5_terminal_instance_and_symbol_truth_on_windows": "Scripts created: fxg_win_probe_mt5_identity.ps1 writes to artifacts/windows_mt5_terminal_identity.json, windows_marketwatch_selected_symbols.json, windows_symbol_name_probe.json. Operator must run on Windows with MT5.",
+    "2_verify_sidecar_symbol_selection_and_tick_path": "Root cause documented in artifacts/windows_tick_route_root_cause.json. Classified: symbol_name_mismatch (broker suffixed symbol), symbol_not_found, no_tick_data. Route fallback symbol_not_selected when failure_bucket was generic.",
+    "3_patch_sidecar_symbol_handling_if_needed": "PATCHED. mt5_client: _find_broker_symbol_variant(), symbol_info_tick_with_auto_select returns symbol_name_mismatch with broker_symbol_actual. Added /symbols/probe/{base_symbol}. TickResponse has broker_symbol_actual.",
+    "4_verify_no_trade_was_sent_by_sidecar": "VERIFIED. artifacts/sidecar_trade_send_verification.json. No order_send, positions_close, orders_preview. test_no_write_routes asserts forbidden paths.",
+    "5_add_dashboard_truth_panels_and_labels": "DONE. BridgeSwitchStatePanel: execution_bridge, data_bridge, diagnostics_bridge, sidecar_mode, sleep warning. WindowsSidecarPanel: symbol probe with broker_symbol_actual, failure_bucket, recommended_fix. BridgeFailureBucketPanel: symbol_name_mismatch, symbol_not_found, no_tick_data.",
+    "6_add_operator_warning_for_sleep_and_execution_ownership": "DONE. BRIDGE_OPERATOR_RUNBOOK, WINDOWS_SIDECAR_MAINTENANCE_AND_DEBUG, WINDOWS_SIDECAR_OPERATOR_QUICKSTART, BridgeSwitchStatePanel UI.",
+    "7_verify_windows_then_mac_then_dashboard_again": "REQUIRES_MANUAL_RUN. Operator must run: Windows: fxg_win_healthcheck.ps1, fxg_win_probe_mt5_identity.ps1, direct /symbols/EURUSD/tick; Mac: fxg_check_health.sh, fxg_status.sh, fxg_debug_sidecar.sh.",
+    "8_emit_final_structured_json_only": "This file."
+  },
+  "files_created": [
+    "artifacts/windows_tick_route_root_cause.json",
+    "artifacts/sidecar_trade_send_verification.json",
+    "artifacts/dashboard_bridge_ownership_truth.json",
+    "artifacts/dashboard_symbol_truth_matrix.json",
+    "bridges/windows_sidecar/scripts/fxg_win_probe_mt5_identity.ps1"
+  ],
+  "files_modified": [
+    "bridges/windows_sidecar/scripts/fxg_win_healthcheck.ps1",
+    "bridges/windows_sidecar/service/mt5_client.py",
+    "bridges/windows_sidecar/service/routes_symbols.py",
+    "bridges/windows_sidecar/service/models.py",
+    "bridges/windows_sidecar/service/diagnostics.py",
+    "bridges/windows_sidecar/tests/test_contracts.py",
+    "frontend/fxg-dashboard/src/modules/bridges/windows_sidecar/WindowsSidecarPanel.jsx",
+    "frontend/fxg-dashboard/src/modules/bridges/shared/BridgeSwitchStatePanel.jsx",
+    "frontend/fxg-dashboard/src/modules/bridges/shared/BridgeFailureBucketPanel.jsx",
+    "src/control_plane/api.py",
+    "docs/bridges/WINDOWS_SIDECAR_MAINTENANCE_AND_DEBUG.md",
+    "docs/bridges/BRIDGE_OPERATOR_RUNBOOK.md",
+    "docs/bridges/BRIDGE_FAILURE_BUCKETS.md"
+  ],
+  "files_verified": [
+    "bridges/windows_sidecar/service/main.py",
+    "bridges/windows_sidecar/service/routes_symbols.py",
+    "bridges/windows_sidecar/service/mt5_client.py"
+  ],
+  "files_unverified": [
+    "Mac scripts (fxg_check_health.sh, fxg_status.sh, fxg_debug_sidecar.sh) - require Mac runtime",
+    "Dashboard in browser - requires build and serve"
+  ],
+  "verification_commands_run": [],
+  "verification_commands_not_run": [
+    "Windows: .\\bridges\\windows_sidecar\\scripts\\fxg_win_healthcheck.ps1",
+    "Windows: .\\bridges\\windows_sidecar\\scripts\\fxg_win_probe_mt5_identity.ps1",
+    "Mac: bash scripts/fxg_check_health.sh",
+    "Mac: bash scripts/fxg_status.sh",
+    "Mac: bash scripts/fxg_debug_sidecar.sh"
+  ],
+  "artifacts": [
+    "artifacts/windows_tick_route_root_cause.json",
+    "artifacts/sidecar_trade_send_verification.json",
+    "artifacts/dashboard_bridge_ownership_truth.json",
+    "artifacts/dashboard_symbol_truth_matrix.json",
+    "artifacts/windows_mt5_terminal_identity.json (created by fxg_win_probe_mt5_identity.ps1)",
+    "artifacts/windows_marketwatch_selected_symbols.json (created by fxg_win_probe_mt5_identity.ps1)",
+    "artifacts/windows_symbol_name_probe.json (created by fxg_win_probe_mt5_identity.ps1)"
+  ],
+  "runtime_findings": {
+    "eurusd_tick_discrepancy_explanation": "Likely symbol_name_mismatch: broker uses suffixed symbol (e.g. EURUSDm). symbol_info('EURUSD') returns None; sidecar now detects variant and returns symbol_name_mismatch with broker_symbol_actual. Alternatively: different MT5 terminal instance, or tick data temporarily unavailable.",
+    "no_new_trade": "No new trade was sent by the sidecar. Sidecar is read_only_first; no order send/close routes exist.",
+    "dashboard_truth": "Bridge ownership (execution=data=diagnostics), sidecar mode, symbol probe with failure_bucket and broker_symbol_actual, and sleep warning are now explicit in the dashboard."
+  },
+  "safety_assertions": [
+    "canonical_mac_file_bridge_v1 remains canonical execution bridge",
+    "parallel_windows_sidecar_bridge_v1 remains additive and separate",
+    "windows sidecar remains read_only_first",
+    "no duplicate canonical writers created",
+    "no live trading enablement introduced",
+    "no sidecar order send/close routes enabled"
+  ],
+  "open_risks": [
+    "Operator must run fxg_win_probe_mt5_identity.ps1 on Windows to populate Phase 1 artifacts and confirm terminal identity",
+    "Dashboard build required for UI changes to be visible"
+  ],
+  "next_required_manual_steps": [
+    "Run fxg_win_probe_mt5_identity.ps1 on Windows (with MT5 running) to produce Phase 1 artifacts",
+    "Run fxg_win_healthcheck.ps1 on Windows; verify /symbols/EURUSD/tick or /symbols/{broker_symbol}/tick returns non-zero bid/ask",
+    "If symbol_name_mismatch, use broker_symbol_actual from response for dashboard tick source or add that symbol to Market Watch",
+    "Run Mac verification scripts; verify dashboard reflects bridge ownership and symbol status",
+    "Rebuild dashboard: cd frontend/fxg-dashboard && npm run build"
+  ]
+}

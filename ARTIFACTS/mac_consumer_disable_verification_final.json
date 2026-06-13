@@ -1,0 +1,5 @@
+{
+  "mac_consumer_disabled_true_false": false,
+  "mac_evidence": "Not verifiable from Windows automation host; no SSH/UI/log access to Mac in this job run.",
+  "captured_utc": "2026-03-24T20:47:00Z"
+}

@@ -11,6 +11,7 @@ REQUIREMENTS:
 from __future__ import annotations
 
 import hashlib
+import logging
 import os
 import shutil
 import tempfile
@@ -18,6 +19,8 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 from .schema import RuntimeConfig, get_default_config
+
+logger = logging.getLogger(__name__)
 
 
 class ConfigStore:
@@ -65,6 +68,7 @@ class ConfigStore:
             # If config is corrupted, restore from backup
             if self.backup_path.exists():
                 try:
+                    logger.warning(f"Runtime config load failed ({str(e)[:200]}). Restoring from backup.")
                     shutil.copy(self.backup_path, self.config_path)
                     config = RuntimeConfig.load_from_yaml(str(self.config_path))
                     self._last_hash = self._compute_hash(config)
@@ -73,8 +77,38 @@ class ConfigStore:
                     pass
             
             # Last resort: return defaults
+            logger.error(f"Runtime config load failed and backup restore failed. Using defaults. err={str(e)[:200]}")
             config = get_default_config()
             return config
+
+    def _validate_partial_update(self, current_dict: Dict[str, Any], partial_update: Dict[str, Any]) -> None:
+        """Reject unknown keys to enforce schema canon (fail-fast)."""
+        unknown_top = [k for k in partial_update.keys() if k not in current_dict]
+        if unknown_top:
+            raise ValueError(f"Unknown top-level config keys: {sorted(unknown_top)}")
+
+        # Nested strict validation for dict sections (except account_risk_limits which is dynamic by account_id)
+        for key, value in partial_update.items():
+            if value is None:
+                continue
+            if key == "account_risk_limits":
+                if not isinstance(value, dict):
+                    raise ValueError("account_risk_limits must be an object (dict)")
+                allowed_limit_keys = {"max_daily_trades", "enabled"}
+                for account_id, limits in value.items():
+                    if limits is None:
+                        continue
+                    if not isinstance(limits, dict):
+                        raise ValueError(f"account_risk_limits[{account_id}] must be an object (dict)")
+                    unknown = [k for k in limits.keys() if k not in allowed_limit_keys]
+                    if unknown:
+                        raise ValueError(f"Unknown keys in account_risk_limits[{account_id}]: {sorted(unknown)}")
+                continue
+
+            if isinstance(current_dict.get(key), dict) and isinstance(value, dict):
+                unknown_nested = [k for k in value.keys() if k not in current_dict[key]]
+                if unknown_nested:
+                    raise ValueError(f"Unknown keys in '{key}': {sorted(unknown_nested)}")
     
     def save(self, partial_update: Optional[Dict[str, Any]] = None) -> RuntimeConfig:
         """Save config with atomic write and validation
@@ -94,14 +128,15 @@ class ConfigStore:
         # Apply partial update if provided
         if partial_update is not None:
             current_dict = current.to_dict()
+            self._validate_partial_update(current_dict, partial_update)
             # Merge updates (shallow merge for top-level keys)
             for key, value in partial_update.items():
-                if key in current_dict:
-                    # If nested dict, merge nested keys
-                    if isinstance(current_dict[key], dict) and isinstance(value, dict):
-                        current_dict[key].update(value)
-                    else:
-                        current_dict[key] = value
+                # If nested dict, merge nested keys
+                if isinstance(current_dict.get(key), dict) and isinstance(value, dict):
+                    # dict merge
+                    current_dict[key].update(value)
+                else:
+                    current_dict[key] = value
             
             # Reconstruct config object
             new_config = RuntimeConfig.from_dict(current_dict)

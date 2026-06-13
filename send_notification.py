@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
+import os
 import requests
 
 # Telegram credentials
 BOT_TOKEN = '7248728383:REDACTED'
 CHAT_ID = '6100678501'
 
-message = """AUTOMATED TRADING SYSTEM IS LIVE!
+aid = os.getenv("OANDA_ACCOUNT_ID", "").strip() or "(configured via OANDA_ACCOUNT_ID)"
+
+message = f"""AUTOMATED TRADING SYSTEM IS LIVE!
 
 STATUS: RUNNING & TRADING
-Demo Account: 101-004-30719775-008
+Demo Account: {aid}
 Risk per Trade: 1%
 Max Daily Trades: 50
 Max Concurrent Trades: 5

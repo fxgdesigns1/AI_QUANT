@@ -1,0 +1,7 @@
+{
+  "phase": "7_pending_order_state",
+  "source": "MT5 Orders tab / Order history not queried by agent",
+  "signal_id": "limitexpfix_20260325020336",
+  "pending_order_ticket": null,
+  "reason": "Agent has no programmatic MT5 Orders API access from this workspace; verify in terminal UI after v1.03 reload if EXECUTED or pending placement occurs."
+}

@@ -1,0 +1,12 @@
+{
+  "target_kind_values": ["home_lan", "remote_overlay", "unset"],
+  "dashboard_display": {
+    "WindowsSidecarPanel": "Shows target_kind from /api/sidecar_target",
+    "BridgeSwitchStatePanel": "Shows Telemetry target = target_kind"
+  },
+  "config_source": "src/control_plane/config/sidecar_target.json or MT5_SIDECAR_BASE_URL env",
+  "switch_scripts": ["fxg_switch_sidecar_target_remote_overlay.sh", "fxg_switch_sidecar_target_home_lan.sh"],
+  "execution_owner": "canonical_mac_file_bridge_v1",
+  "sidecar_role": "telemetry_only",
+  "ts_utc": "2026-03-23T02:00:00Z"
+}

@@ -1,0 +1,27 @@
+phase_9_run_full_safety_checks — 2026-03-25
+
+1) Sidecar execution routes
+   VERIFIED: bridges/windows_sidecar/service/main.py registers only read routes; routes_orders.py docstring "read-only", GET /orders only.
+   VERIFIED: rg OrderSend|TRADE_ACTION_DEAL|position_open bridges/windows_sidecar → no matches.
+
+2) Canonical producer semantics
+   VERIFIED BY INVENTORY: docs/bridges/CANONICAL_MAC_FILE_BRIDGE.md and src/control_plane/api.py lane_010 contract still reference canonical_mac_file_bridge_v1 and ftmo_demo2 / signals_ftmo_demo2.jsonl paths.
+   NOT VERIFIED: standalone manual_execution.py fanout lines (not present as filename in repo grep); semantics documented only.
+   GIT: `git` reports fatal: bad object HEAD in this working copy — no commit-level diff verification.
+
+3) MARKET path
+   VERIFIED LIVE: ftmo_bridge_log.jsonl tail shows SIGNAL_ACCEPT -> REQUEST_SUMMARY price_mode=MARKET -> EXECUTED for test_20260325011134 (inject script).
+
+4) Paper-only preserved
+   VERIFIED CONFIG: runtime/config.yaml execution_policy.live_trading_allowed: false, paper_execution_enabled: true.
+   VERIFIED EA SOURCE: ea/FTMO_Bridge_EA.mq5 InpPaperOnly = true default (chart inputs not read from here in this check).
+
+5) Only Windows active execution consumer
+   NOT VERIFIED FROM REPO: Mac canonical consumer detach/stop cannot be observed remotely. Operator must confirm single consumer per WINDOWS_CANONICAL_EA_CUTOVER.md.
+
+Safety assertions (required)
+- canonical_mac_file_bridge_v1 remains the canonical execution bridge semantics owner — DOCUMENTATION + API contract unchanged in reviewed paths.
+- Windows sidecar remains additive and read_only_first — CODE matches (root GET read_only: true).
+- No duplicate canonical writers created — no new writer code in this verification; transport docs unchanged in this session.
+- No live trading enablement introduced — runtime/config.yaml live_trading_allowed false.
+- MARKET path remains intact — LIVE LOG evidence for MARKET EXECUTED above.

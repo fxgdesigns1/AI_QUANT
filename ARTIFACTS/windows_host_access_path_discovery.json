@@ -1,0 +1,39 @@
+{
+  "job_name": "FXG_WINDOWS_EA_LOG_DISCOVERY_AND_CONSUMER_REMEDIATION_V1",
+  "phase": "1_discover_actual_windows_host_access_path",
+  "status": "PARTIAL",
+  "cursor_agent_environment": {
+    "repo_access": true,
+    "linux_vm_shell": false,
+    "windows_powershell_direct": false,
+    "tailscale_or_lan_to_sidecar": true
+  },
+  "evidence": {
+    "repo_workflow_scripts": [
+      "bridges/windows_sidecar/scripts/fxg_win_wire_canonical_signals.ps1",
+      "bridges/windows_sidecar/scripts/fxg_win_probe_mt5_identity.ps1",
+      "bridges/windows_sidecar/scripts/fxg_win_install_canonical_ea.ps1"
+    ],
+    "sidecar_diagnostics_api": {
+      "base_url_attempted": "http://100.122.152.80:8877",
+      "get_health_without_key": "HTTP 401 Unauthorized",
+      "note": "Proves route exists and host is reachable from this network; full MT5 diagnostics require SIDECAR_API_KEY (not in repo)."
+    },
+    "sidecar_exposes_ea_paths": false,
+    "source_file": "bridges/windows_sidecar/service/diagnostics.py",
+    "diagnostics_fields_observed": [
+      "MT5_TERMINAL_PATH presence",
+      "mt5_initialize_ok",
+      "account_info_available",
+      "failure_bucket"
+    ],
+    "diagnostics_fields_absent": [
+      "MQL5 Files path",
+      "Experts journal path",
+      "EA attached state",
+      "signals_ftmo_demo2.jsonl path or mtime"
+    ]
+  },
+  "conclusion": "Indirect access only from this environment: repo + unauthenticated sidecar reachability. Live Windows filesystem, MT5 Experts/Journal, and authenticated sidecar diagnostics require operator access on the Windows host or API key.",
+  "ts_utc": "2026-03-24T19:30:00Z"
+}

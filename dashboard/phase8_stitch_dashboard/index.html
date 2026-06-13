@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 8 | Research Environment Automation</title>
+    <meta name="design-system" content="Quant-Focus Design System">
+    <!-- DATA SOURCE = PHASE 8U PAYLOAD/API (header label updated live by app.js) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIGZpbGw9IiMyRTVCRkYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJtMTIgMi0zIDcgMyAzIDMtMyAzLTd6bS0xIDIuOCAxIDIuNCAxLTIuNC4zLS44aC0yLjZ6Ii8+PC9zdmc+">
+</head>
+<body>
+    <!-- Phase 8 sections: System Monitor; Research Summary; Promotion Candidates; Continue Forward; Watch Only; Demoted; Fail-Closed; Exact Replay; Calendar API; Provider; Safety Flag -->
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo">
+                    <div class="logo-icon"></div>
+                    <span class="logo-text">ALPHA PHASE 8</span>
+                </div>
+            </div>
+            <div class="header-center">
+                <div class="dashboard-title">BACKTEST ENVIRONMENT AUTOMATION</div>
+                <div class="subtitle">REAL STITCH-STYLE PHASE 8 DASHBOARD</div>
+            </div>
+            <div class="header-right">
+                <div class="connection-status">
+                    <div class="status-dot status-active" id="header-status-dot"></div>
+                    <span id="data-source-indicator">DATA SOURCE: loading…</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="main-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <nav class="nav">
+                <div class="nav-section">
+                    <div class="nav-title">SYSTEM</div>
+                    <a href="#system" class="nav-link active">
+                        <div class="nav-icon">⬤</div>
+                        <span>Monitor</span>
+                    </a>
+                    <a href="#research" class="nav-link">
+                        <div class="nav-icon">◆</div>
+                        <span>Research</span>
+                    </a>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-title">STRATEGIES</div>
+                    <a href="#promoted" class="nav-link">
+                        <div class="nav-icon">▲</div>
+                        <span>Promoted</span>
+                    </a>
+                    <a href="#candidates" class="nav-link">
+                        <div class="nav-icon">◐</div>
+                        <span>Candidates</span>
+                    </a>
+                    <a href="#continue" class="nav-link">
+                        <div class="nav-icon">→</div>
+                        <span>Continue</span>
+                    </a>
+                    <a href="#watch" class="nav-link">
+                        <div class="nav-icon">○</div>
+                        <span>Watch Only</span>
+                    </a>
+                    <a href="#demoted" class="nav-link">
+                        <div class="nav-icon">▼</div>
+                        <span>Demoted</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-title">STATUS</div>
+                    <a href="#fail-closed" class="nav-link">
+                        <div class="nav-icon">✕</div>
+                        <span>Fail-Closed</span>
+                    </a>
+                    <a href="#replay" class="nav-link">
+                        <div class="nav-icon">⟲</div>
+                        <span>Replay</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Status Cards Grid -->
+                <section class="status-grid">
+                    <div class="status-card">
+                        <div class="card-header">
+                            <div class="card-title">SYSTEM STATUS</div>
+                            <div class="status-indicator status-fresh" id="freshness-status">FRESH</div>
+                        </div>
+                        <div class="card-metrics">
+                            <div class="metric">
+                                <div class="metric-label">FRESHNESS</div>
+                                <div class="metric-value" id="freshness-seconds">---</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">CONTRACT</div>
+                                <div class="metric-value" id="contract-version">---</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="status-card">
+                        <div class="card-header">
+                            <div class="card-title">RESEARCH RESULTS</div>
+                            <div class="status-indicator status-neutral" id="results-status">INDEXED</div>
+                        </div>
+                        <div class="card-metrics">
+                            <div class="metric">
+                                <div class="metric-label">ROWS</div>
+                                <div class="metric-value" id="result-rows">---</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">CANDIDATES</div>
+                                <div class="metric-value" id="promotion-candidates">---</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="status-card phase8x-batch-card" id="phase8x-batch-card">
+                        <div class="card-header">
+                            <div class="card-title">PHASE 8X BATCH (ALPHA QUEUE)</div>
+                            <div class="status-indicator status-neutral" id="phase8x-batch-status">QUEUE</div>
+                        </div>
+                        <div class="card-metrics">
+                            <div class="metric">
+                                <div class="metric-label">PENDING</div>
+                                <div class="metric-value" id="phase8x-pending">---</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">RUNNING</div>
+                                <div class="metric-value" id="phase8x-running">---</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">DONE</div>
+                                <div class="metric-value" id="phase8x-done">---</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">FAILED</div>
+                                <div class="metric-value" id="phase8x-failed">---</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">COMPLETE</div>
+                                <div class="metric-value" id="phase8x-percent">---</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">STOP</div>
+                                <div class="metric-value metric-value-small" id="phase8x-stop-reason">---</div>
+                            </div>
+                        </div>
+                        <div class="phase8x-progress-track" aria-hidden="true">
+                            <div class="phase8x-progress-fill" id="phase8x-progress-fill"></div>
+                        </div>
+                    </div>
+
+                    <div class="status-card">
+                        <div class="card-header">
+                            <div class="card-title">CALENDAR API</div>
+                            <div class="status-indicator status-active" id="calendar-status">ACTIVE</div>
+                        </div>
+                        <div class="card-metrics">
+                            <div class="metric">
+                                <div class="metric-label">BUDGET</div>
+                                <div class="metric-value" id="calendar-budget">---</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">CALLS</div>
+                                <div class="metric-value" id="calendar-calls">---</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="status-card">
+                        <div class="card-header">
+                            <div class="card-title">PROVIDERS</div>
+                            <div class="status-indicator status-active" id="providers-status">ONLINE</div>
+                        </div>
+                        <div class="card-metrics">
+                            <div class="metric">
+                                <div class="metric-label">WORKING</div>
+                                <div class="metric-value" id="providers-working">---</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">BLOCKED</div>
+                                <div class="metric-value" id="providers-blocked">---</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="status-card">
+                        <div class="card-header">
+                            <div class="card-title">EXACT REPLAY</div>
+                            <div class="status-indicator status-warning" id="replay-status">NOT READY</div>
+                        </div>
+                        <div class="card-metrics">
+                            <div class="metric">
+                                <div class="metric-label">STRATEGY</div>
+                                <div class="metric-value" id="exact-strategy">---</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">CLASSIFICATION</div>
+                                <div class="metric-value" id="phase8o-classification">---</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="status-card safety-card">
+                        <div class="card-header">
+                            <div class="card-title">SAFETY FLAGS</div>
+                            <div class="status-indicator status-safe" id="safety-status">PROTECTED</div>
+                        </div>
+                        <div class="safety-grid">
+                            <div class="safety-item">
+                                <div class="safety-label">PAPER ONLY</div>
+                                <div class="safety-value" id="paper-review-only">---</div>
+                            </div>
+                            <div class="safety-item">
+                                <div class="safety-label">NY LIVE</div>
+                                <div class="safety-value" id="ny-live-enabled">---</div>
+                            </div>
+                            <div class="safety-item">
+                                <div class="safety-label">TRADE UNLOCK</div>
+                                <div class="safety-value" id="send-trade-unlock">---</div>
+                            </div>
+                            <div class="safety-item">
+                                <div class="safety-label">EXECUTION</div>
+                                <div class="safety-value" id="execution-paths">---</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Control Bar -->
+                <section class="control-bar">
+                    <div class="control-group">
+                        <button class="action-button primary" id="refresh-data-btn">
+                            <span class="button-icon">⟲</span>
+                            <span>Refresh Data</span>
+                        </button>
+                        <button class="action-button secondary" id="refresh-progress-btn" title="Refresh Phase 8X queue counts only (no calendar/news APIs)">
+                            <span class="button-icon">◉</span>
+                            <span>Refresh Progress</span>
+                        </button>
+                        <button class="action-button" id="open-alpha-api-btn" title="Open ALPHA API endpoint (read-only)">
+                            <span class="button-icon">🔗</span>
+                            <span>Open ALPHA API</span>
+                        </button>
+                        <button class="action-button" id="copy-pull-commands-btn" title="Copy MacBook pull commands">
+                            <span class="button-icon">📋</span>
+                            <span>Copy Pull Commands</span>
+                        </button>
+                    </div>
+                    <div class="control-group">
+                        <div class="search-box">
+                            <input type="text" id="search-input" placeholder="Search strategies..." />
+                            <span class="search-icon">🔍</span>
+                        </div>
+                        <select id="filter-instrument" class="filter-select">
+                            <option value="">All Instruments</option>
+                        </select>
+                        <select id="filter-session" class="filter-select">
+                            <option value="">All Sessions</option>
+                        </select>
+                        <button class="action-button secondary" id="clear-filters-btn">Clear Filters</button>
+                    </div>
+                </section>
+
+                <!-- Data Tables Section -->
+                <section class="tables-section">
+                    <div class="section-tabs">
+                        <button class="tab-button active" data-table="promotion-candidates">PROMOTION CANDIDATES</button>
+                        <button class="tab-button" data-table="continue-forward">CONTINUE FORWARD</button>
+                        <button class="tab-button" data-table="watch-only">WATCH ONLY</button>
+                        <button class="tab-button" data-table="demoted-blocked">DEMOTED / BLOCKED</button>
+                        <button class="tab-button" data-table="fail-closed">FAIL-CLOSED</button>
+                        <button class="tab-button" data-table="proxy-research">PROXY RESEARCH</button>
+                    </div>
+                    
+                    <div class="table-container">
+                        <div class="table-header">
+                            <div class="table-info">
+                                <div class="table-title" id="active-table-title">PROMOTION CANDIDATES</div>
+                                <div class="table-count" id="active-table-count">0 rows</div>
+                            </div>
+                            <div class="table-actions">
+                                <button class="action-button small" id="export-json-btn" title="Export current view as JSON">
+                                    <span class="button-icon">📄</span>
+                                    <span>JSON</span>
+                                </button>
+                                <button class="action-button small" id="export-csv-btn" title="Export current view as CSV">
+                                    <span class="button-icon">📊</span>
+                                    <span>CSV</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-content" id="table-content">
+                            <div class="empty-state">
+                                <div class="empty-icon">◇</div>
+                                <div class="empty-message">No data available</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Trading Safety Section -->
+                <section class="trading-safety-section" id="trading-safety-section">
+                    <div class="safety-notice">
+                        <div class="safety-icon">🛡️</div>
+                        <div class="safety-text">
+                            <div class="safety-title">READ-ONLY RESEARCH DASHBOARD</div>
+                            <div class="safety-subtitle">All trading functions disabled for safety</div>
+                        </div>
+                    </div>
+                    <div class="disabled-actions">
+                        <button class="action-button disabled" disabled title="Trading disabled - read-only research dashboard">
+                            <span class="button-icon">⚠️</span>
+                            <span>Send Trade (DISABLED)</span>
+                        </button>
+                        <button class="action-button disabled" disabled title="Trading disabled - read-only research dashboard">
+                            <span class="button-icon">⚠️</span>
+                            <span>Enable NY Live (DISABLED)</span>
+                        </button>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loading">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">INITIALIZING PHASE 8 DASHBOARD</div>
+            <div class="loading-subtitle">Loading Phase 8U payload...</div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

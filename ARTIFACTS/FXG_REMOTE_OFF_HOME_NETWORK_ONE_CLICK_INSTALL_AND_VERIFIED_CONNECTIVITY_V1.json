@@ -1,0 +1,79 @@
+{
+  "job_name": "FXG_REMOTE_OFF_HOME_NETWORK_ONE_CLICK_INSTALL_AND_VERIFIED_CONNECTIVITY_V1",
+  "status": "PARTIAL",
+  "phase_results": {
+    "1_discover_current_environment_and_existing_remote_access_state": "PASS. artifacts/remote_access_environment_discovery.json, remote_access_existing_state.json. Cursor on Windows, Tailscale not installed.",
+    "2_choose_and_lock_remote_overlay_strategy": "PASS. Tailscale. artifacts/remote_overlay_strategy_lock.json",
+    "3_build_windows_one_click_remote_setup": "PASS. fxg_win_remote_overlay_setup.ps1, fxg_win_remote_overlay_verify.ps1, fxg_win_remote_overlay_status.ps1 created.",
+    "4_build_mac_one_click_remote_setup_and_target_switch": "PASS. fxg_remote_overlay_setup_mac.sh, fxg_switch_sidecar_target_remote_overlay.sh, fxg_switch_sidecar_target_home_lan.sh, fxg_verify_remote_overlay_sidecar.sh, fxg_remote_overlay_status.sh created.",
+    "5_update_dashboard_target_resolution_and_truth_labels": "PASS. _get_sidecar_target() reads config file. GET /api/sidecar_target. WindowsSidecarPanel and BridgeSwitchStatePanel show target_kind. artifacts/dashboard_remote_target_truth_matrix.json",
+    "6_add_remote_verification_and_status_scripts": "PASS. fxg_remote_access_smoke.sh, fxg_remote_access_pretty.sh, fxg_remote_access_verify_end_to_end.sh",
+    "7_run_install_and_configure_steps": "PARTIAL. Windows setup ran; Tailscale winget install started. Sidecar running. artifacts/remote_access_manual_followup_if_any.json",
+    "8_verify_remote_overlay_connectivity_end_to_end": "BLOCKED. Tailscale not yet installed/connected. Cannot verify non-home-network path.",
+    "9_verify_dashboard_remote_mode_end_to_end": "DASHBOARD_UPDATED. target_kind display added. Browser verification requires Control Plane + dashboard serve.",
+    "10_update_docs_and_operator_runbooks": "PASS. docs/REMOTE_ACCESS_OPERATOR_GUIDE.md",
+    "11_run_full_safety_checks": "PASS. No sidecar execution routes. No manual_execution changes."
+  },
+  "files_created": [
+    "bridges/windows_sidecar/scripts/fxg_win_remote_overlay_setup.ps1",
+    "bridges/windows_sidecar/scripts/fxg_win_remote_overlay_verify.ps1",
+    "bridges/windows_sidecar/scripts/fxg_win_remote_overlay_status.ps1",
+    "scripts/fxg_remote_overlay_setup_mac.sh",
+    "scripts/fxg_switch_sidecar_target_remote_overlay.sh",
+    "scripts/fxg_switch_sidecar_target_home_lan.sh",
+    "scripts/fxg_verify_remote_overlay_sidecar.sh",
+    "scripts/fxg_remote_overlay_status.sh",
+    "scripts/fxg_remote_access_smoke.sh",
+    "scripts/fxg_remote_access_pretty.sh",
+    "scripts/fxg_remote_access_verify_end_to_end.sh",
+    "docs/REMOTE_ACCESS_OPERATOR_GUIDE.md",
+    "artifacts/remote_access_environment_discovery.json",
+    "artifacts/remote_access_existing_state.json",
+    "artifacts/remote_overlay_strategy_lock.json",
+    "artifacts/dashboard_remote_target_truth_matrix.json",
+    "artifacts/remote_access_manual_followup_if_any.json"
+  ],
+  "files_modified": [
+    "src/control_plane/api.py",
+    "frontend/fxg-dashboard/src/modules/bridges/windows_sidecar/WindowsSidecarPanel.jsx",
+    "frontend/fxg-dashboard/src/modules/bridges/shared/BridgeSwitchStatePanel.jsx"
+  ],
+  "files_verified": [],
+  "verification_commands_run": [
+    "fxg_win_remote_overlay_setup.ps1 (Tailscale install started)",
+    "fxg_win_remote_overlay_status.ps1"
+  ],
+  "verification_commands_not_run": [
+    "fxg_verify_remote_overlay_sidecar.sh (requires Mac + Tailscale on both)",
+    "Dashboard browser verification in remote_overlay mode"
+  ],
+  "artifacts": [
+    "artifacts/remote_access_environment_discovery.json",
+    "artifacts/remote_access_existing_state.json",
+    "artifacts/remote_overlay_strategy_lock.json",
+    "artifacts/windows_remote_overlay_install_result.json",
+    "artifacts/dashboard_remote_target_truth_matrix.json",
+    "artifacts/remote_access_manual_followup_if_any.json"
+  ],
+  "runtime_findings": {
+    "sidecar_running": true,
+    "tailscale_installed": false,
+    "config_based_target_switch": "src/control_plane/config/sidecar_target.json - no Control Plane restart needed"
+  },
+  "safety_assertions": [
+    "No sidecar execution routes added",
+    "No manual_execution semantics changed",
+    "target_kind explicit in dashboard",
+    "home_lan and remote_overlay both supported"
+  ],
+  "open_risks": [
+    "Tailscale install completion and auth required for remote verification",
+    "Operator must run Mac scripts on Mac; Windows artifacts must sync"
+  ],
+  "next_required_manual_steps": [
+    "Complete Tailscale install on Windows; run tailscale up and sign in",
+    "Re-run fxg_win_remote_overlay_setup.ps1 to capture overlay IP",
+    "On Mac: run fxg_switch_sidecar_target_remote_overlay.sh",
+    "From work/non-home network: run fxg_verify_remote_overlay_sidecar.sh"
+  ]
+}

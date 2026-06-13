@@ -1,0 +1,11 @@
+{
+  "login": 1512827972,
+  "server": "FTMO-Demo",
+  "company": "FTMO Global Markets Ltd",
+  "balance": 97275.63,
+  "equity": 97468.69,
+  "currency": "USD",
+  "bridge_id": "parallel_windows_sidecar_bridge_v1",
+  "ts_utc": "2026-03-23T00:22:42Z",
+  "source": "GET http://127.0.0.1:8877/account"
+}

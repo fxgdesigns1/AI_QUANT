@@ -1,0 +1,1 @@
+{"pid": 19204, "bind": "0.0.0.0:8877", "netstat_result": "TCP 0.0.0.0:8877 LISTENING", "start_method": "run.py with BIND_HOST from .env", "pass": true}

@@ -1,0 +1,18 @@
+{
+  "ts_utc": "2026-03-25T14:11:05Z",
+  "tailscale_interface": {
+    "interface_alias": "Tailscale",
+    "network_category": "Private",
+    "ipv4_connectivity": "LocalNetwork"
+  },
+  "inbound_rule": {
+    "display_name": "FXG Windows Sidecar 8877",
+    "enabled": true,
+    "direction": "Inbound",
+    "action": "Allow",
+    "protocol": "TCP",
+    "local_port": 8877,
+    "profile": "Private"
+  },
+  "result": "PASS"
+}

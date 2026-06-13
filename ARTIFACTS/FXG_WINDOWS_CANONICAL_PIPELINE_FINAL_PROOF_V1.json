@@ -1,0 +1,75 @@
+{
+  "job_name": "FXG_WINDOWS_CANONICAL_PIPELINE_FINAL_PROOF_V1",
+  "status": "BLOCKED",
+  "producer_discovery": {
+    "producer_repo_root": "H:\\My Drive\\AI Trading\\Gcloud system",
+    "producer_entrypoint_path": "src/core/manual_execution.py",
+    "exists_true_false": false
+  },
+  "windows_ea_live_state": {
+    "navigator_visible_true_false": false,
+    "chart_attached_true_false": false,
+    "algo_trading_enabled_true_false": true,
+    "ea_start_evidence": "Historical EA_START in ftmo_bridge_log.jsonl 2026.03.23; sidecar trade_expert=true 2026-03-24T20:46:58Z; no Navigator/chart/Journal UI evidence this run."
+  },
+  "mac_consumer_state": {
+    "mac_consumer_disabled_true_false": false,
+    "mac_evidence": "Not observable from Windows host in this session."
+  },
+  "pretrade_health": {
+    "sidecar_health_path": "artifacts/windows_pretrade_sidecar_health_final.json",
+    "sidecar_account_path": "artifacts/windows_pretrade_sidecar_account_final.json",
+    "sidecar_tick_path": "artifacts/windows_pretrade_sidecar_tick_final.json",
+    "signal_tail_path": "artifacts/windows_pretrade_signal_tail_final.json",
+    "bridge_tail_path": "artifacts/windows_pretrade_bridge_tail_final.json"
+  },
+  "canonical_emission": {
+    "emission_attempted_true_false": false,
+    "signal_id": null,
+    "producer_request_artifact": null,
+    "producer_response_artifact": null,
+    "blocker": "Canonical producer file missing in accessible clone; emission prohibited (no fabricated or hand-written signal)."
+  },
+  "fresh_signal_verification": {
+    "fresh_signal_arrived_true_false": false,
+    "fresh_signal_line": null
+  },
+  "fresh_consume_verification": {
+    "fresh_consume_result_type": null,
+    "fresh_bridge_log_line": null,
+    "fresh_consume_tied_to_emitted_signal_id_true_false": false
+  },
+  "canonical_pipeline_proven": false,
+  "single_execution_consumer_proven": false,
+  "artifacts": {
+    "windows_canonical_producer_discovery_final.json": "written",
+    "windows_ea_live_attach_final.json": "written",
+    "mac_consumer_disable_verification_final.json": "written",
+    "windows_pretrade_sidecar_health_final.json": "written",
+    "windows_pretrade_sidecar_account_final.json": "written",
+    "windows_pretrade_sidecar_tick_final.json": "written",
+    "windows_pretrade_signal_tail_final.json": "written",
+    "windows_pretrade_bridge_tail_final.json": "written",
+    "windows_canonical_pipeline_test_request_final.json": "written",
+    "windows_canonical_pipeline_test_response_final.json": "written",
+    "windows_pipeline_signal_visibility_final.json": "written",
+    "windows_pipeline_bridge_log_final.json": "written",
+    "windows_pipeline_mt5_consume_result_final.json": "written",
+    "FXG_WINDOWS_CANONICAL_PIPELINE_FINAL_PROOF_V1.json": "written"
+  },
+  "errors": [
+    "Glob **/manual_execution.py returned 0 under producer_repo_root.",
+    "Phase 5 canonical emission not started (blocked on missing producer).",
+    "Phases 6–7 fresh signal/consume chain not evidenced.",
+    "Mac EA consumer disablement not evidenced from this host.",
+    "Windows EA Navigator/chart attach not evidenced (no UI capture)."
+  ],
+  "next_required_manual_steps": [
+    "Open or sync the Mac/canonical clone that contains src/core/manual_execution.py and confirm path with ls or equivalent.",
+    "On Mac: disable FTMO bridge execution consumer; save log or screenshot path as evidence.",
+    "On Windows MT5: confirm Navigator, chart attach, Experts/Journal fresh EA_START after attach.",
+    "From canonical producer host only: run exactly one manual 010 paper emit per ops procedure so signals_ftmo_demo2.jsonl updates on Windows MQL5/Files path.",
+    "Re-run verification: tail signals + ftmo_bridge_log for new signal_id after emission.",
+    "Merge or copy producer into this workspace only if that is your intended single clone; do not create a second divergent producer."
+  ]
+}

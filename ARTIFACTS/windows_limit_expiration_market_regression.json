@@ -1,0 +1,9 @@
+{
+  "phase": "8_run_market_regression_check",
+  "signal_id": "mktregexpfix_20260325020336",
+  "SIGNAL_ACCEPT": true,
+  "REQUEST_SUMMARY_price_mode": "MARKET",
+  "outcome": "EXECUTED",
+  "log_line_exec": "{\"type\":\"EXECUTED\",\"msg\":\"MARKET EURUSD BUY 0.0100\",\"signal_id\":\"mktregexpfix_20260325020336\",\"ts\":\"2026.03.25 05:03:40\"}",
+  "notes": "Same tail read as LIMIT/MARKET pair; MARKET path still healthy on live v1.02 build after LIMIT attempt."
+}

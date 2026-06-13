@@ -1,0 +1,5 @@
+Sidecar binding to 0.0.0.0:8877
+INFO:     Started server process [19204]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8877 (Press CTRL+C to quit)

@@ -1,0 +1,19 @@
+{
+  "ts_utc": "2026-03-26T07:16:40Z",
+  "end_state": "Windows MT5 FTMO_Bridge_EA consumes signals from the active MT5 watchfile fed directly from ALPHA via a scheduled gcloud pull (no Mac/Google Drive hop for execution).",
+  "authoritative_components": {
+    "watchfile": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\signals_ftmo_demo2.jsonl",
+    "bridge_log": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\ftmo_bridge_log.jsonl",
+    "direct_pull_script": "bridges/windows_sidecar/scripts/fxg_win_pull_alpha_signals_to_mt5.ps1",
+    "scheduled_task": "FXG Windows Direct Pull ALPHA MT5 ftmo_demo2"
+  },
+  "minimal_manual_checks_windows": [
+    "powershell -NoProfile -ExecutionPolicy Bypass -File .\\bridges\\windows_sidecar\\scripts\\fxg_win_pull_alpha_signals_to_mt5.ps1",
+    "powershell -NoProfile -Command \"Get-ScheduledTask -TaskName 'FXG Windows Direct Pull ALPHA MT5 ftmo_demo2' | Format-List\"",
+    "powershell -NoProfile -Command \"Get-Content 'C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\ftmo_bridge_log.jsonl' -Tail 80\""
+  ],
+  "notes": [
+    "This does not modify FTMO_Bridge_EA logic and does not add any execution routes to the Windows sidecar.",
+    "If gcloud auth expires, the pull script will fail and write artifacts/windows_direct_pull_last_status.json with error."
+  ]
+}

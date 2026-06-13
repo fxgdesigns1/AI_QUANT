@@ -1,0 +1,17 @@
+{
+  "execution_bridge": "canonical_mac_file_bridge_v1",
+  "data_bridge": "parallel_windows_sidecar_bridge_v1",
+  "diagnostics_bridge": "parallel_windows_sidecar_bridge_v1",
+  "sidecar_mode": "read_only_first",
+  "dashboard_must_display": [
+    "execution_bridge",
+    "data_bridge",
+    "diagnostics_bridge",
+    "sidecar mode",
+    "current symbol probe result",
+    "last successful tick symbol",
+    "failure bucket and recommended fix",
+    "broker_symbol_actual when symbol_name_mismatch"
+  ],
+  "ts_utc": "2026-03-23T00:00:00Z"
+}

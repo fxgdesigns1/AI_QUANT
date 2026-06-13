@@ -1,0 +1,12 @@
+{
+  "plan": [
+    "Install MT5 on Windows",
+    "Log into target account",
+    "Install Python 3.11+",
+    "pip install -r bridges/windows_sidecar/requirements.txt",
+    "Set MT5_TERMINAL_PATH, MT5_LOGIN, MT5_PASSWORD, MT5_SERVER, SIDECAR_API_KEY in .env",
+    "Firewall: allow 8877 if LAN binding needed",
+    "LAN binding: BIND_HOST=0.0.0.0 for dashboard on different machine",
+    "Run verify_windows_sidecar.ps1"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "probe_script": "bridges\\windows_sidecar\\scripts\\fxg_win_probe_mt5_identity.ps1",
+  "probe_script_exists": true,
+  "healthcheck_script": "bridges\\windows_sidecar\\scripts\\fxg_win_healthcheck.ps1",
+  "healthcheck_script_exists": true,
+  "wrapper_probe_healthcheck": "bridges\\windows_sidecar\\scripts\\fxg_win_run_probe_and_healthcheck.ps1",
+  "wrapper_probe_healthcheck_exists": true,
+  "ts_utc": "2026-03-23T00:30:00Z"
+}

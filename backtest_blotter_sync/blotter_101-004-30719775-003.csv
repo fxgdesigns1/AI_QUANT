@@ -1,0 +1,2 @@
+account_id,instrument,side,units,entry_ticket,entry_timestamp,entry_price,stop_loss,take_profit,exit_ticket,exit_timestamp,exit_price,close_type,price_change,pnl,pnl_currency,holding_minutes
+101-004-30719775-003,USD/JPY,Sell,100000.00,,2025-11-11T08:36:14+00:00,154.33900,,,,2025-11-12T04:22:41+00:00,154.54000,STOP_LOSS_ORDER,-0.20100,-381.84,USD,1186.45

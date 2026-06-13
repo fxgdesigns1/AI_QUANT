@@ -1,0 +1,7 @@
+{
+  "navigator_visible_true_false": false,
+  "chart_attached_true_false": false,
+  "algo_trading_enabled_true_false": true,
+  "ea_start_evidence": "No MT5 Navigator/UI capture this session. Historical ftmo_bridge_log.jsonl contains EA_START at 2026.03.23 10:09:34 (not fresh). Sidecar GET /account 2026-03-24T20:46:58Z reports trade_expert=true as indirect indicator only — does not prove chart attach.",
+  "captured_utc": "2026-03-24T20:47:00Z"
+}

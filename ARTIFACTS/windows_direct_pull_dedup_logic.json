@@ -1,0 +1,16 @@
+﻿{
+    "ts_utc":  "2026-03-26T07:14:53.9631018Z",
+    "dedup_key":  "signal_id",
+    "behavior":  "append_only",
+    "destination":  "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\signals_ftmo_demo2.jsonl",
+    "counts":  {
+                   "fetched_lines":  179,
+                   "appended_lines":  0,
+                   "duplicate_lines":  179,
+                   "malformed_lines":  0,
+                   "valid_lines":  179
+               },
+    "notes":  [
+                  "Second run must result in appended_lines=0 for already-seen signal_ids."
+              ]
+}

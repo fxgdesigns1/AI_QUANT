@@ -1,0 +1,5 @@
+CANONICAL BRIDGE SAFETY CHECKS - PASS
+- canonical writer path unchanged
+- no duplicate canonical signal writer introduced
+- no write/send/close routes enabled in sidecar
+- bridge identities (canonical_mac_file_bridge_v1, parallel_windows_sidecar_bridge_v1) remain explicit

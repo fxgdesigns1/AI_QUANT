@@ -1,0 +1,20 @@
+# ai-quant-report-monthly.timer — Monthly report timer
+#
+# Runs monthly on the 1st at 17:00 UTC
+#
+# INSTALLATION:
+#   1. Copy this file to /etc/systemd/system/ai-quant-report-monthly.timer
+#   2. Run: sudo systemctl daemon-reload
+#   3. Run: sudo systemctl enable --now ai-quant-report-monthly.timer
+
+[Unit]
+Description=AI-QUANT Monthly Performance Report Timer
+Requires=ai-quant-report-monthly.service
+
+[Timer]
+# Run monthly on the 1st at 17:00 UTC
+OnCalendar=*-*-01 17:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

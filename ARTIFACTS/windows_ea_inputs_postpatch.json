@@ -1,0 +1,13 @@
+{
+  "artifact": "windows_ea_inputs_postpatch",
+  "source": "ea/FTMO_Bridge_EA.mq5 input declarations",
+  "inputs": {
+    "InpSignalFilePath": "signals_ftmo_demo2.jsonl",
+    "InpBridgeAccount": "ftmo_demo2",
+    "InpBridgeLogFile": "ftmo_bridge_log.jsonl",
+    "InpMaxLotSize": 0.01,
+    "InpPollMs": 1000,
+    "InpPaperOnly": true
+  },
+  "chart_verification": "Confirm in MT5 Inputs tab after reload — must match above for apples-to-apples proof"
+}

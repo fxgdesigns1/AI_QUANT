@@ -1,0 +1,20 @@
+{
+  "job": "FXG_PORT_LIVE_WINDOWS_SIDECAR_CONTROL_AND_VERIFY_FROM_MAC_V1",
+  "phase": "2_add_live_control_module_and_routes",
+  "live_tree": "bridges/windows_sidecar/service",
+  "modules": {
+    "control_actions.py": "MT5 maintenance: close_position (ClosePosition or TRADE_ACTION_DEAL), close_all_positions (sorted tickets), cancel_order (TRADE_ACTION_REMOVE), cancel_all_orders (sorted tickets), flatten_all (positions then orders). JSONL audit via SIDECAR_CONTROL_AUDIT_LOG_PATH. Batch ops use record_audit=false on per-ticket helpers; summary lines audited.",
+    "routes_control.py": "APIRouter prefix /control; Depends(require_control_auth) = require_api_key + SIDECAR_ENABLE_WRITE_ACTIONS gate (403 when disabled). POST: /close-position, /close-all-positions, /cancel-order, /cancel-all-orders, /flatten-all."
+  },
+  "response_fields": [
+    "action",
+    "attempted",
+    "success",
+    "tickets_touched | orders_touched",
+    "mt5_retcodes",
+    "messages",
+    "ts_utc",
+    "flatten_all includes positions_phase and orders_phase"
+  ],
+  "filling_mode_note": "SYMBOL_FILLING_* bitmask uses numeric MQL5 values (1,2,4); MetaTrader5 Python build used lacks SYMBOL_FILLING_FOK constants."
+}

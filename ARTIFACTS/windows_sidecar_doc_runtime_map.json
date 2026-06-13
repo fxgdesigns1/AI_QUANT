@@ -1,0 +1,51 @@
+{
+  "ts_utc": "2026-03-25T00:00:00Z",
+  "known_truth_inputs": {
+    "windows_tailscale_ip": "100.122.152.80",
+    "expected_remote_overlay_base_url": "http://100.122.152.80:8877"
+  },
+  "docs_to_runtime_mapping": [
+    {
+      "doc_or_script": "bridges/windows_sidecar/.env.example",
+      "declares": {
+        "BIND_HOST": "127.0.0.1",
+        "BIND_PORT": 8877
+      },
+      "runtime_effect": "Default/local-only bind unless overridden in .env"
+    },
+    {
+      "doc_or_script": "bridges/windows_sidecar/scripts/fxg_win_remote_overlay_setup.ps1",
+      "declares": {
+        "BIND_HOST_append_if_missing": "0.0.0.0",
+        "sidecar_port": 8877
+      },
+      "runtime_effect": "Enables remote overlay reachability when sidecar is running and firewall allows inbound"
+    },
+    {
+      "doc_or_script": "scripts/fxg_switch_sidecar_target_remote_overlay.sh",
+      "declares": {
+        "reads_artifact": "artifacts/windows_remote_overlay_identity.json",
+        "writes_config": "src/control_plane/config/sidecar_target.json"
+      },
+      "runtime_effect": "Points Mac/dashboard control plane at the Windows overlay base_url"
+    },
+    {
+      "doc_or_script": "scripts/fxg_verify_remote_overlay_sidecar.sh",
+      "declares": {
+        "probes": [
+          "/health",
+          "/account",
+          "/symbols/EURUSD/tick"
+        ],
+        "port_assumption": "derived from BASE_URL (typically :8877)"
+      },
+      "runtime_effect": "Mac-side verification of overlay reachability"
+    }
+  ],
+  "runtime_config_file_not_used_for_sidecar": {
+    "path": "runtime/config.yaml",
+    "notes": [
+      "No sidecar bind/port configuration observed in this file"
+    ]
+  }
+}

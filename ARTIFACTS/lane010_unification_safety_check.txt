@@ -1,0 +1,13 @@
+FXG_UNIFY_LANE_010 — safety checks (static, 2026-03-25)
+
+1) Sidecar execution routes: PASS — bridges/windows_sidecar/service/main.py remains read-only FastAPI; no new routes for signal execution added.
+
+2) Duplicate canonical writers in Python: PASS — no new Python writer to signals_ftmo_demo2.jsonl introduced; derivation is PowerShell transport-only.
+
+3) Canonical producer semantics: PASS — lane ownership / bridge_account fields not redefined in producers (no producer Python changes in this patch).
+
+4) Paper-only preserved: PASS — EA input InpPaperOnly unchanged; execution_allowed gating unchanged.
+
+5) GCLOUD clean-room: N/A to this patch (Windows + shared repo scripts only).
+
+Evidence: file inspection of listed paths after edits.

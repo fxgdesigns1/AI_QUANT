@@ -1,0 +1,21 @@
+# ai-quant-preopen-gate.timer — Pre-market open gate timer
+#
+# Runs every 5 minutes to verify pre-market readiness gates
+#
+# INSTALLATION:
+#   1. Copy this file to /etc/systemd/system/ai-quant-preopen-gate.timer
+#   2. Run: sudo systemctl daemon-reload
+#   3. Run: sudo systemctl enable --now ai-quant-preopen-gate.timer
+
+[Unit]
+Description=AI-QUANT Pre-Market Open Gate Timer
+Requires=ai-quant-preopen-gate.service
+
+[Timer]
+# Run every 5 minutes (same as DNS healthcheck)
+OnBootSec=60s
+OnUnitActiveSec=300s
+Persistent=true
+
+[Install]
+WantedBy=timers.target

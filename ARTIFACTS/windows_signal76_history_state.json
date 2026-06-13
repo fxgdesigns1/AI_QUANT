@@ -1,0 +1,9 @@
+{
+  "job_name": "FXG_WINDOWS_SIGNAL_76B6_CONSUMER_TRACE_AND_FIX_V1",
+  "phase": "3_check_mt5_trade_history_positions_orders_for_signal_time_window",
+  "signal_id": "76b6f9fc-6801-45ae-88b2-cc5181adc741",
+  "method": "Terminal journal Trades lines (same data folder as active MT5)",
+  "binary_history_files": "Not parsed; journal provides authoritative same-terminal trade stream for this audit.",
+  "signal_76b6_correlation": "none_found",
+  "rationale": "Without the canonical JSON line on disk, EA could not emit bridge log or place orders for this UUID; journal shows no UUID and no orphan EURUSD action attributable to 76b6."
+}

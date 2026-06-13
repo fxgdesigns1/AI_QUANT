@@ -1,0 +1,31 @@
+# ai-quant-report-weekly.service — Weekly performance report (NO SECRETS)
+#
+# This template does NOT contain any hardcoded credentials.
+# Secrets are loaded from EnvironmentFile at runtime.
+#
+# INSTALLATION:
+#   1. Copy this file to /etc/systemd/system/ai-quant-report-weekly.service
+#   2. Ensure /etc/ai-quant/.env exists with required environment variables
+#   3. Run: sudo systemctl daemon-reload
+#   4. Enable timer: sudo systemctl enable --now ai-quant-report-weekly.timer
+
+[Unit]
+Description=AI-QUANT Weekly Performance Report
+After=network.target
+
+[Service]
+Type=oneshot
+User=aiquant
+Group=aiquant
+WorkingDirectory=/opt/ai-quant
+
+# Load secrets from env file
+EnvironmentFile=/etc/ai-quant/.env
+
+# Run report script (weekly variant - can be extended later)
+ExecStart=/bin/bash -lc 'cd /opt/ai-quant && source .venv/bin/activate && python3 -m send_performance_report || echo "Report script failed"'
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ai-quant-report-weekly

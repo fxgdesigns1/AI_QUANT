@@ -1,0 +1,148 @@
+{
+  "schema": "fxg.tournament.report.v1",
+  "run_id": "tournament_20260324T183717Z",
+  "started_at": "2026-03-24T18:37:17.319001+00:00",
+  "config_source": "ARTIFACTS\\_tmp_tournament.json",
+  "variants_tested": 1,
+  "instruments": [
+    "EUR_USD"
+  ],
+  "results": [
+    {
+      "variant_id": "v1",
+      "strategy": "sma_crossover_research",
+      "instrument": "EUR_USD",
+      "fast_period": 5,
+      "slow_period": 15,
+      "total_trades": 4,
+      "win_rate": 1.0,
+      "expectancy_r": 1.9999999999999982,
+      "max_drawdown": 0.0069962975759519964,
+      "total_pnl": 824.3215999999993,
+      "trades": 4,
+      "trade_list": [
+        {
+          "entry_time": "2024-01-01T01:40:00+00:00",
+          "exit_time": "2024-01-01T01:50:00+00:00",
+          "instrument": "EUR_USD",
+          "side": "SELL",
+          "entry_price": 1.129923607205198,
+          "exit_price": 1.1215959926810892,
+          "quantity": 24016.481481100484,
+          "pnl": 199.99999999999963,
+          "pnl_r": 1.9999999999999962,
+          "stop_loss": 1.1340874144672524,
+          "take_profit": 1.1215959926810892
+        },
+        {
+          "entry_time": "2024-01-01T03:45:00+00:00",
+          "exit_time": "2024-01-01T03:55:00+00:00",
+          "instrument": "EUR_USD",
+          "side": "BUY",
+          "entry_price": 1.0694158875000386,
+          "exit_price": 1.0777556213266362,
+          "quantity": 24461.212341020782,
+          "pnl": 203.9999999999973,
+          "pnl_r": 1.9999999999999736,
+          "stop_loss": 1.0652460205867398,
+          "take_profit": 1.0777556213266362
+        },
+        {
+          "entry_time": "2024-01-01T05:50:00+00:00",
+          "exit_time": "2024-01-01T06:00:00+00:00",
+          "instrument": "EUR_USD",
+          "side": "SELL",
+          "entry_price": 1.1312361976877097,
+          "exit_price": 1.1228738170505717,
+          "quantity": 24882.866378492905,
+          "pnl": 208.08000000000152,
+          "pnl_r": 2.000000000000015,
+          "stop_loss": 1.1354173880062786,
+          "take_profit": 1.1228738170505717
+        },
+        {
+          "entry_time": "2024-01-01T08:00:00+00:00",
+          "exit_time": "2024-01-01T08:10:00+00:00",
+          "instrument": "EUR_USD",
+          "side": "BUY",
+          "entry_price": 1.0731713540999783,
+          "exit_price": 1.0814642032276414,
+          "quantity": 25593.327061987857,
+          "pnl": 212.24160000000083,
+          "pnl_r": 2.0000000000000075,
+          "stop_loss": 1.069024929536147,
+          "take_profit": 1.0814642032276414
+        }
+      ]
+    }
+  ],
+  "ranked": [
+    {
+      "variant_id": "v1",
+      "strategy": "sma_crossover_research",
+      "instrument": "EUR_USD",
+      "fast_period": 5,
+      "slow_period": 15,
+      "total_trades": 4,
+      "win_rate": 1.0,
+      "expectancy_r": 1.9999999999999982,
+      "max_drawdown": 0.0069962975759519964,
+      "total_pnl": 824.3215999999993,
+      "trades": 4,
+      "trade_list": [
+        {
+          "entry_time": "2024-01-01T01:40:00+00:00",
+          "exit_time": "2024-01-01T01:50:00+00:00",
+          "instrument": "EUR_USD",
+          "side": "SELL",
+          "entry_price": 1.129923607205198,
+          "exit_price": 1.1215959926810892,
+          "quantity": 24016.481481100484,
+          "pnl": 199.99999999999963,
+          "pnl_r": 1.9999999999999962,
+          "stop_loss": 1.1340874144672524,
+          "take_profit": 1.1215959926810892
+        },
+        {
+          "entry_time": "2024-01-01T03:45:00+00:00",
+          "exit_time": "2024-01-01T03:55:00+00:00",
+          "instrument": "EUR_USD",
+          "side": "BUY",
+          "entry_price": 1.0694158875000386,
+          "exit_price": 1.0777556213266362,
+          "quantity": 24461.212341020782,
+          "pnl": 203.9999999999973,
+          "pnl_r": 1.9999999999999736,
+          "stop_loss": 1.0652460205867398,
+          "take_profit": 1.0777556213266362
+        },
+        {
+          "entry_time": "2024-01-01T05:50:00+00:00",
+          "exit_time": "2024-01-01T06:00:00+00:00",
+          "instrument": "EUR_USD",
+          "side": "SELL",
+          "entry_price": 1.1312361976877097,
+          "exit_price": 1.1228738170505717,
+          "quantity": 24882.866378492905,
+          "pnl": 208.08000000000152,
+          "pnl_r": 2.000000000000015,
+          "stop_loss": 1.1354173880062786,
+          "take_profit": 1.1228738170505717
+        },
+        {
+          "entry_time": "2024-01-01T08:00:00+00:00",
+          "exit_time": "2024-01-01T08:10:00+00:00",
+          "instrument": "EUR_USD",
+          "side": "BUY",
+          "entry_price": 1.0731713540999783,
+          "exit_price": 1.0814642032276414,
+          "quantity": 25593.327061987857,
+          "pnl": 212.24160000000083,
+          "pnl_r": 2.0000000000000075,
+          "stop_loss": 1.069024929536147,
+          "take_profit": 1.0814642032276414
+        }
+      ]
+    }
+  ]
+}

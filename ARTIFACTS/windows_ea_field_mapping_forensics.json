@@ -1,0 +1,24 @@
+{
+  "artifact": "windows_ea_field_mapping_forensics",
+  "source_of_truth": "ea/FTMO_Bridge_EA.mq5 (pre-patch snapshot described; post-patch v1.01 in repo)",
+  "pre_patch_behavior": {
+    "signal_id": "ExtractJsonString(line, \"signal_id\") — empty falls back to IntegerToString(GetTickCount64())",
+    "symbol": "ExtractJsonString(\"symbol\") then StringReplace(_, \"\") for broker symbol",
+    "side": "ExtractJsonString(\"side\") must be BUY or SELL",
+    "units": "ExtractJsonInt via ExtractJsonDouble — numeric JSON only",
+    "stop_loss": "ExtractJsonDouble — scans first numeric run after ':' ; JSON null yields empty string then StringToDouble → 0",
+    "take_profit": "same as stop_loss",
+    "entry_type": "not inspected pre-patch (any line with matching bridge could trade)",
+    "execution_allowed": "ExtractJsonBool — if false AND InpPaperOnly, line skipped",
+    "bridge_account": "ExtractJsonString must equal input InpBridgeAccount (ftmo_demo2)",
+    "MARKET_build": "CTrade.PositionOpen(symbol, orderType, lots, price, sl, tp) with price = ASK/BID — passes sl/tp including 0 from null coerced to double",
+    "broker_errors": "LogBridge(\"BROKER_REJECT\", g_trade.ResultRetcodeDescription(), signalId)"
+  },
+  "post_patch_v1_01_mapping": {
+    "nullable_numbers": "ExtractJsonNumberKind distinguishes ABSENT, NULL, VALUE for stop_loss, take_profit, units",
+    "MARKET_only": "entry_type must equal MARKET or SIGNAL_SKIP",
+    "market_execution": "CTrade.Buy / CTrade.Sell with price=0; slSend/tpSend only non-zero when JSON had numeric > 0",
+    "request_log": "REQUEST_SUMMARY line before send with sl_set/tp_set flags and values",
+    "truthful_reject_before_send": "ValidateStopsForMarket → EA_PARSE_FAIL when stops invalid"
+  }
+}

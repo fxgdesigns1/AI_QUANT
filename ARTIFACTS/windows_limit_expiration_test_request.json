@@ -1,0 +1,17 @@
+{
+  "phase": "6_run_fresh_limit_signal_test",
+  "signal_file": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\signals_ftmo_demo2.jsonl",
+  "limit_signal_id": "limitexpfix_20260325020336",
+  "limit_signal_fields": {
+    "symbol": "EUR_USD",
+    "bridge_account": "ftmo_demo2",
+    "execution_allowed": true,
+    "entry_type": "LIMIT",
+    "side": "BUY",
+    "entry_price": 1.1,
+    "stop_loss": null,
+    "take_profit": null,
+    "units": 1000
+  },
+  "note": "entry_price=1.10 strictly below Ask at time of processing (~1.16113 per bridge log)."
+}

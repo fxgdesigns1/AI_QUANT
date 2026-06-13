@@ -1,0 +1,12 @@
+{
+  "captured_utc": "2026-03-24T18:30:00Z",
+  "terminal64_exe": "C:\\Program Files\\MetaTrader 5\\terminal64.exe",
+  "active_pid": 44888,
+  "process_command_line": "\"C:\\Program Files\\MetaTrader 5\\terminal64.exe\" ",
+  "data_folder_terminal_id": "D0E8209F77C8CF37AD8BF550E51FF075",
+  "data_folder_root": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075",
+  "logged_in_account_login": 1512849121,
+  "logged_in_server": "FTMO-Demo",
+  "logged_in_company": "FTMO Global Markets Ltd",
+  "account_source": "sidecar GET /account (parallel_windows_sidecar_bridge_v1) with X-API-Key from bridges/windows_sidecar/.env (key not stored in this artifact)"
+}

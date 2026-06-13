@@ -1,0 +1,27 @@
+{
+  "phase": "Phase 8Z",
+  "classification": "PASS_ALPHA_DEPLOY_AND_REMOTE_VERIFY",
+  "local_tests": "175 OK",
+  "alpha_live_dashboard_deployed": true,
+  "deploy_script": "scripts/phase8z_deploy_alpha_live_dashboard.ps1",
+  "deploy_fix": "chown only src/control_plane/api.py (not entire src/control_plane tree)",
+  "dashboard_route_live": true,
+  "research_api_live": true,
+  "batch_progress_api_live": true,
+  "remote_verify_stdout": [
+    "PHASE8Z_DASHBOARD_HTML_OK",
+    "PHASE8Z_RESEARCH_API_OK",
+    "PHASE8Z_PROGRESS_API_OK"
+  ],
+  "alpha_control_plane": {
+    "service": "ai-quant-control-plane",
+    "listen": "127.0.0.1:8787",
+    "batch_progress_http_code": "200"
+  },
+  "runner_restarted": false,
+  "runtime_config_changed": false,
+  "remote_access_mode": "SAFE_TUNNEL_ONLY",
+  "desktop_tunnel_command": "gcloud compute ssh --zone \"us-central1-a\" --project \"fxg-ai-trading\" \"fxg-paper-e2-small-main-2026\" -- -L 8787:127.0.0.1:8787",
+  "dashboard_url_behind_tunnel": "http://127.0.0.1:8787/phase8/dashboard/",
+  "next_action": "YOU: open tunnel then browser on desktop or MacBook"
+}

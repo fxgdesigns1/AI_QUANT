@@ -1,0 +1,37 @@
+{
+  "schema": "fxg.local_research.export_contract.v1",
+  "description": "Required logical files for ALPHA-compatible research import packs.",
+  "pack_root_relative": ".",
+  "required_files": [
+    "manifest.json",
+    "report.json",
+    "tournament_config_resolved.json",
+    "champions.json",
+    "research_summary.json",
+    "regime_matrix.json",
+    "classifier_output.json",
+    "monte_carlo_summary.json"
+  ],
+  "manifest_required_fields": [
+    "pack_id",
+    "created_utc",
+    "source_machine",
+    "dataset_coverage_start",
+    "dataset_coverage_end",
+    "enrichment_coverage_start",
+    "enrichment_coverage_end",
+    "scoring_window",
+    "mode",
+    "instruments_tested",
+    "variants_tested",
+    "calendar_included",
+    "news_included",
+    "winner_shapes",
+    "trade_counts",
+    "win_rates_if_available",
+    "expectancy_R",
+    "max_drawdown_R",
+    "rr_min",
+    "import_intent"
+  ]
+}

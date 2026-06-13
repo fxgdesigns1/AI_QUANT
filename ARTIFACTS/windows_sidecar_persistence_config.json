@@ -1,0 +1,32 @@
+{
+  "ts_utc": "2026-03-25T14:10:45Z",
+  "persistence_mechanism": "Windows Scheduled Task",
+  "task_name": "FXG Windows Sidecar 8877",
+  "hardening_applied": {
+    "enabled": true,
+    "settings": {
+      "StartWhenAvailable": true,
+      "RestartCount": 999,
+      "RestartInterval": "PT1M",
+      "MultipleInstances": "IgnoreNew"
+    }
+  },
+  "verification": {
+    "restart_test": {
+      "pre_pid": 53368,
+      "killed_pid": 53368,
+      "down_confirmed": true,
+      "start_scheduled_task_invoked": true,
+      "up_pid_after_task_start": 640
+    }
+  },
+  "canonical_action_target": {
+    "execute": "bridges/windows_sidecar/.venv/Scripts/python.exe",
+    "arguments": "bridges/windows_sidecar/run.py",
+    "working_directory": "repo_root"
+  },
+  "notes": [
+    "This task runs at user logon (existing configuration).",
+    "The repo lives on drive H:; using SYSTEM/boot-time startup can fail if the drive mapping is not available before user logon."
+  ]
+}

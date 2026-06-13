@@ -1,0 +1,15 @@
+{
+  "phase": "2_run_windows_preflight",
+  "status": "PASS",
+  "os": "Microsoft Windows 11 Pro",
+  "hostname": "G-MACHINE",
+  "username": "gavin",
+  "powershell_version": "5.1.26100.7920",
+  "python_available": true,
+  "python_version": "3.13.5",
+  "admin_rights": true,
+  "primary_ip": "192.168.0.190",
+  "primary_interface": "Ethernet",
+  "power_scheme": "Balanced (active)",
+  "port_8877_before_install": "not_in_use"
+}

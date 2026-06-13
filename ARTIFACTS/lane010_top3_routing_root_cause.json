@@ -1,0 +1,20 @@
+{
+  "job_name": "FXG_UNIFY_LANE_010_EXECUTION_CONTRACT_AND_LIMIT_SUPPORT_V1",
+  "phase": "2_identify_why_top3_hits_signals_jsonl_instead_of_canonical_ftmo_file",
+  "ts_utc": "2026-03-25T00:45:00Z",
+  "status": "COMPLETE",
+  "root_cause": {
+    "summary": "Transport forward sync only watched logs/signals_ftmo_demo2.jsonl. Any producer that appended only to logs/signals.jsonl (aggregate log) never reached the Windows MT5 file unless manually copied or duplicated into the canonical file.",
+    "signals_ftmo_demo2_intent": "Producer may write directly OR transport derives it automatically from the aggregate log; both are valid if dedupe is consistent.",
+    "signals_jsonl_intent": "Broader structured signal / event log (dashboard and API read paths); not sufficient alone for EA consumption on Windows without derivation."
+  },
+  "chosen_contract": {
+    "single_execution_stream_for_EA": "logs/signals_ftmo_demo2.jsonl -> MT5 MQL5/Files/signals_ftmo_demo2.jsonl",
+    "aggregate_optional": "logs/signals.jsonl may receive all emitted lines including TOP3-style; Windows transport derives bridge_account=ftmo_demo2 lines into the canonical stream before forward sync.",
+    "no_manual_append": "fxg_win_derive_canonical_ftmo_from_signals_jsonl.ps1 runs in the canonical transport loop."
+  },
+  "evidence_paths": [
+    "bridges/windows_sidecar/scripts/fxg_win_sync_canonical_signals.ps1",
+    "bridges/windows_sidecar/scripts/fxg_win_derive_canonical_ftmo_from_signals_jsonl.ps1"
+  ]
+}

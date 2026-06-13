@@ -1,0 +1,5 @@
+{
+  "schema": "fxg.regime_matrix.v1",
+  "empty": true,
+  "reason": "Regime matrix not produced in this run"
+}

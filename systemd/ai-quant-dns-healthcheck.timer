@@ -1,0 +1,21 @@
+# ai-quant-dns-healthcheck.timer — DNS healthcheck timer
+#
+# Runs every 5 minutes to verify OANDA API DNS and connectivity
+#
+# INSTALLATION:
+#   1. Copy this file to /etc/systemd/system/ai-quant-dns-healthcheck.timer
+#   2. Run: sudo systemctl daemon-reload
+#   3. Run: sudo systemctl enable --now ai-quant-dns-healthcheck.timer
+
+[Unit]
+Description=AI-QUANT DNS Healthcheck Timer
+Requires=ai-quant-dns-healthcheck.service
+
+[Timer]
+# Run every 5 minutes
+OnBootSec=2min
+OnUnitActiveSec=5min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

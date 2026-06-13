@@ -1,0 +1,504 @@
+{
+  "source": "templates/forensic_command.html",
+  "count": 45,
+  "items": [
+    {
+      "element_id": null,
+      "handler": "showTab('journal')",
+      "event": "onclick",
+      "tag": "div",
+      "handler_source": "html_attribute",
+      "expected_behavior": "UNSPECIFIED",
+      "backend_dependency": [],
+      "truth_gate": false
+    },
+    {
+      "element_id": null,
+      "handler": "showTab('mesh')",
+      "event": "onclick",
+      "tag": "div",
+      "handler_source": "html_attribute",
+      "expected_behavior": "UNSPECIFIED",
+      "backend_dependency": [],
+      "truth_gate": false
+    },
+    {
+      "element_id": null,
+      "handler": "showTab('news')",
+      "event": "onclick",
+      "tag": "div",
+      "handler_source": "html_attribute",
+      "expected_behavior": "UNSPECIFIED",
+      "backend_dependency": [],
+      "truth_gate": false
+    },
+    {
+      "element_id": null,
+      "handler": "showTab('reports')",
+      "event": "onclick",
+      "tag": "div",
+      "handler_source": "html_attribute",
+      "expected_behavior": "UNSPECIFIED",
+      "backend_dependency": [],
+      "truth_gate": false
+    },
+    {
+      "element_id": null,
+      "handler": "showTab('strategies')",
+      "event": "onclick",
+      "tag": "div",
+      "handler_source": "html_attribute",
+      "expected_behavior": "UNSPECIFIED",
+      "backend_dependency": [],
+      "truth_gate": false
+    },
+    {
+      "element_id": null,
+      "handler": "showTab('terminal')",
+      "event": "onclick",
+      "tag": "div",
+      "handler_source": "html_attribute",
+      "expected_behavior": "UNSPECIFIED",
+      "backend_dependency": [],
+      "truth_gate": false
+    },
+    {
+      "element_id": null,
+      "handler": "switchStrategy('breakout')",
+      "event": "onclick",
+      "tag": "button",
+      "handler_source": "html_attribute",
+      "expected_behavior": "UNSPECIFIED",
+      "backend_dependency": [],
+      "truth_gate": false
+    },
+    {
+      "element_id": null,
+      "handler": "switchStrategy('gold')",
+      "event": "onclick",
+      "tag": "button",
+      "handler_source": "html_attribute",
+      "expected_behavior": "UNSPECIFIED",
+      "backend_dependency": [],
+      "truth_gate": false
+    },
+    {
+      "element_id": null,
+      "handler": "switchStrategy('mean')",
+      "event": "onclick",
+      "tag": "button",
+      "handler_source": "html_attribute",
+      "expected_behavior": "UNSPECIFIED",
+      "backend_dependency": [],
+      "truth_gate": false
+    },
+    {
+      "element_id": null,
+      "handler": "toggleTradeDetails('${tradeId}')",
+      "event": "onclick",
+      "tag": "div",
+      "handler_source": "html_attribute",
+      "expected_behavior": "READ_ONLY_TRUTH_RENDER",
+      "backend_dependency": [
+        "/api/truth/status"
+      ],
+      "truth_gate": true
+    },
+    {
+      "element_id": "${tradeId}",
+      "handler": null,
+      "event": null,
+      "tag": "div",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "UNSPECIFIED",
+      "backend_dependency": [],
+      "truth_gate": false
+    },
+    {
+      "element_id": "${tradeId}-arrow",
+      "handler": null,
+      "event": null,
+      "tag": "div",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "UNSPECIFIED",
+      "backend_dependency": [],
+      "truth_gate": false
+    },
+    {
+      "element_id": "btn-deploy-nodes",
+      "handler": "guardDestructive('Deploy All Nodes')",
+      "event": "click",
+      "tag": "button",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "EXPLICITLY_DISABLED_WITH_REASON",
+      "backend_dependency": [
+        "/api/truth/status"
+      ],
+      "truth_gate": true,
+      "reason": "UI cannot mutate system state"
+    },
+    {
+      "element_id": "btn-export-csv",
+      "handler": "exportJournalCsv()",
+      "event": "click",
+      "tag": "button",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "READ_ONLY_TRUTH_RENDER",
+      "backend_dependency": [
+        "/api/journal/trades/export"
+      ],
+      "truth_gate": true
+    },
+    {
+      "element_id": "btn-filter-trades",
+      "handler": "guardReadOnly('Filter Trades')",
+      "event": "click",
+      "tag": "button",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "EXPLICITLY_DISABLED_WITH_REASON",
+      "backend_dependency": [
+        "/api/truth/status"
+      ],
+      "truth_gate": true,
+      "reason": "Filter disabled in truth mode"
+    },
+    {
+      "element_id": "btn-manual-override",
+      "handler": "guardDestructive('Manual Override Entry')",
+      "event": "click",
+      "tag": "button",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "EXPLICITLY_DISABLED_WITH_REASON",
+      "backend_dependency": [
+        "/api/truth/status"
+      ],
+      "truth_gate": true,
+      "reason": "UI cannot mutate system state"
+    },
+    {
+      "element_id": "btn-reload-cloud-sync",
+      "handler": "guardDestructive('Reload Cloud Sync')",
+      "event": "click",
+      "tag": "button",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "EXPLICITLY_DISABLED_WITH_REASON",
+      "backend_dependency": [
+        "/api/truth/status"
+      ],
+      "truth_gate": true,
+      "reason": "UI cannot mutate system state"
+    },
+    {
+      "element_id": "btn-settings",
+      "handler": "guardReadOnly('Open settings')",
+      "event": "click",
+      "tag": "button",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "READ_ONLY_TRUTH_RENDER",
+      "backend_dependency": [
+        "/api/truth/status"
+      ],
+      "truth_gate": true
+    },
+    {
+      "element_id": "chart-symbol",
+      "handler": "changeChartSymbol()",
+      "event": "onchange",
+      "tag": "select",
+      "handler_source": "html_attribute",
+      "expected_behavior": "READ_ONLY_TRUTH_RENDER",
+      "backend_dependency": [
+        "/api/market/chart"
+      ],
+      "truth_gate": true
+    },
+    {
+      "element_id": "conviction-bar",
+      "handler": null,
+      "event": null,
+      "tag": "div",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "UNSPECIFIED",
+      "backend_dependency": [],
+      "truth_gate": false
+    },
+    {
+      "element_id": "journal-list",
+      "handler": null,
+      "event": null,
+      "tag": "div",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "UNSPECIFIED",
+      "backend_dependency": [],
+      "truth_gate": false
+    },
+    {
+      "element_id": "nav-journal",
+      "handler": "showTab('journal')",
+      "event": "onclick",
+      "tag": "div",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "READ_ONLY_TRUTH_RENDER",
+      "backend_dependency": [
+        "/api/journal/trades"
+      ],
+      "truth_gate": true
+    },
+    {
+      "element_id": "nav-mesh",
+      "handler": "showTab('mesh')",
+      "event": "onclick",
+      "tag": "div",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "READ_ONLY_TRUTH_RENDER",
+      "backend_dependency": [
+        "/api/truth/status"
+      ],
+      "truth_gate": true
+    },
+    {
+      "element_id": "nav-news",
+      "handler": "showTab('news')",
+      "event": "onclick",
+      "tag": "div",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "READ_ONLY_TRUTH_RENDER",
+      "backend_dependency": [
+        "/api/news"
+      ],
+      "truth_gate": true
+    },
+    {
+      "element_id": "nav-reports",
+      "handler": "showTab('reports')",
+      "event": "onclick",
+      "tag": "div",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "READ_ONLY_TRUTH_RENDER",
+      "backend_dependency": [
+        "/api/performance/strategies"
+      ],
+      "truth_gate": true
+    },
+    {
+      "element_id": "nav-strategies",
+      "handler": "showTab('strategies')",
+      "event": "onclick",
+      "tag": "div",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "READ_ONLY_TRUTH_RENDER",
+      "backend_dependency": [
+        "/api/strategies"
+      ],
+      "truth_gate": true
+    },
+    {
+      "element_id": "nav-terminal",
+      "handler": "showTab('terminal')",
+      "event": "onclick",
+      "tag": "div",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "READ_ONLY_TRUTH_RENDER",
+      "backend_dependency": [
+        "/api/signals/pending",
+        "/api/positions",
+        "/api/market/chart"
+      ],
+      "truth_gate": true
+    },
+    {
+      "element_id": "performance-cards",
+      "handler": null,
+      "event": null,
+      "tag": "div",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "UNSPECIFIED",
+      "backend_dependency": [],
+      "truth_gate": false
+    },
+    {
+      "element_id": "settings-clear",
+      "handler": "guardReadOnly('Clear settings token')",
+      "event": "click",
+      "tag": "button",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "READ_ONLY_TRUTH_RENDER",
+      "backend_dependency": [
+        "/api/truth/status"
+      ],
+      "truth_gate": true
+    },
+    {
+      "element_id": "settings-close",
+      "handler": "guardReadOnly('Close settings')",
+      "event": "click",
+      "tag": "button",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "READ_ONLY_TRUTH_RENDER",
+      "backend_dependency": [
+        "/api/truth/status"
+      ],
+      "truth_gate": true
+    },
+    {
+      "element_id": "settings-modal",
+      "handler": "guardReadOnly('Close settings')",
+      "event": "click",
+      "tag": "div",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "READ_ONLY_TRUTH_RENDER",
+      "backend_dependency": [
+        "/api/truth/status"
+      ],
+      "truth_gate": true
+    },
+    {
+      "element_id": "settings-save",
+      "handler": "guardReadOnly('Save settings token')",
+      "event": "click",
+      "tag": "button",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "READ_ONLY_TRUTH_RENDER",
+      "backend_dependency": [
+        "/api/truth/status"
+      ],
+      "truth_gate": true
+    },
+    {
+      "element_id": "settings-token",
+      "handler": "local_input",
+      "event": "input",
+      "tag": "input",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "LOCAL_ONLY",
+      "backend_dependency": [],
+      "truth_gate": false
+    },
+    {
+      "element_id": "signal-overlay",
+      "handler": null,
+      "event": null,
+      "tag": "div",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "UNSPECIFIED",
+      "backend_dependency": [],
+      "truth_gate": false
+    },
+    {
+      "element_id": "signals-queue",
+      "handler": null,
+      "event": null,
+      "tag": "div",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "UNSPECIFIED",
+      "backend_dependency": [],
+      "truth_gate": false
+    },
+    {
+      "element_id": "strategy-breakout",
+      "handler": "switchStrategy('breakout')",
+      "event": "onclick",
+      "tag": "button",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "READ_ONLY_TRUTH_RENDER",
+      "backend_dependency": [
+        "/api/truth/status"
+      ],
+      "truth_gate": true
+    },
+    {
+      "element_id": "strategy-gold",
+      "handler": "switchStrategy('gold')",
+      "event": "onclick",
+      "tag": "button",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "READ_ONLY_TRUTH_RENDER",
+      "backend_dependency": [
+        "/api/truth/status"
+      ],
+      "truth_gate": true
+    },
+    {
+      "element_id": "strategy-mean",
+      "handler": "switchStrategy('mean')",
+      "event": "onclick",
+      "tag": "button",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "READ_ONLY_TRUTH_RENDER",
+      "backend_dependency": [
+        "/api/truth/status"
+      ],
+      "truth_gate": true
+    },
+    {
+      "element_id": "tab-journal",
+      "handler": null,
+      "event": null,
+      "tag": "div",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "UNSPECIFIED",
+      "backend_dependency": [],
+      "truth_gate": false
+    },
+    {
+      "element_id": "tab-mesh",
+      "handler": null,
+      "event": null,
+      "tag": "div",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "UNSPECIFIED",
+      "backend_dependency": [],
+      "truth_gate": false
+    },
+    {
+      "element_id": "tab-news",
+      "handler": null,
+      "event": null,
+      "tag": "div",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "UNSPECIFIED",
+      "backend_dependency": [],
+      "truth_gate": false
+    },
+    {
+      "element_id": "tab-reports",
+      "handler": null,
+      "event": null,
+      "tag": "div",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "UNSPECIFIED",
+      "backend_dependency": [],
+      "truth_gate": false
+    },
+    {
+      "element_id": "tab-strategies",
+      "handler": null,
+      "event": null,
+      "tag": "div",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "UNSPECIFIED",
+      "backend_dependency": [],
+      "truth_gate": false
+    },
+    {
+      "element_id": "tab-terminal",
+      "handler": null,
+      "event": null,
+      "tag": "div",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "UNSPECIFIED",
+      "backend_dependency": [],
+      "truth_gate": false
+    },
+    {
+      "element_id": "tradingview_terminal",
+      "handler": null,
+      "event": null,
+      "tag": "div",
+      "handler_source": "js_binding_or_none",
+      "expected_behavior": "UNSPECIFIED",
+      "backend_dependency": [],
+      "truth_gate": false
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+# ai-quant-report-daily.timer — Daily report timer
+#
+# Runs daily at 23:59 UTC (end of day for transaction-based performance report)
+#
+# INSTALLATION:
+#   1. Copy this file to /etc/systemd/system/ai-quant-report-daily.timer
+#   2. Run: sudo systemctl daemon-reload
+#   3. Run: sudo systemctl enable --now ai-quant-report-daily.timer
+
+[Unit]
+Description=AI-QUANT Daily Transaction Performance Report Timer
+Requires=ai-quant-report-daily.service
+
+[Timer]
+# Run daily at 23:59 UTC (end of day)
+OnCalendar=daily
+OnCalendar=*-*-* 23:59:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

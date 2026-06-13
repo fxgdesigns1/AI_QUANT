@@ -1,0 +1,22 @@
+{
+  "job_name": "FXG_WINDOWS_SIGNAL_76B6_CONSUMER_TRACE_AND_FIX_V1",
+  "phase": "5_classify_why_signal_76b6_was_not_seen_or_not_executed",
+  "signal_id": "76b6f9fc-6801-45ae-88b2-cc5181adc741",
+  "classification": "CONSUMER_PATH_FAIL",
+  "consumed_by_windows_mt5_ea": false,
+  "executed_on_windows_mt5": false,
+  "explicit_reject_on_windows_mt5": false,
+  "duplicate_skip": false,
+  "first_failing_stage": "PRE_EA_FILE_DELIVERY",
+  "root_cause_statement": "The canonical JSONL line for signal_id 76b6f9fc-6801-45ae-88b2-cc5181adc741 was never present in the active MT5 instance's MQL5/Files/signals_ftmo_demo2.jsonl. The EA only consumes lines from that file; with no line, there is no bridge_log entry, no OrderSend for this UUID, and no MT5 deal attributable to 76b6. OANDA create/fill IDs 56515/56516 reflect Mac-side paper execution (known_truth), not Windows MT5.",
+  "wrong_mt5_instance_ruled_out": true,
+  "wrong_files_path_ruled_out_for_active_terminal": true,
+  "ea_not_reloaded": false,
+  "symbol_mapping_fail": false,
+  "parser_fail_for_this_signal": false,
+  "evidence_artifact_refs": [
+    "artifacts/windows_signal76_signal_file_trace.json",
+    "artifacts/windows_signal76_bridge_log_trace.json",
+    "artifacts/windows_signal76_active_mt5_identity.json"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "job_name": "FXG_UNIFY_LANE_010_EXECUTION_CONTRACT_AND_LIMIT_SUPPORT_V1",
+  "phase": "5_patch_windows_ea_for_limit_order_support",
+  "ts_utc": "2026-03-25T00:45:00Z",
+  "status": "COMPLETE",
+  "ea_file": "ea/FTMO_Bridge_EA.mq5",
+  "version": "1.02",
+  "changes": [
+    "Accept entry_type MARKET or LIMIT; skip other values with SIGNAL_SKIP",
+    "LIMIT: require positive entry_price or limit_price (JSON keys)",
+    "LIMIT: ValidateStopsForPending using order price and SYMBOL_TRADE_STOPS_LEVEL",
+    "MARKET: unchanged ValidateStopsForMarket",
+    "REQUEST_SUMMARY includes price_mode=MARKET|LIMIT and LIMIT includes entry price",
+    "Malformed LIMIT (missing/invalid price) -> EA_PARSE_FAIL with explicit message",
+    "EXECUTED log distinguishes MARKET vs LIMIT"
+  ],
+  "compile_verify": "NOT_RUN (MetaEditor / MT5 build not executed in this environment)"
+}

@@ -1,0 +1,15 @@
+﻿{
+    "ts_utc":  "2026-03-26T07:12:50.7683484Z",
+    "mt5_files_dir":  "C:\\\\Users\\\\gavin\\\\AppData\\\\Roaming\\\\MetaQuotes\\\\Terminal\\\\D0E8209F77C8CF37AD8BF550E51FF075\\\\MQL5\\\\Files",
+    "active_signal_file":  "C:\\\\Users\\\\gavin\\\\AppData\\\\Roaming\\\\MetaQuotes\\\\Terminal\\\\D0E8209F77C8CF37AD8BF550E51FF075\\\\MQL5\\\\Files\\signals_ftmo_demo2.jsonl",
+    "active_bridge_log":  "C:\\\\Users\\\\gavin\\\\AppData\\\\Roaming\\\\MetaQuotes\\\\Terminal\\\\D0E8209F77C8CF37AD8BF550E51FF075\\\\MQL5\\\\Files\\ftmo_bridge_log.jsonl",
+    "files":  {
+                  "signal_exists":  true,
+                  "bridge_log_exists":  true
+              },
+    "scheduled_tasks":  {
+                            "TaskName":  "FXG Windows Sidecar 8877",
+                            "State":  4,
+                            "TaskPath":  "\\"
+                        }
+}

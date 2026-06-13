@@ -1,0 +1,26 @@
+{
+  "job_name": "FXG_WINDOWS_SIGNAL_76B6_CONSUMER_TRACE_AND_FIX_V1",
+  "phase": "2_trace_exact_signal_id_in_signal_file_and_logs",
+  "signal_id": "76b6f9fc-6801-45ae-88b2-cc5181adc741",
+  "searches": [
+    {
+      "scope": "Terminal data tree (relevant logs only)",
+      "tool": "rg/grep pattern 76b6|56515|56516",
+      "match_for_signal_uuid": false,
+      "false_positive_note": "Unrelated binary/text hits under Include and EBWebView only"
+    }
+  ],
+  "journal_log_excerpt_path": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\logs\\20260324.log",
+  "journal_relevant_window": {
+    "ea_chart": "FTMO_Bridge_EA (USDCHF,H1)",
+    "lines": [
+      "21:04:50.619 Experts expert FTMO_Bridge_EA (USDCHF,H1) loaded successfully",
+      "21:05:05.027 Trades '1512849121': failed market buy 0.01 EURUSD sl: 10.00000 tp: 20260323011859.00000 [Invalid stops]",
+      "22:53:57.226 Trades '1512849121': market buy 0.01 EURUSD",
+      "22:53:57.392 Trades '1512849121': deal #392830847 buy 0.01 EURUSD at 1.16125 done (based on order #409704506)"
+    ]
+  },
+  "mql5_log_path": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Logs\\20260324.log",
+  "mql5_log_note": "FTMO_Bridge_EA OrderSend lines reference test/winprove signal timestamps in SL/TP display quirks; no UUID text in standard MT5 trade logs.",
+  "conclusion": "NO_MT5_LOG_EVIDENCE_OF_SIGNAL_76B6"
+}

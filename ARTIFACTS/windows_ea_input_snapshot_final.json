@@ -1,0 +1,9 @@
+{
+  "source": "ea/FTMO_Bridge_EA.mq5 defaults (chart input panel not read via automation)",
+  "InpSignalFilePath": "signals_ftmo_demo2.jsonl",
+  "InpBridgeAccount": "ftmo_demo2",
+  "InpBridgeLogFile": "ftmo_bridge_log.jsonl",
+  "InpPaperOnly": true,
+  "InpMaxLotSize": 0.01,
+  "InpPollMs": 1000
+}

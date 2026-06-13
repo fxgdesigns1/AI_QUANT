@@ -1,0 +1,21 @@
+=== Windows Execution Cutover Safety Check ===
+
+1. Canonical producer semantics: UNCHANGED
+   - working_trading_system.py SignalExporter.emit: not modified
+   - fanout, bridge_account ftmo_demo2: not modified
+   - No duplicate canonical writers added
+
+2. Sidecar execution routes: NONE
+   - bridges/windows_sidecar: no order_send, positions_close, orders_preview
+
+3. Only one canonical consumer: DOCUMENTED
+   - Mac consumer must be disabled before Windows test trade
+   - artifacts/mac_canonical_consumer_disable_result.json
+
+4. Bridge ownership: EXPLICIT
+   - canonical_mac_file_bridge_v1: execution (consumed by Windows MT5 EA)
+   - parallel_windows_sidecar_bridge_v1: data/diagnostics
+
+5. Paper-only: InpPaperOnly=true default in EA
+
+SAFETY: PASS

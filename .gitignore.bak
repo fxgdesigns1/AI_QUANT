@@ -1,0 +1,70 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Output / logs
+logs/
+*.log
+*.out
+*.err
+
+# Data
+data/
+exports/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# ===== FXG SAFETY: never commit secrets / bulky artifacts =====
+**/*google*credentials*.json
+**/*firebase*.json
+**/*token*
+**/*apikey*
+**/*api_key*
+
+# Data / caches / DBs
+*.db
+runtime/
+reports/
+backups/
+archives/
+Sync folder MAC TO PC/
+AI_QUANT_credentials/
+Key/
+google-cloud-credentials/
+cloud_declutter_v2/keys/
+
+# Git metadata backups
+.git_backup_*.tar.gz
+
+# Backup files from sed operations
+*.bak
+
+# Local-only credential notes (keep generic docs only)
+CREDENTIALS_QUICK_REFERENCE.md
+credentials_access_guide.md
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

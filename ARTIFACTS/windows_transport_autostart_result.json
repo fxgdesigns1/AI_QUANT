@@ -1,0 +1,7 @@
+﻿{
+    "ts_utc":  "2026-03-25T00:10:37.4394543Z",
+    "registered":  false,
+    "task_name":  "FXG Canonical Transport Sync",
+    "error":  "Access is denied.\r\n",
+    "disable_command":  "schtasks /Delete /TN \"FXG Canonical Transport Sync\" /F"
+}

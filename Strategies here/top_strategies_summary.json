@@ -1,0 +1,44 @@
+{
+  "generated_at": "2025-11-13T22:01:59.971725",
+  "source": "Monte Carlo Optimization - Session & Directional Bias Testing",
+  "test_period": "14 days",
+  "total_strategies": 5,
+  "instrument": "XAU_USD",
+  "strategies": [
+    {
+      "strategy_id": "xau_usd_session_bias_1",
+      "filename": "xau_usd_strategy_01_fitness_2.28.json",
+      "fitness": 2.2775117861086756,
+      "win_rate": 0.4666666666666667,
+      "total_pnl_pct": 1.552848945074097
+    },
+    {
+      "strategy_id": "xau_usd_session_bias_2",
+      "filename": "xau_usd_strategy_02_fitness_2.24.json",
+      "fitness": 2.2418388146093884,
+      "win_rate": 0.5,
+      "total_pnl_pct": 1.4945592097395923
+    },
+    {
+      "strategy_id": "xau_usd_session_bias_3",
+      "filename": "xau_usd_strategy_03_fitness_2.10.json",
+      "fitness": 2.1040054455011568,
+      "win_rate": 0.4666666666666667,
+      "total_pnl_pct": 1.4345491673871522
+    },
+    {
+      "strategy_id": "xau_usd_session_bias_4",
+      "filename": "xau_usd_strategy_04_fitness_2.07.json",
+      "fitness": 2.0748398106665245,
+      "win_rate": 0.5333333333333333,
+      "total_pnl_pct": 1.3531563982607768
+    },
+    {
+      "strategy_id": "xau_usd_session_bias_5",
+      "filename": "xau_usd_strategy_05_fitness_2.07.json",
+      "fitness": 2.0681083796658655,
+      "win_rate": 0.5666666666666667,
+      "total_pnl_pct": 1.3200691785101268
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "ts_utc": "2026-03-25T00:00:00Z",
+  "documented_default": {
+    "bind_host": "127.0.0.1",
+    "port": 8877,
+    "evidence": [
+      {
+        "path": "bridges/windows_sidecar/.env.example",
+        "lines": [
+          "BIND_HOST=127.0.0.1",
+          "BIND_PORT=8877"
+        ]
+      },
+      {
+        "path": "bridges/windows_sidecar/README.md",
+        "lines": [
+          "Listen: 127.0.0.1:8877"
+        ]
+      }
+    ]
+  },
+  "documented_remote_overlay": {
+    "expected_base_url_shape": "http://<windows_tailscale_ip>:8877",
+    "expected_bind_host": "0.0.0.0",
+    "port": 8877,
+    "evidence": [
+      {
+        "path": "bridges/windows_sidecar/scripts/fxg_win_remote_overlay_setup.ps1",
+        "notes": [
+          "Adds BIND_HOST=0.0.0.0 to bridges/windows_sidecar/.env if missing",
+          "Hardcodes sidecar_port=8877 in artifacts/windows_remote_overlay_identity.json"
+        ]
+      },
+      {
+        "path": "docs/REMOTE_ACCESS_OPERATOR_GUIDE.md",
+        "notes": [
+          "Troubleshooting: ensure sidecar binds 0.0.0.0 (BIND_HOST in .env)"
+        ]
+      }
+    ]
+  },
+  "repo_config_defaults": {
+    "service_config_defaults": {
+      "BIND_HOST_default": "127.0.0.1",
+      "BIND_PORT_default": 8877
+    },
+    "evidence": [
+      {
+        "path": "bridges/windows_sidecar/service/config.py",
+        "lines": [
+          "BIND_HOST = os.getenv(\"BIND_HOST\", \"127.0.0.1\")",
+          "BIND_PORT = int(os.getenv(\"BIND_PORT\", \"8877\"))"
+        ]
+      }
+    ]
+  },
+  "port_changed_detected": false,
+  "authoritative_port": 8877
+}

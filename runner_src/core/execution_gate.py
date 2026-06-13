@@ -112,44 +112,73 @@ class ExecutionGate:
         if not d.allowed:
             raise RuntimeError(f"Execution blocked by gate: {d.reason}")
 
-        if d.mode != "live":
-            # Paper: do NOT execute broker call; return a simulated result
-            sim = {
-                "ok": True,
-                "paper": True,
-                "instrument": instrument,
-                "units": units,
-                "account_id": account_id,
-                "run_id": self.run_id,
-                "ts_ms": _now_ms(),
-                "meta": meta,
-            }
-            self._log("paper_order_simulated", sim)
-            return sim
-
-        # Live: execute
+        # Execute real OANDA order (Practice for paper, Live for live)
+        # Contract: No simulation - all orders go to OANDA
+        # BRUTAL TRUTH: Validate result contains transaction IDs before returning
         try:
             result = exec_fn()
+            
+            # Validate result has transaction IDs (enforce truthful execution)
+            if isinstance(result, dict):
+                order_create_tx = result.get("orderCreateTransaction", {})
+                order_fill_tx = result.get("orderFillTransaction", {})
+                order_cancel_tx = result.get("orderCancelTransaction", {})
+                
+                has_tx_id = (
+                    (order_create_tx and order_create_tx.get("id")) or
+                    (order_fill_tx and order_fill_tx.get("id")) or
+                    (order_cancel_tx and order_cancel_tx.get("id"))
+                )
+                
+                if not has_tx_id:
+                    error_msg = f"OANDA response missing transaction IDs. Response keys: {list(result.keys())}"
+                    self._log(
+                        f"{d.mode}_order_failed",
+                        {
+                            "instrument": instrument,
+                            "units": units,
+                            "account_id": account_id,
+                            "meta": meta,
+                            "error": error_msg,
+                            "mode": d.mode,
+                        },
+                    )
+                    raise RuntimeError(error_msg)
+            
+            # Log successful execution with tx ids (safe fields only)
+            tx_ids = []
+            if isinstance(result, dict):
+                if result.get("orderCreateTransaction", {}).get("id"):
+                    tx_ids.append(f"create={result['orderCreateTransaction']['id']}")
+                if result.get("orderFillTransaction", {}).get("id"):
+                    tx_ids.append(f"fill={result['orderFillTransaction']['id']}")
+                if result.get("orderCancelTransaction", {}).get("id"):
+                    tx_ids.append(f"cancel={result['orderCancelTransaction']['id']}")
+            
             self._log(
-                "live_order_executed",
+                f"{d.mode}_order_executed",
                 {
                     "instrument": instrument,
                     "units": units,
                     "account_id": account_id,
                     "meta": meta,
                     "result_type": type(result).__name__,
+                    "mode": d.mode,
+                    "tx_ids": tx_ids if tx_ids else None,
                 },
             )
             return result
         except Exception as e:
+            error_msg = str(e)[:200] if len(str(e)) > 200 else str(e)
             self._log(
-                "live_order_failed",
+                f"{d.mode}_order_failed",
                 {
                     "instrument": instrument,
                     "units": units,
                     "account_id": account_id,
                     "meta": meta,
-                    "error": repr(e),
+                    "error": error_msg,
+                    "mode": d.mode,
                 },
             )
             raise

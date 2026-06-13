@@ -1,0 +1,88 @@
+{
+  "job_name": "FXG_WINDOWS_CANONICAL_EXECUTION_EA_BUILD_ATTACH_AUTOLOAD_AND_END_TO_END_VERIFICATION_V1",
+  "status": "PARTIAL",
+  "phase_results": {
+    "1_discover_existing_windows_mt5_terminal_and_ea_estate": "PASS. artifacts/windows_mt5_execution_terminal_discovery.json, windows_mt5_paths_discovery.json, windows_existing_ea_inventory.json",
+    "2_discover_existing_canonical_ea_source_or_reconstruct": "PASS. No source in repo. Reconstructed ea/FTMO_Bridge_EA.mq5 from emit() contract. artifacts/windows_canonical_ea_source_resolution.json",
+    "3_install_or_place_ea_in_correct_windows_mt5_experts_path": "PASS. fxg_win_install_canonical_ea.ps1 ran. EA copied and compiled to MQL5/Experts. FTMO_Bridge_EA.ex5 created.",
+    "4_wire_canonical_signal_and_bridge_log_files": "PASS. fxg_win_wire_canonical_signals.ps1 ran. signals_ftmo_demo2.jsonl and ftmo_bridge_log.jsonl created in MQL5/Files.",
+    "5_attach_ea_to_correct_chart_with_correct_inputs": "OPERATOR_ACTION. EA installed. Operator must drag FTMO_Bridge_EA to chart, set InpSignalFilePath=signals_ftmo_demo2.jsonl, InpBridgeAccount=ftmo_demo2.",
+    "6_make_ea_auto_load_on_terminal_restart": "OPERATOR_ACTION. Save profile or template with EA attached. docs/bridges/WINDOWS_CANONICAL_EA_CUTOVER.md",
+    "7_disable_mac_canonical_consumer_to_prevent_double_consume": "OPERATOR_ACTION. artifacts/mac_canonical_consumer_disable_result.json, rollback_windows_to_mac_execution_plan.json",
+    "8_verify_windows_ea_start_and_idle_health": "PENDING_EA_ATTACH. EA must be attached; then check Experts tab and bridge log for EA_START.",
+    "9_run_one_tiny_canonical_manual_010_paper_trade": "PARTIAL. Test signal injected via fxg_win_inject_test_signal.ps1. Full producer flow requires SignalExporter (not in workspace).",
+    "10_verify_windows_mt5_consume_execute_or_explicit_reject": "PENDING_EA_ATTACH. Signal in file. Bridge log empty - EA not yet attached/running.",
+    "11_verify_dashboard_truth_and_operator_controls": "DONE. BridgeSwitchStatePanel updated: execution consumed by Windows MT5 EA. docs/bridges/WINDOWS_CANONICAL_EA_CUTOVER.md created.",
+    "12_run_full_safety_checks": "PASS. artifacts/windows_execution_cutover_safety_check.txt"
+  },
+  "files_created": [
+    "ea/FTMO_Bridge_EA.mq5",
+    "bridges/windows_sidecar/scripts/fxg_win_install_canonical_ea.ps1",
+    "bridges/windows_sidecar/scripts/fxg_win_wire_canonical_signals.ps1",
+    "bridges/windows_sidecar/scripts/fxg_win_inject_test_signal.ps1",
+    "docs/bridges/WINDOWS_CANONICAL_EA_CUTOVER.md",
+    "artifacts/windows_mt5_execution_terminal_discovery.json",
+    "artifacts/windows_mt5_paths_discovery.json",
+    "artifacts/windows_existing_ea_inventory.json",
+    "artifacts/windows_canonical_ea_source_resolution.json",
+    "artifacts/windows_ea_install_result.json",
+    "artifacts/windows_canonical_file_wiring.json",
+    "artifacts/mac_canonical_consumer_disable_result.json",
+    "artifacts/rollback_windows_to_mac_execution_plan.json",
+    "artifacts/windows_canonical_test_trade_consume_verification.json",
+    "artifacts/windows_execution_cutover_safety_check.txt"
+  ],
+  "files_modified": [
+    "frontend/fxg-dashboard/src/modules/bridges/shared/BridgeSwitchStatePanel.jsx"
+  ],
+  "files_verified": [],
+  "files_unverified": [],
+  "verification_commands_run": [
+    "fxg_win_install_canonical_ea.ps1 - EA installed and compiled",
+    "fxg_win_wire_canonical_signals.ps1 - signal files created",
+    "fxg_win_inject_test_signal.ps1 - test signal injected"
+  ],
+  "verification_commands_not_run": [
+    "Attach EA to chart (manual)",
+    "MT5 restart with EA auto-load (manual)",
+    "Disable Mac consumer (manual)"
+  ],
+  "artifacts": [
+    "artifacts/windows_mt5_execution_terminal_discovery.json",
+    "artifacts/windows_mt5_paths_discovery.json",
+    "artifacts/windows_existing_ea_inventory.json",
+    "artifacts/windows_canonical_ea_source_resolution.json",
+    "artifacts/windows_ea_install_result.json",
+    "artifacts/windows_canonical_file_wiring.json",
+    "artifacts/mac_canonical_consumer_disable_result.json",
+    "artifacts/rollback_windows_to_mac_execution_plan.json",
+    "artifacts/windows_canonical_test_trade_consume_verification.json",
+    "artifacts/windows_execution_cutover_safety_check.txt"
+  ],
+  "runtime_findings": {
+    "ea_install": "FTMO_Bridge_EA.mq5 copied to MQL5/Experts, compiled to .ex5",
+    "signal_wiring": "signals_ftmo_demo2.jsonl and ftmo_bridge_log.jsonl in MQL5/Files",
+    "test_signal": "Injected test_20260323011859. EA must be attached to consume.",
+    "producer_blocker": "src.observability.signal_exporter not in Gcloud workspace. Canonical producer may be in FXG Mac project."
+  },
+  "safety_assertions": [
+    "canonical_mac_file_bridge_v1 remains canonical execution bridge semantics owner",
+    "Windows sidecar remains additive and read_only_first",
+    "no duplicate canonical writers created",
+    "no live trading enablement introduced",
+    "only one canonical execution consumer active at test time (Mac must be disabled)"
+  ],
+  "open_risks": [
+    "Operator must attach EA to chart, save profile for autoload, disable Mac consumer",
+    "Producer (SignalExporter) not in workspace - manual 010 paper trade requires producer from FXG Mac or manual signal inject"
+  ],
+  "next_required_manual_steps": [
+    "Attach FTMO_Bridge_EA to chart: Navigator -> Expert Advisors -> drag to EURUSD",
+    "Set inputs: InpSignalFilePath=signals_ftmo_demo2.jsonl, InpBridgeAccount=ftmo_demo2, InpPaperOnly=true",
+    "Enable AutoTrading (Ctrl+E)",
+    "Save profile (File -> Save As) for auto-load on restart",
+    "Disable Mac canonical consumer before test trade",
+    "Run fxg_win_inject_test_signal.ps1 and verify ftmo_bridge_log.jsonl shows EXECUTED or BROKER_REJECT",
+    "Restart MT5 and confirm EA auto-loads"
+  ]
+}

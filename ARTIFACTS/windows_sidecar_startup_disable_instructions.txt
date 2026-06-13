@@ -1,0 +1,12 @@
+To disable the Windows Sidecar autostart:
+
+Option 1 - PowerShell (run as current user):
+  Disable-ScheduledTask -TaskName "FXG Windows Sidecar 8877"
+
+Option 2 - Task Scheduler GUI:
+  1. Open Task Scheduler (taskschd.msc)
+  2. Find "FXG Windows Sidecar 8877" under Task Scheduler Library
+  3. Right-click -> Disable
+
+Option 3 - Delete the task entirely:
+  Unregister-ScheduledTask -TaskName "FXG Windows Sidecar 8877" -Confirm:$false

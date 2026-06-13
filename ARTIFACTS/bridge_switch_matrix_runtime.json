@@ -1,0 +1,11 @@
+{
+  "execution_bridge": "canonical_mac_file_bridge_v1",
+  "data_bridge": "parallel_windows_sidecar_bridge_v1",
+  "diagnostics_bridge": "parallel_windows_sidecar_bridge_v1",
+  "dashboard_account_source": "parallel_windows_sidecar_bridge_v1",
+  "dashboard_tick_source": "parallel_windows_sidecar_bridge_v1",
+  "dashboard_failure_source": "parallel_windows_sidecar_bridge_v1",
+  "canonical_bridge_enabled": true,
+  "windows_sidecar_enabled": true,
+  "operator_override_active": false
+}

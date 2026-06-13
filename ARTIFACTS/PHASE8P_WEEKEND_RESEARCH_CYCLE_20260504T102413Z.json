@@ -1,0 +1,36 @@
+﻿{
+    "live_permission":  false,
+    "api_usage_weekend_only":  true,
+    "execution_paths_changed":  false,
+    "jobs_planned":  [
+                         {
+                             "lookback_days":  90,
+                             "job_type":  "phase8o_exact_replay",
+                             "session_window_utc":  "13:30-16:00",
+                             "instrument":  "EUR_USD",
+                             "granularity":  "M15",
+                             "session_bucket":  "NY_OPEN_SECONDARY_PROPOSED"
+                         },
+                         {
+                             "lookback_days":  90,
+                             "job_type":  "phase8l_backtest",
+                             "session_window_utc":  "13:30-16:00",
+                             "instrument":  "EUR_USD",
+                             "granularity":  "M15",
+                             "session_bucket":  "NY_OPEN_SECONDARY_PROPOSED"
+                         }
+                     ],
+    "ok":  true,
+    "weekend_guard_passed":  true,
+    "ny_live_enabled":  false,
+    "phase":  "Phase 8P",
+    "send_trade_unlock_changed":  false,
+    "classification":  "PHASE8P_DRY_RUN_PLAN",
+    "started_at_utc":  "2026-05-04T10:24:13Z",
+    "dashboard_targets":  [
+                              "ARTIFACTS/performance/research_results_index.json",
+                              "ARTIFACTS/performance/latest_research_dashboard.json",
+                              "ARTIFACTS/performance/research_dashboard/index.html"
+                          ],
+    "paper_review_only":  true
+}

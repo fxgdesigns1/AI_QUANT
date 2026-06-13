@@ -1,0 +1,25 @@
+{
+  "phase": "2_identify_exact_invalid_expiration_root_cause",
+  "classification": "other",
+  "classification_notes": "Primary: CTrade::BuyLimit/SellLimit arguments did not match library contract (volume,price,symbol,...); secondary: pending expiration policy when relying on defaults/DAY without explicit server-aligned timestamp.",
+  "exact_broken_combination": "TRADE_ACTION_PENDING sent with price/symbol fields inconsistent with EURUSD + intended limit price because EA passed (volume, symbolString, limitPrice, ...) into API expecting (volume, limitPrice, symbolString, ...). Server returned TRADE_RETCODE_INVALID_EXPIRATION surfaced as msg invalid expiration per ResultRetcodeDescription mapping.",
+  "tie_to_observed_broker_message": {
+    "signal_id": "limitprove_20260325014628",
+    "log_types": ["SIGNAL_ACCEPT", "REQUEST_SUMMARY", "BROKER_REJECT"],
+    "reject_msg": "invalid expiration"
+  },
+  "source_lines_responsible": [
+    {
+      "file": "ea/FTMO_Bridge_EA.mq5",
+      "version": "1.02",
+      "lines": "557-560",
+      "description": "BuyLimit/SellLimit called with symbol and entryPriceLimit swapped vs Trade.mqh signature."
+    },
+    {
+      "file": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Include\\Trade\\Trade.mqh",
+      "lines": "846-859",
+      "description": "Canonical parameter order for BuyLimit."
+    }
+  ],
+  "exclude_pure_expiration_policy_as_sole_cause": "REQUEST_SUMMARY in v1.02 logged parser-correct EURUSD and entry=1.16 while trade layer arguments were wrong; fix required both correct pending request shaping and explicit expiration policy in v1.03."
+}

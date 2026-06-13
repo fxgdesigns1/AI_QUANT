@@ -1,0 +1,8 @@
+{
+  "ftmo_bridge_log_jsonl_tail": [
+    "{\"type\":\"EA_START\",\"msg\":\"FTMO_Bridge_EA started\",\"signal_id\":\"\",\"ts\":\"2026.03.23 10:09:34\"}",
+    "{\"type\":\"BROKER_REJECT\",\"msg\":\"auto trading disabled by client\",\"signal_id\":\"test_20260323011859\",\"ts\":\"2026.03.23 10:09:35\"}"
+  ],
+  "experts_compile_log_reference": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Experts\\FTMO_Bridge_EA.log",
+  "terminal_journal_tab": "not_captured_programmatically"
+}

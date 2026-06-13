@@ -1,0 +1,7 @@
+{
+  "artifact": "windows_ea_dashboard_truth_postpatch",
+  "repo_scan": "dashboard/src/app/api/bridge/route.ts not present in this workspace (Python/HTML dashboard variants under dashboard/ only)",
+  "updates": "no_dashboard_ts_routes_to_patch",
+  "truth_semantics_preserved": "canonical execution semantics owner remains canonical_mac_file_bridge_v1 per job constraints; Windows MT5 EA remains stated active consumer",
+  "sidecar": "parallel_windows_sidecar_bridge_v1 read_only_first unchanged in this job"
+}

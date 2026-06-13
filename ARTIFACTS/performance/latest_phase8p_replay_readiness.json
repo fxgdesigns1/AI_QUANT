@@ -1,0 +1,18 @@
+{
+  "blocking_reasons": {},
+  "classification": "REPLAY_READY_FORWARD_CAPTURE_ENABLED",
+  "execution_paths_changed": false,
+  "first_replay_ready_at_utc": null,
+  "generated_at_utc": "2026-05-02T20:20:05.024423Z",
+  "latest_replay_ready_at_utc": null,
+  "live_permission": false,
+  "missing_fields_histogram": {},
+  "ny_live_enabled": false,
+  "ok": true,
+  "paper_review_only": true,
+  "phase": "Phase 8P",
+  "replay_not_ready_count": 0,
+  "replay_ready_exact_count": 0,
+  "row_count": 0,
+  "send_trade_unlock_changed": false
+}

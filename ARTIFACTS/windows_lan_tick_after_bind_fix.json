@@ -1,0 +1,1 @@
+{"symbol": "EURUSD", "bid": 1.15705, "ask": 1.15714, "bridge_id": "parallel_windows_sidecar_bridge_v1", "endpoint": "http://192.168.0.190:8877/symbols/EURUSD/tick", "pass": true, "real_data": true}

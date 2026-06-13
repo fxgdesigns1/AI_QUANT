@@ -1,0 +1,307 @@
+{
+  "saved_at_utc": "2026-05-03T12:10:31.392097Z",
+  "provider": "rapidapi_economic_calendar",
+  "fingerprint": "7061cb6379d199db88d31945",
+  "rows": [
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "GB",
+      "event": "CBI Distributive Trades*",
+      "date": "2026-04-27T10:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "Dallas Fed Mfg Bus Idx*",
+      "date": "2026-04-27T14:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "Exp Soybean Inspected *",
+      "date": "2026-04-27T15:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "Export Corn Inspected *",
+      "date": "2026-04-27T15:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "Export Wheat Inspected *",
+      "date": "2026-04-27T15:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "3M Bill Auc - BTC*",
+      "date": "2026-04-27T15:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "3M Bill Auc - HAP*",
+      "date": "2026-04-27T15:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "3M Bill Auc - HR*",
+      "date": "2026-04-27T15:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "3M Bill Auc - TA*",
+      "date": "2026-04-27T15:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "6M Bill Auc - BTC*",
+      "date": "2026-04-27T15:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "6M Bill Auc - HAP*",
+      "date": "2026-04-27T15:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "6M Bill Auc - HR*",
+      "date": "2026-04-27T15:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "6M Bill Auc - TA*",
+      "date": "2026-04-27T15:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "2Y Note Auc - BTC*",
+      "date": "2026-04-27T15:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "2Y Note Auc - HAP*",
+      "date": "2026-04-27T15:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "2Y Note Auc - HY*",
+      "date": "2026-04-27T15:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "2Y Note Auc - TA*",
+      "date": "2026-04-27T15:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "5Y Note Auc - BTC*",
+      "date": "2026-04-27T17:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "5Y Note Auc - HAP*",
+      "date": "2026-04-27T17:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "5Y Note Auc - HY*",
+      "date": "2026-04-27T17:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "5Y Note Auc - TA*",
+      "date": "2026-04-27T17:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "ADP Weekly NER Pulse",
+      "date": "2026-04-28T12:15:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "Redbook YY *",
+      "date": "2026-04-28T12:55:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "Monthly Home Price Index",
+      "date": "2026-04-28T13:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "Monthly Home Price MM",
+      "date": "2026-04-28T13:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "Monthly Home Price YY",
+      "date": "2026-04-28T13:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "CaseShiller 20 MM NSA*",
+      "date": "2026-04-28T13:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "CaseShiller 20 MM SA*",
+      "date": "2026-04-28T13:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "CaseShiller 20 YY NSA",
+      "date": "2026-04-28T13:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "Consumer Confidence*",
+      "date": "2026-04-28T14:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "Rich Fed Comp. Index",
+      "date": "2026-04-28T14:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "Rich Fed Mfg Shipments",
+      "date": "2026-04-28T14:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "Rich Fed, Services Index",
+      "date": "2026-04-28T14:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "Dallas Fed Services Revenues*",
+      "date": "2026-04-28T14:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "Texas Serv Sect Outlook*",
+      "date": "2026-04-28T14:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "2Y FRN BTC Ratio*",
+      "date": "2026-04-28T15:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "2Y FRN HAP*",
+      "date": "2026-04-28T15:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "2Y FRN HY*",
+      "date": "2026-04-28T15:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "2Y FRN Total Accp*",
+      "date": "2026-04-28T15:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "7Y Note Auc - BTC*",
+      "date": "2026-04-28T17:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "7Y Note Auc - HAP*",
+      "date": "2026-04-28T17:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "7Y Note Auc - HY*",
+      "date": "2026-04-28T17:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "7Y Note Auc - TA*",
+      "date": "2026-04-28T17:00:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "API Cushing number",
+      "date": "2026-04-28T20:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "API Wkly crude runs",
+      "date": "2026-04-28T20:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "API Wkly dist. Stk",
+      "date": "2026-04-28T20:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "API Wkly gsln stk",
+      "date": "2026-04-28T20:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "API weekly crude imports",
+      "date": "2026-04-28T20:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "API weekly heating oil",
+      "date": "2026-04-28T20:30:00.000Z"
+    },
+    {
+      "source": "rapidapi_economic_calendar",
+      "country": "US",
+      "event": "API weekly product imports",
+      "date": "2026-04-28T20:30:00.000Z"
+    }
+  ]
+}

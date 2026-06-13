@@ -1,0 +1,224 @@
+{
+  "audit_date": "2025-12-31",
+  "audit_type": "dependency_and_runtime_verification",
+  
+  "dependency_files": {
+    "primary_requirements": {
+      "file": "./requirements.txt",
+      "exists": true,
+      "dependencies": [
+        {"name": "PyYAML", "version": ">=5.4", "pinned": true},
+        {"name": "google-cloud-firestore", "version": "unspecified", "pinned": false},
+        {"name": "numpy", "version": "unspecified", "pinned": false},
+        {"name": "pandas", "version": "unspecified", "pinned": false},
+        {"name": "schedule", "version": "unspecified", "pinned": false},
+        {"name": "requests", "version": "unspecified", "pinned": false},
+        {"name": "python-telegram-bot", "version": "unspecified", "pinned": false},
+        {"name": "websocket-client", "version": "unspecified", "pinned": false},
+        {"name": "python-dotenv", "version": "unspecified", "pinned": false}
+      ],
+      "total_dependencies": 9,
+      "version_pinning_status": "POOR - Only 1 of 9 pinned",
+      "risk_level": "HIGH - Unpinned dependencies may cause version conflicts"
+    },
+    "alternative_requirements": [
+      {
+        "file": "./Sync folder MAC TO PC/DESKTOP_HANDOFF_PACKAGE/google-cloud-trading-system/requirements.txt",
+        "status": "SEPARATE_SYSTEM"
+      },
+      {
+        "file": "./Sync folder MAC TO PC/DESKTOP_HANDOFF_PACKAGE/google-cloud-trading-system/analytics/requirements.txt",
+        "status": "SEPARATE_SYSTEM"
+      }
+    ],
+    "poetry_lock": {
+      "exists": false,
+      "status": "NOT_USED"
+    },
+    "pyproject_toml": {
+      "exists": false,
+      "status": "NOT_USED"
+    }
+  },
+  
+  "python_version": {
+    "current_system": "Python 3.13.0",
+    "required_version": "UNSPECIFIED",
+    "compatibility_risk": "MEDIUM - No version specified in requirements",
+    "evidence": "System runs on Python 3.13.0 but no minimum version declared"
+  },
+  
+  "compile_verification": {
+    "ai_trading_system.py": {
+      "compile_status": "SUCCESS",
+      "syntax_errors": false,
+      "import_errors": "NOT_TESTED",
+      "evidence": "python3 -m py_compile succeeded"
+    },
+    "src/main.py": {
+      "compile_status": "SUCCESS",
+      "syntax_errors": false,
+      "import_errors": "NOT_TESTED",
+      "evidence": "python3 -m py_compile succeeded"
+    }
+  },
+  
+  "import_analysis": {
+    "standard_library": [
+      "os",
+      "sys",
+      "time",
+      "logging",
+      "json",
+      "threading",
+      "datetime"
+    ],
+    "third_party_required": [
+      "requests",
+      "pandas",
+      "yaml",
+      "schedule",
+      "pytz",
+      "flask",
+      "dotenv"
+    ],
+    "google_cloud_dependencies": [
+      {
+        "module": "google.cloud.firestore",
+        "usage": "Optional - Used in tools/migrate_*.py and src/strategies/trade_with_pat_orb_dual.py",
+        "required_for_main": false,
+        "evidence": "Wrapped in try/except blocks"
+      },
+      {
+        "module": "google.cloud.secretmanager",
+        "usage": "Optional - Used in cloud_declutter_v2/planned_deployment only",
+        "required_for_main": false,
+        "evidence": "Not used in main ai_trading_system.py"
+      }
+    ],
+    "local_imports": [
+      "src.core.account_orchestrator",
+      "src.analytics.topdown_analysis",
+      "src.analytics.topdown_scheduler",
+      "news_manager"
+    ],
+    "optional_imports": {
+      "news_manager": {
+        "status": "OPTIONAL",
+        "fallback": "NewsManager = None",
+        "evidence": "Wrapped in try/except at line 65-67"
+      },
+      "TopDownAnalyzer": {
+        "status": "OPTIONAL",
+        "fallback": "TopDownAnalyzer = None",
+        "evidence": "Wrapped in try/except at line 73-98"
+      },
+      "TradeDatabase": {
+        "status": "OPTIONAL",
+        "fallback": "TradeDatabase = None",
+        "evidence": "Wrapped in try/except at line 125-142"
+      }
+    }
+  },
+  
+  "runtime_dependencies": {
+    "oanda_api": {
+      "required": true,
+      "endpoint": "https://api-fxpractice.oanda.com",
+      "authentication": "API key via environment variable",
+      "status": "EXTERNAL_DEPENDENCY"
+    },
+    "telegram_api": {
+      "required": false,
+      "endpoint": "https://api.telegram.org",
+      "authentication": "Bot token via environment variable",
+      "status": "EXTERNAL_DEPENDENCY"
+    },
+    "marketaux_api": {
+      "required": false,
+      "endpoint": "https://api.marketaux.com",
+      "authentication": "API keys via environment variable",
+      "status": "EXTERNAL_DEPENDENCY"
+    },
+    "google_cloud_firestore": {
+      "required": false,
+      "usage": "Strategy configuration loading",
+      "status": "OPTIONAL_CLOUD_DEPENDENCY"
+    }
+  },
+  
+  "missing_dependencies_risk": {
+    "google-cloud-firestore": {
+      "risk": "LOW",
+      "reason": "Optional - System has fallback to YAML files",
+      "evidence": "trade_with_pat_orb_dual.py has try/except wrapper"
+    },
+    "news_manager": {
+      "risk": "LOW",
+      "reason": "Optional - System can run without news integration",
+      "evidence": "ai_trading_system.py line 65-67 has fallback"
+    },
+    "analytics_modules": {
+      "risk": "LOW",
+      "reason": "Optional - System can run without top-down analysis",
+      "evidence": "ai_trading_system.py line 92-98 has fallback"
+    }
+  },
+  
+  "version_compatibility_risks": [
+    {
+      "dependency": "python-telegram-bot",
+      "risk": "HIGH",
+      "reason": "Major version differences (v13 vs v20+) have breaking API changes",
+      "mitigation": "Pin to specific version"
+    },
+    {
+      "dependency": "google-cloud-firestore",
+      "risk": "MEDIUM",
+      "reason": "API changes between versions",
+      "mitigation": "Pin to specific version"
+    },
+    {
+      "dependency": "pandas",
+      "risk": "MEDIUM",
+      "reason": "Deprecation warnings and API changes across versions",
+      "mitigation": "Pin to specific version"
+    },
+    {
+      "dependency": "numpy",
+      "risk": "MEDIUM",
+      "reason": "Version compatibility with pandas",
+      "mitigation": "Pin to specific version"
+    }
+  ],
+  
+  "rebuild_requirements": {
+    "minimum_python": "3.8+ (estimated based on syntax)",
+    "recommended_python": "3.10 or 3.11 (for stability)",
+    "current_tested": "3.13.0",
+    "pip_install_command": "pip install -r requirements.txt",
+    "additional_steps": [
+      "Install google-cloud-firestore (optional)",
+      "Set environment variables for API keys",
+      "Create accounts.yaml configuration file"
+    ]
+  },
+  
+  "verdict": {
+    "dependency_completeness": "COMPLETE",
+    "version_pinning": "POOR",
+    "compile_status": "SUCCESS",
+    "runtime_readiness": "PARTIAL",
+    "blockers": [
+      "No version pinning (HIGH RISK for reproducibility)",
+      "Python version not specified",
+      "Optional dependencies not clearly documented"
+    ],
+    "recommendations": [
+      "Pin all dependency versions",
+      "Specify Python version requirement",
+      "Create requirements-dev.txt for development dependencies",
+      "Document which dependencies are optional"
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "timestamp": "2026-01-13T01:51:34.152987Z",
+  "run_dir": "artifacts/capability_inventory/20260113T014725Z",
+  "summary": {
+    "outlook": "implemented_stub",
+    "ai_insights": "code_exists_needs_keys",
+    "signals": "implemented",
+    "news": "implemented_enabled",
+    "calendar": "missing_backend"
+  },
+  "files": {}
+}

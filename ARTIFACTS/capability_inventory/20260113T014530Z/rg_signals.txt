@@ -1,0 +1,184 @@
+templates/forensic_command.html:44:        .suggestion-overlay { position: absolute; top: 15px; right: 15px; z-index: 50; animation: slideIn 0.5s ease; }
+templates/forensic_command.html:257:                             <!-- Enhanced Suggestion Overlay (Hidden by default, populated by JS) -->
+templates/forensic_command.html:258:                             <div class="suggestion-overlay" id="signal-overlay" style="display: none;">
+templates/forensic_command.html:309:                                    <span class="text-gray-500">Conviction</span>
+templates/forensic_command.html:310:                                    <span class="font-bold text-gray-400" id="conviction">-</span>
+templates/forensic_command.html:313:                                    <div class="progress-fill" id="conviction-bar" style="width: 0%"></div>
+templates/forensic_command.html:316:                                    <span class="text-gray-500">ATR Stability</span>
+templates/forensic_command.html:320:                                    <span class="text-gray-500">Market Bias</span>
+templates/forensic_command.html:332:                        <!-- Upcoming Signals Queue -->
+templates/forensic_command.html:334:                            <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-3">Upcoming Signals Queue</h3>
+templates/forensic_command.html:335:                            <div class="space-y-2" id="signals-queue">
+templates/forensic_command.html:336:                                <!-- Signals will be populated by JS based on active strategy -->
+templates/forensic_command.html:1395:        // NEW: Load Active Signals
+templates/forensic_command.html:1398:                const data = await apiGet("/api/signals/pending");
+templates/forensic_command.html:1399:                // data = { ok: true, signals: [...], execution_enabled: bool, ... }
+templates/forensic_command.html:1401:                const signals = data.signals || [];
+templates/forensic_command.html:1404:                const convictionEl = document.getElementById("conviction");
+templates/forensic_command.html:1405:                const convictionBar = document.getElementById("conviction-bar");
+templates/forensic_command.html:1413:                if (signals.length > 0) {
+templates/forensic_command.html:1414:                    const signal = signals[0]; // Take primary signal
+templates/forensic_command.html:1435:                    if (convictionEl) convictionEl.textContent = signal.confidence ? `${(signal.confidence * 100).toFixed(1)}%` : "-";
+templates/forensic_command.html:1436:                    if (convictionBar) convictionBar.style.width = signal.confidence ? `${signal.confidence * 100}%` : "0%";
+templates/forensic_command.html:1464:                    if (convictionEl) convictionEl.textContent = "-";
+templates/forensic_command.html:1465:                    if (convictionBar) convictionBar.style.width = "0%";
+templates/forensic_command.html:1485:                // Update Signals Queue
+templates/forensic_command.html:1486:                const queueEl = document.getElementById("signals-queue");
+templates/forensic_command.html:1488:                    if (signals.length > 1) {
+templates/forensic_command.html:1489:                         // Show other signals
+templates/forensic_command.html:1490:                         const otherSignals = signals.slice(1);
+templates/forensic_command.html:1491:                         queueEl.innerHTML = otherSignals.map(s => `
+templates/forensic_command.html:1686:        async function pollSignals() { /* ... existing impl ... */ }
+templates/forensic_command.html:1689:        function renderSignalsQueue(signals) { /* ... existing impl ... */ }
+templates/forensic_command.html:1749:            setInterval(() => updateActiveSignal(), 5000); // Poll signals
+templates/forensic_command.html.save:34:        .badge.signals-only {
+templates/forensic_command.html.save:279:        .conviction-bar {
+templates/forensic_command.html.save:288:        .conviction-fill {
+templates/forensic_command.html.save:303:        /* Signals Queue */
+templates/forensic_command.html.save:565:            <span id="execution-badge" class="badge signals-only">SIGNALS-ONLY</span>
+templates/forensic_command.html.save:606:                        <span class="metric-label">Signals</span>
+templates/forensic_command.html.save:607:                        <span id="metric-signals" class="metric-value">--</span>
+templates/forensic_command.html.save:648:                            <span style="font-size: 0.875rem; color: var(--text-secondary);">Conviction:</span>
+templates/forensic_command.html.save:649:                            <span id="signal-conviction" style="font-weight: 600; margin-left: 0.5rem;">--</span>
+templates/forensic_command.html.save:651:                        <div class="conviction-bar">
+templates/forensic_command.html.save:652:                            <div id="conviction-fill" class="conviction-fill" style="width: 0%"></div>
+templates/forensic_command.html.save:708:            <!-- Signals Queue -->
+templates/forensic_command.html.save:710:                <div class="card-title">Signals Queue</div>
+templates/forensic_command.html.save:711:                <div id="signals-queue">
+templates/forensic_command.html.save:714:                        <p style="font-size: 0.875rem;">No signals yet</p>
+templates/forensic_command.html.save:758:        const POLL_SIGNALS_INTERVAL = 3000;
+templates/forensic_command.html.save:764:        let signalsData = null;
+templates/forensic_command.html.save:878:                execBadge.textContent = 'SIGNALS-ONLY';
+templates/forensic_command.html.save:879:                execBadge.className = 'badge signals-only';
+templates/forensic_command.html.save:889:            updateMetric('signals', data.last_signals_generated || 0);
+templates/forensic_command.html.save:931:        // Poll Signals
+templates/forensic_command.html.save:932:        async function pollSignals() {
+templates/forensic_command.html.save:933:            const data = await fetchJson('/api/signals/pending');
+templates/forensic_command.html.save:936:            signalsData = data;
+templates/forensic_command.html.save:938:            const container = document.getElementById('signals-queue');
+templates/forensic_command.html.save:940:            if (!data.signals || data.signals.length === 0) {
+templates/forensic_command.html.save:944:                        <p style="font-size: 0.875rem;">No signals yet</p>
+templates/forensic_command.html.save:952:            const firstSignal = data.signals[0];
+templates/forensic_command.html.save:962:                const conviction = firstSignal.confidence || firstSignal.probability || 0;
+templates/forensic_command.html.save:963:                document.getElementById('signal-conviction').textContent = `${Math.round(conviction * 100)}%`;
+templates/forensic_command.html.save:964:                document.getElementById('conviction-fill').style.width = `${conviction * 100}%`;
+templates/forensic_command.html.save:971:            container.innerHTML = data.signals.slice(0, 10).map(signal => `
+templates/forensic_command.html.save:1125:                pollSignals(),
+templates/forensic_command.html.save:1131:            setInterval(pollSignals, POLL_SIGNALS_INTERVAL);
+templates/forensic_command.html.save:1132:            setInterval(pollPositions, POLL_SIGNALS_INTERVAL);
+scripts/dashboard_probe.py:22:    "/api/signals/pending",
+scripts/create_systemd_unit.sh:21:Description=AI_QUANT Control Plane (paper, signals-only)
+src/control_plane/schema.py:45:    signals_only: bool = True  # Default: signals-only mode
+scripts/verify_price_sanity_and_tp_fix.sh:47:        warn "No log markers found (may be normal if no signals generated or no blocks occurred)"
+scripts/system_probe.py:91:            print("❌ BLOCKER: No accounts configured. System is in 'signals-only' mode with no targets.")
+scripts/system_probe.py:112:    print("Verifying that strategies GENERATE signals and execute if env is correct.")
+templates/dashboard_advanced.html:679:        /* Trading Signals */
+templates/dashboard_advanced.html:680:        .trading-signals {
+templates/dashboard_advanced.html:1076:                <a class="nav-link" href="#signals" data-section="signals">
+templates/dashboard_advanced.html:1078:                    Trading Signals
+templates/dashboard_advanced.html:1173:                        <!-- Trading Signals -->
+templates/dashboard_advanced.html:1175:                            <div class="card-header">Trading Signals</div>
+templates/dashboard_advanced.html:1176:                            <div class="card-body" id="tradingSignals">
+templates/dashboard_advanced.html:1179:                                    <div>Loading trading signals...</div>
+templates/dashboard_advanced.html:1246:                <!-- Active Trades & Signals Section -->
+templates/dashboard_advanced.html:1248:                    <div class="card full-width trading-signals-section">
+templates/dashboard_advanced.html:1249:                        <h3><span class="card-icon">📊</span>Active Trades & Signals</h3>
+templates/dashboard_advanced.html:1650:        <section id="signals" class="content-section">
+templates/dashboard_advanced.html:1652:                <h2>🎯 Trading Signals</h2>
+templates/dashboard_advanced.html:1653:                <div id="signalsGrid" class="row"></div>
+templates/dashboard_advanced.html:1658:        async function loadSignalsSection() {
+templates/dashboard_advanced.html:1660:                const response = await fetch('/api/signals/pending');
+templates/dashboard_advanced.html:1663:                const grid = document.getElementById('signalsGrid');
+templates/dashboard_advanced.html:1665:                    if (data.signals && data.signals.length > 0) {
+templates/dashboard_advanced.html:1666:                        grid.innerHTML = data.signals.map(signal => `
+templates/dashboard_advanced.html:1680:                        grid.innerHTML = '<div class="col-12"><div class="alert alert-info">No pending signals</div></div>';
+templates/dashboard_advanced.html:1684:                console.error('Signals load error:', error);
+templates/dashboard_advanced.html:1685:                const grid = document.getElementById('signalsGrid');
+templates/dashboard_advanced.html:1687:                    grid.innerHTML = '<div class="col-12"><div class="alert alert-warning">Failed to load signals data</div></div>';
+templates/dashboard_advanced.html:1991:                            'signals': loadSignalsSection,
+templates/dashboard_advanced.html:2183:            loadTradingSignals();
+templates/dashboard_advanced.html:2200:                loadTradingSignals();
+templates/dashboard_advanced.html:2869:                "📰 News Impact: Recent economic data shows mixed signals. The Federal Reserve's stance on interest rates continues to influence market sentiment.",
+templates/dashboard_advanced.html:2871:                "🎯 Trading Strategy: The system is currently monitoring multiple timeframes for entry signals. Gold scalping strategy shows promising setups on 5-minute charts.",
+templates/dashboard_advanced.html:2880:        // Load trading signals
+templates/dashboard_advanced.html:2881:        async function loadTradingSignals() {
+templates/dashboard_advanced.html:2883:                console.log('🎯 Loading trading signals...');
+templates/dashboard_advanced.html:2894:                        updateTradingSignals(data);
+templates/dashboard_advanced.html:2898:                console.error('❌ Trading signals error:', error);
+templates/dashboard_advanced.html:2902:        // Update trading signals display
+templates/dashboard_advanced.html:2903:        function updateTradingSignals(signals) {
+templates/dashboard_advanced.html:2904:            console.log('🎯 Updating trading signals...');
+templates/dashboard_advanced.html:2905:            const signalsContainer = document.getElementById('activeTradesData');
+templates/dashboard_advanced.html:2906:            if (!signalsContainer) return;
+templates/dashboard_advanced.html:2908:            signalsContainer.innerHTML = `
+templates/dashboard_advanced.html:2909:                <div class="trading-signals">
+templates/dashboard_advanced.html:2938:            else if (lower.startsWith('/signals')) url = '/api/signals/recent';
+templates/dashboard_advanced.html:2950:                aiMsg.textContent = 'Unknown command. Try: /status /accounts /risk /metrics /positions /signals /news /insights /ideas';
+scripts/verify_dashboard_compat.sh:3:# Tests: signals-only safety, snapshot creation, API endpoints, no secrets
+scripts/verify_dashboard_compat.sh:34:# Test A: Signals-only safety
+scripts/verify_dashboard_compat.sh:35:echo "Test A: Signals-only safety (CRITICAL)"
+scripts/verify_dashboard_compat.sh:38:python3 -m runner_src.runner.main 2>&1 | tee /tmp/signals_only_test.log > /dev/null
+scripts/verify_dashboard_compat.sh:40:if grep -qi "Order manager initialized\|place_market_order\|Submitting.*order\|ORDER_CREATE\|TRADE_OPEN\|TRADE_CLOSE\|/orders\|/trades" /tmp/signals_only_test.log; then
+scripts/verify_dashboard_compat.sh:41:    fail "Execution markers found in signals-only mode!"
+scripts/verify_dashboard_compat.sh:44:pass "Signals-only mode is safe (no execution markers)"
+scripts/verify_dashboard_compat.sh:59:if ! python3 -c "import json; data=json.load(open('runtime/status.json')); assert 'execution_enabled' in data and 'accounts_execution_capable' in data and 'last_signals_generated' in data and 'last_executed_count' in data" 2>/dev/null; then
+scripts/verify_dashboard_compat.sh:60:    fail "runtime/status.json missing required fields (execution_enabled, accounts_execution_capable, last_signals_generated, last_executed_count)"
+scripts/verify_dashboard_compat.sh:140:        "/api/signals/pending"
+scripts/verify_dashboard_compat.sh:180:# Test G: Snapshot fields reflect signals-only truth
+scripts/verify_dashboard_compat.sh:188:        pass "Snapshot correctly reflects signals-only mode (execution_enabled=false)"
+scripts/verify_dashboard_compat.sh:190:        warn "Snapshot execution_enabled=$execution_enabled (expected false in signals-only)"
+scripts/verify_control_plane.sh:407:echo "   4. Wait 60 seconds (polling window: pollStatus every 5s, pollSignals/pollPositions every 3s)"
+scripts/system_probe_full.py:35:    print("Verifying strategies GENERATE signals and EXECUTE for all configured accounts.\n")
+src/control_plane/structural_scanner.py:4:READ-ONLY. Does not generate trade signals.
+scripts/local_run_and_verify.sh:9:# Gating flags (default to 0 for signals-only boot)
+scripts/local_run_and_verify.sh:58:echo "✅ LOCAL PASS: system operational (paper-safe, signals-only mode)"
+scripts/bringup_local_full.sh:88:    echo "   This is OK if OANDA_ACCOUNT_ID is not set (signals-only mode)"
+scripts/bringup_local_full.sh:148:    echo "   This is OK for signals-only mode"
+scripts/start_runner_clean.sh:69:    echo "   ⚠️  OANDA_ACCOUNT_ID not set - runner will run in signals-only mode (no accounts loaded)"
+scripts/show_account_strategy_status.py:69:        print(f"   ❌ Execution is DISABLED - signals only, no trades")
+scripts/show_account_strategy_status.py:71:        print(f"   ✅ Execution is ENABLED - trades will execute if signals pass safety gates")
+src/core/dynamic_account_manager.py:70:                    "or set EXECUTION_UNLOCK_OK=false for signals-only mode."
+src/core/dynamic_account_manager.py:73:            logger.warning("⚠️ No accounts configured - running in paper mode with zero accounts (signals-only)")
+scripts/verify_all_accounts_active.py:80:        print(f"   Account {acc}: {count} signals, strategies: {unique_strats}")
+scripts/verify_all_accounts_active.py:125:print(f"All 5 accounts are configured and generating signals.")
+scripts/verify_all_accounts_active.py:128:print(f"  - Logs: {len(accounts_seen)} accounts with recent signals")
+src/strategies/momentum_trading.py:56:    def generate_signals(self, market_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+src/strategies/momentum_trading.py:57:        """Generate trading signals - returns empty list (stub implementation)"""
+src/strategies/momentum_trading.py:61:        # Stub implementation - no actual signals generated
+src/strategies/momentum_trading.py:62:        logger.debug("MomentumTradingStrategy.generate_signals called (stub - no signals)")
+src/strategies/momentum_trading.py:74:        """Analyze market data and generate trading signals
+src/strategies/momentum_trading.py:81:            List of TradeSignal objects (empty list if no signals)
+src/strategies/momentum_trading.py:86:        signals = []
+src/strategies/momentum_trading.py:89:            return signals
+src/strategies/momentum_trading.py:127:                # For now, generate signals based on simple heuristics
+src/strategies/momentum_trading.py:159:                    signals.append(signal)
+src/strategies/momentum_trading.py:166:        return signals
+src/control_plane/api.py:121:    last_signals_generated: int = 0
+src/control_plane/api.py:507:            last_signals_generated=snapshot.get("last_signals_generated", 0),
+src/control_plane/api.py:574:        last_signals_generated=0,
+src/control_plane/api.py:767:    last_signals_generated = status_data.get("last_signals_generated", 0)
+src/control_plane/api.py:810:            "last_signals_generated": last_signals_generated,
+src/control_plane/api.py:1315:    Truthful in signals-only mode: execution_capable=0 when disabled.
+src/control_plane/api.py:1355:        "note": "Signals-only mode" if execution_capable == 0 else "Execution enabled",
+src/control_plane/api.py:1398:    Truthful: returns empty in signals-only mode.
+src/control_plane/api.py:1409:        "source": "signals-only" if not execution_enabled else "live",
+src/control_plane/api.py:1410:        "reason": "Execution disabled - signals-only mode" if not execution_enabled else "Live execution enabled",
+src/control_plane/api.py:1415:@app.get("/api/signals/pending")
+src/control_plane/api.py:1416:async def get_signals_pending():
+src/control_plane/api.py:1417:    """Get pending signals (dashboard compatibility)
+src/control_plane/api.py:1419:    Returns signals generated by scanner. In signals-only mode, these are NOT executed.
+src/control_plane/api.py:1425:        signals = snapshot.get("recent_signals", [])
+src/control_plane/api.py:1430:        signals = []
+src/control_plane/api.py:1437:        "signals": signals,
+src/control_plane/api.py:1441:        "note": "Signals generated but NOT executed (signals-only)" if not execution_enabled else "Signals will be executed",
+src/control_plane/api.py:1920:    Returns structured result with model, timestamp, per-provider signals.
+src/control_plane/api.py:1943:            "per_provider_signals": {},
+src/control_plane/api.py:1982:    # Per-provider signals (based on which providers contributed news)
+src/control_plane/api.py:1983:    per_provider_signals = {}
+src/control_plane/api.py:1987:            per_provider_signals[provider] = {
+src/control_plane/api.py:2000:        "per_provider_signals": per_provider_signals,
+src/control_plane/api.py:2134:    Returns pending opportunities/signals. In signals-only mode, these are NOT executed.
+src/control_plane/api.py:2142:    # If snapshot has recent signals, add them as opportunities (if not already in store)
+src/control_plane/api.py:2144:        recent_signals = snapshot.get("recent_signals", [])
+src/control_plane/api.py:2145:        for signal in recent_signals[:10]:  # Limit to recent 10
+src/control_plane/api.py:2163:        "note": "Opportunities are informational. Approval does NOT execute trades (signals-only mode)" if not execution_enabled else "Opportunities available",

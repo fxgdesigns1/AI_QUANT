@@ -1,0 +1,8 @@
+{
+  "canonical_panel": "CriticalCanonicalBridgePanel",
+  "windows_sidecar_panel": "WindowsSidecarPanel",
+  "execution_bridge": "canonical_mac_file_bridge_v1",
+  "data_bridge": "parallel_windows_sidecar_bridge_v1",
+  "diagnostics_bridge": "parallel_windows_sidecar_bridge_v1",
+  "no_generic_merged_badge": true
+}

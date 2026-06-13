@@ -1,0 +1,14 @@
+{
+  "job": "FXG_PORT_LIVE_WINDOWS_SIDECAR_CONTROL_AND_VERIFY_FROM_MAC_V1",
+  "phase": "6_openapi_windows_local",
+  "source": "GET http://127.0.0.1:8877/openapi.json with x-api-key",
+  "control_paths_observed": [
+    "/control/cancel-all-orders",
+    "/control/cancel-order",
+    "/control/close-all-positions",
+    "/control/close-position",
+    "/control/flatten-all"
+  ],
+  "root_read_only_when_write_true": false,
+  "hard_pass_openapi": "PASS"
+}

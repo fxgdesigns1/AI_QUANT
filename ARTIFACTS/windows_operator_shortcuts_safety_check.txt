@@ -1,0 +1,18 @@
+FXG_WINDOWS_SIDECAR_OPERATOR - Safety Check
+===========================================
+
+1. git diff (canonical bridge, manual_execution, bridge routes, bridge_accounts):
+   No changes to src/core/manual_execution.py
+   No changes to dashboard/src/app/api/bridge/route.ts
+   No changes to configs/bridge_accounts.json
+   => canonical execution bridge unchanged
+
+2. rg "orders/send|order_send|positions/close|send_order|close_position" bridges/windows_sidecar:
+   Only test_contracts.py: forbidden_paths = ["/orders/send", "/orders/preview", "/positions/close"]
+   => no new write routes added
+
+3. rg "canonical_mac_file_bridge_v1|parallel_windows_sidecar_bridge_v1":
+   Bridge identities explicit in fxg_win_status.ps1, config, main.py
+   => bridge ownership remains explicit
+
+4. sidecar remains read_only_first (health, account, positions, orders, symbols, diagnostics only)

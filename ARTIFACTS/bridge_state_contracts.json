@@ -1,0 +1,46 @@
+{
+  "contracts_version": "1.0",
+  "normalized_bridge_status": {
+    "bridge_id": "string",
+    "bridge_family": "canonical_mac_file_bridge|windows_sidecar_bridge",
+    "bridge_role": "execution_signal_bridge|account_price_diagnostics_bridge|hybrid",
+    "machine": "alpha|mac|windows|desktop_mock",
+    "enabled": "boolean",
+    "healthy": "boolean",
+    "degraded": "boolean",
+    "failure_bucket": "string|null",
+    "recommended_fix": "string|null",
+    "last_success_utc": "string|null",
+    "last_update_age_ms": "integer|null",
+    "data_capabilities": "string[]",
+    "execution_capabilities": "string[]",
+    "notes": "string[]"
+  },
+  "canonical_mac_file_bridge_v1": {
+    "bridge_id": "canonical_mac_file_bridge_v1",
+    "failure_buckets": [
+      "producer_fail",
+      "transport_fail",
+      "consumer_path_fail",
+      "ea_parse_fail",
+      "broker_reject_fail",
+      "unknown_fail"
+    ]
+  },
+  "parallel_windows_sidecar_bridge_v1": {
+    "bridge_id": "parallel_windows_sidecar_bridge_v1",
+    "failure_buckets": [
+      "sidecar_unreachable",
+      "terminal_not_running",
+      "mt5_initialize_failed",
+      "account_not_logged_in",
+      "account_info_unavailable",
+      "symbol_not_selected",
+      "tick_stale",
+      "history_unavailable",
+      "write_guard_blocked",
+      "broker_reject",
+      "unknown_fail"
+    ]
+  }
+}

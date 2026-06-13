@@ -1,0 +1,1 @@
+{"script":"fxg_win_healthcheck.ps1","exit_code":0,"health":"service_up=True, terminal=True, account=True","account":"login=1512827972, server=FTMO-Demo, balance=97275.63","tick":"bid=1.15627, ask=1.15631","pass":true}

@@ -1,0 +1,70 @@
+{
+  "timestamp": "2026-01-21T21:29:37.245455+00:00",
+  "results": [
+    {
+      "instrument": "XAU_USD",
+      "price": 4832.53,
+      "move_24h_pct": 1.4519132462941124,
+      "move_72h_pct": 5.478979637717686,
+      "atr": 34.283928571428596,
+      "atr_percentile": 97.6245924545878,
+      "adx": 1141.0668081796516,
+      "regime": "SHOCK",
+      "bias": "NEUTRAL",
+      "reason": "Shock Volatility (ATR% 97.6 > 95.0)",
+      "is_gold": true
+    },
+    {
+      "instrument": "EUR_USD",
+      "price": 1.16844,
+      "move_24h_pct": -0.3233153903244399,
+      "move_72h_pct": 0.8632298608473473,
+      "atr": 0.0016264285714285207,
+      "atr_percentile": 93.01350721937587,
+      "adx": 995.634142647157,
+      "regime": "TRENDING",
+      "bias": "NEUTRAL",
+      "reason": "Messy EMA Structure (EMAs not aligned)",
+      "is_gold": false
+    },
+    {
+      "instrument": "GBP_USD",
+      "price": 1.34257,
+      "move_24h_pct": -0.13314885893659126,
+      "move_72h_pct": 0.5248734613195933,
+      "atr": 0.0020621428571428696,
+      "atr_percentile": 90.73125291103867,
+      "adx": 1358.132174418925,
+      "regime": "TRENDING",
+      "bias": "BEARISH",
+      "reason": "Trend Alignment (Price < EMA50 < EMA200)",
+      "is_gold": false
+    },
+    {
+      "instrument": "USD_JPY",
+      "price": 158.354,
+      "move_24h_pct": 0.1194954635981547,
+      "move_72h_pct": 0.30403993057756074,
+      "atr": 0.19107142857142737,
+      "atr_percentile": 49.46436888681882,
+      "adx": -324.8305370288553,
+      "regime": "RANGING",
+      "bias": "NEUTRAL",
+      "reason": "Weak Trend (ADX -324.8 < 25.0)",
+      "is_gold": false
+    },
+    {
+      "instrument": "GBP_JPY",
+      "price": 212.601,
+      "move_24h_pct": -0.014579179051133371,
+      "move_72h_pct": 0.8361870251093282,
+      "atr": 0.29149999999999715,
+      "atr_percentile": 75.08150908244062,
+      "adx": 217.7685182059122,
+      "regime": "TRENDING",
+      "bias": "BULLISH",
+      "reason": "Trend Alignment (Price > EMA50 > EMA200)",
+      "is_gold": false
+    }
+  ]
+}

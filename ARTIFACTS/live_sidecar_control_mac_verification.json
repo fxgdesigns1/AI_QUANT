@@ -1,0 +1,20 @@
+{
+  "job": "FXG_PORT_LIVE_WINDOWS_SIDECAR_CONTROL_AND_VERIFY_FROM_MAC_V1",
+  "phase": "7_mac_verification",
+  "execution_environment": "Cursor agent on Windows host; Mac commands NOT executed by agent",
+  "hard_pass_mac": "NOT PROVEN by agent",
+  "required_mac_commands_supplied": [
+    "cd \"/Users/mac/Library/CloudStorage/GoogleDrive-fxgdesigns1@gmail.com/My Drive/AI Trading/Gcloud system\"",
+    "source .venv/bin/activate",
+    "export MT5_SIDECAR_API_KEY=\"$(grep '^MT5_SIDECAR_API_KEY=' dashboard/.env.local | cut -d= -f2-)\"",
+    "nc -vz -w 5 100.122.152.80 8877",
+    "curl -sS -m 8 -H \"x-api-key: $MT5_SIDECAR_API_KEY\" http://100.122.152.80:8877/health",
+    "curl -sS -m 8 -H \"x-api-key: $MT5_SIDECAR_API_KEY\" http://100.122.152.80:8877/account",
+    "curl -sS -m 8 -H \"x-api-key: $MT5_SIDECAR_API_KEY\" http://100.122.152.80:8877/positions",
+    "curl -sS -m 8 -H \"x-api-key: $MT5_SIDECAR_API_KEY\" http://100.122.152.80:8877/orders",
+    "curl -sS -m 8 -H \"x-api-key: $MT5_SIDECAR_API_KEY\" http://100.122.152.80:8877/openapi.json > /tmp/fxg_openapi.json",
+    "python3 - <<'PY'\nimport json\np=json.load(open('/tmp/fxg_openapi.json'))\nprint(sorted([k for k in p.get('paths',{}) if '/control' in k]))\nPY",
+    "curl -i -sS -m 8 -H \"x-api-key: $MT5_SIDECAR_API_KEY\" -H \"Content-Type: application/json\" -X POST http://100.122.152.80:8877/control/flatten-all -d '{}'"
+  ],
+  "note_key_name": "Sidecar reads SIDECAR_API_KEY from bridges/windows_sidecar/.env; Mac snippet uses MT5_SIDECAR_API_KEY from dashboard/.env.local — values must match what the Windows sidecar enforces."
+}

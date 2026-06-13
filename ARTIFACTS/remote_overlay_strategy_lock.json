@@ -1,0 +1,9 @@
+{
+  "overlay_client_name": "Tailscale",
+  "windows_remote_target_identifier": "Tailscale hostname or 100.x.x.x IP (tailnet)",
+  "mac_remote_target_identifier": "Same Tailscale tailnet; reach Windows via hostname or IP",
+  "dashboard_target_kind_values": ["home_lan", "remote_overlay"],
+  "reason_for_choice": "Tailscale is mesh VPN, zero-config once installed, works across NAT/firewalls, no home LAN dependency. Widely used, free for personal use.",
+  "config_file": "src/control_plane/config/sidecar_target.json",
+  "ts_utc": "2026-03-23T01:30:00Z"
+}

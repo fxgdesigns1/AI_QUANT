@@ -94,8 +94,8 @@ class AgentController:
 # Flask app
 app = Flask(__name__)
 
-# Initialize agent controller
-demo_account = os.getenv('AGENT_DEMO_ACCOUNT_ID', '101-004-30719775-008')
+# Initialize agent controller (require explicit account; do not hardcode unproven lanes)
+demo_account = os.getenv('AGENT_DEMO_ACCOUNT_ID', os.getenv("OANDA_ACCOUNT_ID", "")).strip()
 agent_controller = AgentController(demo_account)
 agent_controller.start()
 

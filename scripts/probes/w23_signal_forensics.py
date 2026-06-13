@@ -89,6 +89,30 @@ _USD_QUOTE_PAIRS = {"EUR_USD", "GBP_USD", "XAU_USD", "AUD_USD", "NZD_USD"}
 _USD_BASE_PAIRS  = {"USD_JPY", "USD_CAD", "USD_CHF"}
 
 
+# ---------------------------------------------------------------------------
+# Session bucket classification
+# ---------------------------------------------------------------------------
+# Priority order: DEAD_ZONE > LON_PRIMARY > NY_OVERLAP > OUTSIDE
+# Minutes since midnight UTC boundaries:
+#   DEAD_ZONE   08:00–09:30  → 480–570  (known coverage gap within LON open)
+#   LON_PRIMARY 09:31–10:30  → 571–630  (remainder of London primary window)
+#   NY_OVERLAP  13:00–16:00  → 780–960
+#   OUTSIDE     everything else
+
+_SESSION_ORDER = ["DEAD_ZONE", "LON_PRIMARY", "NY_OVERLAP", "OUTSIDE"]
+
+
+def _classify_session(ts: datetime) -> str:
+    m = ts.hour * 60 + ts.minute  # minutes since midnight UTC
+    if 480 <= m <= 570:
+        return "DEAD_ZONE"
+    if 570 < m <= 630:
+        return "LON_PRIMARY"
+    if 780 <= m <= 960:
+        return "NY_OVERLAP"
+    return "OUTSIDE"
+
+
 def _instrument_currencies(instrument: str) -> List[str]:
     instr = instrument.upper().replace("/", "_").replace("-", "_")
     if instr in _PAIR_CURRENCIES:
@@ -256,6 +280,15 @@ def _parse_direction(raw: str) -> str:
 def _parse_csv_ts(date_str: str, time_str: str) -> Optional[datetime]:
     date_str = date_str.strip()
     time_str = time_str.strip()
+    # Fast path: signal_time_utc is already a full ISO datetime
+    # e.g. "2026-06-02T05:00:00.000000000Z" — strip sub-second precision then parse
+    if "T" in time_str:
+        clean = time_str.split(".")[0].rstrip("Z").replace("T", " ")
+        try:
+            return datetime.strptime(clean, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
+        except ValueError:
+            pass
+    # Standard path: combine signal_date + signal_time_utc
     for date_fmt in ("%Y-%m-%d", "%d/%m/%Y", "%m/%d/%Y", "%Y%m%d"):
         for time_fmt in _TIME_FMTS:
             try:
@@ -336,11 +369,13 @@ def analyse(
         xref       = cross_reference_signal(ts, instrument, side)
 
         results.append({
-            "signal_id":   sig.get("signal_id", ""),
-            "strategy":    sig.get("strategy", ""),
-            "symbol":      instrument,
-            "side":        side,
-            "signal_ts":   ts.strftime("%Y-%m-%d %H:%M:%S"),
+            "signal_id":      sig.get("signal_id", ""),
+            "strategy":       sig.get("strategy", ""),
+            "symbol":         instrument,
+            "side":           side,
+            "signal_ts":      ts.strftime("%Y-%m-%d %H:%M:%S"),
+            "session_bucket": _classify_session(ts),
+            "outcome":        sig.get("outcome", ""),
             **xref,
         })
 
@@ -361,7 +396,25 @@ def analyse(
         "no_timestamp":      len(no_ts),
     }
 
-    return {"summary": summary, "signals": results}
+    # Pass 3: session bucket breakdown
+    session_breakdown: Dict[str, Dict[str, int]] = {
+        b: {"total": 0, "win": 0, "loss": 0, "timeout": 0, "clear_losses": 0}
+        for b in _SESSION_ORDER
+    }
+    for r in results:
+        bucket = r["session_bucket"]
+        outcome = r.get("outcome", "").upper()
+        session_breakdown[bucket]["total"] += 1
+        if outcome == "WIN":
+            session_breakdown[bucket]["win"] += 1
+        elif outcome == "LOSS":
+            session_breakdown[bucket]["loss"] += 1
+        elif outcome in ("TIMEOUT", "TIMED_OUT"):
+            session_breakdown[bucket]["timeout"] += 1
+        if r["status"] == "CLEAR" and outcome == "LOSS":
+            session_breakdown[bucket]["clear_losses"] += 1
+
+    return {"summary": summary, "signals": results, "session_breakdown": session_breakdown}
 
 
 # ---------------------------------------------------------------------------
@@ -406,6 +459,40 @@ def _print_report(data: Dict[str, Any], source: str = "log files") -> None:
         print(f"  [{r['signal_ts']}] {r['symbol']} {r['side']}  CLEAR")
     if len(clears) > 10:
         print(f"  ... and {len(clears)-10} more CLEAR signals")
+
+    # --- Pass 3: session bucket breakdown ---
+    sb = data.get("session_breakdown")
+    if not sb:
+        return
+
+    print("\n=== PASS 3: SESSION BUCKET WIN-RATE ANALYSIS ===")
+    hdr = f"  {'Bucket':<14} {'Sigs':>5} {'WIN':>5} {'LOSS':>6} {'TO':>4}  {'WinRate%':>9}  {'ClearLoss':>10}"
+    print(hdr)
+    print("  " + "-" * (len(hdr) - 2))
+
+    total_sigs = total_win = total_loss = total_to = total_cl = 0
+    for bucket in _SESSION_ORDER:
+        st = sb[bucket]
+        n, w, l, t, cl = st["total"], st["win"], st["loss"], st["timeout"], st["clear_losses"]
+        wr = f"{100*w/n:.1f}%" if n else "  N/A"
+        print(f"  {bucket:<14} {n:>5} {w:>5} {l:>6} {t:>4}  {wr:>9}  {cl:>10}")
+        total_sigs += n; total_win += w; total_loss += l; total_to += t; total_cl += cl
+
+    print("  " + "-" * (len(hdr) - 2))
+    total_wr = f"{100*total_win/total_sigs:.1f}%" if total_sigs else "  N/A"
+    print(f"  {'TOTAL':<14} {total_sigs:>5} {total_win:>5} {total_loss:>6} {total_to:>4}  {total_wr:>9}  {total_cl:>10}")
+
+    # CLEAR-loss breakdown: OUTSIDE vs live windows
+    clear_loss_total  = sum(sb[b]["clear_losses"] for b in _SESSION_ORDER)
+    cl_outside        = sb["OUTSIDE"]["clear_losses"]
+    cl_live           = sb["LON_PRIMARY"]["clear_losses"] + sb["NY_OVERLAP"]["clear_losses"]
+    cl_dead           = sb["DEAD_ZONE"]["clear_losses"]
+
+    print(f"\n  CLEAR LOSSES breakdown (of {clear_loss_total} total):")
+    print(f"    OUTSIDE     : {cl_outside:>3}  ({100*cl_outside/max(1,clear_loss_total):.1f}%)")
+    print(f"    DEAD_ZONE   : {cl_dead:>3}  ({100*cl_dead/max(1,clear_loss_total):.1f}%)")
+    print(f"    LIVE windows: {cl_live:>3}  ({100*cl_live/max(1,clear_loss_total):.1f}%)  "
+          f"[LON_PRIMARY={sb['LON_PRIMARY']['clear_losses']}  NY_OVERLAP={sb['NY_OVERLAP']['clear_losses']}]")
 
 
 # ---------------------------------------------------------------------------

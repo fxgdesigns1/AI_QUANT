@@ -1,0 +1,14 @@
+﻿{
+    "ts_utc":  "2026-03-26T07:12:50.8216245Z",
+    "backup_dir":  "H:\\My Drive\\AI Trading\\Gcloud system\\artifacts\\windows_direct_pull_backup_20260326_071247",
+    "sources":  [
+                    {
+                        "backup":  "H:\\My Drive\\AI Trading\\Gcloud system\\artifacts\\windows_direct_pull_backup_20260326_071247\\signals_ftmo_demo2.jsonl",
+                        "path":  "C:\\\\Users\\\\gavin\\\\AppData\\\\Roaming\\\\MetaQuotes\\\\Terminal\\\\D0E8209F77C8CF37AD8BF550E51FF075\\\\MQL5\\\\Files\\signals_ftmo_demo2.jsonl"
+                    },
+                    {
+                        "backup":  "H:\\My Drive\\AI Trading\\Gcloud system\\artifacts\\windows_direct_pull_backup_20260326_071247\\ftmo_bridge_log.jsonl",
+                        "path":  "C:\\\\Users\\\\gavin\\\\AppData\\\\Roaming\\\\MetaQuotes\\\\Terminal\\\\D0E8209F77C8CF37AD8BF550E51FF075\\\\MQL5\\\\Files\\ftmo_bridge_log.jsonl"
+                    }
+                ]
+}

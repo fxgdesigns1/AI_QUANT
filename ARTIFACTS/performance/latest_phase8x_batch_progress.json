@@ -1,0 +1,15 @@
+{
+  "phase": "Phase 8X",
+  "pending": 0,
+  "running": 0,
+  "done": 55,
+  "failed": 0,
+  "total": 55,
+  "percent_complete": 100.0,
+  "current_job_id": "20260504T203334Z_phase8l_backtest_c1ce65767f",
+  "started_at_utc": "2026-05-04T20:41:32.295470Z",
+  "updated_at_utc": "2026-05-07T01:02:17.349904Z",
+  "last_result_job_id": "20260504T203334Z_phase8l_backtest_c1ce65767f",
+  "stop_reason": "MAX_JOBS",
+  "alpha_job_root": "ARTIFACTS/research_jobs"
+}

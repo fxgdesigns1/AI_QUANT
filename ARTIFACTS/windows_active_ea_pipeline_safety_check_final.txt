@@ -1,0 +1,22 @@
+FXG_WINDOWS_ACTIVE_EA_ATTACH_AND_CANONICAL_PIPELINE_TEST_V1 — safety checks (2026-03-24)
+
+1) git diff -- src/core/manual_execution.py dashboard/src/app/api/bridge/route.ts dashboard/src/app/api/bridge/status/route.ts configs/bridge_accounts.json
+   RESULT: exit 0, empty diff (no unstaged changes in those paths).
+   NOTE: src/core/manual_execution.py does not exist in this workspace; git diff produced no output for that path.
+
+2) Forbidden execution-path patterns (orders/send, order_send, positions/close, orders/preview, send_order, close_position)
+   METHOD: PowerShell Select-String on bridges/windows_sidecar, src, ea (py/ts/tsx/mq5/ps1); rg not installed on PATH.
+   RESULT: No production matches in src/ea; bridges/windows_sidecar/tests/test_contracts.py lists forbidden paths as contract negatives only.
+
+3) Bridge ownership strings
+   METHOD: grep tool scoped to bridges/ and ea/
+   RESULT: parallel_windows_sidecar_bridge_v1 in sidecar code; ftmo_demo2 in FTMO_Bridge_EA.mq5 and helper scripts; canonical_mac_file_bridge_v1 referenced in fxg_win_status.ps1 as execution owner label.
+
+4) emit_signal / fanout / bridge_account in src
+   METHOD: grep in src/
+   RESULT: bridge_account appears in control_plane/api.py; no emit_signal( or fanout=true matches in src (manual execution producer not present here).
+
+ASSERTIONS (non-execution):
+- No code changes were made to src/core/manual_execution.py (file absent).
+- Windows sidecar main remains read-only FastAPI; no new execution routes added in this job.
+- Paper-only runtime flags: execution_policy in runtime/config.yaml has live_trading_allowed false (verified in repo read).

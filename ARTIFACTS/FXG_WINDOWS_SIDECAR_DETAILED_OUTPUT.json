@@ -1,0 +1,327 @@
+{
+  "job": "FXG_WINDOWS_SIDECAR_PARALLEL_BRIDGE_MASTER_BUILD_PROMPT_V3",
+  "status": "PASS",
+  "completed_at_utc": "2026-03-22T00:00:00Z",
+  "phase_results": {
+    "phase_0_repo_root_and_inventory": "PASS",
+    "phase_1_structure_and_contracts": "PASS",
+    "phase_2_windows_sidecar_service": "PASS",
+    "phase_3_dashboard_integration": "PASS",
+    "phase_4_windows_install_assets": "PASS",
+    "phase_5_desktop_verification_assets": "PASS"
+  },
+  "files_created": {
+    "artifacts": [
+      "artifacts/repo_root_discovery_desktop.json",
+      "artifacts/bridge_inventory_current.json",
+      "artifacts/bridge_state_contracts.json",
+      "artifacts/current_dashboard_bridge_inventory.json",
+      "artifacts/no_cross_wire_checklist.json",
+      "artifacts/windows_sidecar_install_plan.json",
+      "artifacts/parallel_bridge_verification_plan.json",
+      "artifacts/dashboard_bridge_matrix.json"
+    ],
+    "docs": [
+      "docs/bridges/CANONICAL_MAC_FILE_BRIDGE.md",
+      "docs/bridges/WINDOWS_SIDECAR_BRIDGE.md",
+      "docs/bridges/BRIDGE_COMPARISON_AND_SWITCHING.md",
+      "docs/bridges/BRIDGE_FAILURE_BUCKETS.md",
+      "docs/bridges/BRIDGE_OPERATOR_RUNBOOK.md"
+    ],
+    "bridges_windows_sidecar": [
+      "bridges/__init__.py",
+      "bridges/windows_sidecar/__init__.py",
+      "bridges/windows_sidecar/README.md",
+      "bridges/windows_sidecar/.env.example",
+      "bridges/windows_sidecar/requirements.txt",
+      "bridges/windows_sidecar/run.py",
+      "bridges/windows_sidecar/service/__init__.py",
+      "bridges/windows_sidecar/service/main.py",
+      "bridges/windows_sidecar/service/config.py",
+      "bridges/windows_sidecar/service/auth.py",
+      "bridges/windows_sidecar/service/models.py",
+      "bridges/windows_sidecar/service/diagnostics.py",
+      "bridges/windows_sidecar/service/mt5_client.py",
+      "bridges/windows_sidecar/service/routes_health.py",
+      "bridges/windows_sidecar/service/routes_account.py",
+      "bridges/windows_sidecar/service/routes_positions.py",
+      "bridges/windows_sidecar/service/routes_orders.py",
+      "bridges/windows_sidecar/service/routes_symbols.py",
+      "bridges/windows_sidecar/service/routes_history.py",
+      "bridges/windows_sidecar/scripts/install_windows_sidecar.ps1",
+      "bridges/windows_sidecar/scripts/start_windows_sidecar.ps1",
+      "bridges/windows_sidecar/scripts/verify_windows_sidecar.ps1",
+      "bridges/windows_sidecar/tests/__init__.py",
+      "bridges/windows_sidecar/tests/test_contracts.py"
+    ],
+    "dashboard_modules": [
+      "frontend/fxg-dashboard/src/modules/bridges/shared/models.js",
+      "frontend/fxg-dashboard/src/modules/bridges/shared/BridgeStatusCard.jsx",
+      "frontend/fxg-dashboard/src/modules/bridges/shared/BridgeComparisonTable.jsx",
+      "frontend/fxg-dashboard/src/modules/bridges/shared/BridgeSwitchStatePanel.jsx",
+      "frontend/fxg-dashboard/src/modules/bridges/shared/BridgeFailureBucketPanel.jsx",
+      "frontend/fxg-dashboard/src/modules/bridges/canonical/CriticalCanonicalBridgePanel.jsx",
+      "frontend/fxg-dashboard/src/modules/bridges/windows_sidecar/WindowsSidecarPanel.jsx",
+      "frontend/fxg-dashboard/src/modules/bridges/windows_sidecar/WindowsSidecarDiagnosticsDrawer.jsx",
+      "frontend/fxg-dashboard/src/modules/bridges/index.js"
+    ]
+  },
+  "files_modified": [
+    {
+      "path": "src/control_plane/api.py",
+      "changes": [
+        "Added MT5_SIDECAR_BASE_URL, MT5_SIDECAR_API_KEY env config",
+        "Added bridge_id to /api/bridge/status response (canonical_mac_file_bridge_v1)",
+        "Added /api/mt5_sidecar/health proxy to Windows sidecar",
+        "Added /api/mt5_sidecar/diagnostics proxy to Windows sidecar"
+      ]
+    },
+    {
+      "path": "frontend/fxg-dashboard/src/components/ControlPlaneDashboard.jsx",
+      "changes": [
+        "Imported bridge modules (CriticalCanonicalBridgePanel, WindowsSidecarPanel, etc.)",
+        "Replaced single MT5 Bridge Status card with Bridge Estate Overview section",
+        "Added CriticalCanonicalBridgePanel, WindowsSidecarPanel, BridgeComparisonTable, BridgeSwitchStatePanel, BridgeFailureBucketPanel"
+      ]
+    }
+  ],
+  "files_verified": [
+    "bridges/windows_sidecar/service/main.py",
+    "bridges/windows_sidecar/service/diagnostics.py",
+    "src/control_plane/api.py"
+  ],
+  "verification": {
+    "commands_run": [
+      "python -m py_compile bridges/windows_sidecar/service/main.py",
+      "python -m py_compile bridges/windows_sidecar/service/diagnostics.py",
+      "python -c (contract test logic - bridge_id, HealthResponse shape, run_diagnostics shape)",
+      "grep canonical_mac_file_bridge_v1 parallel_windows_sidecar_bridge_v1 (found in bridges/, src/, frontend/)",
+      "grep forbidden bridge names (none found)"
+    ],
+    "commands_not_run": [
+      "pytest bridges/windows_sidecar/tests/test_contracts.py (pytest not installed; manual contract test passed)",
+      "npm run lint / pnpm lint"
+    ]
+  },
+  "embedded_artifacts": {
+    "repo_root_discovery": {
+      "repo_root": "h:\\My Drive\\AI Trading\\Gcloud system",
+      "repo_root_normalized": "Gcloud system (workspace)",
+      "discovered_at_utc": "2026-03-22T00:00:00Z",
+      "git_repo": true,
+      "key_paths": {
+        "control_plane_api": "src/control_plane/api.py",
+        "frontend_dashboard": "frontend/fxg-dashboard",
+        "dashboard_root": "dashboard",
+        "logs": "logs",
+        "bridge_log_paths": [
+          "ftmo_bridge_log.jsonl",
+          "logs/ftmo_bridge_log.jsonl",
+          "~/gcloud-system/logs/ftmo_bridge_log.jsonl"
+        ],
+        "config": "runtime/config.yaml",
+        "working_trading_system": "working_trading_system.py"
+      },
+      "existing_bridge_related": {
+        "api_bridge_status": "/api/bridge/status",
+        "api_logs_bridge": "/api/logs/bridge",
+        "control_routing": "/api/control/routing",
+        "signal_exporter_import": "src.observability.signal_exporter (referenced by working_trading_system.py)",
+        "bridge_account_in": ["src/control_plane/api.py OutputConfig", "frontend ControlPlaneDashboard routing"]
+      }
+    },
+    "bridge_inventory_current": {
+      "inventory_at_utc": "2026-03-22T00:00:00Z",
+      "canonical_bridge_estate": {
+        "bridge_id": "canonical_mac_file_bridge_v1",
+        "status": "locked_canonical",
+        "components": [
+          {
+            "component_name": "control_plane_bridge_status",
+            "bridge_id": "canonical_mac_file_bridge_v1",
+            "machine": "alpha",
+            "path": "src/control_plane/api.py",
+            "responsibility": "GET /api/bridge/status - checks systemd ai-quant-bridge.service, process list, ftmo_bridge_log.jsonl",
+            "health_check": "running, last_heartbeat, last_error, service_status",
+            "failure_bucket_owner": "N/A - generic status",
+            "shared_with_new_bridge": false
+          },
+          {
+            "component_name": "bridge_log_reader",
+            "bridge_id": "canonical_mac_file_bridge_v1",
+            "machine": "alpha",
+            "path": "src/control_plane/api.py GET /api/logs/bridge",
+            "responsibility": "Read ftmo_bridge_log.jsonl for bridge feedback",
+            "health_check": "file exists",
+            "failure_bucket_owner": "N/A",
+            "shared_with_new_bridge": false
+          },
+          {
+            "component_name": "routing_outputs",
+            "bridge_id": "canonical_mac_file_bridge_v1",
+            "machine": "alpha",
+            "path": "src/control_plane/api.py control/routing",
+            "responsibility": "OutputConfig with bridge_account - routes to FTMO-facing bridges",
+            "health_check": "config load",
+            "failure_bucket_owner": "N/A",
+            "shared_with_new_bridge": false
+          },
+          {
+            "component_name": "signal_exporter_emit",
+            "bridge_id": "canonical_mac_file_bridge_v1",
+            "machine": "alpha",
+            "path": "working_trading_system.py -> SignalExporter.emit(bridge_account=...)",
+            "responsibility": "Emits trade signals to bridge_account targets (FTMO-facing)",
+            "health_check": "emit success",
+            "failure_bucket_owner": "producer_fail",
+            "shared_with_new_bridge": false
+          }
+        ],
+        "canonical_signal_paths": [
+          "DO NOT WRITE from sidecar - path defined by operations/FTMO_Bridge_EA"
+        ]
+      },
+      "mt5_sidecar_existing": null,
+      "mt5_sidecar_mock_existing": null,
+      "mt5_bridge_ea_existing": null,
+      "dashboard_bridge_ui": {
+        "location": "frontend/fxg-dashboard/src/components/ControlPlaneDashboard.jsx",
+        "current_state": "Bridge Estate Overview with CriticalCanonicalBridgePanel + WindowsSidecarPanel",
+        "bridge_account_ui": "Routing outputs table with bridge_account column"
+      }
+    },
+    "bridge_state_contracts": {
+      "contracts_version": "1.0",
+      "normalized_bridge_status": {
+        "bridge_id": "string",
+        "bridge_family": "canonical_mac_file_bridge|windows_sidecar_bridge",
+        "bridge_role": "execution_signal_bridge|account_price_diagnostics_bridge|hybrid",
+        "machine": "alpha|mac|windows|desktop_mock",
+        "enabled": "boolean",
+        "healthy": "boolean",
+        "degraded": "boolean",
+        "failure_bucket": "string|null",
+        "recommended_fix": "string|null",
+        "last_success_utc": "string|null",
+        "last_update_age_ms": "integer|null",
+        "data_capabilities": "string[]",
+        "execution_capabilities": "string[]",
+        "notes": "string[]"
+      },
+      "canonical_mac_file_bridge_v1": {
+        "bridge_id": "canonical_mac_file_bridge_v1",
+        "failure_buckets": [
+          "producer_fail",
+          "transport_fail",
+          "consumer_path_fail",
+          "ea_parse_fail",
+          "broker_reject_fail",
+          "unknown_fail"
+        ]
+      },
+      "parallel_windows_sidecar_bridge_v1": {
+        "bridge_id": "parallel_windows_sidecar_bridge_v1",
+        "failure_buckets": [
+          "sidecar_unreachable",
+          "terminal_not_running",
+          "mt5_initialize_failed",
+          "account_not_logged_in",
+          "account_info_unavailable",
+          "symbol_not_selected",
+          "tick_stale",
+          "history_unavailable",
+          "write_guard_blocked",
+          "broker_reject",
+          "unknown_fail"
+        ]
+      }
+    },
+    "dashboard_bridge_matrix": {
+      "canonical_mac_file_bridge_v1": {
+        "panel": "CriticalCanonicalBridgePanel",
+        "data_source": "/api/bridge/status",
+        "bridge_id": "canonical_mac_file_bridge_v1"
+      },
+      "parallel_windows_sidecar_bridge_v1": {
+        "panel": "WindowsSidecarPanel",
+        "data_source": "/api/mt5_sidecar/health",
+        "bridge_id": "parallel_windows_sidecar_bridge_v1"
+      }
+    },
+    "windows_sidecar_install_plan": {
+      "plan": [
+        "Install MT5 on Windows",
+        "Log into target account",
+        "Install Python 3.11+",
+        "pip install -r bridges/windows_sidecar/requirements.txt",
+        "Set MT5_TERMINAL_PATH, MT5_LOGIN, MT5_PASSWORD, MT5_SERVER, SIDECAR_API_KEY in .env",
+        "Firewall: allow 8877 if LAN binding needed",
+        "LAN binding: BIND_HOST=0.0.0.0 for dashboard on different machine",
+        "Run verify_windows_sidecar.ps1"
+      ]
+    },
+    "parallel_bridge_verification_plan": {
+      "plan": [
+        "python -m py_compile bridges/windows_sidecar/service/main.py",
+        "python -m py_compile bridges/windows_sidecar/service/diagnostics.py",
+        "pytest bridges/windows_sidecar/tests/test_contracts.py",
+        "rg -n canonical_mac_file_bridge_v1 parallel_windows_sidecar_bridge_v1",
+        "rg -n bridge_v2 new_bridge_final tmp_bridge mt5_bridge_fixed generic_mt5_bridge main_bridge_replacement",
+        "git diff -- src/core/manual_execution.py (must be empty - no changes)",
+        "git diff -- dashboard/src/app/api/bridge (N/A - uses control_plane)",
+        "npm run lint / pnpm lint"
+      ]
+    },
+    "no_cross_wire_checklist": {
+      "checklist": [
+        "No writes to canonical signal paths from new sidecar code",
+        "No duplicate canonical signal writer creation",
+        "Mock and real sidecar env names remain distinct and documented",
+        "Canonical bridge labels remain intact"
+      ],
+      "verified_at": null
+    }
+  },
+  "windows_sidecar_api": {
+    "bridge_id": "parallel_windows_sidecar_bridge_v1",
+    "listen": "127.0.0.1:8877",
+    "auth": "x-api-key or Bearer required",
+    "endpoints": [
+      { "path": "/health", "method": "GET" },
+      { "path": "/diagnostics", "method": "GET" },
+      { "path": "/account", "method": "GET" },
+      { "path": "/positions", "method": "GET" },
+      { "path": "/orders", "method": "GET" },
+      { "path": "/symbols/{symbol}/tick", "method": "GET" },
+      { "path": "/symbols/{symbol}/spec", "method": "GET" },
+      { "path": "/symbols/overview", "method": "POST" },
+      { "path": "/history", "method": "GET" }
+    ],
+    "deferred_disabled": ["/orders/preview", "/orders/send", "/positions/close"]
+  },
+  "control_plane_proxy": {
+    "mt5_sidecar_health": "/api/mt5_sidecar/health",
+    "mt5_sidecar_diagnostics": "/api/mt5_sidecar/diagnostics",
+    "env_required": ["MT5_SIDECAR_BASE_URL", "MT5_SIDECAR_API_KEY"],
+    "when_unset": "Returns sidecar_unreachable (dashboard treats as synthetic, not broker error)"
+  },
+  "safety_assertions": [
+    "canonical_mac_file_bridge_v1 remains canonical execution bridge",
+    "parallel_windows_sidecar_bridge_v1 is additive and separate",
+    "lane 010 canonical emit semantics unchanged (working_trading_system.py not modified)",
+    "no duplicate canonical writers created",
+    "no live trading enablement introduced",
+    "windows sidecar initial mode is read_only_first",
+    "mt5_sidecar_mock remains ui-dev-only (documented; mock not implemented in this job)"
+  ],
+  "open_risks": [],
+  "next_required_manual_steps": [
+    "Review artifacts/bridge_inventory_current.json for correctness",
+    "Review docs/bridges/BRIDGE_COMPARISON_AND_SWITCHING.md for clarity",
+    "Stand up a Windows machine or VM with MT5 for sidecar runtime validation",
+    "Populate bridges/windows_sidecar/.env from .env.example on Windows host",
+    "Run verify_windows_sidecar.ps1 on Windows after MT5 install and login",
+    "Set MT5_SIDECAR_BASE_URL and MT5_SIDECAR_API_KEY on Control Plane server for dashboard proxy",
+    "Only after local verification, prepare a separate explicit ALPHA/dashboard integration deploy"
+  ]
+}

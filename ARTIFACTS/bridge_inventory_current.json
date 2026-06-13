@@ -1,0 +1,60 @@
+{
+  "inventory_at_utc": "2026-03-22T00:00:00Z",
+  "canonical_bridge_estate": {
+    "bridge_id": "canonical_mac_file_bridge_v1",
+    "status": "locked_canonical",
+    "components": [
+      {
+        "component_name": "control_plane_bridge_status",
+        "bridge_id": "canonical_mac_file_bridge_v1",
+        "machine": "alpha",
+        "path": "src/control_plane/api.py",
+        "responsibility": "GET /api/bridge/status - checks systemd ai-quant-bridge.service, process list, ftmo_bridge_log.jsonl",
+        "health_check": "running, last_heartbeat, last_error, service_status",
+        "failure_bucket_owner": "N/A - generic status",
+        "shared_with_new_bridge": false
+      },
+      {
+        "component_name": "bridge_log_reader",
+        "bridge_id": "canonical_mac_file_bridge_v1",
+        "machine": "alpha",
+        "path": "src/control_plane/api.py GET /api/logs/bridge",
+        "responsibility": "Read ftmo_bridge_log.jsonl for bridge feedback",
+        "health_check": "file exists",
+        "failure_bucket_owner": "N/A",
+        "shared_with_new_bridge": false
+      },
+      {
+        "component_name": "routing_outputs",
+        "bridge_id": "canonical_mac_file_bridge_v1",
+        "machine": "alpha",
+        "path": "src/control_plane/api.py control/routing",
+        "responsibility": "OutputConfig with bridge_account - routes to FTMO-facing bridges",
+        "health_check": "config load",
+        "failure_bucket_owner": "N/A",
+        "shared_with_new_bridge": false
+      },
+      {
+        "component_name": "signal_exporter_emit",
+        "bridge_id": "canonical_mac_file_bridge_v1",
+        "machine": "alpha",
+        "path": "working_trading_system.py -> SignalExporter.emit(bridge_account=...)",
+        "responsibility": "Emits trade signals to bridge_account targets (FTMO-facing)",
+        "health_check": "emit success",
+        "failure_bucket_owner": "producer_fail",
+        "shared_with_new_bridge": false
+      }
+    ],
+    "canonical_signal_paths": [
+      "DO NOT WRITE from sidecar - path defined by operations/FTMO_Bridge_EA"
+    ]
+  },
+  "mt5_sidecar_existing": null,
+  "mt5_sidecar_mock_existing": null,
+  "mt5_bridge_ea_existing": null,
+  "dashboard_bridge_ui": {
+    "location": "frontend/fxg-dashboard/src/components/ControlPlaneDashboard.jsx",
+    "current_state": "Single 'MT5 Bridge Status' card, fetches /api/bridge/status",
+    "bridge_account_ui": "Routing outputs table with bridge_account column"
+  }
+}

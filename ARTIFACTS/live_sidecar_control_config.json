@@ -1,0 +1,21 @@
+{
+  "job": "FXG_PORT_LIVE_WINDOWS_SIDECAR_CONTROL_AND_VERIFY_FROM_MAC_V1",
+  "phase": "3_extend_live_config",
+  "new_settings": {
+    "SIDECAR_ENABLE_WRITE_ACTIONS": {
+      "type": "boolean",
+      "default": false,
+      "parser": "true if env in 1,true,yes,on (case-insensitive)",
+      "behavior_when_false": "POST /control/* returns 403 after API key check"
+    },
+    "SIDECAR_CONTROL_AUDIT_LOG_PATH": {
+      "type": "string",
+      "default": "",
+      "behavior_when_empty": "no JSONL file writes; HTTP responses still return structured JSON"
+    }
+  },
+  "require_config_unchanged": "Still requires SIDECAR_API_KEY, MT5_TERMINAL_PATH; new keys optional for app startup.",
+  "live_env_applied": {
+    "bridges/windows_sidecar/.env": "SIDECAR_ENABLE_WRITE_ACTIONS=true and SIDECAR_CONTROL_AUDIT_LOG_PATH set to repo artifacts/sidecar_control_audit.jsonl (appended if missing)"
+  }
+}

@@ -1,0 +1,22 @@
+windows_ea_total_control_safety_check_final
+============================================
+
+A) git diff -- src/core/manual_execution.py dashboard/src/app/api/bridge/route.ts dashboard/src/app/api/bridge/status/route.ts configs/bridge_accounts.json
+   RESULT: FAILED TO RUN — git reports "fatal: bad object HEAD" in this workspace clone (evidence: PowerShell git status exit 128).
+   INTERPRETATION: No diff evidence via git; EA-only edit verified by direct file inspection.
+
+B) findstr execution routes (sidecar/dashboard/src/ea)
+   RESULT: bridges/windows_sidecar/tests/test_contracts.py references forbidden_paths /orders/send /orders/preview /positions/close as guard expectations (read-only contract posture).
+   ea/: no matches for orders/send order_send send_order close_position (ripgrep tool).
+
+C) canonical_mac_file_bridge_v1 / parallel_windows_sidecar_bridge_v1 / ftmo_demo2
+   RESULT: Partial scan — workspace-wide grep timed out; src/control_plane/api.py references bridge_account fields (API schema).
+
+D) emit_signal fanout bridge_account in src
+   RESULT: emit_signal/fanout string patterns not located under src in quick grep; manual_execution.py path from job not present in workspace (0 files).
+
+ASSERTIONS (design intent this job)
+- canonical producer file semantics: NOT MODIFIED (manual_execution.py absent from repo; no edits made).
+- Windows sidecar: NO execution routes added (no sidecar code edits in this job).
+- Paper-only: EA input InpPaperOnly remains true by default in mq5.
+- Single consumer at test time: Windows MT5 FTMO_Bridge_EA assumed single chart instance; verify manually (multiple charts would duplicate orders).

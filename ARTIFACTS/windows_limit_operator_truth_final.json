@@ -1,0 +1,17 @@
+{
+  "phase": "phase_8_update_operator_truth_if_needed",
+  "lane_010_windows_execution_truth_utc": "2026-03-25T04:15:00Z",
+  "market_support": {
+    "status": "proven_live",
+    "detail": "Windows MT5 EA v1.01 on chart: SIGNAL_ACCEPT -> REQUEST_SUMMARY price_mode=MARKET -> EXECUTED verified including fresh inject test_20260325011134 after LIMIT skip line in log."
+  },
+  "limit_support": {
+    "status": "not_proven_live",
+    "repo_source": "ea/FTMO_Bridge_EA.mq5 #property version 1.02 includes LIMIT handling",
+    "live_chart": "Log shows EA_START v1.01 only. LIMIT-shaped signal trace_20260325004148 -> SIGNAL_SKIP entry_type not MARKET: LIMIT",
+    "gap": "Compiled/installed EA on chart is older than repo 1.02; LIMIT end-to-end not demonstrated until EA 1.02 is built in MetaEditor, copied to MT5, chart reloaded, and one LIMIT signal shows REQUEST_SUMMARY price_mode=LIMIT then pending placement or broker reject."
+  },
+  "docs_updated": [],
+  "docs_not_updated_reason": "LIMIT is not proven on the live chart; do not claim lane-010 Windows supports LIMIT in operator docs until fresh LIMIT log proof exists.",
+  "contract_vs_live_note": "src/control_plane/api.py GET /api/execution/lane_010_contract lists entry_types_supported MARKET and LIMIT; live MT5 log shows EA v1.01 SIGNAL_SKIP for LIMIT. Contract reflects intended capability; Windows chart must run EA build that implements LIMIT for parity."
+}

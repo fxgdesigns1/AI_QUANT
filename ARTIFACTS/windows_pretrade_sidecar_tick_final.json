@@ -1,0 +1,14 @@
+{
+  "symbol": "EURUSD",
+  "bid": 1.16038,
+  "ask": 1.16048,
+  "last": 0.0,
+  "spread_points": 1,
+  "spread_price": 0.00009999999999998899,
+  "tick_time": "1774396018",
+  "tick_age_ms": null,
+  "ts_utc": "2026-03-24T20:46:58.856927+00:00",
+  "bridge_id": "parallel_windows_sidecar_bridge_v1",
+  "failure_bucket": null,
+  "recommended_fix": null
+}

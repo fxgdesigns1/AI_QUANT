@@ -1,0 +1,30 @@
+﻿{
+    "ts_utc":  "2026-03-25T00:06:44.7708097Z",
+    "backup_dir":  "H:\\My Drive\\AI Trading\\Gcloud system\\artifacts\\windows_transport_backup_20260325_000644",
+    "entries":  [
+                    {
+                        "length_bytes":  0,
+                        "backup":  "H:\\My Drive\\AI Trading\\Gcloud system\\artifacts\\windows_transport_backup_20260325_000644\\signals_ftmo_demo2.jsonl",
+                        "last_write_utc":  "2026-03-25T00:04:27.0800000Z",
+                        "source":  "H:\\My Drive\\AI Trading\\Gcloud system\\logs\\signals_ftmo_demo2.jsonl"
+                    },
+                    {
+                        "length_bytes":  0,
+                        "backup":  "H:\\My Drive\\AI Trading\\Gcloud system\\artifacts\\windows_transport_backup_20260325_000644\\ftmo_bridge_log.jsonl",
+                        "last_write_utc":  "2026-03-25T00:04:27.1010000Z",
+                        "source":  "H:\\My Drive\\AI Trading\\Gcloud system\\logs\\ftmo_bridge_log.jsonl"
+                    },
+                    {
+                        "length_bytes":  1712,
+                        "backup":  "H:\\My Drive\\AI Trading\\Gcloud system\\artifacts\\windows_transport_backup_20260325_000644\\signals_ftmo_demo2.jsonl",
+                        "last_write_utc":  "2026-03-24T22:53:56.9204294Z",
+                        "source":  "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\signals_ftmo_demo2.jsonl"
+                    },
+                    {
+                        "length_bytes":  1922,
+                        "backup":  "H:\\My Drive\\AI Trading\\Gcloud system\\artifacts\\windows_transport_backup_20260325_000644\\ftmo_bridge_log.jsonl",
+                        "last_write_utc":  "2026-03-24T22:53:57.3952933Z",
+                        "source":  "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\ftmo_bridge_log.jsonl"
+                    }
+                ]
+}

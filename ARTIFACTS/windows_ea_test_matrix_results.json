@@ -1,0 +1,18 @@
+{
+  "artifact": "windows_ea_test_matrix_results",
+  "runtime_ea_version_observed": "pre_v1_01_in_memory",
+  "evidence": "ftmo_bridge_log.jsonl contained EA_START without v1.01 text; matrix run produced BROKER_REJECT invalid stops only — no REQUEST_SUMMARY / SIGNAL_ACCEPT / DUPLICATE_SKIP tokens",
+  "market_null_stops_buy": {
+    "signal_id": "winprove_matrix_20260324213656",
+    "bridge_log_types_seen": [
+      "BROKER_REJECT"
+    ],
+    "broker_message": "invalid stops",
+    "classification": "UNKNOWN_FAIL — reject consistent with pre-patch null-as-zero stop mapping while old EA still loaded; cannot prove post-patch request shape from logs"
+  },
+  "duplicate_replay_same_signal": {
+    "signal_id": "winprove_matrix_20260324213656",
+    "observed": "multiple BROKER_REJECT lines same ts — duplicate suppression not observed",
+    "classification": "CONSUMER_PATH_FAIL relative to desired DUPLICATE_SKIP — expected until patched EA is-loaded on chart"
+  }
+}

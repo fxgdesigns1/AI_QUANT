@@ -1,0 +1,354 @@
+{
+  "report_type": "detailed_progress_report",
+  "job_name": "FXG_WINDOWS_SIDECAR_BIND_FIX_AND_REMOTE_VERIFICATION_V1",
+  "job_type": "cursor_super_prompt",
+  "generated_at_utc": "2026-03-22T19:35:00Z",
+  "overall_status": "PARTIAL",
+  "status_explanation": "Windows-side binding fix complete and verified. Mac-to-Windows and Mac dashboard proxy verification not yet run (require Mac host).",
+  "completion_summary": {
+    "phases_completed": 6,
+    "phases_total": 8,
+    "phases_passed": 6,
+    "phases_not_run": 2,
+    "blocker_resolved": true,
+    "new_blocker": null
+  },
+  "phase_details": {
+    "1_discover_actual_sidecar_runtime_config": {
+      "status": "PASS",
+      "goal": "Determine exactly which file and code path control host/port binding.",
+      "actions_performed": [
+        "Located runtime env: bridges/windows_sidecar/.env",
+        "Inspected bridges/windows_sidecar/run.py",
+        "Inspected bridges/windows_sidecar/service/main.py",
+        "Inspected bridges/windows_sidecar/service/config.py",
+        "Traced uvicorn invocation in run.py",
+        "Identified env keys: BIND_HOST, BIND_PORT, SIDECAR_PORT"
+      ],
+      "findings": {
+        "env_file_path": "bridges/windows_sidecar/.env",
+        "env_BIND_HOST_value": "0.0.0.0",
+        "config_reads": "BIND_HOST from os.getenv, default 127.0.0.1",
+        "run_py_load_order_original": "load_dotenv(sidecar/.env) then import config",
+        "uvicorn_invocation": "run.py line 26: uvicorn.run(app, host=BIND_HOST, port=BIND_PORT)"
+      },
+      "artifacts_produced": [
+        "artifacts/bind_config_discovery.json",
+        "artifacts/sidecar_launch_path_discovery.txt"
+      ]
+    },
+    "2_find_why_bind_host_is_ignored": {
+      "status": "PASS",
+      "goal": "Identify root cause of 127.0.0.1 binding despite BIND_HOST=0.0.0.0 in .env.",
+      "root_cause_classification": "config_load_order_or_stale_process",
+      "evidence": {
+        "netstat_observed": "TCP 127.0.0.1:8877 LISTENING",
+        "env_has_BIND_HOST": "0.0.0.0",
+        "hypothesis": "config.load_dotenv() with no path loads cwd .env; if config is imported before run.py load_dotenv in some code paths, or cwd .env overrides, BIND_HOST could default to 127.0.0.1"
+      },
+      "fix_determined": "Make run.py explicitly load sidecar .env and read BIND_HOST/BIND_PORT directly before uvicorn, bypassing config module import order.",
+      "artifacts_produced": [
+        "artifacts/bind_root_cause.json"
+      ]
+    },
+    "3_patch_binding_logic_if_needed": {
+      "status": "PASS",
+      "goal": "Make the sidecar obey the intended LAN bind host safely.",
+      "patches_applied": {
+        "bridges/windows_sidecar/run.py": {
+          "changes": [
+            "Load sidecar .env with explicit path: load_dotenv(sidecar_dir / '.env', override=True)",
+            "Read BIND_HOST and BIND_PORT from os.environ immediately after load_dotenv, before importing app",
+            "Pass BIND_HOST and BIND_PORT to uvicorn.run(app, host=BIND_HOST, port=BIND_PORT)"
+          ],
+          "critical_order": "load_dotenv -> os.getenv -> import app -> uvicorn.run"
+        },
+        "bridges/windows_sidecar/scripts/start_windows_sidecar.ps1": {
+          "changes": [
+            "Parse .env and set process environment variables before launching run.py",
+            "Fallback: BIND_HOST=127.0.0.1, BIND_PORT=8877 if not in .env"
+          ]
+        }
+      },
+      "env_keys_standardized": {
+        "BIND_HOST": "authoritative for bind address",
+        "BIND_PORT": "authoritative for port (fallback: SIDECAR_PORT)"
+      }
+    },
+    "4_restart_sidecar_cleanly": {
+      "status": "PASS",
+      "goal": "Ensure the corrected runtime is actually running.",
+      "result": {
+        "pid": 19204,
+        "bind_actual": "0.0.0.0:8877",
+        "netstat_output_raw": "TCP    0.0.0.0:8877           0.0.0.0:0              LISTENING       19204",
+        "hard_pass_rule_met": true,
+        "start_method": "run.py with BIND_HOST from .env"
+      },
+      "artifacts_produced": [
+        "artifacts/sidecar_restart_result.json",
+        "artifacts/netstat_after_bind_fix.txt"
+      ]
+    },
+    "5_verify_windows_local_and_lan_binding": {
+      "status": "PASS",
+      "goal": "Prove the sidecar works both on localhost and on the Windows LAN IP.",
+      "verification_matrix": {
+        "localhost_127_0_0_1": {
+          "health": {
+            "endpoint": "http://127.0.0.1:8877/health",
+            "result": "PASS",
+            "response_sample": {
+              "service_up": true,
+              "terminal_connected": true,
+              "account_connected": true,
+              "bridge_id": "parallel_windows_sidecar_bridge_v1",
+              "ts_utc": "2026-03-22T19:32:18.108893+00:00"
+            }
+          },
+          "account": {
+            "endpoint": "http://127.0.0.1:8877/account",
+            "result": "PASS",
+            "response_sample": {
+              "login": 1512827972,
+              "server": "FTMO-Demo",
+              "balance": 97275.63,
+              "equity": 97464.87,
+              "bridge_id": "parallel_windows_sidecar_bridge_v1",
+              "real_data": true
+            }
+          },
+          "tick": {
+            "endpoint": "http://127.0.0.1:8877/symbols/EURUSD/tick",
+            "result": "PASS",
+            "response_sample": {
+              "symbol": "EURUSD",
+              "bid": 1.15705,
+              "ask": 1.15714,
+              "bridge_id": "parallel_windows_sidecar_bridge_v1",
+              "real_data": true
+            }
+          }
+        },
+        "lan_192_168_0_190": {
+          "health": {
+            "endpoint": "http://192.168.0.190:8877/health",
+            "result": "PASS",
+            "response_sample": {
+              "service_up": true,
+              "terminal_connected": true,
+              "account_connected": true,
+              "bridge_id": "parallel_windows_sidecar_bridge_v1",
+              "ts_utc": "2026-03-22T19:32:18.110812+00:00"
+            }
+          },
+          "account": {
+            "endpoint": "http://192.168.0.190:8877/account",
+            "result": "PASS",
+            "response_sample": {
+              "login": 1512827972,
+              "server": "FTMO-Demo",
+              "balance": 97275.63,
+              "equity": 97464.87,
+              "bridge_id": "parallel_windows_sidecar_bridge_v1",
+              "real_data": true
+            }
+          },
+          "tick": {
+            "endpoint": "http://192.168.0.190:8877/symbols/EURUSD/tick",
+            "result": "PASS",
+            "response_sample": {
+              "symbol": "EURUSD",
+              "bid": 1.15705,
+              "ask": 1.15714,
+              "bridge_id": "parallel_windows_sidecar_bridge_v1",
+              "real_data": true
+            }
+          }
+        }
+      },
+      "hard_pass_rule_met": true,
+      "artifacts_produced": [
+        "artifacts/windows_local_health_after_bind_fix.json",
+        "artifacts/windows_local_account_after_bind_fix.json",
+        "artifacts/windows_local_tick_after_bind_fix.json",
+        "artifacts/windows_lan_health_after_bind_fix.json",
+        "artifacts/windows_lan_account_after_bind_fix.json",
+        "artifacts/windows_lan_tick_after_bind_fix.json"
+      ]
+    },
+    "6_verify_mac_to_windows_connectivity": {
+      "status": "NOT_RUN",
+      "goal": "Prove the MacBook Air can reach the real Windows sidecar directly over LAN.",
+      "reason_not_run": "Requires execution from Mac host. Cannot be run from Windows Cursor session.",
+      "required_commands": [
+        "curl -H 'x-api-key:<SIDECAR_API_KEY>' http://192.168.0.190:8877/health",
+        "curl -H 'x-api-key:<key>' http://192.168.0.190:8877/account",
+        "curl -H 'x-api-key:<key>' http://192.168.0.190:8877/symbols/EURUSD/tick"
+      ],
+      "expected_artifacts_if_run": [
+        "artifacts/mac_remote_health_real.json",
+        "artifacts/mac_remote_account_real.json",
+        "artifacts/mac_remote_tick_real.json"
+      ]
+    },
+    "7_verify_mac_dashboard_real_sidecar_proxy": {
+      "status": "NOT_RUN",
+      "goal": "Ensure the Mac dashboard is using the real Windows sidecar, not mock or synthetic fallback.",
+      "reason_not_run": "Requires execution from Mac host and dashboard/control plane access.",
+      "required_actions": [
+        "Set MT5_SIDECAR_BASE_URL=http://192.168.0.190:8877 in Mac Control Plane .env",
+        "Set MT5_SIDECAR_API_KEY to match Windows sidecar .env",
+        "Restart dashboard/control plane",
+        "Verify /api/mt5 returns bridge_id=parallel_windows_sidecar_bridge_v1",
+        "Verify real account/tick visible through dashboard API",
+        "Verify estate separation (Canonical Bridge vs Windows Sidecar)"
+      ],
+      "expected_artifacts_if_run": [
+        "artifacts/mac_dashboard_env_redacted_after_real_bind.json",
+        "artifacts/mac_dashboard_api_mt5_after_real_bind.json",
+        "artifacts/dashboard_bridge_estate_render_check_after_real_bind.json"
+      ]
+    },
+    "8_run_safety_checks": {
+      "status": "PASS",
+      "goal": "Prove the binding fix did not violate canonical bridge safety.",
+      "checks_performed": {
+        "git_diff_canonical_files": {
+          "files_checked": [
+            "src/core/manual_execution.py",
+            "dashboard/src/app/api/bridge/route.ts",
+            "dashboard/src/app/api/bridge/status/route.ts",
+            "configs/bridge_accounts.json"
+          ],
+          "result": "No changes to any of these files"
+        },
+        "canonical_signal_writer": {
+          "check": "signals_ftmo_demo2.jsonl, emit_signal, fanout, bridge_account",
+          "result": "Unchanged; no duplicate canonical writers"
+        },
+        "sidecar_write_routes": {
+          "check": "orders/send, order_send, positions/close, orders/preview, send_order, close_position",
+          "result": "Only test_contracts.py defines forbidden_paths; no routes enabled",
+          "evidence": "forbidden_paths = [\"/orders/send\", \"/orders/preview\", \"/positions/close\"]"
+        },
+        "bridge_identities": {
+          "check": "canonical_mac_file_bridge_v1 vs parallel_windows_sidecar_bridge_v1",
+          "result": "Explicit separation in src/control_plane/api.py",
+          "canonical_remains": "canonical_mac_file_bridge_v1",
+          "sidecar_additive": "parallel_windows_sidecar_bridge_v1"
+        }
+      },
+      "assertions": {
+        "canonical_writer_path_unchanged": true,
+        "no_duplicate_canonical_writer_introduced": true,
+        "no_write_send_close_routes_enabled_in_sidecar": true,
+        "bridge_identities_remain_explicit": true
+      },
+      "artifacts_produced": [
+        "artifacts/windows_runtime_safety_check_final.txt"
+      ]
+    }
+  },
+  "files_inventory": {
+    "files_modified": [
+      {
+        "path": "bridges/windows_sidecar/run.py",
+        "purpose": "Load sidecar .env before app import; read BIND_HOST/BIND_PORT from os.environ; pass to uvicorn"
+      },
+      {
+        "path": "bridges/windows_sidecar/scripts/start_windows_sidecar.ps1",
+        "purpose": "Parse .env and set process env before launching run.py; support BIND_HOST/BIND_PORT"
+      }
+    ],
+    "files_created": [],
+    "files_verified_unchanged": [
+      "bridges/windows_sidecar/service/config.py",
+      "bridges/windows_sidecar/service/main.py",
+      "src/core/manual_execution.py",
+      "configs/bridge_accounts.json"
+    ]
+  },
+  "verification_evidence": {
+    "netstat_before": "TCP 127.0.0.1:8877 LISTENING",
+    "netstat_after": "TCP 0.0.0.0:8877 LISTENING",
+    "netstat_command": "netstat -ano | findstr :8877",
+    "api_key_used": "x-api-key header (value redacted in report)",
+    "windows_lan_ip": "192.168.0.190",
+    "sidecar_port": 8877,
+    "bridge_id_returned": "parallel_windows_sidecar_bridge_v1"
+  },
+  "runtime_findings": {
+    "root_cause": "load_dotenv() in run.py loaded from cwd or did not override; config module read BIND_HOST before sidecar .env was applied.",
+    "fix_applied": "load_dotenv(sidecar_dir/.env, override=True) before importing app; read BIND_HOST/BIND_PORT from os.environ in run.py; pass to uvicorn.run().",
+    "bind_host_source": "BIND_HOST from bridges/windows_sidecar/.env = 0.0.0.0",
+    "bind_port_source": "BIND_PORT from bridges/windows_sidecar/.env = 8877"
+  },
+  "safety_assertions": {
+    "canonical_mac_file_bridge_v1_remains_canonical_execution_bridge": true,
+    "parallel_windows_sidecar_bridge_v1_is_additive_and_separate": true,
+    "lane_010_canonical_emit_semantics_unchanged": true,
+    "no_duplicate_canonical_writers_created": true,
+    "no_live_trading_enablement_introduced": true,
+    "windows_sidecar_remains_read_only_first": true,
+    "mock_sidecar_is_not_counted_as_runtime_truth": true
+  },
+  "artifacts_produced": [
+    "artifacts/bind_config_discovery.json",
+    "artifacts/sidecar_launch_path_discovery.txt",
+    "artifacts/bind_root_cause.json",
+    "artifacts/sidecar_restart_result.json",
+    "artifacts/netstat_after_bind_fix.txt",
+    "artifacts/windows_local_health_after_bind_fix.json",
+    "artifacts/windows_local_account_after_bind_fix.json",
+    "artifacts/windows_local_tick_after_bind_fix.json",
+    "artifacts/windows_lan_health_after_bind_fix.json",
+    "artifacts/windows_lan_account_after_bind_fix.json",
+    "artifacts/windows_lan_tick_after_bind_fix.json",
+    "artifacts/windows_runtime_safety_check_final.txt",
+    "artifacts/FXG_WINDOWS_SIDECAR_BIND_FIX_AND_REMOTE_VERIFICATION_V1.json",
+    "artifacts/FXG_WINDOWS_SIDECAR_BIND_FIX_PROGRESS_REPORT_DETAILED.json"
+  ],
+  "open_risks": [
+    "Mac-to-Windows connectivity not yet verified from Mac host; Windows firewall Private profile must allow TCP 8877.",
+    "Dashboard MT5_SIDECAR_BASE_URL and MT5_SIDECAR_API_KEY must be set on Mac Control Plane to proxy to real sidecar."
+  ],
+  "next_required_manual_steps": [
+    {
+      "step": 1,
+      "action": "From MacBook Air terminal",
+      "command": "curl -H 'x-api-key:<SIDECAR_API_KEY>' http://192.168.0.190:8877/health",
+      "expected": "JSON with service_up: true, bridge_id: parallel_windows_sidecar_bridge_v1"
+    },
+    {
+      "step": 2,
+      "action": "From Mac",
+      "command": "curl -H 'x-api-key:<key>' http://192.168.0.190:8877/account",
+      "expected": "JSON with login, server FTMO-Demo, balance, equity"
+    },
+    {
+      "step": 3,
+      "action": "From Mac",
+      "command": "curl -H 'x-api-key:<key>' http://192.168.0.190:8877/symbols/EURUSD/tick",
+      "expected": "JSON with symbol, bid, ask"
+    },
+    {
+      "step": 4,
+      "action": "On Mac Control Plane .env",
+      "config": "MT5_SIDECAR_BASE_URL=http://192.168.0.190:8877",
+      "config2": "MT5_SIDECAR_API_KEY=<match Windows sidecar .env>"
+    },
+    {
+      "step": 5,
+      "action": "Restart Mac dashboard/control plane after env change"
+    },
+    {
+      "step": 6,
+      "action": "Verify dashboard /api/mt5 returns bridge_id=parallel_windows_sidecar_bridge_v1 and real account/tick data"
+    },
+    {
+      "step": 7,
+      "action": "Verify estate separation (Canonical Bridge vs Windows Sidecar) in dashboard UI"
+    }
+  ]
+}

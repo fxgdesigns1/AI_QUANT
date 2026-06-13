@@ -1,0 +1,6 @@
+PASS: No Windows sidecar execution endpoints were added (service exposes health/account/positions/orders/symbols/history only).
+PASS: Canonical producer semantics not modified in this job (no repo code changes outside new evidence artifacts).
+PASS: Bind/port aligned with remote overlay requirement (bind observed 0.0.0.0, port 8877).
+PASS: Persistence mechanism exists and is enabled (Scheduled Task: "FXG Windows Sidecar 8877" with restart-on-failure hardening).
+PASS: Tailscale IP endpoint responds from Windows host (http://100.122.152.80:8877/health and /account OK).
+PASS: No secrets written to tracked artifacts (API key never recorded; only redacted/derived telemetry fields stored).

@@ -1,0 +1,22 @@
+{
+  "job": "FXG_PORT_LIVE_WINDOWS_SIDECAR_CONTROL_AND_VERIFY_FROM_MAC_V1",
+  "phase": "1_backup_live_sidecar_files",
+  "created_utc": "2026-03-26T22:10:00Z",
+  "repo_root": "h:/My Drive/AI Trading/Gcloud system",
+  "backups": [
+    {
+      "relative_path": "bridges/windows_sidecar/service/main.py",
+      "sha256_pre": "1DE3AC5ACDAC92770BEA0EA68BD5CD3CDC90465BECEC95D31631A80A14F955B8",
+      "size_bytes": 1612,
+      "last_write_time_utc": "2026-03-26T21:59:55Z",
+      "copy_path": "artifacts/live_sidecar_control_backup/main.py.pre_control"
+    },
+    {
+      "relative_path": "bridges/windows_sidecar/service/config.py",
+      "sha256_pre": "255249298E91F9EF8A35EDD5C456B3351F7C4B6DA5E3BBBB30F3EE6B1A0D94E8",
+      "size_bytes": 861,
+      "last_write_time_utc": "2026-03-26T21:59:55Z",
+      "copy_path": "artifacts/live_sidecar_control_backup/config.py.pre_control"
+    }
+  ]
+}

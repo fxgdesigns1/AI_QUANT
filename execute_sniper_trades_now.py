@@ -7,15 +7,19 @@ sys.path.insert(0, 'google-cloud-trading-system/src')
 from core.trump_dna_scanner import get_trump_dna_scanner
 from datetime import datetime
 
-# Account mapping
-ACCOUNTS = {
-    'XAU_USD_Gold': '101-004-30719775-009',
-    'GBP_USD_Rank1': '101-004-30719775-008',
-    'GBP_USD_Rank2': '101-004-30719775-007',
-    'GBP_USD_Rank3': '101-004-30719775-006',
-    'EUR_USD_UltraStrict': '101-004-30719775-010',
-    'USD_JPY_Momentum': '101-004-30719775-011',
-}
+# Account mapping must be explicit; do not invent lanes.
+# Lane 010 is manual_only/protected and must not be targeted unless explicitly overridden.
+import os
+ACCOUNT_ID_PREFIX = os.getenv("ACCOUNT_ID_PREFIX", "101-004-30719775-").strip()
+ACCOUNT_SUFFIX_ALLOWLIST = [s.strip() for s in os.getenv("ACCOUNT_SUFFIX_ALLOWLIST", "").split(",") if s.strip()]
+ALLOW_LANE_010_TESTS = os.getenv("ALLOW_LANE_010_TESTS", "false").lower() == "true"
+
+if not ACCOUNT_SUFFIX_ALLOWLIST:
+    raise RuntimeError("ACCOUNT_SUFFIX_ALLOWLIST is required to run this script (e.g., '011').")
+if ("010" in ACCOUNT_SUFFIX_ALLOWLIST) and (not ALLOW_LANE_010_TESTS):
+    raise RuntimeError("Refusing to target protected lane 010. Set ALLOW_LANE_010_TESTS=true to override explicitly.")
+
+ACCOUNTS = {f"lane_{suffix}": f"{ACCOUNT_ID_PREFIX}{suffix}" for suffix in ACCOUNT_SUFFIX_ALLOWLIST}
 
 def main():
     print("=" * 80)
@@ -75,18 +79,8 @@ def main():
             plan_key = f"{signal['pair']}_{signal['strategy'].replace(' ', '_').replace('#', '')}"
             
             account_id = None
-            if 'Gold' in signal['strategy']:
-                account_id = '101-004-30719775-009'
-            elif 'Rank1' in signal['strategy'] or 'Rank_1' in signal['strategy']:
-                account_id = '101-004-30719775-008'
-            elif 'Rank2' in signal['strategy'] or 'Rank_2' in signal['strategy']:
-                account_id = '101-004-30719775-007'
-            elif 'Rank3' in signal['strategy'] or 'Rank_3' in signal['strategy']:
-                account_id = '101-004-30719775-006'
-            elif 'Ultra' in signal['strategy']:
-                account_id = '101-004-30719775-010'
-            elif 'Momentum' in signal['strategy']:
-                account_id = '101-004-30719775-011'
+            # Use first allowed lane by default; do not infer lanes from strategy labels.
+            account_id = f"{ACCOUNT_ID_PREFIX}{ACCOUNT_SUFFIX_ALLOWLIST[0]}"
             
             if not account_id:
                 print(f"❌ No account found for {signal['strategy']}")

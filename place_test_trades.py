@@ -25,11 +25,26 @@ if not TELEGRAM_TOKEN:
 if not TELEGRAM_CHAT_ID:
     raise ValueError("TELEGRAM_CHAT_ID environment variable is required")
 
-# Test accounts and instruments - CLOUD ACTIVE ACCOUNTS
+# Test accounts and instruments
+# Do not hardcode unproven lanes (e.g., 007-009). Require explicit lane selection.
+# Lane 010 is manual_only/protected: refuse unless ALLOW_LANE_010_TESTS=true.
+ACCOUNT_ID_PREFIX = os.getenv("ACCOUNT_ID_PREFIX", "101-004-30719775-").strip()
+ACCOUNT_SUFFIX_ALLOWLIST = [s.strip() for s in os.getenv("ACCOUNT_SUFFIX_ALLOWLIST", "").split(",") if s.strip()]
+ALLOW_LANE_010_TESTS = os.getenv("ALLOW_LANE_010_TESTS", "false").lower() == "true"
+
+if not ACCOUNT_SUFFIX_ALLOWLIST:
+    raise ValueError("ACCOUNT_SUFFIX_ALLOWLIST is required for this test script (e.g., '011')")
+
+if ("010" in ACCOUNT_SUFFIX_ALLOWLIST) and (not ALLOW_LANE_010_TESTS):
+    raise ValueError("Refusing to target protected lane 010. Set ALLOW_LANE_010_TESTS=true to override explicitly.")
+
 TEST_ACCOUNTS = {
-    '101-004-30719775-008': {'name': 'Primary (Multi-Strategy)', 'instrument': 'GBP_USD', 'units': 100},
-    '101-004-30719775-007': {'name': 'Gold Scalp (Ultra Strict)', 'instrument': 'XAU_USD', 'units': 10},
-    '101-004-30719775-006': {'name': 'Strategy Alpha (Momentum)', 'instrument': 'EUR_USD', 'units': 100},
+    f"{ACCOUNT_ID_PREFIX}{suffix}": {
+        "name": f"Lane {suffix}",
+        "instrument": "EUR_USD",
+        "units": 100,
+    }
+    for suffix in ACCOUNT_SUFFIX_ALLOWLIST
 }
 
 def send_telegram(message):

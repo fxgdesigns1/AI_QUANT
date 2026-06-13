@@ -1,0 +1,447 @@
+{
+  "timestamp": "2026-01-13T23:21:01.725283",
+  "base_url": "http://localhost:8787",
+  "tests": [
+    {
+      "test": "API: /api/status",
+      "status": "PASS",
+      "details": {
+        "status": 200,
+        "content_type": "application/json",
+        "has_data": true,
+        "keys": [
+          "mode",
+          "execution_enabled",
+          "accounts_loaded",
+          "accounts_execution_capable",
+          "active_strategy_key"
+        ]
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:09.803981"
+    },
+    {
+      "test": "API: /api/strategies",
+      "status": "PASS",
+      "details": {
+        "status": 200,
+        "content_type": "application/json",
+        "has_data": true,
+        "keys": [
+          "ok",
+          "allowed",
+          "default",
+          "strategies"
+        ]
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:11.193415"
+    },
+    {
+      "test": "API: /api/signals/pending",
+      "status": "PASS",
+      "details": {
+        "status": 200,
+        "content_type": "application/json",
+        "has_data": true,
+        "keys": [
+          "ok",
+          "signals",
+          "active_strategy",
+          "last_scan_utc",
+          "execution_enabled"
+        ]
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:11.323011"
+    },
+    {
+      "test": "API: /api/trades/active",
+      "status": "PASS",
+      "details": {
+        "status": 200,
+        "content_type": "application/json",
+        "has_data": true,
+        "keys": [
+          "ok",
+          "system_label",
+          "refreshed_at",
+          "accounts"
+        ]
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:13.253314"
+    },
+    {
+      "test": "API: /api/trades/closed",
+      "status": "FAIL",
+      "details": {
+        "status": 404,
+        "error": "HTTP 404"
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:13.374225"
+    },
+    {
+      "test": "API: /api/v1/outlook/daily",
+      "status": "PASS",
+      "details": {
+        "status": 200,
+        "content_type": "application/json",
+        "has_data": true,
+        "keys": [
+          "ok",
+          "horizon",
+          "outlook",
+          "ts_utc"
+        ]
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:13.496979"
+    },
+    {
+      "test": "API: /api/v1/outlook/weekly",
+      "status": "PASS",
+      "details": {
+        "status": 200,
+        "content_type": "application/json",
+        "has_data": true,
+        "keys": [
+          "ok",
+          "horizon",
+          "outlook",
+          "ts_utc"
+        ]
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:13.620281"
+    },
+    {
+      "test": "API: /api/v1/outlook/monthly",
+      "status": "PASS",
+      "details": {
+        "status": 200,
+        "content_type": "application/json",
+        "has_data": true,
+        "keys": [
+          "ok",
+          "horizon",
+          "outlook",
+          "ts_utc"
+        ]
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:13.743487"
+    },
+    {
+      "test": "API: /api/v1/scanner/structural",
+      "status": "PASS",
+      "details": {
+        "status": 200,
+        "content_type": "application/json",
+        "has_data": true,
+        "keys": [
+          "ok",
+          "data",
+          "results",
+          "ts_utc"
+        ]
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:13.876346"
+    },
+    {
+      "test": "API: /api/performance/summary",
+      "status": "PASS",
+      "details": {
+        "status": 200,
+        "content_type": "application/json",
+        "has_data": true,
+        "keys": [
+          "ok",
+          "period_days",
+          "total_trades",
+          "win_count",
+          "loss_count"
+        ]
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:13.997080"
+    },
+    {
+      "test": "API: /api/performance/strategies?days=30",
+      "status": "FAIL",
+      "details": {
+        "status": 404,
+        "error": "HTTP 404"
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:14.113499"
+    },
+    {
+      "test": "API: /api/performance/accounts?days=30",
+      "status": "FAIL",
+      "details": {
+        "status": 404,
+        "error": "HTTP 404"
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:14.230140"
+    },
+    {
+      "test": "API: /api/performance/ai-evaluation?days=30",
+      "status": "FAIL",
+      "details": {
+        "status": 404,
+        "error": "HTTP 404"
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:15.082201"
+    },
+    {
+      "test": "API: /api/news",
+      "status": "PASS",
+      "details": {
+        "status": 200,
+        "content_type": "application/json",
+        "has_data": true,
+        "keys": [
+          "ok",
+          "enabled",
+          "items",
+          "ts_utc"
+        ]
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:16.188420"
+    },
+    {
+      "test": "API: /api/market/prices?instruments=XAU_USD",
+      "status": "PASS",
+      "details": {
+        "status": 200,
+        "content_type": "application/json",
+        "has_data": true,
+        "keys": [
+          "ok",
+          "prices",
+          "errors"
+        ]
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:16.673898"
+    },
+    {
+      "test": "Navigation: Live Terminal",
+      "status": "PASS",
+      "details": {
+        "tab_id": "terminal",
+        "visible": true
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:18.819463"
+    },
+    {
+      "test": "Navigation: Outlook",
+      "status": "PASS",
+      "details": {
+        "tab_id": "outlook",
+        "visible": true
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:20.914945"
+    },
+    {
+      "test": "Navigation: Structural Scanner",
+      "status": "PASS",
+      "details": {
+        "tab_id": "scanner",
+        "visible": true
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:23.012027"
+    },
+    {
+      "test": "Navigation: Audit Log",
+      "status": "PASS",
+      "details": {
+        "tab_id": "audit",
+        "visible": true
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:25.128734"
+    },
+    {
+      "test": "Navigation: Forensic Journal",
+      "status": "PASS",
+      "details": {
+        "tab_id": "journal",
+        "visible": true
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:27.210716"
+    },
+    {
+      "test": "Navigation: News AI",
+      "status": "PASS",
+      "details": {
+        "tab_id": "news",
+        "visible": true
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:29.311707"
+    },
+    {
+      "test": "Navigation: Strategies",
+      "status": "PASS",
+      "details": {
+        "tab_id": "strategies",
+        "visible": true
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:31.424109"
+    },
+    {
+      "test": "Navigation: Performance",
+      "status": "PASS",
+      "details": {
+        "tab_id": "reports",
+        "visible": true
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:33.510511"
+    },
+    {
+      "test": "Navigation: Active Trades",
+      "status": "PASS",
+      "details": {
+        "tab_id": "trades",
+        "visible": true
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:35.614108"
+    },
+    {
+      "test": "Structural Scanner: Real Data",
+      "status": "FAIL",
+      "details": {
+        "results_count": 4,
+        "all_scores_same": true,
+        "all_regimes_same": true,
+        "has_insufficient_history": false,
+        "has_real_scores": false,
+        "has_real_regimes": false,
+        "sample_regimes": [
+          "UNDEFINED",
+          "UNDEFINED",
+          "UNDEFINED"
+        ]
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:38.830151"
+    },
+    {
+      "test": "Market Outlook: daily",
+      "status": "FAIL",
+      "details": {
+        "scenarios_count": 0,
+        "all_same_probability": false,
+        "has_real_data": false,
+        "engine_version": "unknown"
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:38.954204"
+    },
+    {
+      "test": "Market Outlook: weekly",
+      "status": "FAIL",
+      "details": {
+        "scenarios_count": 0,
+        "all_same_probability": false,
+        "has_real_data": false,
+        "engine_version": "unknown"
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:39.077847"
+    },
+    {
+      "test": "Market Outlook: monthly",
+      "status": "FAIL",
+      "details": {
+        "scenarios_count": 0,
+        "all_same_probability": false,
+        "has_real_data": false,
+        "engine_version": "unknown"
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:39.209364"
+    },
+    {
+      "test": "Performance: /api/performance/strategies?days=30",
+      "status": "FAIL",
+      "details": {
+        "status": 404
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:42.422476"
+    },
+    {
+      "test": "Performance: /api/performance/accounts?days=30",
+      "status": "FAIL",
+      "details": {
+        "status": 404
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:42.539193"
+    },
+    {
+      "test": "Performance: /api/performance/ai-evaluation?days=30",
+      "status": "FAIL",
+      "details": {
+        "status": 404
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:42.659802"
+    },
+    {
+      "test": "Active Trades: Data Format",
+      "status": "PASS",
+      "details": {
+        "trades_count": 0,
+        "has_numeric_pnl": true
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:44.524840"
+    },
+    {
+      "test": "Countdown Feature: HTML Elements",
+      "status": "FAIL",
+      "details": {
+        "countdown_exists": false,
+        "upcoming_exists": false
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:47.666746"
+    },
+    {
+      "test": "Console Errors",
+      "status": "PASS",
+      "details": {
+        "total_errors": 0,
+        "critical_errors": 0,
+        "warnings": 2,
+        "critical_error_samples": []
+      },
+      "error": null,
+      "timestamp": "2026-01-13T23:21:54.774058"
+    }
+  ],
+  "errors": [],
+  "summary": {
+    "total": 34,
+    "passed": 22,
+    "failed": 12,
+    "skipped": 0,
+    "pass_rate": "64.7%"
+  }
+}

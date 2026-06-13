@@ -1,0 +1,11 @@
+{
+  "artifact": "windows_ea_bridge_log_postpatch",
+  "path": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\ftmo_bridge_log.jsonl",
+  "matrix_signal_id": "winprove_matrix_20260324213656",
+  "captured_lines": [
+    "{\"type\":\"BROKER_REJECT\",\"msg\":\"invalid stops\",\"signal_id\":\"winprove_matrix_20260324213656\",\"ts\":\"2026.03.25 00:37:03\"}",
+    "{\"type\":\"BROKER_REJECT\",\"msg\":\"invalid stops\",\"signal_id\":\"winprove_matrix_20260324213656\",\"ts\":\"2026.03.25 00:37:03\"}",
+    "{\"type\":\"BROKER_REJECT\",\"msg\":\"invalid stops\",\"signal_id\":\"winprove_matrix_20260324213656\",\"ts\":\"2026.03.25 00:37:03\"}"
+  ],
+  "note": "Log probe via Select-String on Windows host after matrix inject (20260324 session)"
+}

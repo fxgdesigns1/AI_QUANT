@@ -1,0 +1,10 @@
+{
+  "steps": [
+    "1. Complete Tailscale install on Windows if winget is still running",
+    "2. Run 'tailscale up' on Windows and sign in",
+    "3. Re-run bridges/windows_sidecar/scripts/fxg_win_remote_overlay_setup.ps1",
+    "4. On Mac: run scripts/fxg_switch_sidecar_target_remote_overlay.sh (ensure artifacts/windows_remote_overlay_identity.json is synced)",
+    "5. Verify from Mac or non-home network: scripts/fxg_verify_remote_overlay_sidecar.sh"
+  ],
+  "ts_utc": "2026-03-23T02:05:00Z"
+}

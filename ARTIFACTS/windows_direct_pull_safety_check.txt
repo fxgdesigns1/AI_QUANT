@@ -1,0 +1,7 @@
+PASS: FTMO_Bridge_EA trading logic unchanged by this job (no EA source edits performed).
+PASS: Canonical producer semantics on ALPHA unchanged by this job (Windows pull is transport-only; no writes to ALPHA).
+PASS: No sidecar execution endpoints were added (sidecar remains telemetry/diagnostics only).
+PASS: No second execution path created (EA still consumes ONLY the active MT5 watchfile; delivery now pulls directly from ALPHA).
+PASS: Live trading not enabled by this job (no config gates changed).
+PASS: Dedup-by-signal_id enforced (direct pull second run appended_lines=0; duplicate_lines incremented).
+PASS: Google Drive / Mac shared-file relay is not required for Windows execution delivery after cutover (direct pull is authoritative scheduler).

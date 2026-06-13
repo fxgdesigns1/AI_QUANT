@@ -1,0 +1,14 @@
+{
+  "job_name": "FXG_WINDOWS_EA_LOG_DISCOVERY_AND_CONSUMER_REMEDIATION_V1",
+  "phase": "8_verify_ea_polling_without_trade",
+  "status": "NOT_RUN",
+  "must_verify": {
+    "ea_log_fresh": null,
+    "watched_file_fresh_and_readable": null,
+    "poll_cadence_visible": null,
+    "stale_log_cleared": null
+  },
+  "evidence": "Polling recovery cannot be proven from repo-only access; requires Windows-side timestamp checks after operator fixes sync or EA state.",
+  "sidecar_note": "GET http://100.122.152.80:8877/health returns 401 without SIDECAR_API_KEY — MT5 API health does not assert EA file consumer activity.",
+  "ts_utc": "2026-03-24T19:30:00Z"
+}

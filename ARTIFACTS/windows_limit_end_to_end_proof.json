@@ -1,0 +1,20 @@
+{
+  "job_name": "FXG_UNIFY_LANE_010_EXECUTION_CONTRACT_AND_LIMIT_SUPPORT_V1",
+  "phase": "7_verify_fresh_limit_signal_end_to_end",
+  "ts_utc": "2026-03-25T00:45:00Z",
+  "status": "INCOMPLETE",
+  "hard_pass_rule": "PASS requires one fresh LIMIT-style signal proven through the same lane-010 execution path on Windows MT5",
+  "completed_steps": [
+    {
+      "step": "aggregate_to_canonical_derive",
+      "evidence": "PowerShell derive appended TOP3_SNIPER_300 LIMIT-shaped line from logs/signals.jsonl to logs/signals_ftmo_demo2.jsonl",
+      "signal_id_example": "trace_20260325004148"
+    }
+  ],
+  "not_completed": [
+    "Recompile/reinstall EA 1.02 in MT5 MetaEditor",
+    "Transport forward to MQL5/Files and EA consumption",
+    "Capture ftmo_bridge_log.jsonl REQUEST_SUMMARY price_mode=LIMIT and EXECUTED/BROKER_REJECT with MT5 result"
+  ],
+  "operator_command_limit_inject_direct_to_mt5": ".\\bridges\\windows_sidecar\\scripts\\fxg_win_inject_test_signal.ps1 -EntryType LIMIT -EntryPrice <valid_buy_limit_below_ask>"
+}

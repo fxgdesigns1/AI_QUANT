@@ -1,0 +1,22 @@
+{
+  "job_name": "FXG_WINDOWS_EA_LOG_DISCOVERY_AND_CONSUMER_REMEDIATION_V1",
+  "phase": "5_correlate_target_signal_ids",
+  "status": "unverifiable_from_cursor_agent",
+  "target_signal_ids": [
+    "4c64dd1e-c1f3-41ec-9f2b-9481515f938f",
+    "18dc9f8b-12c2-4e20-820d-83fcfdd81c3f"
+  ],
+  "operator_reported_upstream": "Both IDs present in Linux canonical jsonl per job brief",
+  "operator_reported_downstream": "Neither ID in EA-facing bridge log; Linux bridge log path may differ from Windows EA log",
+  "per_signal_outcome": {
+    "4c64dd1e-c1f3-41ec-9f2b-9481515f938f": "unverifiable",
+    "18dc9f8b-12c2-4e20-820d-83fcfdd81c3f": "unverifiable"
+  },
+  "note_on_alternate_outcomes_if_windows_logs_were_readable": [
+    "If line present in Windows MQL5/Files signals file but EA log never mentions signal_id → watch_path_hit_not_seen_in_ea OR ea_filter_reject (see EA code: skips without LogBridge for bridge_account mismatch, execution_allowed false with InpPaperOnly, or parse failures)",
+    "If line absent on Windows file → watch_path_miss or sync_not_reaching_windows_watch_path",
+    "If FileOpen fails → EA returns early with no log (silent) — could resemble ea_not_polling in telemetry"
+  ],
+  "ea_silent_skip_paths_source": "ea/FTMO_Bridge_EA.mq5 OnTick(): INVALID_HANDLE return; continue on bridge_account mismatch; continue on !execution_allowed && InpPaperOnly",
+  "ts_utc": "2026-03-24T19:30:00Z"
+}

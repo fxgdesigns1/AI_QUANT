@@ -1,0 +1,25 @@
+=== Windows Operator - Correct Commands ===
+
+WHY ORIGINAL COMMANDS FAILED:
+1. PowerShell was run from C:\Windows\system32 - relative paths like .\bridges\... resolved to C:\Windows\system32\bridges\... which does not exist
+2. && is not valid in Windows PowerShell 5.1 - use ; or separate statements
+3. cd must be run first to repo root, then scripts
+
+CORRECT WORKFLOW:
+
+Step 1: Change to repo root (use your actual path)
+   Set-Location "H:\My Drive\AI Trading\Gcloud system"
+
+Step 2: Run probe and healthcheck (wrapper auto-detects repo root, can run from anywhere if invoked by full path)
+   .\bridges\windows_sidecar\scripts\fxg_win_run_probe_and_healthcheck.ps1
+
+   Or from ANY directory, invoke by full path:
+   & "H:\My Drive\AI Trading\Gcloud system\bridges\windows_sidecar\scripts\fxg_win_run_probe_and_healthcheck.ps1"
+
+Step 3: Build dashboard (PowerShell-compatible, no &&)
+   .\bridges\windows_sidecar\scripts\fxg_win_build_active_dashboard.ps1
+
+   Or manually:
+   Set-Location "H:\My Drive\AI Trading\Gcloud system\frontend\fxg-dashboard"
+   npm install
+   npm run build

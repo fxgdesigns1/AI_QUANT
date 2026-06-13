@@ -1,0 +1,5 @@
+{
+  "schema": "fxg.classifier_output.v1",
+  "empty": true,
+  "reason": "Classifier output not produced in this run"
+}

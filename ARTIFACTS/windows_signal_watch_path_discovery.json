@@ -1,0 +1,22 @@
+{
+  "job_name": "FXG_WINDOWS_EA_LOG_DISCOVERY_AND_CONSUMER_REMEDIATION_V1",
+  "phase": "4_find_real_watched_signal_file_path_on_windows",
+  "status": "PARTIAL",
+  "configured_watch_from_ea_inputs": {
+    "InpSignalFilePath_default": "signals_ftmo_demo2.jsonl",
+    "resolution_rule": "Filename-only open → MT5 MQL5/Files directory of the terminal running the EA",
+    "source": "ea/FTMO_Bridge_EA.mq5 lines 13-17, 132"
+  },
+  "host_local_path_rule_from_script": {
+    "script": "bridges/windows_sidecar/scripts/fxg_win_wire_canonical_signals.ps1",
+    "pattern": "%UserProfile%\\\\AppData\\\\Roaming\\\\MetaQuotes\\\\Terminal\\\\<instance_id>\\\\MQL5\\\\Files\\\\signals_ftmo_demo2.jsonl",
+    "first_matching_terminal_directory": "script stops at first child of Terminal with MQL5 present"
+  },
+  "linux_canonical_upstream_path_operators_truth": "/home/aiquant/gcloud-system/logs/signals_ftmo_demo2.jsonl",
+  "equivalence_claim": false,
+  "equivalence_reason": "Different OS and path; freshness on Linux does not prove the Windows MQL5/Files copy contains the same bytes unless sync/mirror is verified on Windows.",
+  "sync_required": "Producer or rsync/cloud-drive must append/copy to Windows MQL5\\\\Files file; repo documents this in docs/bridges/WINDOWS_CANONICAL_EA_CUTOVER.md",
+  "windows_file_mtime_observed": null,
+  "blocker": "windows_host_access_missing_for_stat_signals_file",
+  "ts_utc": "2026-03-24T19:30:00Z"
+}

@@ -1,0 +1,208 @@
+# AI-QUANT — SYSTEM STATUS AND PLAN (2026)
+
+> **Single Source of Truth:** This file is the canonical contract for what we are building and the current status. 
+> If it’s not written here, it’s not part of the plan.
+
+## 0) Non‑Negotiable Contract
+- **LOCKDOWN:** System is locked down; **only strategy configs** are tweakable.
+- **OANDA‑ONLY execution path:** No mock/sim broker. Paper uses **OANDA Practice**.
+- **ALL news/econ inputs wired + validated:** Providers must be enabled via config and validated at startup (fail-fast).
+- **Fail‑fast startup:** Missing required keys/services => service must not become healthy.
+- **Deterministic operation:** Single source of secrets at runtime (Secret Manager loader at service start).
+- **No script sprawl:** No one-off scripts. Extend/refactor in place.
+- **Sandbox-only scratch:** Any temporary Cursor output must go ONLY in `sandbox/_cursor_scratch/` (gitignored).
+
+## 1) Current State (Facts Only)
+### Repo
+- **Repo root:** `<fill>`
+- **HEAD SHA:** `<fill>`
+- **Active branch:** `<fill>`
+
+### VM(s)
+- **Current VM (baseline):** `fxg-quant-paper-e2-micro` (zone `us-east1-b`, project `fxg-ai-trading`)
+- **Nov-style VM (compare):** `<fill name>`
+
+### Control Plane
+- **URL (local on VM):** `http://127.0.0.1:8787`
+- **/api/status (paste JSON):**
+```json
+{}
+```
+- **systemd unit (paste `systemctl cat ai-quant-control-plane` excerpt):**
+```ini
+; paste here
+```
+
+### News / Econ Inputs
+- **Enabled providers (expected):** NewsAPI, AlphaVantage, MarketAux, FMP, Finnhub, FRED (+ any others we already have)
+- **/api/news/status (paste JSON):**
+```json
+{}
+```
+
+### Reports
+- **Daily/Weekly/Monthly reports enabled:** `<yes/no>`
+- **systemd timers proof (paste `systemctl list-timers | rg ai-quant-report`):**
+```text
+
+```
+
+## 2) Active Milestone (ONLY ONE ACTIVE)
+### Milestone ID
+- **ID:** `M0_BACKUP_AND_COMPARE`
+
+### Goal
+- Verify backups exist + freeze baseline + bring up Nov-style VM for side-by-side comparison.
+
+### Commands to run (copy/paste)
+#### Local (repo)
+```bash
+cd "$(git rev-parse --show-toplevel)"
+ls -1dt .BACKUPS/MAJOR_* | head -n 10
+LATEST="$(ls -1dt .BACKUPS/MAJOR_* | head -n 1)"
+ls -lah "$LATEST"
+ls -lah "$LATEST/vm_artifacts" || true
+```
+
+#### VM (baseline)
+```bash
+gcloud compute ssh --zone "us-east1-b" "fxg-quant-paper-e2-micro" --project "fxg-ai-trading" --command \
+"set -euo pipefail;
+ sudo systemctl cat ai-quant-control-plane | sed -n '1,220p';
+ echo '---';
+ curl -sS http://127.0.0.1:8787/api/status | jq .;"
+```
+
+### Expected Output
+- Latest backup folder exists and contains `repo_full.bundle`, `working_tree_export.tgz`, `SHA256SUMS.txt`.
+- Baseline VM returns `/api/status` and the systemd unit is visible.
+
+### Done When (Checklist)
+- [ ] Latest `.BACKUPS/MAJOR_*` verified
+- [ ] Baseline VM freeze-proof captured
+- [ ] Nov-style VM created and reachable
+- [ ] Side-by-side comparison report saved into latest backup folder
+
+## 3) Next Milestone (Queued)
+- **ID:** `M1_LOCKDOWN_AND_FAILFAST`
+- Restore Nov-style fail-fast semantics on the target VM, persist token, single-source secrets, lockdown mode.
+
+## 4) Notes / Decisions Log
+- `<date>`: `<decision>`
+
+## 5) Command Runner (Cursor writes results here)
+
+> **Rule:** Run the commands in order, then paste the outputs directly under the matching **RESULTS** block.
+> **Do not paste secrets.** If an output contains secrets, redact values but keep the key names.
+
+### Last Updated
+- **UTC timestamp:** `<fill>`
+- **Updated by:** `<fill (you/cursor)>`
+
+### M0 — Backup + Baseline Freeze Proof (Results)
+
+#### M0.1 Local backups list
+**COMMAND**
+```bash
+cd "$(git rev-parse --show-toplevel)"
+ls -1dt .BACKUPS/MAJOR_* | head -n 10
+```
+**RESULTS**
+```text
+<paste output here>
+```
+
+#### M0.2 Latest backup contents
+**COMMAND**
+```bash
+cd "$(git rev-parse --show-toplevel)"
+LATEST="$(ls -1dt .BACKUPS/MAJOR_* | head -n 1)"
+echo "$LATEST"
+ls -lah "$LATEST"
+ls -lah "$LATEST/vm_artifacts" || true
+```
+**RESULTS**
+```text
+<paste output here>
+```
+
+#### M0.3 Baseline VM freeze proof
+**COMMAND**
+```bash
+gcloud compute ssh --zone "us-east1-b" "fxg-quant-paper-e2-micro" --project "fxg-ai-trading" --command \
+"set -euo pipefail;
+ echo '=== UNIT ===';
+ sudo systemctl cat ai-quant-control-plane | sed -n '1,220p';
+ echo '=== STATUS ===';
+ curl -sS http://127.0.0.1:8787/api/status | jq .;"
+```
+**RESULTS**
+```text
+<paste output here>
+```
+
+### M0 Checklist (update as you go)
+- [ ] Latest `.BACKUPS/MAJOR_*` verified
+- [ ] Baseline VM freeze-proof captured
+- [ ] Nov-style VM created and reachable
+- [ ] Side-by-side comparison report saved into latest backup folder
+
+### M0.4 Create Nov-style VM (only when ready)
+**COMMAND**
+```bash
+# Choose ONE approach:
+# A) Clone current VM disk (fastest apples-to-apples)
+# B) Fresh VM + deploy from Nov safepoint
+# Paste the chosen commands + results in this file when executed.
+```
+**RESULTS**
+```text
+<paste output here>
+```
+
+global:
+  timezone: "Europe/London"
+
+risk_management:
+  kill_switch_drawdown_pct: 0.07
+
+strategies:
+  trade_with_pat_orb_dual:
+    instruments:
+      london_lane:
+        - "EUR_USD"
+        - "GBP_USD"
+      ny_lane:
+        - "USD_JPY"
+        - "XAU_USD"
+
+    parameters:
+      range_window_minutes: 15
+
+      session_templates:
+        london_open:
+          window: "08:00-08:15"
+          label: "London Open"
+          per_session_trade_cap: 2
+          min_range_pips: 5
+          max_range_pips: 35
+
+        ny_open:
+          window: "13:00-13:15"
+          label: "NY Open"
+          per_session_trade_cap: 2
+          min_range_pips: 5
+          max_range_pips: 35
+
+      target_logic:
+        tp_multiple_of_range: 0.8
+        tp_fallback_atr_multiple: 1.2
+
+      momentum_filter:
+        enabled: false
+
+      ema_filter:
+        enabled: false
+
+      supply_demand_detection:
+        mitigation_buffer_pips: 2.0

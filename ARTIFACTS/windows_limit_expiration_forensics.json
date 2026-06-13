@@ -1,0 +1,50 @@
+{
+  "phase": "1_forensic_trace_of_limit_order_request_fields",
+  "live_source_file": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Experts\\FTMO_Bridge_EA.mq5",
+  "repo_source_file": "h:\\My Drive\\AI Trading\\Gcloud system\\ea\\FTMO_Bridge_EA.mq5",
+  "canonical_ctrade_signature": {
+    "reference": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Include\\Trade\\Trade.mqh",
+    "BuyLimit_declaration_lines": "846-859",
+    "parameter_order": [
+      "volume (double)",
+      "price (double)",
+      "symbol (string)",
+      "sl",
+      "tp",
+      "type_time (optional)",
+      "expiration (optional)",
+      "comment (optional)"
+    ]
+  },
+  "v1_02_observed_ea_call": {
+    "file": "ea/FTMO_Bridge_EA.mq5 (before patch)",
+    "lines": "557-560",
+    "calls": [
+      "g_trade.BuyLimit(lots, symbol, entryPriceLimit, slSend, tpSend)",
+      "g_trade.SellLimit(lots, symbol, entryPriceLimit, slSend, tpSend)"
+    ],
+    "meaning_relative_to_library": "Second argument became trade price but received normalized symbol string EURUSD; third became CTrade symbol but received entryPriceLimit double.",
+    "mqltrade_request_in_v1_02": "Not constructed in EA; delegated to CTrade::OrderOpen after ClearStructures(). Internal m_request uses passed (wrong-position) price and symbol.",
+    "v1_02_logged_fields": "EA REQUEST_SUMMARY logged intended symbol/entry from JSON parser, not the mangled CTrade arguments."
+  },
+  "v1_03_limit_path": {
+    "method": "SendPendingLimitRaw",
+    "initialization": "MqlTradeRequest req; ZeroMemory(req); ZeroMemory(result);",
+    "populated_fields": {
+      "action": "TRADE_ACTION_PENDING",
+      "symbol": "normalized symbol (e.g. EURUSD)",
+      "volume": "lots",
+      "type": "ORDER_TYPE_BUY_LIMIT or ORDER_TYPE_SELL_LIMIT",
+      "price": "entryPriceLimit",
+      "sl": "slSend",
+      "tp": "tpSend",
+      "deviation": 0,
+      "type_time": "from ResolveLimitOrderTimePolicy",
+      "expiration": "from ResolveLimitOrderTimePolicy",
+      "type_filling": "ORDER_FILLING_RETURN",
+      "magic": "1512827972 % 10000"
+    }
+  },
+  "broker_log_evidence_id": "limitprove_20260325014628",
+  "broker_log_path": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\ftmo_bridge_log.jsonl"
+}

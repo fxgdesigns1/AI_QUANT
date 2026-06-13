@@ -1,0 +1,7 @@
+{
+  "ftmo_bridge_ea_mq5_exists": false,
+  "ftmo_bridge_ea_ex5_exists": false,
+  "search_scope": "workspace, bridges, src",
+  "finding": "No FTMO_Bridge_EA.mq5 or FTMO_Bridge_EA.ex5 found in Gcloud system repo. EA must be created.",
+  "ts_utc": "2026-03-23T00:45:00Z"
+}

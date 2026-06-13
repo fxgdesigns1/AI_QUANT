@@ -1,0 +1,24 @@
+[Unit]
+Description=AI_QUANT Control Plane
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=aiquant
+WorkingDirectory=/opt/ai-quant
+Environment=PYTHONUNBUFFERED=1
+# Load env from Secret Manager at start
+ExecStart=/bin/bash -lc 'source /opt/ai-quant/deploy/gcp/secrets_to_env.sh >/tmp/aiquant_env_check.log 2>&1 && CONTROL_PLANE_BG=0 REQUIRE_OANDA=1 REQUIRE_NEWS=1 REQUIRE_TELEGRAM=1 bash scripts/start_control_plane_clean.sh'
+Restart=always
+RestartSec=3
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/tmp /opt/ai-quant
+
+[Install]
+WantedBy=multi-user.target

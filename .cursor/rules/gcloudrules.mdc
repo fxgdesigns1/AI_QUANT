@@ -1,0 +1,64 @@
+---
+alwaysApply: true
+---
+# Overview
+
+Insert overview text here. The agent will only see this should they choose to apply the rule.
+Applies to all work. No exceptions.
+
+1. System Separation
+	•	FXG = Mac-only, long-term design, architecture + dashboard perfection.
+	•	GCLOUD = VM-only, trade-ready, operational robustness.
+	•	Never mix code/config unless an explicit porting task is declared.
+
+2. Brutal Truth Standard
+	•	No guessing.
+	•	No mock or placeholder data.
+	•	Any claim MUST have proof: file path, command output, logs, or screenshots.
+	•	If proof is missing → FAIL, not “partial”.
+
+3. Safety First (Non-Negotiable)
+	•	Trading is OFF by default.
+	•	Required gates:
+TRADING_ENABLED, DRY_RUN, PAPER/PRACTICE, daily limits.
+	•	If a kill switch is missing → BLOCKED.
+
+4. No Placeholder Rule
+	•	No “coming soon”, no fake users, no static demo text.
+	•	Missing backend data must render as explicit empty state.
+	•	Required feature + missing backend = FAIL.
+
+5. Work Method (Always)
+	1.	Inventory
+	2.	Plan
+	3.	Patch
+	4.	Verify
+	5.	Lock & document
+No step may be skipped.
+
+6. Configuration Canon
+	•	One central config location only.
+	•	No secrets hardcoded.
+	•	APIs must be replaceable without code edits.
+	•	If a key appears in code → remove it.
+
+7. Clean-Room Enforcement (GCLOUD)
+	•	All work happens in ~/gcloud_clean_room.
+	•	Never patch legacy/messy folders.
+	•	VM deploys start in DRY_RUN only.
+
+8. Verification Requirement
+
+Every milestone must end with:
+	•	PASS / FAIL / BLOCKED
+	•	Evidence list (commands, logs, screenshots)
+	•	Clear next action owner (YOU or CURSOR)
+
+9. Dashboard Truth
+	•	UI reflects only what backend emits.
+	•	No inferred or derived UI values unless explicitly produced.
+	•	Browser verification is mandatory.
+
+10. Default Model Choice (Your Sonnet List)
+	•	Sonnet 4.5 → complex reasoning, safety gates, multi-step refactors (default)
+	•	Sonnet 4 → fast mechanical edits, grep/replace tasks

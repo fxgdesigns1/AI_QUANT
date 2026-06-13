@@ -1,0 +1,29 @@
+{
+  "canonical_ea_name": "FTMO_Bridge_EA",
+  "source_exists": false,
+  "resolution": "RECONSTRUCT",
+  "signal_format_from_emit": {
+    "strategy": "string",
+    "symbol": "string (e.g. EUR_USD)",
+    "side": "BUY|SELL",
+    "units": "int",
+    "entry_type": "MARKET",
+    "stop_loss": "float|null",
+    "take_profit": "float|null",
+    "confidence": "float",
+    "regime": "string",
+    "session": "string",
+    "news_state": "string",
+    "execution_allowed": "bool",
+    "block_reason": "string|null",
+    "account": "string",
+    "bridge_account": "string (ftmo_demo2 for canonical)",
+    "meta": "object (optional)"
+  },
+  "required_inputs": {
+    "InpSignalFilePath": "signals_ftmo_demo2.jsonl",
+    "InpBridgeAccount": "ftmo_demo2"
+  },
+  "created_source": "ea/FTMO_Bridge_EA.mq5",
+  "ts_utc": "2026-03-23T00:45:00Z"
+}

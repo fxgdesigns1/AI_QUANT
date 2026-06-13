@@ -1,0 +1,7 @@
+{
+  "artifact": "windows_ea_execution_proof_final",
+  "overall": "PARTIAL — code and compile ready; runtime proof blocked because chart retained pre-patch EA instance",
+  "market_null_stops_buy_final_class": "UNKNOWN_FAIL at test time",
+  "duplicate_replay_final_class": "CONSUMER_PATH_FAIL at test time",
+  "post_reload_expected": "REQUEST_SUMMARY with sl_set=false tp_set=false; then EXECUTED or BROKER_REJECT with reason other than malformed SL/TP mapping; DUPLICATE_SKIP on replay"
+}

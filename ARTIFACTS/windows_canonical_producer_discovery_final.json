@@ -1,0 +1,7 @@
+{
+  "producer_repo_root": "H:\\My Drive\\AI Trading\\Gcloud system",
+  "producer_entrypoint_path": "src/core/manual_execution.py",
+  "exists_true_false": false,
+  "discovery_method": "Glob **/manual_execution.py under workspace root (0 files); repo is Windows-accessible clone only.",
+  "captured_utc": "2026-03-24T20:47:00Z"
+}

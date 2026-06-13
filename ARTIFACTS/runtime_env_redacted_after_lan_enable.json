@@ -1,0 +1,6 @@
+{
+  "BIND_HOST": "0.0.0.0",
+  "BIND_PORT": "8877",
+  "file_updated": "bridges/windows_sidecar/.env",
+  "note": "LAN binding enabled for Mac dashboard remote access"
+}

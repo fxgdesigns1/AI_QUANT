@@ -1,0 +1,18 @@
+=== Windows Command Fix Safety Check ===
+
+1. canonical_mac_file_bridge_v1 execution semantics: UNCHANGED
+   - manual_execution.py: git diff empty (no modifications)
+   - configs/bridge_accounts.json: not modified by this job
+
+2. No sidecar write routes:
+   - rg orders/send, order_send, positions/close, orders/preview: Only match in test_contracts.py which asserts these paths MUST NOT exist (test_no_write_routes)
+   - bridges/windows_sidecar: No order_send, positions_close, orders_preview implementations
+
+3. Bridge ownership remains explicit:
+   - canonical_mac_file_bridge_v1: execution owner (docs, dashboard, artifacts)
+   - parallel_windows_sidecar_bridge_v1: data/diagnostics (read-only)
+
+4. No duplicate canonical writers created
+5. No live trading enablement introduced
+
+SAFETY: PASS

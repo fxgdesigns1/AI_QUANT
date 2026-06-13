@@ -1,0 +1,24 @@
+{
+  "job": "FXG_FIX_MT5_0_01_LOT_FALLBACK_ON_LIVE_CONSUMER_V1",
+  "phase": "4_patch_live_consumer_to_honor_signal_lots_or_fail_closed",
+  "target": "ea/FTMO_Bridge_EA.mq5 only",
+  "ea_version_bump": "1.03 -> 1.04",
+  "rules_implemented": [
+    "If JSON lots (or alias volume) is present, numeric, and >0: normalize to broker SYMBOL_VOLUME_MIN/MAX/STEP only",
+    "If lots/volume absent, null, NaN, non-positive, or outside broker bounds after normalization: LOT_PARSE_REJECT with explicit reason; do not execute",
+    "Remove silent fallback to InpMaxLotSize/default 0.01 for signal-driven paths",
+    "units remain required non-zero for pipeline validation but do not define volume"
+  ],
+  "functions_added": [
+    "NormalizeVolumeForSymbol"
+  ],
+  "log_events_added": [
+    "LOT_RESOLVE",
+    "LOT_PARSE_REJECT"
+  ],
+  "non_targets_confirmed": [
+    "src/core/manual_execution.py",
+    "ALPHA OANDA execution",
+    "bridges/windows_sidecar/run.py"
+  ]
+}

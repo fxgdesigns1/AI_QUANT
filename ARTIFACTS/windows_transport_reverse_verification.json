@@ -1,0 +1,7 @@
+﻿{
+    "phase":  "reverse_bridge_log",
+    "pass":  true,
+    "ts_utc":  "2026-03-25T00:10:01.9928278Z",
+    "shared_repo_contains_probe_type":  true,
+    "appended_marked_line":  "{\"signal_id\":\"transportprobe_20260325001001\",\"msg\":\"safe_verification_line\",\"type\":\"TRANSPORT_REVERSE_PROBE\",\"ts\":\"2026-03-25T00:10:01.8853702Z\"}"
+}

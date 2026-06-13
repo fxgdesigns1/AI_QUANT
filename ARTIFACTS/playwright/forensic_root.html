@@ -1,0 +1,599 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI_QUANT | Forensic Command (Truthful)</title>
+  <style>
+    :root {
+      --bg: #0a0b0d;
+      --panel: rgba(20, 22, 26, 0.9);
+      --panel2: rgba(0,0,0,0.35);
+      --border: #2d2e35;
+      --text: #e6e6e6;
+      --muted: #9ca3af;
+      --accent: #00ff88;
+      --warn: #ffc107;
+      --danger: #ff3e3e;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; }
+    a { color: var(--accent); }
+    .sidebar { width: 280px; border-right: 1px solid var(--border); background: #0a0b0d; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+    .brand { display: flex; align-items: center; gap: 10px; padding: 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel); }
+    .logo { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, var(--accent), #00cc6a); color: #000; display: flex; align-items: center; justify-content: center; font-weight: 900; }
+    .brand h1 { margin: 0; font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase; }
+    .brand .sub { font-size: 11px; color: var(--muted); }
+    .nav { display: flex; flex-direction: column; gap: 6px; }
+    .nav button { text-align: left; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); color: var(--text); cursor: pointer; }
+    .nav button.active { border-color: rgba(0,255,136,0.35); background: rgba(0,255,136,0.08); }
+    .meta { margin-top: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--panel); padding: 12px; font-size: 12px; color: var(--muted); }
+    .meta strong { color: var(--text); }
+    .main { flex: 1; display: flex; flex-direction: column; }
+    .topbar { border-bottom: 1px solid var(--border); background: var(--panel); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--border); background: rgba(0,0,0,0.25); font-size: 12px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted); }
+    .dot.ok { background: var(--accent); }
+    .dot.warn { background: var(--warn); }
+    .dot.bad { background: var(--danger); }
+    .actions { display: flex; gap: 8px; }
+    .btn { padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); color: var(--text); cursor: pointer; font-size: 12px; }
+    .btn.primary { background: rgba(0,255,136,0.14); border-color: rgba(0,255,136,0.35); }
+    .content { padding: 16px; overflow: auto; }
+    .panel { border: 1px solid var(--border); border-radius: 12px; background: var(--panel); padding: 14px; margin-bottom: 12px; }
+    .panel h2 { margin: 0 0 8px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 0.08em; }
+    .note { font-size: 12px; color: var(--muted); margin: 8px 0 0 0; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    @media (max-width: 980px) { .sidebar { display: none; } .grid { grid-template-columns: 1fr; } }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { text-align: left; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.06); vertical-align: top; }
+    th { color: var(--muted); font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.06em; }
+    pre { white-space: pre-wrap; background: var(--panel2); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 10px; margin: 0; font-size: 12px; }
+    .hidden { display: none; }
+    .truthbox { margin-top: 10px; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    input[type="password"] { width: 340px; max-width: 100%; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border); background: rgba(0,0,0,0.35); color: var(--text); font-size: 12px; }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">AQ</div>
+      <div>
+        <h1>Forensic Command</h1>
+        <div class="sub">Truthful + usable (manual refresh)</div>
+      </div>
+    </div>
+    <nav class="nav" id="nav">
+      <button class="active" data-tab="overview">Overview</button>
+      <button data-tab="prices">Prices</button>
+      <button data-tab="news">News</button>
+      <button data-tab="trades">Trades</button>
+      <button data-tab="strategies">Strategies</button>
+      <button data-tab="audit">Audit</button>
+      <button data-tab="outlook">Outlook</button>
+      <button data-tab="scanner">Scanner</button>
+    </nav>
+    <div class="meta">
+      <div><strong>Links</strong>: <a href="/">/</a> · <a href="/advanced">/advanced</a></div>
+      <div style="margin-top:8px;"><strong>Truth rule</strong>: Render data only if <code>truth.complete=true</code>.</div>
+      <div style="margin-top:8px;"><strong>Placeholder</strong>: NO BACKEND FACT AVAILABLE</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="chips">
+        <span class="chip"><span class="dot ok" id="dot-truth"></span><span id="chip-truth">Truth: FULL</span></span>
+        <span class="chip"><span class="dot ok" id="dot-mode"></span><span id="chip-mode">Mode: paper</span></span>
+        <span class="chip"><span class="dot ok" id="dot-system"></span><span id="chip-system">System: NO BACKEND FACT AVAILABLE</span></span>
+      </div>
+      <div class="actions">
+        <button class="btn" id="btn-refresh">Refresh all</button>
+      </div>
+    </header>
+
+    <section class="content">
+      <div class="panel">
+        <h2>Control Plane Token (POST endpoints only)</h2>
+        <div class="row">
+          <input id="token-input" type="password" placeholder="Paste CONTROL_PLANE_TOKEN (stored locally)" style="">
+          <button class="btn" id="btn-token-save">Save</button>
+          <button class="btn" id="btn-token-clear">Clear</button>
+        </div>
+        <p class="note">Token is stored in <code>localStorage.control_plane_token</code>. Never embedded in HTML.</p>
+      </div>
+
+      <div id="tab-overview" class="tab">
+        <div class="grid">
+          <div class="panel">
+            <h2>System Truth Status</h2>
+            <pre id="ov-truth-status">{
+  "data": {
+    "system_truth_state": "FULL",
+    "blocking_reasons": []
+  },
+  "truth": {
+    "source": "cache",
+    "freshness_ms": 0,
+    "complete": true,
+    "assumptions": [],
+    "warnings": [],
+    "last_verified_at": "2026-01-17T22:47:18.726224+00:00"
+  }
+}</pre>
+          </div>
+          <div class="panel">
+            <h2>Status Snapshot</h2>
+            <pre id="ov-status">{
+  "accounts": [],
+  "accounts_execution_capable": 5,
+  "accounts_total": 5,
+  "active_strategy_key": "momentum",
+  "daily_limit_current": {
+    "101-004-30719775-001": 3,
+    "101-004-30719775-002": 3,
+    "101-004-30719775-003": 3,
+    "101-004-30719775-004": 3,
+    "101-004-30719775-005": 3
+  },
+  "daily_trades_today": {},
+  "enabled_strategies": [
+    "momentum"
+  ],
+  "execution_enabled": true,
+  "execution_reason": "paper_execution_enabled",
+  "last_executed_count": 0,
+  "last_scan_iso": "2026-01-17T22:47:04.869877Z",
+  "last_signals_generated": 0,
+  "last_status_write_at": "2026-01-17T22:47:04.870212Z",
+  "market_closed": true,
+  "mode": "paper",
+  "oanda_cancel_reasons_per_account": {},
+  "pending_trades": [],
+  "positions": [],
+  "price_sanity_blocks_per_account": {},
+  "recent_signals": [],
+  "scan_interval": 30,
+  "strategy_assignments": [
+    {
+      "account_id": "-001",
+      "enabled": true,
+      "strategy_key": "momentum"
+    },
+    {
+      "account_id": "-002",
+      "enabled": true,
+      "strategy_key": "gold"
+    },
+    {
+      "account_id": "-003",
+      "enabled": true,
+      "strategy_key": "ultra_strict_forex"
+    },
+    {
+      "account_id": "-004",
+      "enabled": true,
+      "strategy_key": "range"
+    },
+    {
+      "account_id": "-005",
+      "enabled": true,
+      "strategy_key": "xau_usd_session_bias_1"
+    }
+  ],
+  "strategy_registry_hash": "af61f6bfdb0e311e6cb5862544343d671bc374da4f960178f2d25fef9403c84b",
+  "strategy_registry_version": 5,
+  "throttle_skips_per_account": {},
+  "timestamp_iso": "2026-01-17T22:47:04.870212Z",
+  "timestamp_utc": 1768690024.8702264,
+  "tp_omitted_per_account": {}
+}</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-prices" class="tab hidden">
+        <div class="panel">
+          <h2>Sidebar Live Prices</h2>
+          <div class="row" style="margin-bottom:10px;">
+            <button class="btn" id="btn-prices-refresh">Refresh</button>
+          </div>
+          <div id="prices-table-wrap"><table><thead><tr><th>instrument</th><th>bid</th><th>ask</th><th>mid</th><th>change_pct</th><th>change_pct_status</th></tr></thead><tbody><tr><td>EUR_USD</td><td>1.15983</td><td>1.15993</td><td>1.1598799999999998</td><td></td><td>unavailable</td></tr><tr><td>GBP_USD</td><td>1.33741</td><td>1.3385</td><td>1.337955</td><td></td><td>unavailable</td></tr><tr><td>USD_JPY</td><td>158.06</td><td>158.146</td><td>158.103</td><td></td><td>unavailable</td></tr><tr><td>XAU_USD</td><td>4595.08</td><td>4597.56</td><td>4596.32</td><td></td><td>unavailable</td></tr></tbody></table></div>
+          <div class="truthbox">
+            <pre id="prices-truth">{
+  "source": "live",
+  "freshness_ms": 0,
+  "complete": true,
+  "assumptions": [],
+  "warnings": [],
+  "last_verified_at": "2026-01-17T22:47:19.811263+00:00"
+}</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-news" class="tab hidden">
+        <div class="panel">
+          <h2>News</h2>
+          <div class="row" style="margin-bottom:10px;">
+            <button class="btn" id="btn-news-refresh">Refresh</button>
+          </div>
+          <div id="news-list-wrap"><pre>NO BACKEND FACT AVAILABLE</pre></div>
+          <div class="truthbox">
+            <pre id="news-truth">{
+  "source": "live",
+  "freshness_ms": 15074,
+  "complete": true,
+  "assumptions": [],
+  "warnings": [],
+  "last_verified_at": "2026-01-17T22:47:19.944851+00:00"
+}</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-trades" class="tab hidden">
+        <div class="grid">
+          <div class="panel">
+            <h2>Active Trades (OANDA)</h2>
+            <div class="row" style="margin-bottom:10px;">
+              <button class="btn" id="btn-active-trades-refresh">Refresh</button>
+            </div>
+            <div id="active-trades-wrap"><table><thead><tr><th>account</th><th>open_trades</th><th>open_positions</th><th>error</th></tr></thead><tbody><tr><td>001</td><td>0</td><td>0</td><td></td></tr><tr><td>002</td><td>0</td><td>0</td><td></td></tr><tr><td>003</td><td>0</td><td>0</td><td></td></tr><tr><td>004</td><td>0</td><td>0</td><td></td></tr><tr><td>005</td><td>0</td><td>0</td><td></td></tr></tbody></table></div>
+            <div class="truthbox"><pre id="active-trades-truth">{
+  "source": "live",
+  "freshness_ms": 0,
+  "complete": true,
+  "assumptions": [],
+  "warnings": [],
+  "last_verified_at": "2026-01-17T22:47:26.308779+00:00"
+}</pre></div>
+          </div>
+          <div class="panel">
+            <h2>Ledger Journal</h2>
+            <div class="row" style="margin-bottom:10px;">
+              <button class="btn" id="btn-ledger-refresh">Refresh</button>
+            </div>
+            <div id="ledger-wrap"><table><thead><tr><th>status</th><th>instrument</th><th>side</th><th>units</th><th>strategy</th><th>logged_at</th></tr></thead><tbody><tr><td>CONFIG_UPDATE</td><td></td><td></td><td></td><td>momentum</td><td>2026-01-16T21:44:13.766965+00:00</td></tr><tr><td>CONFIG_UPDATE</td><td></td><td></td><td></td><td>momentum</td><td>2026-01-16T21:43:51.459812+00:00</td></tr><tr><td>CONFIG_UPDATE</td><td></td><td></td><td></td><td>momentum</td><td>2026-01-16T21:42:02.505746+00:00</td></tr><tr><td>CONFIG_UPDATE</td><td></td><td></td><td></td><td>momentum</td><td>2026-01-16T21:41:42.071606+00:00</td></tr><tr><td>CONFIG_UPDATE</td><td></td><td></td><td></td><td>momentum</td><td>2026-01-16T21:33:36.505325+00:00</td></tr><tr><td>CONFIG_UPDATE_FAILED</td><td></td><td></td><td></td><td>momentum</td><td>2026-01-16T21:33:06.333680+00:00</td></tr><tr><td>FAILED</td><td>AUD_USD</td><td>BUY</td><td>98777</td><td>momentum</td><td>2026-01-16T17:17:25.072035+00:00</td></tr><tr><td>FAILED</td><td>XAU_USD</td><td>BUY</td><td>19</td><td>momentum</td><td>2026-01-16T17:17:25.072035+00:00</td></tr><tr><td>FAILED</td><td>GBP_USD</td><td>BUY</td><td>98777</td><td>momentum</td><td>2026-01-16T17:17:25.072035+00:00</td></tr><tr><td>FAILED</td><td>EUR_USD</td><td>BUY</td><td>98777</td><td>momentum</td><td>2026-01-16T17:17:25.072035+00:00</td></tr><tr><td>FAILED</td><td>AUD_USD</td><td>BUY</td><td>101703</td><td>momentum</td><td>2026-01-16T17:17:25.072035+00:00</td></tr><tr><td>FAILED</td><td>XAU_USD</td><td>BUY</td><td>20</td><td>momentum</td><td>2026-01-16T17:17:25.072035+00:00</td></tr><tr><td>FAILED</td><td>GBP_USD</td><td>BUY</td><td>101703</td><td>momentum</td><td>2026-01-16T17:17:25.072035+00:00</td></tr><tr><td>FAILED</td><td>EUR_USD</td><td>BUY</td><td>101703</td><td>momentum</td><td>2026-01-16T17:17:25.072035+00:00</td></tr><tr><td>FAILED</td><td>AUD_USD</td><td>BUY</td><td>101758</td><td>momentum</td><td>2026-01-16T17:17:25.072035+00:00</td></tr><tr><td>FAILED</td><td>XAU_USD</td><td>BUY</td><td>20</td><td>momentum</td><td>2026-01-16T17:17:25.072035+00:00</td></tr><tr><td>FAILED</td><td>GBP_USD</td><td>BUY</td><td>101758</td><td>momentum</td><td>2026-01-16T17:17:25.072035+00:00</td></tr><tr><td>FAILED</td><td>EUR_USD</td><td>BUY</td><td>101758</td><td>momentum</td><td>2026-01-16T17:17:25.072035+00:00</td></tr><tr><td>FAILED</td><td>AUD_USD</td><td>BUY</td><td>98587</td><td>momentum</td><td>2026-01-16T17:17:25.072035+00:00</td></tr><tr><td>FAILED</td><td>XAU_USD</td><td>BUY</td><td>19</td><td>momentum</td><td>2026-01-16T17:17:25.072035+00:00</td></tr><tr><td>FAILED</td><td>GBP_USD</td><td>BUY</td><td>98587</td><td>momentum</td><td>2026-01-16T17:17:25.072035+00:00</td></tr><tr><td>FAILED</td><td>EUR_USD</td><td>BUY</td><td>98587</td><td>momentum</td><td>2026-01-16T17:17:25.072035+00:00</td></tr><tr><td>FAILED</td><td>AUD_USD</td><td>BUY</td><td>101319</td><td>momentum</td><td>2026-01-16T17:17:25.072035+00:00</td></tr><tr><td>FAILED</td><td>XAU_USD</td><td>BUY</td><td>20</td><td>momentum</td><td>2026-01-16T17:17:25.072035+00:00</td></tr><tr><td>FAILED</td><td>GBP_USD</td><td>BUY</td><td>101319</td><td>momentum</td><td>2026-01-16T17:17:25.072035+00:00</td></tr><tr><td>FAILED</td><td>EUR_USD</td><td>BUY</td><td>101319</td><td>momentum</td><td>2026-01-16T17:17:25.072035+00:00</td></tr><tr><td>FAILED</td><td>AUD_USD</td><td>BUY</td><td>98777</td><td>momentum</td><td>2026-01-16T17:16:45.006625+00:00</td></tr><tr><td>FAILED</td><td>XAU_USD</td><td>BUY</td><td>19</td><td>momentum</td><td>2026-01-16T17:16:45.006625+00:00</td></tr><tr><td>FAILED</td><td>GBP_USD</td><td>BUY</td><td>98777</td><td>momentum</td><td>2026-01-16T17:16:45.006625+00:00</td></tr><tr><td>FAILED</td><td>EUR_USD</td><td>BUY</td><td>98777</td><td>momentum</td><td>2026-01-16T17:16:45.006625+00:00</td></tr><tr><td>FAILED</td><td>AUD_USD</td><td>BUY</td><td>101703</td><td>momentum</td><td>2026-01-16T17:16:45.006625+00:00</td></tr><tr><td>FAILED</td><td>XAU_USD</td><td>BUY</td><td>20</td><td>momentum</td><td>2026-01-16T17:16:45.006625+00:00</td></tr><tr><td>FAILED</td><td>GBP_USD</td><td>BUY</td><td>101703</td><td>momentum</td><td>2026-01-16T17:16:45.006625+00:00</td></tr><tr><td>FAILED</td><td>EUR_USD</td><td>BUY</td><td>101703</td><td>momentum</td><td>2026-01-16T17:16:45.006625+00:00</td></tr><tr><td>FAILED</td><td>AUD_USD</td><td>BUY</td><td>101758</td><td>momentum</td><td>2026-01-16T17:16:45.006625+00:00</td></tr><tr><td>FAILED</td><td>XAU_USD</td><td>BUY</td><td>20</td><td>momentum</td><td>2026-01-16T17:16:45.006625+00:00</td></tr><tr><td>FAILED</td><td>GBP_USD</td><td>BUY</td><td>101758</td><td>momentum</td><td>2026-01-16T17:16:45.006625+00:00</td></tr><tr><td>FAILED</td><td>EUR_USD</td><td>BUY</td><td>101758</td><td>momentum</td><td>2026-01-16T17:16:45.006625+00:00</td></tr><tr><td>FAILED</td><td>AUD_USD</td><td>BUY</td><td>98587</td><td>momentum</td><td>2026-01-16T17:16:45.006625+00:00</td></tr><tr><td>FAILED</td><td>XAU_USD</td><td>BUY</td><td>19</td><td>momentum</td><td>2026-01-16T17:16:45.006625+00:00</td></tr><tr><td>FAILED</td><td>GBP_USD</td><td>BUY</td><td>98587</td><td>momentum</td><td>2026-01-16T17:16:45.006625+00:00</td></tr><tr><td>FAILED</td><td>EUR_USD</td><td>BUY</td><td>98587</td><td>momentum</td><td>2026-01-16T17:16:45.006625+00:00</td></tr><tr><td>FAILED</td><td>AUD_USD</td><td>BUY</td><td>101319</td><td>momentum</td><td>2026-01-16T17:16:45.006625+00:00</td></tr><tr><td>FAILED</td><td>XAU_USD</td><td>BUY</td><td>20</td><td>momentum</td><td>2026-01-16T17:16:45.006625+00:00</td></tr><tr><td>FAILED</td><td>GBP_USD</td><td>BUY</td><td>101319</td><td>momentum</td><td>2026-01-16T17:16:45.006625+00:00</td></tr><tr><td>FAILED</td><td>EUR_USD</td><td>BUY</td><td>101319</td><td>momentum</td><td>2026-01-16T17:16:45.006625+00:00</td></tr><tr><td>FAILED</td><td>AUD_USD</td><td>BUY</td><td>98777</td><td>momentum</td><td>2026-01-16T17:15:55.030704+00:00</td></tr><tr><td>FAILED</td><td>XAU_USD</td><td>BUY</td><td>19</td><td>momentum</td><td>2026-01-16T17:15:55.030704+00:00</td></tr><tr><td>FAILED</td><td>GBP_USD</td><td>BUY</td><td>98777</td><td>momentum</td><td>2026-01-16T17:15:55.030704+00:00</td></tr><tr><td>FAILED</td><td>EUR_USD</td><td>BUY</td><td>98777</td><td>momentum</td><td>2026-01-16T17:15:55.030704+00:00</td></tr></tbody></table></div>
+            <div class="truthbox"><pre id="ledger-truth">{
+  "source": "cache",
+  "freshness_ms": 0,
+  "complete": true,
+  "assumptions": [],
+  "warnings": [],
+  "last_verified_at": "2026-01-17T22:47:26.496960+00:00"
+}</pre></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-strategies" class="tab hidden">
+        <div class="panel">
+          <h2>Strategies (Registry)</h2>
+          <div class="row" style="margin-bottom:10px;">
+            <button class="btn" id="btn-strategies-refresh">Refresh</button>
+          </div>
+          <div id="strategies-wrap"><table><thead><tr><th>strategy_id</th><th>enabled</th><th>instruments</th><th>risk_profile</th></tr></thead><tbody><tr><td>momentum</td><td>true</td><td>EUR_USD,GBP_USD,USD_JPY,AUD_USD</td><td>medium</td></tr><tr><td>gold</td><td>false</td><td>XAU_USD</td><td>high</td></tr><tr><td>gold_scalping</td><td>false</td><td>XAU_USD</td><td>high</td></tr><tr><td>momentum_trading</td><td>false</td><td>EUR_USD,GBP_USD,USD_JPY,AUD_USD</td><td>medium</td></tr><tr><td>momentum_v2_improved</td><td>false</td><td>EUR_USD,GBP_USD,USD_JPY,AUD_USD,USD_CAD,NZD_USD</td><td>medium</td></tr><tr><td>alpha</td><td>false</td><td>EUR_USD,GBP_USD,USD_JPY,AUD_USD,USD_CAD,NZD_USD</td><td>medium</td></tr><tr><td>alpha_strategy</td><td>false</td><td>EUR_USD,GBP_USD,USD_JPY,AUD_USD,USD_CAD,NZD_USD</td><td>medium</td></tr><tr><td>trade_with_pat_orb_dual</td><td>false</td><td>EUR_USD,GBP_USD,USD_JPY</td><td>medium</td></tr><tr><td>ultra_strict_forex</td><td>false</td><td>EUR_USD,GBP_USD,USD_JPY,AUD_USD</td><td>medium</td></tr><tr><td>ultra_strict_v2_regime_aware</td><td>false</td><td>EUR_USD,GBP_USD,USD_JPY,AUD_USD</td><td>medium</td></tr><tr><td>dynamic_multi_pair_unified</td><td>false</td><td>EUR_USD,GBP_USD,USD_JPY,AUD_USD,USD_CAD,NZD_USD</td><td>low</td></tr><tr><td>eur_calendar_optimized</td><td>false</td><td>EUR_USD</td><td>low</td></tr><tr><td>gbp_usd_optimized</td><td>false</td><td>GBP_USD</td><td>medium</td></tr><tr><td>gold_scalping_strict1</td><td>false</td><td>XAU_USD</td><td>high</td></tr><tr><td>gold_scalping_topdown</td><td>false</td><td>XAU_USD</td><td>high</td></tr><tr><td>gold_scalping_winrate</td><td>false</td><td>XAU_USD</td><td>high</td></tr></tbody></table></div>
+          <div class="truthbox"><pre id="strategies-truth">{
+  "source": "cache",
+  "freshness_ms": 0,
+  "complete": true,
+  "assumptions": [],
+  "warnings": [],
+  "last_verified_at": "2026-01-17T22:47:26.636251+00:00"
+}</pre></div>
+        </div>
+      </div>
+
+      <div id="tab-audit" class="tab hidden">
+        <div class="panel">
+          <h2>Audit Log</h2>
+          <div class="row" style="margin-bottom:10px;">
+            <button class="btn" id="btn-audit-refresh">Refresh</button>
+          </div>
+          <div id="audit-wrap"><table><thead><tr><th>ts_iso</th><th>actor</th><th>action</th><th>status</th><th>details</th></tr></thead><tbody><tr><td>2026-01-05T19:05:39.914025+00:00</td><td>admin</td><td>recompute_outlook</td><td>success</td><td>{"path":"/api/v1/outlook/recompute","method":"POST","note":"Recomputed all outlook horizons"}</td></tr><tr><td>2026-01-05T19:06:03.592926+00:00</td><td>admin</td><td>recompute_outlook</td><td>success</td><td>{"path":"/api/v1/outlook/recompute","method":"POST","note":"Recomputed all outlook horizons"}</td></tr><tr><td>2026-01-05T21:29:59.409462+00:00</td><td>admin</td><td>recompute_outlook</td><td>success</td><td>{"path":"/api/v1/outlook/recompute","method":"POST","note":"Recomputed all outlook horizons"}</td></tr><tr><td>2026-01-05T21:30:14.650620+00:00</td><td>admin</td><td>update_config</td><td>success</td><td>{"path":"/api/config","method":"POST"}</td></tr><tr><td>2026-01-05T21:30:14.840223+00:00</td><td>admin</td><td>update_config</td><td>success</td><td>{"path":"/api/config","method":"POST"}</td></tr><tr><td>2026-01-05T21:32:28.206951+00:00</td><td>admin</td><td>recompute_outlook</td><td>success</td><td>{"path":"/api/v1/outlook/recompute","method":"POST","note":"Recomputed all outlook horizons"}</td></tr><tr><td>2026-01-05T21:32:36.001849+00:00</td><td>admin</td><td>update_config</td><td>success</td><td>{"path":"/api/config","method":"POST"}</td></tr><tr><td>2026-01-05T21:32:36.188257+00:00</td><td>admin</td><td>update_config</td><td>success</td><td>{"path":"/api/config","method":"POST"}</td></tr><tr><td>2026-01-05T21:44:15.686902+00:00</td><td>admin</td><td>recompute_outlook</td><td>success</td><td>{"path":"/api/v1/outlook/recompute","method":"POST","note":"Recomputed all outlook horizons"}</td></tr><tr><td>2026-01-05T21:50:58.007549+00:00</td><td>admin</td><td>recompute_outlook</td><td>success</td><td>{"path":"/api/v1/outlook/recompute","method":"POST","note":"Recomputed all outlook horizons"}</td></tr><tr><td>2026-01-05T21:50:59.502072+00:00</td><td>admin</td><td>update_config</td><td>success</td><td>{"path":"/api/config","method":"POST"}</td></tr><tr><td>2026-01-05T21:50:59.681944+00:00</td><td>admin</td><td>update_config</td><td>success</td><td>{"path":"/api/config","method":"POST"}</td></tr><tr><td>2026-01-05T22:11:52.163541+00:00</td><td>admin</td><td>recompute_outlook</td><td>success</td><td>{"path":"/api/v1/outlook/recompute","method":"POST","note":"Recomputed all outlook horizons"}</td></tr><tr><td>2026-01-05T22:11:58.843457+00:00</td><td>admin</td><td>update_config</td><td>success</td><td>{"path":"/api/config","method":"POST"}</td></tr><tr><td>2026-01-05T22:11:59.020582+00:00</td><td>admin</td><td>update_config</td><td>success</td><td>{"path":"/api/config","method":"POST"}</td></tr><tr><td>2026-01-05T22:23:44.674439+00:00</td><td>admin</td><td>recompute_outlook</td><td>success</td><td>{"path":"/api/v1/outlook/recompute","method":"POST","note":"Recomputed all outlook horizons"}</td></tr><tr><td>2026-01-05T22:23:49.411495+00:00</td><td>admin</td><td>update_config</td><td>success</td><td>{"path":"/api/config","method":"POST"}</td></tr><tr><td>2026-01-05T22:23:49.670101+00:00</td><td>admin</td><td>update_config</td><td>success</td><td>{"path":"/api/config","method":"POST"}</td></tr><tr><td>2026-01-05T22:24:58.552271+00:00</td><td>admin</td><td>update_config</td><td>success</td><td>{"path":"/api/config","method":"POST"}</td></tr><tr><td>2026-01-05T22:24:58.730491+00:00</td><td>admin</td><td>update_config</td><td>success</td><td>{"path":"/api/config","method":"POST"}</td></tr><tr><td>2026-01-05T22:34:53.157936+00:00</td><td>admin</td><td>recompute_outlook</td><td>success</td><td>{"path":"/api/v1/outlook/recompute","method":"POST","note":"Recomputed all outlook horizons"}</td></tr><tr><td>2026-01-05T22:35:02.463654+00:00</td><td>admin</td><td>update_config</td><td>success</td><td>{"path":"/api/config","method":"POST"}</td></tr><tr><td>2026-01-05T22:35:02.655382+00:00</td><td>admin</td><td>update_config</td><td>success</td><td>{"path":"/api/config","method":"POST"}</td></tr><tr><td>2026-01-05T22:49:14.050776+00:00</td><td>admin</td><td>update_config</td><td>success</td><td>{"path":"/api/config","method":"POST"}</td></tr><tr><td>2026-01-05T22:59:11.973663+00:00</td><td>admin</td><td>update_config</td><td>success</td><td>{"path":"/api/config","method":"POST"}</td></tr><tr><td>2026-01-05T22:59:18.528533+00:00</td><td>admin</td><td>update_config</td><td>success</td><td>{"path":"/api/config","method":"POST"}</td></tr><tr><td>2026-01-05T22:59:18.710818+00:00</td><td>admin</td><td>update_config</td><td>success</td><td>{"path":"/api/config","method":"POST"}</td></tr><tr><td>2026-01-05T23:13:34.219757+00:00</td><td>admin</td><td>update_config</td><td>success</td><td>{"path":"/api/config","method":"POST"}</td></tr><tr><td>2026-01-05T23:13:34.425087+00:00</td><td>admin</td><td>update_config</td><td>success</td><td>{"path":"/api/config","method":"POST"}</td></tr><tr><td>2026-01-06T02:25:17.019858+00:00</td><td>admin</td><td>recompute_outlook</td><td>success</td><td>{"path":"/api/v1/outlook/recompute","method":"POST","note":"Recomputed all outlook horizons"}</td></tr><tr><td>2026-01-06T02:25:49.477462+00:00</td><td>admin</td><td>recompute_outlook</td><td>success</td><td>{"path":"/api/v1/outlook/recompute","method":"POST","note":"Recomputed all outlook horizons"}</td></tr><tr><td>2026-01-06T02:30:28.831769+00:00</td><td>admin</td><td>recompute_outlook</td><td>success</td><td>{"path":"/api/v1/outlook/recompute","method":"POST","note":"Recomputed all outlook horizons"}</td></tr><tr><td>2026-01-06T02:47:02.857211+00:00</td><td>admin</td><td>update_config</td><td>success</td><td>{"path":"/api/config","method":"POST"}</td></tr><tr><td>2026-01-06T02:47:03.065589+00:00</td><td>admin</td><td>update_config</td><td>success</td><td>{"path":"/api/config","method":"POST"}</td></tr><tr><td>2026-01-11T15:52:19.294447+00:00</td><td>admin</td><td>update_config</td><td>success</td><td>{"path":"/api/config","method":"POST"}</td></tr><tr><td>2026-01-12T16:20:28.247358+00:00</td><td>admin</td><td>update_config</td><td>success</td><td>{"path":"/api/config","method":"POST"}</td></tr><tr><td>2026-01-12T16:22:49.181114+00:00</td><td>admin</td><td>update_config</td><td>failure</td><td>{"path":"/api/config","method":"POST","error":"Config validation failed: Invalid strategy_key in assignment: alpha. Must be one of {'momentum_v2', 'mean_rev_v2', 'xau_usd_session_bias_2', 'momentum', 'xau_usd_session_bias_3', 'eur_usd_5m_safe', 'ultra_strict_forex', 'xau_usd_session_bias_1', 'range', 'gold', 'trump_dna', 'pat_orb_dual_session'}"}</td></tr><tr><td>2026-01-12T16:23:10.044499+00:00</td><td>admin</td><td>update_config</td><td>failure</td><td>{"path":"/api/config","method":"POST","error":"Config validation failed: Invalid strategy_key in assignment: alpha. Must be one of {'momentum', 'momentum_v2', 'eur_usd_5m_safe', 'xau_usd_session_bias_3', 'gold', 'mean_rev_v2', 'xau_usd_session_bias_1', 'ultra_strict_forex', 'range', 'pat_orb_dual_session', 'xau_usd_session_bias_2', 'trump_dna'}"}</td></tr><tr><td>2026-01-12T16:23:31.904406+00:00</td><td>admin</td><td>update_config</td><td>success</td><td>{"path":"/api/config","method":"POST"}</td></tr><tr><td>2026-01-12T16:28:05.898332+00:00</td><td>admin</td><td>update_config</td><td>failure</td><td>{"path":"/api/config","method":"POST","error":"Config validation failed: Invalid strategy_key in assignment: alpha. Must be one of {'momentum', 'momentum_v2', 'eur_usd_5m_safe', 'xau_usd_session_bias_3', 'gold', 'mean_rev_v2', 'xau_usd_session_bias_1', 'ultra_strict_forex', 'range', 'pat_orb_dual_session', 'xau_usd_session_bias_2', 'trump_dna'}"}</td></tr><tr><td>2026-01-12T16:28:27.343901+00:00</td><td>admin</td><td>update_config</td><td>success</td><td>{"path":"/api/config","method":"POST"}</td></tr><tr><td>2026-01-16T21:33:06.333413+00:00</td><td>verification</td><td>strategy.disable</td><td>failure</td><td>{"strategy_id":"momentum","params":{},"error":"[Errno 13] Permission denied: '/opt/ai-quant/config/strategy_registry.json.tmp'"}</td></tr><tr><td>2026-01-16T21:33:36.505052+00:00</td><td>verification</td><td>strategy.disable</td><td>success</td><td>{"strategy_id":"momentum","params":{}}</td></tr><tr><td>2026-01-16T21:41:42.058540+00:00</td><td>verification</td><td>strategy.disable</td><td>success</td><td>{"strategy_id":"momentum","params":{}}</td></tr><tr><td>2026-01-16T21:42:02.505493+00:00</td><td>verification</td><td>strategy.enable</td><td>success</td><td>{"strategy_id":"momentum","params":{}}</td></tr><tr><td>2026-01-16T21:43:51.459530+00:00</td><td>verification</td><td>strategy.disable</td><td>success</td><td>{"strategy_id":"momentum","params":{}}</td></tr><tr><td>2026-01-16T21:44:13.766650+00:00</td><td>verification</td><td>strategy.enable</td><td>success</td><td>{"strategy_id":"momentum","params":{}}</td></tr></tbody></table></div>
+          <div class="truthbox"><pre id="audit-truth">{
+  "source": "cache",
+  "freshness_ms": 0,
+  "complete": true,
+  "assumptions": [],
+  "warnings": [],
+  "last_verified_at": "2026-01-17T22:47:26.757329+00:00"
+}</pre></div>
+        </div>
+      </div>
+
+      <div id="tab-outlook" class="tab hidden">
+        <div class="panel">
+          <h2>Outlook (Read-only)</h2>
+          <div class="row" style="margin-bottom:10px;">
+            <button class="btn" data-hz="daily" id="btn-outlook-daily">Daily</button>
+            <button class="btn" data-hz="weekly" id="btn-outlook-weekly">Weekly</button>
+            <button class="btn" data-hz="monthly" id="btn-outlook-monthly">Monthly</button>
+          </div>
+          <pre id="outlook-wrap">NO BACKEND FACT AVAILABLE</pre>
+          <div class="truthbox"><pre id="outlook-truth">NO BACKEND FACT AVAILABLE</pre></div>
+        </div>
+      </div>
+
+      <div id="tab-scanner" class="tab hidden">
+        <div class="panel">
+          <h2>Structural Scanner (Read-only)</h2>
+          <div class="row" style="margin-bottom:10px;">
+            <button class="btn" id="btn-scanner-refresh">Refresh</button>
+          </div>
+          <pre id="scanner-wrap">NO BACKEND FACT AVAILABLE</pre>
+          <div class="truthbox"><pre id="scanner-truth">NO BACKEND FACT AVAILABLE</pre></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const NO_FACT = "NO BACKEND FACT AVAILABLE";
+
+      function tokenGet() { return localStorage.getItem("control_plane_token") || ""; }
+      function tokenSet(v) { localStorage.setItem("control_plane_token", v); }
+      function tokenClear() { localStorage.removeItem("control_plane_token"); }
+
+      function byId(id) { return document.getElementById(id); }
+      function setText(id, text) { const el = byId(id); if (el) el.textContent = text; }
+
+      function truthOf(env) {
+        return (env && env.truth) ? env.truth : { source: "none", freshness_ms: null, complete: false, assumptions: [], warnings: ["missing_truth"], last_verified_at: "" };
+      }
+
+      function renderTruth(preId, truth) {
+        const el = byId(preId);
+        if (!el) return;
+        el.textContent = truth ? JSON.stringify(truth, null, 2) : NO_FACT;
+      }
+
+      function renderJson(preId, obj) {
+        const el = byId(preId);
+        if (!el) return;
+        el.textContent = obj ? JSON.stringify(obj, null, 2) : NO_FACT;
+      }
+
+      async function fetchEnvelope(path, opts) {
+        const r = await fetch(path, Object.assign({ credentials: "same-origin" }, opts || {}));
+        const txt = await r.text();
+        try { return JSON.parse(txt); }
+        catch (_) {
+          return { data: null, truth: { source: "none", freshness_ms: null, complete: false, assumptions: [], warnings: ["non_json_response"], last_verified_at: "" } };
+        }
+      }
+
+      async function postEnvelope(path, payload) {
+        const token = tokenGet();
+        const headers = { "Content-Type": "application/json" };
+        if (token) headers["Authorization"] = "Bearer " + token;
+        return fetchEnvelope(path, { method: "POST", headers, body: JSON.stringify(payload || {}) });
+      }
+
+      function setChip(dotId, chipId, state, text) {
+        const dot = byId(dotId);
+        if (dot) {
+          dot.className = "dot" + (state === "ok" ? " ok" : state === "warn" ? " warn" : state === "bad" ? " bad" : "");
+        }
+        setText(chipId, text || NO_FACT);
+      }
+
+      function mountTable(targetEl, headers, rows) {
+        const el = (typeof targetEl === "string") ? byId(targetEl) : targetEl;
+        if (!el) return;
+        if (!rows || rows.length === 0) {
+          el.innerHTML = "<pre>" + NO_FACT + "</pre>";
+          return;
+        }
+        const thead = "<thead><tr>" + headers.map(h => "<th>" + h + "</th>").join("") + "</tr></thead>";
+        const tbody = "<tbody>" + rows.map(r => "<tr>" + r.map(c => "<td>" + (c == null ? "" : String(c)) + "</td>").join("") + "</tr>").join("") + "</tbody>";
+        el.innerHTML = "<table>" + thead + tbody + "</table>";
+      }
+
+      async function refreshTruthStatus() {
+        const env = await fetchEnvelope("/api/truth/status");
+        const truth = truthOf(env);
+        renderJson("ov-truth-status", truth.complete === true ? env : truth);
+        const st = (env && env.data) ? env.data : null;
+        const state = st && st.system_truth_state ? String(st.system_truth_state) : NO_FACT;
+        setChip("dot-truth", "chip-truth", truth.complete ? "ok" : "warn", "Truth: " + state);
+      }
+
+      async function refreshStatus() {
+        const env = await fetchEnvelope("/api/status");
+        const truth = truthOf(env);
+        if (truth.complete !== true) {
+          renderJson("ov-status", null);
+          renderTruth("ov-status", truth); // overwrite with truth meta
+          setChip("dot-mode", "chip-mode", "warn", "Mode: " + NO_FACT);
+          setChip("dot-system", "chip-system", "warn", "System: " + NO_FACT);
+          return;
+        }
+        renderJson("ov-status", env.data);
+        const d = env.data || {};
+        setChip("dot-mode", "chip-mode", "ok", "Mode: " + String(d.mode || NO_FACT));
+        setChip("dot-system", "chip-system", "ok", "System: " + String(d.system_label || NO_FACT));
+      }
+
+      async function refreshPrices() {
+        const env = await fetchEnvelope("/api/sidebar/live-prices");
+        const truth = truthOf(env);
+        renderTruth("prices-truth", truth);
+        if (truth.complete !== true || !env.data) {
+          mountTable("prices-table-wrap", [], []);
+          return;
+        }
+        const prices = env.data.prices || {};
+        const rows = Object.keys(prices).sort().map((k) => {
+          const p = prices[k] || {};
+          return [k, p.bid, p.ask, p.mid, p.change_pct, p.change_pct_status];
+        });
+        mountTable("prices-table-wrap", ["instrument","bid","ask","mid","change_pct","change_pct_status"], rows);
+      }
+
+      async function refreshNews() {
+        const env = await fetchEnvelope("/api/news");
+        const truth = truthOf(env);
+        renderTruth("news-truth", truth);
+        if (truth.complete !== true || !env.data) {
+          mountTable("news-list-wrap", [], []);
+          return;
+        }
+        const items = env.data.news || [];
+        const rows = items.slice(0, 50).map((n) => {
+          return [n.title || "", n.source || "", n.datetime || n.published_at || "", n.url || ""];
+        });
+        mountTable("news-list-wrap", ["title","source","timestamp","url"], rows);
+      }
+
+      async function refreshActiveTrades() {
+        const env = await fetchEnvelope("/api/trades/active");
+        const truth = truthOf(env);
+        renderTruth("active-trades-truth", truth);
+        if (truth.complete !== true || !env.data) {
+          mountTable("active-trades-wrap", [], []);
+          return;
+        }
+        const accounts = env.data.accounts || [];
+        const rows = accounts.map((a) => [a.account_suffix, a.open_trades_count, a.open_positions_count, a.error || ""]);
+        mountTable("active-trades-wrap", ["account","open_trades","open_positions","error"], rows);
+      }
+
+      async function refreshLedger() {
+        const env = await fetchEnvelope("/api/journal/trades?limit=50&offset=0");
+        const truth = truthOf(env);
+        renderTruth("ledger-truth", truth);
+        if (truth.complete !== true || !env.data) {
+          mountTable("ledger-wrap", [], []);
+          return;
+        }
+        const trades = env.data.trades || [];
+        const rows = trades.slice(0, 50).map((t) => [t.status || "", t.instrument || "", t.side || "", t.units || "", t.strategy_key || t.strategy_id || "", t.logged_at || ""]);
+        mountTable("ledger-wrap", ["status","instrument","side","units","strategy","logged_at"], rows);
+      }
+
+      async function refreshStrategies() {
+        const env = await fetchEnvelope("/api/strategies");
+        const truth = truthOf(env);
+        renderTruth("strategies-truth", truth);
+        if (truth.complete !== true || !env.data) {
+          mountTable("strategies-wrap", [], []);
+          return;
+        }
+        const list = env.data.strategies || [];
+        const rows = list.map((s) => [s.strategy_id, s.enabled, (s.instruments || []).join(","), s.risk_profile]);
+        mountTable("strategies-wrap", ["strategy_id","enabled","instruments","risk_profile"], rows);
+      }
+
+      async function refreshAudit() {
+        const env = await fetchEnvelope("/api/v1/audit?limit=50");
+        const truth = truthOf(env);
+        renderTruth("audit-truth", truth);
+        if (truth.complete !== true || !env.data) {
+          mountTable("audit-wrap", [], []);
+          return;
+        }
+        const entries = env.data.entries || [];
+        const rows = entries.map((e) => [e.ts_iso || "", e.actor || "", e.action || "", e.status || "", JSON.stringify(e.details || {})]);
+        mountTable("audit-wrap", ["ts_iso","actor","action","status","details"], rows);
+      }
+
+      async function refreshOutlook(hz) {
+        const env = await fetchEnvelope("/api/v1/outlook/" + hz);
+        const truth = truthOf(env);
+        renderTruth("outlook-truth", truth);
+        if (truth.complete !== true || !env.data) {
+          renderJson("outlook-wrap", null);
+          renderJson("outlook-wrap", truth);
+          return;
+        }
+        renderJson("outlook-wrap", env.data);
+      }
+
+      async function refreshScanner() {
+        const env = await fetchEnvelope("/api/v1/scanner/structural");
+        const truth = truthOf(env);
+        renderTruth("scanner-truth", truth);
+        if (truth.complete !== true || !env.data) {
+          renderJson("scanner-wrap", null);
+          renderJson("scanner-wrap", truth);
+          return;
+        }
+        renderJson("scanner-wrap", env.data);
+      }
+
+      async function refreshAll() {
+        setText("ov-truth-status", NO_FACT);
+        setText("ov-status", NO_FACT);
+        await refreshTruthStatus();
+        await refreshStatus();
+        await refreshPrices();
+        await refreshNews();
+        await refreshActiveTrades();
+        await refreshLedger();
+        await refreshStrategies();
+        await refreshAudit();
+      }
+
+      function selectTab(name) {
+        const tabs = document.querySelectorAll(".tab");
+        tabs.forEach(t => t.classList.add("hidden"));
+        const active = byId("tab-" + name);
+        if (active) active.classList.remove("hidden");
+        document.querySelectorAll("#nav button").forEach(b => {
+          b.classList.toggle("active", b.getAttribute("data-tab") === name);
+        });
+      }
+
+      // Token wiring
+      (function initToken() {
+        const input = byId("token-input");
+        const save = byId("btn-token-save");
+        const clear = byId("btn-token-clear");
+        if (input) input.value = tokenGet();
+        if (save) save.addEventListener("click", () => { tokenSet((input.value || "").trim()); });
+        if (clear) clear.addEventListener("click", () => { tokenClear(); if (input) input.value = ""; });
+      })();
+
+      // Nav wiring
+      (function initNav() {
+        const nav = byId("nav");
+        if (!nav) return;
+        nav.addEventListener("click", (e) => {
+          const btn = e.target && e.target.closest ? e.target.closest("button[data-tab]") : null;
+          if (!btn) return;
+          selectTab(btn.getAttribute("data-tab"));
+        });
+      })();
+
+      // Buttons wiring
+      byId("btn-refresh") && byId("btn-refresh").addEventListener("click", () => refreshAll().catch(() => {}));
+      byId("btn-prices-refresh") && byId("btn-prices-refresh").addEventListener("click", () => refreshPrices().catch(() => {}));
+      byId("btn-news-refresh") && byId("btn-news-refresh").addEventListener("click", () => refreshNews().catch(() => {}));
+      byId("btn-active-trades-refresh") && byId("btn-active-trades-refresh").addEventListener("click", () => refreshActiveTrades().catch(() => {}));
+      byId("btn-ledger-refresh") && byId("btn-ledger-refresh").addEventListener("click", () => refreshLedger().catch(() => {}));
+      byId("btn-strategies-refresh") && byId("btn-strategies-refresh").addEventListener("click", () => refreshStrategies().catch(() => {}));
+      byId("btn-audit-refresh") && byId("btn-audit-refresh").addEventListener("click", () => refreshAudit().catch(() => {}));
+      byId("btn-scanner-refresh") && byId("btn-scanner-refresh").addEventListener("click", () => refreshScanner().catch(() => {}));
+      byId("btn-outlook-daily") && byId("btn-outlook-daily").addEventListener("click", () => refreshOutlook("daily").catch(() => {}));
+      byId("btn-outlook-weekly") && byId("btn-outlook-weekly").addEventListener("click", () => refreshOutlook("weekly").catch(() => {}));
+      byId("btn-outlook-monthly") && byId("btn-outlook-monthly").addEventListener("click", () => refreshOutlook("monthly").catch(() => {}));
+
+      // Boot
+      window.addEventListener("load", () => {
+        selectTab("overview");
+        refreshAll().catch(() => {});
+      });
+
+      // Expose for debugging (no inference)
+      window.__AQ = { refreshAll, refreshStatus, refreshPrices, refreshNews, refreshStrategies, postEnvelope };
+      setText("ov-truth-status", NO_FACT);
+      setText("ov-status", NO_FACT);
+    })();
+  </script>
+
+
+
+</body></html>

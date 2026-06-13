@@ -1,0 +1,6 @@
+{
+  "acc-1": {"symbols": ["EURUSD"]},
+  "acc-2": {"symbols": ["GBPUSD", "EURUSD"]},
+  "acc-3": {"symbols": ["XAUUSD"]}
+}
+

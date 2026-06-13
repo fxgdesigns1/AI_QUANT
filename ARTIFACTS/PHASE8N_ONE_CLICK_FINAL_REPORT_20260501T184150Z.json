@@ -1,0 +1,58 @@
+﻿{
+    "gcp":  {
+                "alpha_vm":  "fxg-paper-e2-small-main-2026",
+                "project":  "fxg-ai-trading",
+                "zone":  "us-central1-a",
+                "alpha_repo":  "/opt/ai-quant"
+            },
+    "started_at_utc":  "2026-05-01T18:41:50Z",
+    "classification":  "PHASE8N_ONE_CLICK_FINAL_REPORT",
+    "phase":  "Phase 8N",
+    "macbook_pull_commands":  [
+                                  "mkdir -p ~/fxg-phase8-results",
+                                  "gcloud compute scp --zone \"us-central1-a\" --project \"fxg-ai-trading\" \"fxg-paper-e2-small-main-2026:/opt/ai-quant/ARTIFACTS/performance/latest_research_job_result.json\" ~/fxg-phase8-results/",
+                                  "python3 -m json.tool ~/fxg-phase8-results/latest_research_job_result.json"
+                              ],
+    "ok":  true,
+    "finished_at_utc":  "2026-05-01T18:43:11Z",
+    "result":  {
+                   "alpha_latest_pointer_local":  "H:\\My Drive\\AI Trading\\Gcloud system\\artifacts\\PHASE8N_latest_research_job_result_20260501T184150Z.json",
+                   "alpha_latest_pointer_remote":  "/opt/ai-quant/ARTIFACTS/performance/latest_research_job_result.json",
+                   "metrics":  {
+                                   "ok":  true,
+                                   "job_id":  "20260501T184206Z_phase8l_backtest_cde562e5e7",
+                                   "job_type":  "phase8l_backtest",
+                                   "replay_mode":  "best_available_proxy_reconstruction",
+                                   "instrument":  "EUR_USD",
+                                   "granularity":  "M15",
+                                   "lookback_days":  90,
+                                   "session_bucket":  "NY_OPEN_SECONDARY_PROPOSED",
+                                   "session_window_utc":  "13:30-16:00",
+                                   "candidate_count":  63,
+                                   "expectancy_r":  -0.001756,
+                                   "profit_factor_r":  0.995925,
+                                   "max_loss_streak":  3,
+                                   "drawdown_proxy_r":  -7.124995,
+                                   "recommendation_label":  "NEEDS_MORE_REPLAY_DATA",
+                                   "news_reconstruction_available":  null,
+                                   "calendar_reconstruction_available":  null,
+                                   "alpha_result_pointer":  null,
+                                   "result_pack_size_bytes":  4326,
+                                   "paper_review_only":  true,
+                                   "live_permission":  false,
+                                   "ny_live_enabled":  false,
+                                   "send_trade_unlock_changed":  false,
+                                   "execution_paths_changed":  false
+                               },
+                   "job_id":  "20260501T184206Z_phase8l_backtest_cde562e5e7",
+                   "job_status":  "DONE"
+               },
+    "request":  {
+                    "lookback_days":  90,
+                    "job_type":  "phase8l_backtest",
+                    "session_window_utc":  "13:30-16:00",
+                    "instrument":  "EUR_USD",
+                    "granularity":  "M15",
+                    "session_bucket":  "NY_OPEN_SECONDARY_PROPOSED"
+                }
+}

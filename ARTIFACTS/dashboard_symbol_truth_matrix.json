@@ -1,0 +1,17 @@
+{
+  "symbol_probe_fields": {
+    "symbol": "Queried symbol (e.g. EURUSD)",
+    "failure_bucket": "One of: symbol_not_selected, symbol_not_found, symbol_name_mismatch, no_tick_data, etc.",
+    "recommended_fix": "Human-readable fix guidance",
+    "broker_symbol_actual": "When symbol_name_mismatch, the broker's actual symbol (e.g. EURUSDm)"
+  },
+  "dashboard_truth_requirements": [
+    "Display failure_bucket when tick fails",
+    "Display recommended_fix when present",
+    "Display broker_symbol_actual when symbol_name_mismatch - operator can retry with that symbol",
+    "Display bid/ask when tick succeeds",
+    "Explicit label: sidecar is data/diagnostics only",
+    "Explicit label: execution = canonical bridge"
+  ],
+  "ts_utc": "2026-03-23T00:00:00Z"
+}

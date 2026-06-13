@@ -1,0 +1,7 @@
+﻿{
+    "sidecar_listening":  true,
+    "tailscale_installed":  true,
+    "sidecar_base_url":  "http://100.122.152.80:8877",
+    "tailscale_ip":  "100.122.152.80",
+    "tailscale_connected":  true
+}

@@ -1,0 +1,15 @@
+FXG Bridge Ops Dashboard Guide
+==============================
+
+REMOTE ACCESS (from work)
+------------------------
+1. Windows: .\bridges\windows_sidecar\scripts\fxg_win_remote_overlay_setup.ps1
+2. Mac: ./scripts/fxg_switch_sidecar_target_remote_overlay.sh
+3. Verify: ./scripts/fxg_verify_remote_overlay_sidecar.sh
+
+TARGET SWITCH
+-------------
+remote_overlay: ./scripts/fxg_switch_sidecar_target_remote_overlay.sh
+home_lan:       ./scripts/fxg_switch_sidecar_target_home_lan.sh
+
+SIDECAR = telemetry only. Execution = canonical_mac_file_bridge_v1.

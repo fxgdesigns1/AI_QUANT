@@ -1,0 +1,2 @@
+Firewall rule creation required (run as Administrator):
+New-NetFirewallRule -DisplayName "FXG Windows Sidecar 8877" -Direction Inbound -Protocol TCP -LocalPort 8877 -Action Allow -Profile Private

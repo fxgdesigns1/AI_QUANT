@@ -1,0 +1,70 @@
+{
+  "strategy_id": "xau_usd_session_bias_1",
+  "name": "Gold Scalping - Session Bias #1",
+  "instrument": "XAU_USD",
+  "strategy_type": "gold_scalping_optimized",
+  "rank": 1,
+  "performance_metrics": {
+    "fitness_score": 2.2775117861086756,
+    "win_rate": 0.4666666666666667,
+    "total_trades": 30,
+    "wins": 14,
+    "losses": 16,
+    "total_pnl_pct": 1.552848945074097,
+    "signals_per_day": 2.142857142857143,
+    "test_period_days": 14
+  },
+  "configuration": {
+    "session_filters": {
+      "allowed_killzones": "all",
+      "killzone_windows": {
+        "asia_open": [
+          0,
+          3
+        ],
+        "london_open": [
+          6,
+          10
+        ],
+        "london_ny_overlap": [
+          12,
+          15
+        ],
+        "ny_afternoon": [
+          17,
+          20
+        ]
+      }
+    },
+    "directional_bias": "short_only",
+    "trend_filter": {
+      "enabled": false,
+      "fast_period": 20,
+      "slow_period": 100
+    },
+    "risk_management": {
+      "stop_loss_pips": 9.5,
+      "take_profit_pips": 55.0,
+      "risk_reward_ratio": 5.7894736842105265
+    },
+    "entry_conditions": {
+      "min_signal_strength": 0.75,
+      "quality_score_threshold": 0.65,
+      "min_volatility": 0.00016,
+      "max_spread": 1.0,
+      "min_atr_for_entry": 1.0
+    },
+    "breakout_settings": {
+      "breakout_lookback": 20,
+      "breakout_threshold": 0.0014
+    },
+    "trade_limits": {
+      "max_trades_per_day": 30,
+      "max_daily_quality_trades": 30
+    }
+  },
+  "monte_carlo_info": {
+    "iteration": 34,
+    "test_date": "2025-11-13T17:48:24.049498+00:00"
+  }
+}

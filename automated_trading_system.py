@@ -20,7 +20,8 @@ from typing import Dict, List, Any
 
 # OANDA Configuration - from environment variables
 OANDA_API_KEY = REDACTED
-OANDA_ACCOUNT_ID = os.getenv("OANDA_ACCOUNT_ID", "101-004-30719775-008")  # Demo account default
+# Do not hardcode unproven lanes/accounts. Require explicit account selection.
+OANDA_ACCOUNT_ID = os.getenv("OANDA_ACCOUNT_ID", "").strip()
 OANDA_ENV = os.getenv("OANDA_ENV", "practice")
 OANDA_BASE_URL = f"https://api-fx{OANDA_ENV}.oanda.com" if OANDA_ENV == "practice" else "https://api-fxtrade.oanda.com"
 OANDA_STREAM_URL = f"https://stream-fx{OANDA_ENV}.oanda.com" if OANDA_ENV == "practice" else "https://stream-fxtrade.oanda.com"
@@ -32,6 +33,8 @@ TELEGRAM_CHAT_ID = settings.telegram_chat_id
 # Fail-closed: require critical env vars
 if not OANDA_API_KEY:
     raise ValueError("OANDA_API_KEY environment variable is required")
+if not OANDA_ACCOUNT_ID:
+    raise ValueError("OANDA_ACCOUNT_ID environment variable is required")
 if not TELEGRAM_BOT_TOKEN:
     raise ValueError("TELEGRAM_BOT_TOKEN environment variable is required")
 if not TELEGRAM_CHAT_ID:

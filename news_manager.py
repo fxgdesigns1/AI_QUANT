@@ -32,9 +32,19 @@ class NewsManager:
 
     def __init__(self) -> None:
         self.tradingeconomics_key = os.getenv("TRADINGECONOMICS_KEY", "")
-        self.finnhub_key = os.getenv("FINNHUB_KEY", "")
-        self.marketaux_key = os.getenv("MARKETAUX_KEY", "")  # reserved for sentiment (phase 2)
-        self.newsapi_key = os.getenv("NEWSAPI_KEY", "")      # reserved for sentiment (phase 2)
+        finnhub_csv = os.getenv("FINNHUB_API_KEYS", "")
+        finnhub_single = os.getenv("FINNHUB_API_KEY", "") or os.getenv("FINNHUB_KEY", "")
+        if finnhub_csv:
+            self.finnhub_key = finnhub_csv.split(",")[0].strip()
+        else:
+            self.finnhub_key = (finnhub_single or "").strip()
+        marketaux_csv = os.getenv("MARKETAUX_KEYS", "")
+        marketaux_single = os.getenv("MARKETAUX_KEY", "")
+        if marketaux_csv:
+            self.marketaux_key = marketaux_csv.split(",")[0].strip()
+        else:
+            self.marketaux_key = (marketaux_single or "").strip()
+        self.newsapi_key = os.getenv("NEWSAPI_API_KEY", "") or os.getenv("NEWSAPI_KEY", "")
         self.cached_events: List[NewsEvent] = []
         self.last_refresh: Optional[datetime] = None
         self.last_sentiment: Optional[Dict[str, Any]] = None

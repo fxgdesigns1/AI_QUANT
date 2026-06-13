@@ -1,0 +1,7 @@
+{
+  "artifact": "windows_ea_failure_bucket_final",
+  "buckets": {
+    "CHART_NOT_RELOADED_AFTER_EX5_BUILD": "Primary blocker for PASS — EA_START never showed v1.01 banner",
+    "LEGACY_INVALID_STOPS_ON_MATRIX_RUN": "Observed invalid stops rejects while legacy EA_START text present in historical log context"
+  }
+}

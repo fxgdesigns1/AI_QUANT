@@ -1,0 +1,54 @@
+{
+  "archive_path": "H:\\My Drive\\AI Trading\\Gcloud system\\ARTIFACTS\\performance\\phase8y_shared_context_pack\\phase8y_shared_context_pack.tar.gz",
+  "classification": "PHASE8Y_SHARED_CONTEXT_PACK_MANIFEST",
+  "execution_paths_changed": false,
+  "files": [
+    {
+      "file": "latest_phase8y_data_coverage_manifest.json",
+      "sha256": "be85ad8569598c0f938bc2566b1007b8e1a7d4c7faa2e5baa8a15484ee2d7276",
+      "size_bytes": 2307
+    },
+    {
+      "file": "latest_phase8y_api_cost_estimate.json",
+      "sha256": "812b7d6b7db528c810671e1966d9dc593253c02a90c70a655d31ccbfa3457d1a",
+      "size_bytes": 1779
+    },
+    {
+      "file": "latest_calendar_api_usage_report.json",
+      "sha256": "67dcd1ec9287b4c9d9ef39ee4afdd915ef176a343b6cdcb2a715d56742763a9a",
+      "size_bytes": 896
+    },
+    {
+      "file": "latest_calendar_cache_manifest.json",
+      "sha256": "07d7313aaeb892fffcff454e5b3ceceb0ce30991e3c8a2ec33401c5b10c0a551",
+      "size_bytes": 664
+    },
+    {
+      "file": "latest_phase8r_aligned_context_manifest.json",
+      "sha256": "4e83002dee199b4138853e281371298319a71e68221137a85f9f68e8abfd191e",
+      "size_bytes": 604
+    },
+    {
+      "file": "latest_phase8r_provider_capability_report.json",
+      "sha256": "fc06bbc4fa4148a3bc820524e7b1270a8608f02d445bd8d8603a7d4006fc69c5",
+      "size_bytes": 2403
+    },
+    {
+      "file": "latest_phase8o_news_provider_diagnostics.json",
+      "sha256": "e1e1483600a7a8206b3c30333e827f4203bf252cb44b7c3b741ddf4debbb2e63",
+      "size_bytes": 3587
+    },
+    {
+      "file": "phase8y_shared_context_pack.tar.gz",
+      "sha256": "8fb7139a4ff3399aad4da4a74d13e655c345104b7cb21c1e31cc22e82f810c00",
+      "size_bytes": 3654
+    }
+  ],
+  "generated_at_utc": "2026-05-10T22:07:45.267347Z",
+  "ny_live_enabled": false,
+  "output_dir": "H:\\My Drive\\AI Trading\\Gcloud system\\ARTIFACTS\\performance\\phase8y_shared_context_pack",
+  "pack_dir": "H:\\My Drive\\AI Trading\\Gcloud system\\ARTIFACTS\\performance\\phase8y_shared_context_pack\\pack",
+  "paper_review_only": true,
+  "phase": "Phase 8Y",
+  "safe_to_run_batch": true
+}

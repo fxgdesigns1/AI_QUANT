@@ -1,0 +1,20 @@
+﻿VERIFY: PASS (paths and state present).
+{
+    "ts_utc":  "2026-03-25T00:11:31.4087679Z",
+    "paths_ok":  {
+                     "shared_repo_signals":  true,
+                     "mt5_signals":  true,
+                     "mt5_bridge_log":  true,
+                     "shared_repo_bridge_log":  true
+                 },
+    "state_ok":  true,
+    "last_success_utc":  "2026-03-25T00:10:02.0800979Z",
+    "sample_propagation_note":  "Compare last lines of repo signal file and MT5 signal file after a forward sync.",
+    "reverse_last_success_utc":  "2026-03-25T00:10:06.2825275Z",
+    "status_file_present":  true,
+    "heartbeat_file_present":  true,
+    "mt5_signals_line_vs_distinct_signal_id":  {
+                                                   "lines":  7,
+                                                   "distinct_ids":  6
+                                               }
+}

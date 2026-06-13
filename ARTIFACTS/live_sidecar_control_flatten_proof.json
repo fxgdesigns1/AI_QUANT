@@ -1,0 +1,15 @@
+{
+  "job": "FXG_PORT_LIVE_WINDOWS_SIDECAR_CONTROL_AND_VERIFY_FROM_MAC_V1",
+  "phase": "8_flatten_proof",
+  "mac_post_flatten_probe": "NOT RUN (agent not on Mac)",
+  "windows_local_proof_after_authenticated_post": {
+    "post_target": "http://127.0.0.1:8877/control/flatten-all",
+    "http_status": 200,
+    "positions_after": "/positions count=0",
+    "orders_after": "/orders count=0",
+    "audit_file": "artifacts/sidecar_control_audit.jsonl",
+    "audit_lines": "3 JSONL records: close_all_positions, cancel_all_orders, flatten_all (last line includes full phases)",
+    "caution": "Verification run closed real MT5 tickets and removed pending orders on connected account; retcode 10009 == TRADE_RETCODE_DONE on this build."
+  },
+  "hard_pass_mac_flatten_chain": "FAIL (Mac-side curl + post-verify not executed here)"
+}

@@ -1,0 +1,6 @@
+{
+  "artifact": "windows_ea_mt5_logs_postpatch",
+  "experts_journal": "not_captured_from_automation",
+  "trade_tab": "not_captured_from_automation",
+  "note": "Desktop MT5 UI logs were not scraped in this Cursor run; bridge jsonl is the automated evidence channel used here"
+}

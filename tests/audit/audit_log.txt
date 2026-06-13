@@ -1,0 +1,36 @@
+2026-01-15 01:09:58,598 - INFO - Starting dashboard audit against http://localhost:28787/
+2026-01-15 01:10:00,217 - INFO - SUCCESS: Dashboard loaded in 0.89s
+2026-01-15 01:10:06,453 - INFO - Screenshot saved to tests/audit/dashboard_screenshot_20260115_011006.png
+2026-01-15 01:10:06,469 - INFO - SUCCESS: Found element 'Title' (h1)
+2026-01-15 01:10:06,476 - WARNING - WARNING: Element 'Price Chart' (#priceChart) not found or not visible
+2026-01-15 01:10:06,481 - WARNING - WARNING: Element 'Account Cards' (.account-card) not found or not visible
+2026-01-15 01:10:06,485 - WARNING - WARNING: Element 'Live Prices' (#live-prices) not found or not visible
+2026-01-15 01:10:06,491 - WARNING - WARNING: Element 'Connection Status' (#connection-status) not found or not visible
+2026-01-15 01:10:06,491 - INFO - Verifying Price Data...
+2026-01-15 01:10:06,500 - ERROR - FAILED: No price elements found on dashboard
+2026-01-15 01:10:06,500 - INFO - Checking Console Logs...
+2026-01-15 01:10:18,074 - INFO - Starting dashboard audit against http://localhost:28787/
+2026-01-15 01:10:18,971 - INFO - SUCCESS: Dashboard loaded in 0.58s
+2026-01-15 01:10:23,286 - INFO - Screenshot saved to tests/audit/dashboard_screenshot_20260115_011023.png
+2026-01-15 01:10:23,292 - INFO - Saved page HTML to tests/audit/page_dump.html
+2026-01-15 01:10:23,305 - INFO - SUCCESS: Found element 'Title' (h1)
+2026-01-15 01:10:23,311 - WARNING - WARNING: Element 'Price Chart' (#priceChart) not found or not visible
+2026-01-15 01:10:23,316 - WARNING - WARNING: Element 'Account Cards' (.account-card) not found or not visible
+2026-01-15 01:10:23,319 - WARNING - WARNING: Element 'Live Prices' (#live-prices) not found or not visible
+2026-01-15 01:10:23,322 - WARNING - WARNING: Element 'Connection Status' (#connection-status) not found or not visible
+2026-01-15 01:10:23,322 - INFO - Verifying Price Data...
+2026-01-15 01:10:23,326 - ERROR - FAILED: No price elements found on dashboard
+2026-01-15 01:10:23,326 - INFO - Checking Console Logs...
+2026-01-15 01:11:06,572 - INFO - Starting dashboard audit against http://localhost:28787/
+2026-01-15 01:11:07,547 - INFO - SUCCESS: Dashboard loaded in 0.65s
+2026-01-15 01:11:11,905 - INFO - Screenshot saved to tests/audit/dashboard_screenshot_20260115_011111.png
+2026-01-15 01:11:11,911 - INFO - Saved page HTML to tests/audit/page_dump.html
+2026-01-15 01:11:11,926 - INFO - SUCCESS: Found element 'Title' (h1)
+2026-01-15 01:11:11,928 - INFO - SUCCESS: Found element 'XAU/USD Bid' (#xauusd-bid)
+2026-01-15 01:11:11,930 - INFO - SUCCESS: Found element 'XAU/USD Ask' (#xauusd-ask)
+2026-01-15 01:11:11,932 - INFO - SUCCESS: Found element 'System Badge' (#system-label-badge)
+2026-01-15 01:11:11,932 - INFO - Verifying Price Data...
+2026-01-15 01:11:11,941 - INFO -   Found XAU_USD Bid: 4613.75, Ask: 4614.81
+2026-01-15 01:11:11,941 - INFO -   Fetching real-time price for XAU_USD...
+2026-01-15 01:11:12,177 - INFO -   SUCCESS: Price accurate. Display Mid: 4614.280000000001, Real Mid: 4614.8850 (Diff: 0.0131%)
+2026-01-15 01:11:12,177 - INFO - Checking Console Logs...

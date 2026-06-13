@@ -1,0 +1,10 @@
+{
+  "phase": "4_compile_and_reload_live_ea",
+  "compile_command": "& \"C:\\Program Files\\MetaTrader 5\\metaeditor64.exe\" /compile:\"C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Experts\\FTMO_Bridge_EA.mq5\" /log",
+  "compile_log_path": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Experts\\FTMO_Bridge_EA_compile.log",
+  "compile_result_last_run": "Result: 0 errors, 0 warnings, 681 msec elapsed, cpu='X64 Regular'",
+  "ea_reload_performed_by_agent": false,
+  "live_ea_start_v1_03_in_ftmo_bridge_log": false,
+  "latest_known_ea_start_from_log_tail_read": "FTMO_Bridge_EA started v1.02 (MARKET+LIMIT, null-safe stops, dedupe, tail-read) at 2026.03.25 04:43:43",
+  "hard_pass_note": "Phase 4 hard_pass_rule requires fresh EA_START for patched build in ftmo_bridge_log.jsonl; not observed after compile because chart EA not reattached by this agent."
+}

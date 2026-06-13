@@ -12,9 +12,11 @@ from datetime import datetime
 
 import os
 OANDA_API_KEY = settings.oanda_api_key
-ACCOUNT_ID = os.getenv("OANDA_ACCOUNT_ID", "101-004-30719775-009")
+ACCOUNT_ID = os.getenv("OANDA_ACCOUNT_ID", "").strip()
 if not OANDA_API_KEY:
     raise ValueError("OANDA_API_KEY environment variable is required")
+if not ACCOUNT_ID:
+    raise ValueError("OANDA_ACCOUNT_ID environment variable is required")
 
 headers = {"Authorization": f"Bearer {OANDA_API_KEY}"}
 

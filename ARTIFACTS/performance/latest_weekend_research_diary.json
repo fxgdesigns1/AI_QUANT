@@ -1,0 +1,16 @@
+{
+  "classification": "PHASE8P_WEEKEND_RESEARCH_DIARY",
+  "demotions": [],
+  "execution_paths_changed": false,
+  "fail_closed": [],
+  "generated_at_utc": "2026-05-04T23:22:11.801414Z",
+  "live_permission": false,
+  "next_action": "Review PROMOTE_REVIEW_CANDIDATE rows manually; research labels do not enable live or paper lane changes.",
+  "next_action_owner": "CURSOR",
+  "ny_live_enabled": false,
+  "paper_review_only": true,
+  "phase": "Phase 8P",
+  "runs_indexed": 0,
+  "send_trade_unlock_changed": false,
+  "top_candidates": []
+}

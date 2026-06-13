@@ -1,0 +1,22 @@
+{
+  "ts_utc": "2026-03-25T14:06:31Z",
+  "base_url_used": "http://127.0.0.1:8877",
+  "path": "/account",
+  "http_ok": true,
+  "payload": {
+    "login": 1512849121,
+    "server": "FTMO-Demo",
+    "company": "FTMO Global Markets Ltd",
+    "balance": 99999.82,
+    "equity": 99973.95,
+    "margin": 69.69,
+    "margin_free": 99930.13,
+    "margin_level": 143455.23030563927,
+    "profit": -25.87,
+    "currency": "USD",
+    "leverage": 100,
+    "trade_allowed": true,
+    "trade_expert": true,
+    "bridge_id": "parallel_windows_sidecar_bridge_v1"
+  }
+}

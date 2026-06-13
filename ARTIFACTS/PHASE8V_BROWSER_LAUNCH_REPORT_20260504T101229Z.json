@@ -1,0 +1,24 @@
+﻿{
+    "status":  "SUCCESS",
+    "dashboard_type":  "REAL_STITCH_STYLE_DASHBOARD",
+    "data_source":  "Phase 8U Payload/API",
+    "browser_opened":  true,
+    "dashboard_url":  "http://localhost:8081/",
+    "not_static_fallback":  true,
+    "safety_flags":  {
+                         "execution_paths_changed":  false,
+                         "ny_live_enabled":  false,
+                         "send_trade_unlock_changed":  false
+                     },
+    "payload_validated":  false,
+    "visual_style":  "Quant-Focus Design System",
+    "verification_markers":  [
+                                 "REAL STITCH-STYLE PHASE 8 DASHBOARD",
+                                 "DATA SOURCE = PHASE 8U PAYLOAD/API",
+                                 "NOT fallback static HTML",
+                                 "NOT diagnostic preview"
+                             ],
+    "phase":  "Phase 8V-STITCH-VISUAL-PARITY-RECTIFICATION",
+    "not_diagnostic_preview":  true,
+    "timestamp_utc":  "2026-05-04T09:12:29.483Z"
+}

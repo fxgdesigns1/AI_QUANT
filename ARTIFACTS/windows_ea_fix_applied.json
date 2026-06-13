@@ -1,0 +1,14 @@
+{
+  "job_name": "FXG_WINDOWS_EA_LOG_DISCOVERY_AND_CONSUMER_REMEDIATION_V1",
+  "phase": "7_apply_minimum_safe_fix",
+  "fix_applied": false,
+  "reason": "Root cause not confirmed with live Windows evidence; repo/bridge semantics must not change per job constraints. No restart, path rewrite, or EA code edit performed from Cursor.",
+  "recommended_operator_fixes_in_priority_order": [
+    "Verify the Windows file at MQL5\\\\Files\\\\signals_ftmo_demo2.jsonl contains the two signal_id lines (PowerShell Get-Content / Select-String).",
+    "If missing: repair sync target to that exact path (not only Linux canonical path).",
+    "If present: open ftmo_bridge_log.jsonl in same folder; confirm EA_START/EA_STOP and poll activity.",
+    "If still no log lines for those IDs: confirm JSON has bridge_account=ftmo_demo2 and execution_allowed=true when InpPaperOnly=true.",
+    "If file was recreated/truncated by sync: restart EA or chart to reset internal file pointer (EA keeps g_lastFilePos across ticks — oversized seek after shrink can skip content)."
+  ],
+  "ts_utc": "2026-03-24T19:30:00Z"
+}

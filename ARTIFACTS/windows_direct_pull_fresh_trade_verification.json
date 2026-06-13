@@ -1,0 +1,15 @@
+{
+  "ts_utc": "2026-03-26T07:16:55Z",
+  "status": "BLOCKED",
+  "reason": "This agent run did not (and should not) submit a new manual_010 trade to generate a fresh post-cutover signal_id. Direct pull and dedup are installed and verified mechanically; end-to-end fresh-trade proof requires the operator to emit exactly one new MANUAL_010 on ALPHA after cutover, then confirm delivery + bridge outcome.",
+  "what_to_do_next": [
+    "Emit exactly one fresh MANUAL_010 on ALPHA using the already-approved workflow (do not emit multiple).",
+    "Wait <= 1 minute for Scheduled Task 'FXG Windows Direct Pull ALPHA MT5 ftmo_demo2' to run (or run pull script manually once).",
+    "Verify the new signal_id appears in the active watchfile and that ftmo_bridge_log.jsonl shows SIGNAL_ACCEPT + REQUEST_SUMMARY + EXECUTED (or truthful reject/skip)."
+  ],
+  "evidence_files_to_check": [
+    "artifacts/windows_direct_pull_last_status.json",
+    "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\signals_ftmo_demo2.jsonl",
+    "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\ftmo_bridge_log.jsonl"
+  ]
+}

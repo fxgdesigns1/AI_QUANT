@@ -1,0 +1,12 @@
+{
+  "job_name": "FXG_WINDOWS_SIGNAL_76B6_CONSUMER_TRACE_AND_FIX_V1",
+  "phase": "7_reverify_same_signal_id_result_if_possible",
+  "signal_id": "76b6f9fc-6801-45ae-88b2-cc5181adc741",
+  "post_fix_rescan": {
+    "signals_ftmo_demo2_jsonl_match": false,
+    "ftmo_bridge_log_jsonl_match": false,
+    "evidence": "Select-String after script patch; UUID still absent (expected: line was never delivered historically)."
+  },
+  "replay_same_uuid_safely": false,
+  "notes": "Re-scan confirms classification unchanged; replay would require re-emitting same signal_id from producer (duplicate semantics risk) or manual file injection (out of scope for canonical integrity in this job)."
+}

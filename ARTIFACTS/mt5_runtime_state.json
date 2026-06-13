@@ -1,0 +1,8 @@
+{
+  "phase": "6_log_into_mt5_and_confirm_terminal_state",
+  "status": "PASS",
+  "terminal_process": "running",
+  "login": 1512827972,
+  "server": "FTMO-Demo",
+  "account_connected": true
+}

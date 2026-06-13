@@ -1,0 +1,14 @@
+{
+  "verification": "no_trade_sent_by_sidecar",
+  "method": "Static code inspection of windows_sidecar routes and mt5_client",
+  "findings": {
+    "order_send": "NOT_PRESENT",
+    "positions_close": "NOT_PRESENT",
+    "orders_preview": "NOT_PRESENT",
+    "forbidden_paths_checked": ["/orders/send", "/orders/preview", "/positions/close"],
+    "routes_registered": ["/health", "/diagnostics", "/account", "/positions", "/orders", "/symbols/{symbol}/tick", "/symbols/{symbol}/spec", "/symbols/overview", "/symbols/probe/{base_symbol}", "/history"],
+    "test_contracts": "test_no_write_routes asserts forbidden paths must not exist"
+  },
+  "assertion": "No new trade was or can be sent by the Windows sidecar. Trade placement remains on canonical_mac_file_bridge_v1 only.",
+  "ts_utc": "2026-03-23T00:00:00Z"
+}

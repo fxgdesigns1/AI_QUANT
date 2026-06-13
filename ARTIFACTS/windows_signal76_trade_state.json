@@ -1,0 +1,40 @@
+{
+  "job_name": "FXG_WINDOWS_SIGNAL_76B6_CONSUMER_TRACE_AND_FIX_V1",
+  "phase": "3_check_mt5_trade_history_positions_orders_for_signal_time_window",
+  "signal_id": "76b6f9fc-6801-45ae-88b2-cc5181adc741",
+  "known_oanda_context": {
+    "oanda_create_id": "56515",
+    "oanda_fill_id": "56516",
+    "note": "OANDA paper execution is on Mac lane; MT5 journal does not reference these IDs."
+  },
+  "mt5_journal_evidence_path": "C:\\Users\\gavin\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\logs\\20260324.log",
+  "eurusd_buy_001_events": [
+    {
+      "local_log_ts": "2026.03.24 21:05:05.027",
+      "outcome": "failed",
+      "detail": "failed market buy 0.01 EURUSD [Invalid stops]",
+      "maps_to_signal_id_in_bridge_log": "test_20260323011859"
+    },
+    {
+      "local_log_ts": "2026.03.24 21:21:14.029",
+      "outcome": "failed",
+      "detail": "failed market buy 0.01 EURUSD [Invalid stops]",
+      "maps_to_signal_id_in_bridge_log": "winprove_20260324212015"
+    },
+    {
+      "local_log_ts": "2026.03.24 21:37:03.619",
+      "outcome": "failed",
+      "detail": "failed market buy 0.01 EURUSD [Invalid stops]",
+      "maps_to_signal_id_in_bridge_log": "winprove_matrix_20260324213656"
+    },
+    {
+      "local_log_ts": "2026.03.24 22:53:57.226",
+      "outcome": "success",
+      "deal_ticket": "392830847",
+      "order_ticket": "409704506",
+      "price": "1.16125",
+      "maps_to_signal_id_in_bridge_log": "winprove_reload_20260324225356"
+    }
+  ],
+  "conclusion_for_76b6": "NO_MT5_DEAL_OR_ORDER_CORRELATABLE_TO_SIGNAL_76B6; successful EURUSD 0.01 aligns with winprove_reload test signal, not UUID 76b6."
+}

@@ -1,0 +1,23 @@
+[Unit]
+Description=AI_QUANT Control Plane (API + Dashboard UI)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=aiquant
+WorkingDirectory=/opt/ai-quant
+Environment=PYTHONUNBUFFERED=1
+Environment=CONTROL_PLANE_HOST=127.0.0.1
+Environment=CONTROL_PLANE_PORT=8787
+EnvironmentFile=/etc/ai-quant/.env
+ExecStart=/bin/bash -lc "cd /opt/ai-quant && source .venv/bin/activate && python3 -m src.control_plane.api"
+Restart=always
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ai-quant-control-plane
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,29 @@
+{
+  "ts_utc": "2026-03-25T14:11:55Z",
+  "expected_remote_overlay_url": "http://100.122.152.80:8877",
+  "repo_mac_side_consumer_files_found": {
+    "scripts_present": true,
+    "dashboard_env_present_in_this_workspace": false
+  },
+  "alignment_evidence": {
+    "windows_identity_artifact": {
+      "path": "artifacts/windows_remote_overlay_identity.json",
+      "tailscale_ip": "100.122.152.80",
+      "sidecar_base_url": "http://100.122.152.80:8877"
+    },
+    "mac_switch_script": {
+      "path": "scripts/fxg_switch_sidecar_target_remote_overlay.sh",
+      "reads_identity_artifact": true,
+      "writes": "src/control_plane/config/sidecar_target.json"
+    },
+    "mac_verify_script": {
+      "path": "scripts/fxg_verify_remote_overlay_sidecar.sh",
+      "target_resolution": [
+        "src/control_plane/config/sidecar_target.json",
+        "MT5_SIDECAR_BASE_URL env"
+      ]
+    }
+  },
+  "result": "PASS_WITH_LIMITATION",
+  "limitation": "No `dashboard/` directory or `dashboard/.env.local` present in this Windows workspace, so dashboard target alignment could not be verified/edited here."
+}

@@ -1,0 +1,9 @@
+﻿{
+    "mt5_dest_contains_probe":  true,
+    "mt5_last_line":  "{\"take_profit\":null,\"signal_id\":\"transportprobe_20260325001001\",\"strategy\":\"TRANSPORT_VERIFY\",\"block_reason\":null,\"news_state\":\"none\",\"confidence\":0.1,\"side\":\"BUY\",\"execution_allowed\":true,\"stop_loss\":null,\"entry_type\":\"MARKET\",\"symbol\":\"EUR_USD\",\"regime\":\"verify\",\"account\":\"010\",\"bridge_account\":\"ftmo_demo2\",\"units\":1000,\"session\":\"verify\"}",
+    "probe_signal_id":  "transportprobe_20260325001001",
+    "pass":  true,
+    "phase":  "forward_signal_sync",
+    "ts_utc":  "2026-03-25T00:10:01.8715048Z",
+    "shared_repo_tail_line":  "{\"take_profit\":null,\"signal_id\":\"transportprobe_20260325001001\",\"strategy\":\"TRANSPORT_VERIFY\",\"block_reason\":null,\"news_state\":\"none\",\"confidence\":0.1,\"side\":\"BUY\",\"execution_allowed\":true,\"stop_loss\":null,\"entry_type\":\"MARKET\",\"symbol\":\"EUR_USD\",\"regime\":\"verify\",\"account\":\"010\",\"bridge_account\":\"ftmo_demo2\",\"units\":1000,\"session\":\"verify\"}"
+}
